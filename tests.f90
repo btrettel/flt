@@ -11,20 +11,24 @@
 
 program tests
 
-use dimmod, only: IP, config_type, type_name
+use dimmod, only: IP, WIDTH, N_DIMS, config_type, type_name
 implicit none
 
 type(config_type)                 :: config
-character(len=12_IP)              :: blah
-integer(kind=IP), dimension(3_IP) :: exps
+character(len=WIDTH*N_DIMS)       :: blah
+integer(kind=IP), dimension(3_IP) :: indices
 
 !integer(kind=IP)  :: rc_types
 
-config%dims = "mlt"
-exps        = (/0_IP, 0_IP, 0_IP/)
+config%dims        = "mlt"
+config%denominator = 6_IP
 
-blah = type_name(config, exps)
+indices = (/0_IP, 0_IP, 0_IP/)
+blah = type_name(config, indices)
+write(unit=*, fmt=*) blah
 
+indices = (/-1_IP, -1_IP, -1_IP/)
+blah = type_name(config, indices)
 write(unit=*, fmt=*) blah
 
 stop

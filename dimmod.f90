@@ -17,6 +17,8 @@ private
 integer, public, parameter :: IP = selected_int_kind(5)
 
 integer, public, parameter :: N_DIMS = 3_IP
+integer, public, parameter :: DIGITS = 4_IP
+integer, public, parameter :: WIDTH  = DIGITS + 1_IP
 
 integer, public, parameter :: OUT_UNIT = 0_IP
 
@@ -30,23 +32,43 @@ type, public :: config_type
     integer(kind=IP), dimension(N_DIMS) :: denominator
 end type config_type
 
+! TODO: Switch `type_name` to use rational type for the exponents. Switch `indices` to `exp` here and in tests.f90.
+!type, public :: rational
+!    integer(kind=IP) :: numerator
+!    integer(kind=IP) :: denominator
+!end type
+
 public :: type_name
 
 contains
 
-function type_name(config, exps)
+function type_name(config, indices)
     type(config_type), intent(in)              :: config
-    integer(kind=IP), dimension(*), intent(in) :: exps
+    integer(kind=IP), dimension(*), intent(in) :: indices ! dim. exponent multiplied by `config%denominator`
     
-    character(len=4_IP*N_DIMS) :: type_name
+    character(len=WIDTH*N_DIMS) :: type_name
     
-    character(len=4_IP) :: type_name_part
-    integer(kind=IP)    :: i_dim
+    character(len=WIDTH) :: type_name_part
+    integer(kind=IP)     :: i_dim, negative_index
+    character(len=1_IP)  :: digits_char
     
-    ! TODO: Make this handle negative exponents.
+    write(unit=digits_char, fmt="(i1)") DIGITS
+    
+    ! DONE: Make this handle negative exponents.
+    ! DONE: Make this handle rational exponents, not just integer exponents
     type_name = ""
     do i_dim = 1_IP, N_DIMS
-        write(unit=type_name_part, fmt="(a, i3.3)") config%dims(i_dim:i_dim), abs(exps(i_dim))
+        write(unit=type_name_part, fmt="(a, i" // digits_char // "." // digits_char // ")") &
+                                        config%dims(i_dim:i_dim), abs(indices(i_dim))
+        
+        negative_index = index(type_name_part, "-")
+        
+        if (indices(i_dim) < 0_IP) then
+            type_name_part(2_IP:2_IP) = "n"
+        else
+            type_name_part(2_IP:2_IP) = "p"
+        end if
+        
         type_name = trim(type_name) // type_name_part
     end do
     
