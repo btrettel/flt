@@ -1,3 +1,14 @@
+# # $File$
+# 
+# Summary: Makefile for dimcheck, including tests
+# Standard: Fortran 90, ELF90 subset
+# Preprocessor: none
+# Author: Ben Trettel (<http://trettel.us/>)
+# Last updated: $Date$
+# Revision: $Revision$
+# Project: [dimcheck](https://github.com/btrettel/dimcheck)
+# License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+
 .POSIX:
 
 # non-POSIX
