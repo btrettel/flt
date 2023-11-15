@@ -15,6 +15,7 @@ implicit none
 private
 
 integer, public, parameter :: IP = selected_int_kind(5)
+integer, public, parameter :: RP = selected_real_kind(15, 307)
 
 integer, public, parameter :: N_DIMS = 3_IP
 integer, public, parameter :: DIGITS = 4_IP
@@ -29,7 +30,7 @@ type, public :: config_type
     character(len=N_DIMS)               :: dims
     integer(kind=IP), dimension(N_DIMS) :: min_exp
     integer(kind=IP), dimension(N_DIMS) :: max_exp
-    integer(kind=IP), dimension(N_DIMS) :: denominator
+    integer(kind=IP), dimension(N_DIMS) :: d ! denominator, for consistency with the type `rational`
 end type config_type
 
 ! TODO: Switch `type_name` to use rational type for the exponents. Switch `indices` to `exp` here and in tests.f90.
@@ -39,8 +40,15 @@ type, public :: rational
 end type
 
 public :: type_name
+public :: rational_to_real
+!public :: generate_types
 
 contains
+
+! TODO: simplify rational
+! subroutine simplify(x, rc)
+! `if (mod(config%d, exps(i_dim)%d) > 0_IP) then` `config%d` is not the gcd
+! `if exps(i_dim)%d > mod(config%d) then` `config%d` is not the gcd
 
 function type_name(config, exps)
     type(config_type), intent(in)            :: config
@@ -49,7 +57,7 @@ function type_name(config, exps)
     character(len=WIDTH*N_DIMS-1_IP) :: type_name
     
     character(len=WIDTH) :: type_name_part
-    integer(kind=IP)     :: i_dim
+    integer(kind=IP)     :: i_dim, dim_index
     character(len=1_IP)  :: digits_char
     
     write(unit=digits_char, fmt="(i1)") DIGITS
@@ -58,8 +66,10 @@ function type_name(config, exps)
     ! DONE: Make this handle rational exponents, not just integer exponents
     type_name = ""
     do i_dim = 1_IP, N_DIMS
+        dim_index = exps(i_dim)%n * config%d(i_dim) / exps(i_dim)%d
+        
         write(unit=type_name_part, fmt="(a, i" // digits_char // "." // digits_char // ",a)") &
-                                        config%dims(i_dim:i_dim), abs(exps(i_dim)%n * exps(i_dim)%d), "_"
+                                        config%dims(i_dim:i_dim), abs(dim_index), "_"
         
         if (exps(i_dim)%n < 0_IP) then
             type_name_part(2_IP:2_IP) = "n"
@@ -70,50 +80,60 @@ function type_name(config, exps)
         type_name = trim(type_name) // type_name_part
     end do
     
-    ! The last "_" will be cut off.
+    ! The last "_" will be cut off and removed due to the length of `type_name`.
     
     return
 end function type_name
 
+function rational_to_real(x)
+    type(rational), intent(in) :: x
+    
+    real(kind=RP) :: rational_to_real
+    
+    rational_to_real = real(x%n, RP) / real(x%d, RP)
+    
+    return
+end function rational_to_real
+
 !subroutine generate_types(config, rc)
 !    type(config_type), intent(in) :: config
 !    integer(kind=IP), intent(out) :: rc
-    
-!    integer(kind=IP) :: n_combos, i_dim_1, i_dim_2, i_dim_3
-!    logical :: out_unit_open
-    
+!    
+!    integer(kind=IP) :: n_combos, i_dim_1, i_dim_2, i_dim_3, min_i_dim_1, min_i_dim_2, min_i_dim_3, &
+!                            max_i_dim_1, max_i_dim_2, max_i_dim_3
+!    logical          :: out_unit_open
+!    
+!    !integer(kind=IP), dimension(:), allocatable :: exps_1, exps_2, exps_3
+!    
 !    rc = SUCCESS
-    
+!    
 !    inquire(unit=OUT_UNIT, opened=out_unit_open)
 !    if (.not. out_unit_open) then
 !        rc = EIO
 !        return
 !    end if
-    
+!    
 !    n_combos = 0_IP
-
-!    do m_index = min_m_index, max_m_index
-!        do l_index = min_l_index, max_l_index
-!            do t_index = min_t_index, max_t_index
+!    
+!    min_i_dim_1 = config%min_exp(1_IP)*config%denominator(1_IP)
+!    max_i_dim_1 = config%max_exp(1_IP)*config%denominator(1_IP)
+!    min_i_dim_2 = config%min_exp(2_IP)*config%denominator(2_IP)
+!    max_i_dim_2 = config%max_exp(2_IP)*config%denominator(2_IP)
+!    min_i_dim_3 = config%min_exp(3_IP)*config%denominator(3_IP)
+!    max_i_dim_3 = config%max_exp(3_IP)*config%denominator(3_IP)
+!    
+!    do i_dim_1 = min_i_dim_1, max_i_dim_1
+!        do i_dim_2 = min_i_dim_2, max_i_dim_2
+!            do i_dim_3 = min_i_dim_3, max_i_dim_3
 !                n_combos = n_combos + 1_IP
+!                write(unit=*, fmt=*) i_dim_1, i_dim_2, i_dim_3
 !            end do
 !        end do
 !    end do
-
-!    allocate(dims(n_dims))
-
-!    i_dim = 0_IP
-!    do m_index = min_m_index, max_m_index
-!        do l_index = min_l_index, max_l_index
-!            do t_index = min_t_index, max_t_index
-!                i_dim = i_dim + 1_IP
-                
-!                dims(i_dim)%m = m_exponent(m_index)
-!                dims(i_dim)%l = l_exponent(l_index)
-!                dims(i_dim)%t = t_exponent(t_index)
-!            end do
-!        end do
-!    end do
+!
+!    !allocate(dims(n_combos))
+!    
+!    return
 !end subroutine generate_types
 
 end module dimmod
