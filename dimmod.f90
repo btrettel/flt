@@ -41,14 +41,18 @@ end type
 
 public :: type_name
 public :: rational_to_real
-!public :: generate_types
+public :: generate_types
 
 contains
 
-! TODO: simplify rational
+! TODO: Later add simplification of rationals and store simplified. First have tests for type_name and modify it to
+! make sure the simplified rationals make type_name return the correct indices.
 ! subroutine simplify(x, rc)
 ! `if (mod(config%d, exps(i_dim)%d) > 0_IP) then` `config%d` is not the gcd
 ! `if exps(i_dim)%d > mod(config%d) then` `config%d` is not the gcd
+
+! TODO: Make `min_exp` and `max_exp` rationals so that they don't need to be integers.
+! TODO: test `rational_to_real`, which itself is really only going to be used for testing purposes
 
 function type_name(config, exps)
     type(config_type), intent(in)            :: config
@@ -62,8 +66,6 @@ function type_name(config, exps)
     
     write(unit=digits_char, fmt="(i1)") DIGITS
     
-    ! DONE: Make this handle negative exponents.
-    ! DONE: Make this handle rational exponents, not just integer exponents
     type_name = ""
     do i_dim = 1_IP, N_DIMS
         dim_index = exps(i_dim)%n * config%d(i_dim) / exps(i_dim)%d
@@ -95,45 +97,49 @@ function rational_to_real(x)
     return
 end function rational_to_real
 
-!subroutine generate_types(config, rc)
-!    type(config_type), intent(in) :: config
-!    integer(kind=IP), intent(out) :: rc
-!    
-!    integer(kind=IP) :: n_combos, i_dim_1, i_dim_2, i_dim_3, min_i_dim_1, min_i_dim_2, min_i_dim_3, &
-!                            max_i_dim_1, max_i_dim_2, max_i_dim_3
-!    logical          :: out_unit_open
-!    
-!    !integer(kind=IP), dimension(:), allocatable :: exps_1, exps_2, exps_3
-!    
-!    rc = SUCCESS
-!    
-!    inquire(unit=OUT_UNIT, opened=out_unit_open)
-!    if (.not. out_unit_open) then
-!        rc = EIO
-!        return
-!    end if
-!    
-!    n_combos = 0_IP
-!    
-!    min_i_dim_1 = config%min_exp(1_IP)*config%denominator(1_IP)
-!    max_i_dim_1 = config%max_exp(1_IP)*config%denominator(1_IP)
-!    min_i_dim_2 = config%min_exp(2_IP)*config%denominator(2_IP)
-!    max_i_dim_2 = config%max_exp(2_IP)*config%denominator(2_IP)
-!    min_i_dim_3 = config%min_exp(3_IP)*config%denominator(3_IP)
-!    max_i_dim_3 = config%max_exp(3_IP)*config%denominator(3_IP)
-!    
-!    do i_dim_1 = min_i_dim_1, max_i_dim_1
-!        do i_dim_2 = min_i_dim_2, max_i_dim_2
-!            do i_dim_3 = min_i_dim_3, max_i_dim_3
-!                n_combos = n_combos + 1_IP
-!                write(unit=*, fmt=*) i_dim_1, i_dim_2, i_dim_3
-!            end do
-!        end do
-!    end do
-!
-!    !allocate(dims(n_combos))
-!    
-!    return
-!end subroutine generate_types
+subroutine generate_types(config, rc)
+    type(config_type), intent(in) :: config
+    integer(kind=IP), intent(out) :: rc
+    
+    integer(kind=IP) :: n_combos, i_dim_1, i_dim_2, i_dim_3, min_i_dim_1, min_i_dim_2, min_i_dim_3, &
+                            max_i_dim_1, max_i_dim_2, max_i_dim_3
+    logical          :: out_unit_open
+    
+    type(rational), dimension(N_DIMS) :: exps
+    
+    rc = SUCCESS
+    
+    inquire(unit=OUT_UNIT, opened=out_unit_open)
+    if (.not. out_unit_open) then
+        rc = EIO
+        return
+    end if
+    
+    n_combos = 0_IP
+    
+    min_i_dim_1 = config%min_exp(1_IP) * config%d(1_IP)
+    max_i_dim_1 = config%max_exp(1_IP) * config%d(1_IP)
+    min_i_dim_2 = config%min_exp(2_IP) * config%d(2_IP)
+    max_i_dim_2 = config%max_exp(2_IP) * config%d(2_IP)
+    min_i_dim_3 = config%min_exp(3_IP) * config%d(3_IP)
+    max_i_dim_3 = config%max_exp(3_IP) * config%d(3_IP)
+    
+    do i_dim_1 = min_i_dim_1, max_i_dim_1
+        exps(1_IP) = rational(i_dim_1, config%d(1_IP))
+        do i_dim_2 = min_i_dim_2, max_i_dim_2
+            exps(2_IP) = rational(i_dim_2, config%d(2_IP))
+            do i_dim_3 = min_i_dim_3, max_i_dim_3
+                exps(3_IP) = rational(i_dim_3, config%d(3_IP))
+                n_combos = n_combos + 1_IP
+                !write(unit=*, fmt=*) i_dim_1, i_dim_2, i_dim_3
+                write(unit=*, fmt=*) n_combos, type_name(config, exps)
+            end do
+        end do
+    end do
+
+    !allocate(dims(n_combos))
+    
+    return
+end subroutine generate_types
 
 end module dimmod

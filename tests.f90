@@ -11,13 +11,13 @@
 
 program tests
 
-use dimmod, only: IP, WIDTH, N_DIMS, config_type, rational, type_name!, generate_types
+use dimmod, only: IP, WIDTH, N_DIMS, config_type, rational, type_name, generate_types
 implicit none
 
 type(config_type)               :: config
 character(len=WIDTH*N_DIMS)     :: type_name_output
 type(rational), dimension(3_IP) :: exps
-!integer(kind=IP)                :: rc_types
+integer(kind=IP)                :: rc_types
 
 config%dims    = "mlt"
 config%min_exp = -1_IP
@@ -44,7 +44,7 @@ exps(3_IP)%d = 2_IP
 type_name_output = type_name(config, exps)
 write(unit=*, fmt=*) type_name_output
 
-!call generate_types(config, rc_types)
+call generate_types(config, rc_types)
 
 stop
 
