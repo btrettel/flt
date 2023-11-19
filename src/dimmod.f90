@@ -37,7 +37,7 @@ end type config_type
 type, public :: rational
     integer(kind=IP) :: n ! numerator
     integer(kind=IP) :: d ! denominator
-end type
+end type rational
 
 public :: type_name
 public :: rational_to_real

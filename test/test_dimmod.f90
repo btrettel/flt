@@ -46,6 +46,8 @@ write(unit=*, fmt=*) type_name_output
 
 call generate_types(config, rc_types)
 
+write(unit=*, fmt=*) rc_types
+
 stop
 
 end program tests

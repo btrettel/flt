@@ -205,4 +205,4 @@ cython_debug/
 ########
 
 *.gcda
-tests
+test_*
