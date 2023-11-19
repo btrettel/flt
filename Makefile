@@ -85,7 +85,9 @@ elf90:
 # dimcheck #
 ############
 
-DIMMOD_TEST_DEPS = src/dimmod$(DBGOBJEXT)
+src/dimmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
+
+DIMMOD_TEST_DEPS = src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 test_dimmod$(BINEXT): $(DIMMOD_TEST_DEPS)
 	$(FC) $(OFLAG)test_dimmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(DIMMOD_TEST_DEPS) test/test_dimmod.f90

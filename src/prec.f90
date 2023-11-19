@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: precisions and lengths module
+! Summary: precisions, lengths, and constants at set precisions
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
@@ -22,15 +22,15 @@ integer, public, parameter :: I15 = selected_int_kind(15)
 
 ! <https://fortranwiki.org/fortran/show/Real+precision>
 ! `RP` stands for *real precision* in case I want to change the precision later.
-integer, public, parameter :: SP = selected_real_kind(6_I5, 37_I5)    ! single
-integer, public, parameter :: DP = selected_real_kind(15_I5, 307_I5)  ! double
-integer, public, parameter :: QP = selected_real_kind(33_I5, 4931_I5) ! quad
-RP = DP
+integer(kind=I5), public, parameter :: SP = selected_real_kind(6_I5, 37_I5)    ! single
+integer(kind=I5), public, parameter :: DP = selected_real_kind(15_I5, 307_I5)  ! double
+integer(kind=I5), public, parameter :: QP = selected_real_kind(33_I5, 4931_I5) ! quad
+integer(kind=I5), public, parameter :: RP = DP
 
 ! String parameters
 ! -----------------
 
-integer(kind=IP), public, parameter :: CL = 1024_I5 ! `CL` stands for character length
+integer(kind=I5), public, parameter :: CL = 1024_I5 ! `CL` stands for character length
 
 ! Mathematical constants
 ! ----------------------

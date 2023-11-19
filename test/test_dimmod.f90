@@ -11,36 +11,37 @@
 
 program tests
 
-use dimmod, only: IP, WIDTH, N_DIMS, config_type, rational, type_name, generate_types
+use prec, only: I5
+use dimmod, only: WIDTH, N_DIMS, config_type, rational, type_name, generate_types
 implicit none
 
 type(config_type)               :: config
 character(len=WIDTH*N_DIMS)     :: type_name_output
-type(rational), dimension(3_IP) :: exps
-integer(kind=IP)                :: rc_types
+type(rational), dimension(3_I5) :: exps
+integer(kind=I5)                :: rc_types
 
 config%dims    = "mlt"
-config%min_exp = -1_IP
-config%max_exp = 1_IP
-config%d       = 6_IP
+config%min_exp = -1_I5
+config%max_exp = 1_I5
+config%d       = 6_I5
 
-!indices = (/0_IP, 0_IP, 0_IP/)
-exps(1_IP)%n = 0_IP
-exps(2_IP)%n = 0_IP
-exps(3_IP)%n = 0_IP
-exps(1_IP)%d = 2_IP
-exps(2_IP)%d = 2_IP
-exps(3_IP)%d = 2_IP
+!indices = (/0_I5, 0_I5, 0_I5/)
+exps(1_I5)%n = 0_I5
+exps(2_I5)%n = 0_I5
+exps(3_I5)%n = 0_I5
+exps(1_I5)%d = 2_I5
+exps(2_I5)%d = 2_I5
+exps(3_I5)%d = 2_I5
 type_name_output = type_name(config, exps)
 write(unit=*, fmt=*) type_name_output
 
-!indices = (/-1_IP, -1_IP, -1_IP/)
-exps(1_IP)%n = -1_IP
-exps(2_IP)%n = -1_IP
-exps(3_IP)%n = -1_IP
-exps(1_IP)%d = 2_IP
-exps(2_IP)%d = 2_IP
-exps(3_IP)%d = 2_IP
+!indices = (/-1_I5, -1_I5, -1_I5/)
+exps(1_I5)%n = -1_I5
+exps(2_I5)%n = -1_I5
+exps(3_I5)%n = -1_I5
+exps(1_I5)%d = 2_I5
+exps(2_I5)%d = 2_I5
+exps(3_I5)%d = 2_I5
 type_name_output = type_name(config, exps)
 write(unit=*, fmt=*) type_name_output
 
