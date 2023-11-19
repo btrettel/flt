@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: generator of a dimcheck module
+! Summary: tests for the generator of a dimcheck module
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

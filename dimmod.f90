@@ -15,11 +15,11 @@ implicit none
 private
 
 integer, public, parameter :: IP = selected_int_kind(5)
-integer, public, parameter :: RP = selected_real_kind(15, 307)
+integer, public, parameter :: RP = selected_real_kind(15_IP, 307_IP)
 
-integer, public, parameter :: N_DIMS = 3_IP
-integer, public, parameter :: DIGITS = 4_IP
-integer, public, parameter :: WIDTH  = DIGITS + 2_IP
+integer, public, parameter :: N_DIMS   = 3_IP
+integer, public, parameter :: N_DIGITS = 4_IP
+integer, public, parameter :: WIDTH    = N_DIGITS + 2_IP
 
 integer, public, parameter :: OUT_UNIT = 0_IP
 
@@ -64,7 +64,7 @@ function type_name(config, exps)
     integer(kind=IP)     :: i_dim, dim_index
     character(len=1_IP)  :: digits_char
     
-    write(unit=digits_char, fmt="(i1)") DIGITS
+    write(unit=digits_char, fmt="(i1)") N_DIGITS
     
     type_name = ""
     do i_dim = 1_IP, N_DIMS
