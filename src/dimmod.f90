@@ -6,7 +6,7 @@
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Last updated: $Date$
 ! Revision: $Revision$
-! Project: [dimcheck](https://github.com/btrettel/dimcheck)
+! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 module dimmod

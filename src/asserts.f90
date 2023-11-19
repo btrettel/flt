@@ -1,0 +1,78 @@
+! # $File$
+! 
+! Summary: assertions module
+! Standard: Fortran 90, ELF90 subset
+! Preprocessor: none
+! Author: Ben Trettel (<http://trettel.us/>)
+! Last updated: $Date$
+! Revision: $Revision$
+! Project: [flt](https://github.com/btrettel/flt)
+! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+
+module asserts
+
+use prec, only IP, RP, CL
+implicit none
+private
+
+real(kind=RP), private, parameter :: TOL_FACTOR = 10.0_RP
+
+contains
+
+function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
+    ! Determine whether two reals are close.
+    
+    real(kind=RP), intent(in)           :: input_real_1, input_real_2
+    real(kind=RP), intent(in), optional :: rel_tol, abs_tol
+    
+    real(kind=RP)                       :: rel_tol_set, abs_tol_set, tol
+    logical                             :: is_close
+    
+    if (present(rel_tol)) then
+        rel_tol_set = rel_tol
+    else
+        rel_tol_set = TOL_FACTOR * epsilon(1.0_RP)
+    end if
+    
+    if (present(abs_tol)) then
+        abs_tol_set = abs_tol
+    else
+        abs_tol_set = TOL_FACTOR * epsilon(1.0_RP)
+    end if
+    
+    tol = max(rel_tol_set * abs(input_real_1), rel_tol_set * abs(input_real_2), abs_tol_set) ! NO OPERATOR 1 FMUTATE NO ARG FMUTATE
+    
+    if (abs(input_real_1 - input_real_2) < tol) then
+        is_close = .true.
+    else
+        is_close = .false.
+    end if
+    
+    return
+end function is_close
+
+subroutine check(condition, message, rc, dict_log)
+    ! If `condition` is `.false.`, then print a message and increment `rc`.
+    ! If `(rc /= RC_SUCCESS)` later, computation will stop.
+    ! This is used for assertions and input validation.
+    
+    logical, intent(in)              :: condition ! condition to check
+    character(len=*), intent(in)     :: message   ! error message to print if `condition` is `.false.`
+    integer(kind=IP), intent(in out) :: rc        ! number of errors encountered
+    
+    type(dict), dimension(:), optional, intent(in) :: dict_log
+    
+    if (.not. condition) then
+        if (present(dict_log)) then
+            call log_error(message, dict_log=dict_log)
+        else
+            call log_error(message)
+        end if
+        
+        rc = rc + 1_IP
+    end if
+    
+    return
+end subroutine check
+
+module asserts
