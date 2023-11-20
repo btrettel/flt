@@ -11,11 +11,14 @@
 
 module asserts
 
-use prec, only IP, RP, CL
+use prec, only: I5, RP, CL
 implicit none
 private
 
-real(kind=RP), private, parameter :: TOL_FACTOR = 10.0_RP
+real(kind=RP), public, parameter :: TOL_FACTOR = 10.0_RP
+
+public :: is_close
+public :: check
 
 contains
 
@@ -51,28 +54,31 @@ function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     return
 end function is_close
 
-subroutine check(condition, message, rc, dict_log)
+subroutine check(condition, log_filename, message, rc, dict_log)
     ! If `condition` is `.false.`, then print a message and increment `rc`.
     ! If `(rc /= RC_SUCCESS)` later, computation will stop.
     ! This is used for assertions and input validation.
     
+    use logging, only: dict, log_error
+    
     logical, intent(in)              :: condition ! condition to check
+    character(len=*), intent(in)     :: log_filename
     character(len=*), intent(in)     :: message   ! error message to print if `condition` is `.false.`
-    integer(kind=IP), intent(in out) :: rc        ! number of errors encountered
+    integer(kind=I5), intent(in out) :: rc        ! number of errors encountered
     
     type(dict), dimension(:), optional, intent(in) :: dict_log
     
     if (.not. condition) then
         if (present(dict_log)) then
-            call log_error(message, dict_log=dict_log)
+            call log_error(log_filename, message, dict_log=dict_log)
         else
-            call log_error(message)
+            call log_error(log_filename, message)
         end if
         
-        rc = rc + 1_IP
+        rc = rc + 1_I5
     end if
     
     return
 end subroutine check
 
-module asserts
+end module asserts

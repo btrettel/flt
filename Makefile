@@ -53,6 +53,8 @@ ELF90RM = *.exe *.lib *.map *.mod modtable.txt test/*.obj
 #OBJFLAGS  = 
 #DBGOBJEXT = .lib
 
+FAILDBGOBJ = src/fail$(DBGOBJEXT)
+
 ###############
 # Boilerplate #
 ###############
@@ -65,13 +67,13 @@ all: test
 
 .PHONY: clean
 clean:
-	$(RM) $(ELF90RM) test_* *.mod src/*.$(OBJEXT) src/*$(DBGOBJEXT)
+	$(RM) $(ELF90RM) *.jsonl *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT)
 
 .f90$(DBGOBJEXT):
 	$(FC) $(OBJFLAGS)$@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: dimmod.jsonl
+test: dimmod.jsonl testmod.jsonl
 
 ###################
 # Other compilers #
@@ -79,13 +81,27 @@ test: dimmod.jsonl
 
 .PHONY: elf90
 elf90:
-	$(MAKE) test FC='wine elf90' FFLAGS='-npause -fullwarn -winconsole' DBGFLAGS='' BINEXT='.exe' RUN='wine ' OFLAG='-out ' OBJEXT='lib' OBJFLAGS='' DBGOBJEXT='.lib'
+	$(MAKE) test FC='wine elf90' FFLAGS='-npause -fullwarn -winconsole' DBGFLAGS='' BINEXT='.exe' RUN='wine ' OFLAG='-out ' OBJEXT='lib' OBJFLAGS='' DBGOBJEXT='.lib' FAILDBGOBJ='src/fail_elf.lib'
+
+################
+# Dependencies #
+################
+
+src/asserts$(DBGOBJEXT): src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+
+src/dimmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
+
+src/fail$(DBGOBJEXT):
+
+src/logging$(DBGOBJEXT): src/prec$(DBGOBJEXT)
+
+src/prec$(DBGOBJEXT):
+
+src/testmod$(DBGOBJEXT): src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 ############
 # dimcheck #
 ############
-
-src/dimmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 DIMMOD_TEST_DEPS = src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
@@ -94,4 +110,17 @@ test_dimmod$(BINEXT): $(DIMMOD_TEST_DEPS)
 
 dimmod.jsonl: test_dimmod$(BINEXT)
 	$(RUN)test_dimmod$(BINEXT)
+	test ! -e fort.*
+
+###########
+# testmod #
+###########
+
+TESTMOD_TEST_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/testmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT)
+
+test_testmod$(BINEXT): $(TESTMOD_TEST_DEPS)
+	$(FC) $(OFLAG)test_testmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TESTMOD_TEST_DEPS) test/test_testmod.f90
+
+testmod.jsonl: test_testmod$(BINEXT)
+	$(RUN)test_testmod$(BINEXT)
 	test ! -e fort.*

@@ -9,7 +9,7 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program tests
+program test_dimmod
 
 use prec, only: I5
 use dimmod, only: WIDTH, N_DIMS, config_type, rational, type_name, generate_types
@@ -51,4 +51,4 @@ write(unit=*, fmt=*) rc_types
 
 stop
 
-end program tests
+end program test_dimmod

@@ -11,20 +11,23 @@
 
 module prec
 
+implicit none
+private
+
 ! Integer precision
 ! -----------------
 
-integer, public, parameter :: I5  = selected_int_kind(5)
-integer, public, parameter :: I15 = selected_int_kind(15)
+integer, public, parameter :: I5 = selected_int_kind(5)
+integer, public, parameter :: I9 = selected_int_kind(9) ! This is the most ELF90 allows.
 
 ! Real precision
 ! --------------
 
 ! <https://fortranwiki.org/fortran/show/Real+precision>
 ! `RP` stands for *real precision* in case I want to change the precision later.
-integer(kind=I5), public, parameter :: SP = selected_real_kind(6_I5, 37_I5)    ! single
+!integer(kind=I5), public, parameter :: SP = selected_real_kind(6_I5, 37_I5)    ! single
 integer(kind=I5), public, parameter :: DP = selected_real_kind(15_I5, 307_I5)  ! double
-integer(kind=I5), public, parameter :: QP = selected_real_kind(33_I5, 4931_I5) ! quad
+!integer(kind=I5), public, parameter :: QP = selected_real_kind(33_I5, 4931_I5) ! quad
 integer(kind=I5), public, parameter :: RP = DP
 
 ! String parameters

@@ -205,4 +205,5 @@ cython_debug/
 ########
 
 *.gcda
-test_*
+modtable.txt
+*.jsonl

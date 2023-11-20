@@ -11,7 +11,7 @@
 
 module logging
 
-use prec, only IP, RP, CL
+use prec, only: I5, RP, CL
 implicit none
 private
 
@@ -25,8 +25,12 @@ public :: upcase
 
 private :: r2c
 
-integer(kind=IP), public, parameter :: KL       = 31_IP ! dictionary key length
-integer(kind=IP), public, parameter :: LOG_UNIT = 10_IP
+integer(kind=I5), public, parameter :: KL       = 31_I5 ! dictionary key length
+integer(kind=I5), public, parameter :: LOG_UNIT = 10_I5
+
+character(len=*), public, parameter :: CHAR_FMT     = "(a)"
+character(len=*), public, parameter :: FULL_INT_FMT = "(i7)"
+character(len=*), public, parameter :: ERROR_PREFIX = "ERROR: "
 
 type, public :: dict
     character(len=KL) :: k ! key
@@ -35,9 +39,11 @@ end type dict
 
 contains
 
-subroutine start_log()
+subroutine start_log(log_filename)
+    character(len=*), intent(in) :: log_filename ! filename to write log to
+    
     open(unit=LOG_UNIT, action="write", &
-            status="replace", position="rewind", file=LOG_FILENAME)
+            status="replace", position="rewind", file=log_filename)
     
     !write(unit=*, fmt=CHAR_FMT) " Writing to log file: " // LOG_FILENAME
     
@@ -46,22 +52,22 @@ subroutine start_log()
     return
 end subroutine start_log
 
-subroutine log_message(message, rc, dict_log, stdout)
+subroutine log_message(log_filename, message, rc, dict_log, stdout)
     ! Write to the log file.
     
-    character(len=*), intent(in)                   :: message
-    integer(kind=IP), optional, intent(in)         :: rc
+    character(len=*), intent(in)                   :: log_filename, message
+    integer(kind=I5), optional, intent(in)         :: rc
     type(dict), dimension(:), optional, intent(in) :: dict_log
     logical, optional, intent(in)                  :: stdout
     
-    integer(kind=IP)    :: rc_set, i_dict
-    character(len=7_IP) :: rc_string
+    integer(kind=I5)    :: rc_set, i_dict
+    character(len=7_I5) :: rc_string
     
     type(dict), dimension(:), allocatable :: dict_set
     logical                               :: stdout_set
     
-    character(len=5_IP)               :: zone
-    integer(kind=IP), dimension(8_IP) :: values
+    character(len=5_I5)               :: zone
+    integer(kind=I5), dimension(8_I5) :: values
     character(len=4)                  :: year
     character(len=2)                  :: month, day, hour, minutes, seconds
     character(len=3)                  :: milliseconds
@@ -70,7 +76,7 @@ subroutine log_message(message, rc, dict_log, stdout)
     if (present(rc)) then
         rc_set = rc
     else
-        rc_set = 0_IP
+        rc_set = 0_I5
     end if
     
     if (present(stdout)) then
@@ -83,7 +89,7 @@ subroutine log_message(message, rc, dict_log, stdout)
         allocate(dict_set(size(dict_log)))
         dict_set = dict_log
     else
-        allocate(dict_set(0_IP)) ! NO FMUTATE
+        allocate(dict_set(0_I5)) ! NO FMUTATE
     end if
     
     ! ISO 8601 date-time format.
@@ -91,16 +97,16 @@ subroutine log_message(message, rc, dict_log, stdout)
     
     call date_and_time(zone=zone, values=values)
     
-    write(unit=year, fmt="(i4.4)") values(1_IP)
-    write(unit=month, fmt="(i2.2)") values(2_IP)
-    write(unit=day, fmt="(i2.2)") values(3_IP)
-    write(unit=hour, fmt="(i2.2)") values(5_IP)
-    write(unit=minutes, fmt="(i2.2)") values(6_IP)
-    write(unit=seconds, fmt="(i2.2)") values(7_IP)
-    write(unit=milliseconds, fmt="(i3.3)") values(8_IP)
+    write(unit=year, fmt="(i4.4)") values(1_I5)
+    write(unit=month, fmt="(i2.2)") values(2_I5)
+    write(unit=day, fmt="(i2.2)") values(3_I5)
+    write(unit=hour, fmt="(i2.2)") values(5_I5)
+    write(unit=minutes, fmt="(i2.2)") values(6_I5)
+    write(unit=seconds, fmt="(i2.2)") values(7_I5)
+    write(unit=milliseconds, fmt="(i3.3)") values(8_I5)
     
     datetime = year // "-" // month // "-" // day // "T" // hour // ":" // minutes // ":" // seconds // &
-                "." // milliseconds // zone(1_IP:3_IP) // ":" // zone(4_IP:5_IP)
+                "." // milliseconds // zone(1_I5:3_I5) // ":" // zone(4_I5:5_I5)
     
     write(unit=rc_string, fmt="(i7)") rc_set
     
@@ -115,7 +121,7 @@ subroutine log_message(message, rc, dict_log, stdout)
     write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") message
     write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '"'
     
-    do i_dict = 1_IP, size(dict_set)
+    do i_dict = 1_I5, size(dict_set)
         write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") ", "
         
         write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '"' // trim(adjustl(dict_set(i_dict)%k)) // '": '
@@ -129,7 +135,7 @@ subroutine log_message(message, rc, dict_log, stdout)
     if (stdout_set) then
         write(unit=*, fmt=CHAR_FMT) message ! NO COMMENT FMUTATE
         
-        do i_dict = 1_IP, size(dict_set) ! NO FMUTATE
+        do i_dict = 1_I5, size(dict_set) ! NO FMUTATE
             write(unit=*, fmt=CHAR_FMT, advance="no") trim(adjustl(dict_set(i_dict)%k)) // " = " ! NO COMMENT FMUTATE
             write(unit=*, fmt=CHAR_FMT) trim(adjustl(dict_set(i_dict)%v)) ! NO COMMENT FMUTATE
         end do
@@ -140,23 +146,23 @@ subroutine log_message(message, rc, dict_log, stdout)
     return
 end subroutine log_message
 
-subroutine log_error(message, rc, dict_log)
-    character(len=*), intent(in)                   :: message
-    integer(kind=IP), optional, intent(in)         :: rc
+subroutine log_error(log_filename, message, rc, dict_log)
+    character(len=*), intent(in)                   :: log_filename, message
+    integer(kind=I5), optional, intent(in)         :: rc
     type(dict), dimension(:), optional, intent(in) :: dict_log
     
-    integer(kind=IP) :: rc_set
+    integer(kind=I5) :: rc_set
     
     if (present(rc)) then
         rc_set = rc
     else
-        rc_set = 1_IP
+        rc_set = 1_I5
     end if
     
     if (present(dict_log)) then
-        call log_message(ERROR_PREFIX // message, rc=rc_set, dict_log=dict_log, stdout=.true.)
+        call log_message(log_filename, ERROR_PREFIX // message, rc=rc_set, dict_log=dict_log, stdout=.true.)
     else
-        call log_message(ERROR_PREFIX // message, rc=rc_set)
+        call log_message(log_filename, ERROR_PREFIX // message, rc=rc_set)
     end if
     
     return
@@ -167,7 +173,7 @@ function r2c(x)
     
     character(len=41) :: r2c, r2c_before ! large enough to handle quad precision
     
-    integer(kind=IP)  :: prec
+    integer(kind=I5)  :: prec
     character(len=2)  :: prec_string, len_string
     character(len=11) :: full_prec_fmt
     
@@ -183,7 +189,7 @@ function r2c(x)
     
     prec = precision(1.0_RP) ! NO FMUTATE
     write(unit=prec_string, fmt="(i2)") prec
-    write(unit=len_string, fmt="(i2)") prec + 7_IP
+    write(unit=len_string, fmt="(i2)") prec + 7_I5
     
     full_prec_fmt = "(es" // len_string // "." // prec_string // "e2)"
     
@@ -203,7 +209,7 @@ function upcase(string)
     
     integer :: j
     
-    do j = 1_IP, len(string)
+    do j = 1_I5, len(string)
         if(string(j:j) >= "a" .and. string(j:j) <= "z") then
             upcase(j:j) = achar(iachar(string(j:j)) - 32)
         else
@@ -227,7 +233,7 @@ end subroutine real_dict
 
 subroutine integer_dict(key, integer_in, dict_out)
     character(len=*), intent(in) :: key
-    integer(kind=IP), intent(in) :: integer_in
+    integer(kind=I5), intent(in) :: integer_in
     type(dict), intent(out)      :: dict_out
     
     character(len=CL) :: integer_char
