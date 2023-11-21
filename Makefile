@@ -10,7 +10,7 @@
 # License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 # TODO: Add code coverage.
-# TODO: Add other compilers, particularly ELF90.
+# TODO: Add other compilers.
 
 .POSIX:
 
@@ -103,10 +103,10 @@ src/testmod$(DBGOBJEXT): src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/logging$(DBGO
 # dimcheck #
 ############
 
-DIMMOD_TEST_DEPS = src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+TEST_DIMMOD_DEPS = src/asserts$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT)
 
-test_dimmod$(BINEXT): $(DIMMOD_TEST_DEPS)
-	$(FC) $(OFLAG)test_dimmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(DIMMOD_TEST_DEPS) test/test_dimmod.f90
+test_dimmod$(BINEXT): $(TEST_DIMMOD_DEPS)
+	$(FC) $(OFLAG)test_dimmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_DIMMOD_DEPS) test/test_dimmod.f90
 
 dimmod.jsonl: test_dimmod$(BINEXT)
 	$(RUN)test_dimmod$(BINEXT)
@@ -116,10 +116,10 @@ dimmod.jsonl: test_dimmod$(BINEXT)
 # testmod #
 ###########
 
-TESTMOD_TEST_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/testmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT)
+TEST_TESTMOD_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT)
 
-test_testmod$(BINEXT): $(TESTMOD_TEST_DEPS)
-	$(FC) $(OFLAG)test_testmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TESTMOD_TEST_DEPS) test/test_testmod.f90
+test_testmod$(BINEXT): $(TEST_TESTMOD_DEPS)
+	$(FC) $(OFLAG)test_testmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_TESTMOD_DEPS) test/test_testmod.f90
 
 testmod.jsonl: test_testmod$(BINEXT)
 	$(RUN)test_testmod$(BINEXT)
