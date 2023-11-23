@@ -11,7 +11,6 @@
 
 program test_testmod
 
-use asserts, only: is_close
 use logging, only: start_log
 use prec, only: I5, RP
 use testmod, only: test_type, logical_test, real_equality_test, real_inequality_test, integer_equality_test, &
@@ -33,80 +32,6 @@ call integer_equality_test(test_data_2%number_of_failures, 0_I5, "test_data_2%nu
 call integer_equality_test(test_data_2%number_of_tests, 0_I5, "test_data_2%number_of_tests at start", test_data)
 
 call logical_test(.true., "logical_test, .true.", test_data)
-
-call logical_test(is_close(1.0_RP, 1.0_RP), "is_close, identical numbers (1)", test_data)
-
-call logical_test(is_close(15.0_RP, 15.0_RP), "is_close, identical numbers (2)", test_data)
-
-call logical_test(is_close(0.0001_RP, 0.0001_RP), "is_close, identical numbers (3)", test_data)
-
-call logical_test(.not. is_close(1.0_RP, 10.0_RP), "is_close, different numbers (1)", test_data)
-
-call logical_test(.not. is_close(5.0_RP, 1000.0_RP), "is_close, different numbers (2)", test_data)
-
-call logical_test(.not. is_close(0.1_RP, 1000.0_RP), "is_close, different numbers (3)", test_data)
-
-call logical_test(is_close(1.0_RP, 1.0_RP + 5.0_RP * epsilon(1.0_RP)), &
-    "is_close, different numbers within tolerance (1)", test_data)
-
-call logical_test(is_close(100.0_RP, 100.0_RP + 5.0_RP * epsilon(1.0_RP)), &
-    "is_close, different numbers within tolerance (2)", test_data)
-
-call logical_test(is_close(0.1_RP, 0.1_RP + 5.0_RP * epsilon(1.0_RP)), &
-    "is_close, different numbers within tolerance (3)", test_data)
-
-call logical_test(.not. is_close(1.0_RP, 1.0_RP + 20.0_RP * epsilon(1.0_RP)), &
-    "is_close, barely different numbers (1)", test_data)
-
-call logical_test(.not. is_close(100.0_RP, 100.0_RP + 1000.0_RP * epsilon(1.0_RP)), &
-    "is_close, barely different numbers (2)", test_data)
-
-call logical_test(.not. is_close(0.1_RP, 0.1_RP + 11.0_RP * epsilon(1.0_RP)), &
-    "is_close, barely different numbers (3)", test_data)
-
-call logical_test(is_close(0.0_RP, 0.0_RP), "is_close, both zero", test_data)
-
-call logical_test(.not. is_close(0.0_RP, 100.0_RP * epsilon(1.0_RP)), &
-    "is_close, one zero, one different (1)", test_data)
-
-call logical_test(.not. is_close(100.0_RP * epsilon(1.0_RP), 0.0_RP), &
-    "is_close, one zero, one different (2)", test_data)
-
-call logical_test(is_close(1.0_RP, 1.05_RP, abs_tol=0.1_RP, rel_tol=0.0_RP), &
-        "is_close, close numbers with set abs_tol, inside abs_tol (1)", test_data)
-
-call logical_test(is_close(10.0_RP, 10.1_RP, abs_tol=0.2_RP, rel_tol=0.0_RP), &
-        "is_close, close numbers with set abs_tol, inside abs_tol (2)", test_data)
-
-call logical_test(is_close(0.1_RP, 0.11_RP, abs_tol=0.02_RP, rel_tol=0.0_RP), &
-        "is_close, close numbers with set abs_tol, inside abs_tol (3)", test_data)
-
-call logical_test(.not. is_close(1.0_RP, 1.15_RP, abs_tol=0.1_RP, rel_tol=0.0_RP), &
-        "is_close, close numbers with set abs_tol, outside abs_tol (1)", test_data)
-
-call logical_test(.not. is_close(20.0_RP, 21.0_RP, abs_tol=0.5_RP, rel_tol=0.0_RP), &
-        "is_close, close numbers with set abs_tol, outside abs_tol (2)", test_data)
-
-call logical_test(.not. is_close(0.01_RP, 0.02_RP, abs_tol=0.005_RP, rel_tol=0.0_RP), &
-        "is_close, close numbers with set abs_tol, outside abs_tol (3)", test_data)
-
-call logical_test(is_close(1.0_RP, 1.05_RP, abs_tol=0.0_RP, rel_tol=0.1_RP), &
-        "is_close, close numbers with set rel_tol, inside rel_tol", test_data)
-
-call logical_test(.not. is_close(1.0_RP, 1.15_RP, abs_tol=0.0_RP, rel_tol=0.1_RP), &
-        "is_close, close numbers with set rel_tol, outside rel_tol (1)", test_data)
-
-call logical_test(.not. is_close(20.0_RP, 19.7_RP, abs_tol=0.0_RP, rel_tol=0.01_RP), &
-        "is_close, close numbers with set rel_tol, outside rel_tol (2)", test_data)
-
-call logical_test(.not. is_close(0.0001_RP, 0.0003_RP, abs_tol=0.0_RP, rel_tol=0.1_RP), &
-        "is_close, close numbers with set rel_tol, outside rel_tol (3)", test_data)
-
-call logical_test(.not. is_close(1.0_RP, 0.0_RP, abs_tol=1.0_RP, rel_tol=0.0_RP), &
-        "is_close, close numbers with set abs_tol, just outside", test_data)
-
-call logical_test(.not. is_close(1.0_RP, 0.0_RP, abs_tol=0.0_RP, rel_tol=1.0_RP), &
-        "is_close, close numbers with set rel_tol, just outside", test_data)
 
 call real_equality_test(1.0_RP, 1.0_RP, "real_equality_test, identical numbers (1)", test_data)
 

@@ -38,20 +38,7 @@ OBJEXT    = o
 OBJFLAGS  = -c -o 
 DBGOBJEXT = -dbg.$(OBJEXT)
 
-# ELF90
-
 ELF90RM = *.exe *.lib *.map *.mod modtable.txt test/*.obj
-
-#FC        = wine elf90
-#FFLAGS    = -npause -fullwarn -winconsole
-#DBGFLAGS  = 
-#BINEXT    = .exe
-#RUN       = wine 
-#RM        = rm -rfv
-#OFLAG     = -out 
-#OBJEXT    = lib
-#OBJFLAGS  = 
-#DBGOBJEXT = .lib
 
 FAILDBGOBJ = src/fail$(DBGOBJEXT)
 
@@ -73,7 +60,7 @@ clean:
 	$(FC) $(OBJFLAGS)$@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: dimmod.jsonl testmod.jsonl
+test: asserts.jsonl dimmod.jsonl testmod.jsonl
 
 ###################
 # Other compilers #
@@ -98,6 +85,19 @@ src/logging$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 src/prec$(DBGOBJEXT):
 
 src/testmod$(DBGOBJEXT): src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+
+###########
+# asserts #
+###########
+
+TEST_ASSERTS_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT)
+
+test_asserts$(BINEXT): $(TEST_ASSERTS_DEPS)
+	$(FC) $(OFLAG)test_asserts$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_ASSERTS_DEPS) test/test_asserts.f90
+
+asserts.jsonl: test_asserts$(BINEXT)
+	$(RUN)test_asserts$(BINEXT)
+	test ! -e fort.*
 
 ############
 # dimcheck #
