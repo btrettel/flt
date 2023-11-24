@@ -12,19 +12,27 @@
 program test_asserts
 
 use prec, only: I5, RP
-use logging, only: start_log, dict, log_message, log_error, integer_dict, real_dict, string_dict
+use logging, only: start_log, dict, LOG_UNIT, log_message, log_error, integer_dict, real_dict, string_dict
 use testmod, only: test_type, start_tests, end_tests, logical_test, string_equality_test
 implicit none
 
 type(test_type)                       :: test_data
+logical                               :: unit_opened, test_passes
 type(dict), dimension(:), allocatable :: dict_log
 type(dict)                            :: dict_test
-logical                               :: test_passes
 
 character(len=*), parameter :: LOG_FILENAME = "logging.jsonl"
 
 call start_tests(LOG_FILENAME, test_data)
 call start_log(LOG_FILENAME)
+
+! This needs to be put here as the `log_message` below will close the `LOG_UNIT` if this is not here.
+inquire(unit=LOG_UNIT, opened=unit_opened)
+if (unit_opened) then
+    close(unit=LOG_UNIT)
+end if
+
+call logical_test(.not. unit_opened, "start_log, unit closed after return", test_data)
 
 call log_message(LOG_FILENAME, "log_message test")
 call log_error(LOG_FILENAME, "log_error test")
