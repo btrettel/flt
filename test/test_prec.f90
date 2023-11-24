@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: tests for the asserts module
+! Summary: tests for the prec module
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
@@ -13,7 +13,7 @@ program test_asserts
 
 use prec, only: RP, PI
 use logging, only: start_log
-use testmod, only: test_type, real_equality_test, start_tests, end_tests
+use testmod, only: test_type, start_tests, end_tests, real_equality_test
 implicit none
 
 type(test_type) :: test_data

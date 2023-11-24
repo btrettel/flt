@@ -13,8 +13,8 @@ program test_testmod
 
 use logging, only: start_log
 use prec, only: I5, RP
-use testmod, only: test_type, logical_test, real_equality_test, real_inequality_test, integer_equality_test, &
-                    string_equality_test, start_tests, end_tests
+use testmod, only: test_type, start_tests, end_tests, &
+                    logical_test, real_equality_test, real_inequality_test, integer_equality_test, string_equality_test
 implicit none
 
 type(test_type) :: test_data, test_data_2

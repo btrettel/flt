@@ -14,7 +14,7 @@ program test_dimmod
 use prec, only: I5
 use dimmod, only: WIDTH, N_DIMS, config_type, rational, type_name, generate_types
 use logging, only: start_log
-use testmod, only: test_type, string_equality_test, start_tests, end_tests
+use testmod, only: test_type, start_tests, end_tests, string_equality_test
 implicit none
 
 type(config_type)               :: config

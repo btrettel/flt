@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: tests for testmod
+! Summary: tests for the asserts module
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
@@ -14,8 +14,9 @@ program test_asserts
 use asserts, only: is_close, check
 use logging, only: start_log, dict, integer_dict
 use prec, only: I5, RP
-use testmod, only: test_type, logical_test, integer_equality_test, &
-                    start_tests, end_tests
+use testmod, only: start_tests, end_tests, test_type, &
+                    logical_test, integer_equality_test
+                    
 implicit none
 
 type(test_type)  :: test_data

@@ -3,7 +3,7 @@
 
 # # $File$
 # 
-# Summary: 
+# Summary: checks whether flt tests passed based on a JSONL output file
 # Author: Ben Trettel (<http://trettel.us/>)
 # Last updated: $Date$
 # Revision: $Revision$
@@ -20,8 +20,6 @@ args = parser.parse_args()
 
 with open(args.file) as jsonl_file_handler:
     line = jsonl_file_handler.readline()
-    
-    first_time_set = False
     
     while line:
         data = json.loads(line)

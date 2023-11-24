@@ -60,10 +60,10 @@ clean:
 	$(FC) $(OBJFLAGS)$@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: asserts.jsonl dimmod.jsonl testmod.jsonl
-	@echo "----------------------------------------------------------------------"
-	@echo "All tests passed."
-	@echo "----------------------------------------------------------------------"
+test: asserts.jsonl dimmod.jsonl logging.jsonl prec.jsonl testmod.jsonl
+	@echo "#####################"
+	@echo "# All tests passed. #"
+	@echo "#####################"
 
 ###################
 # Other compilers #
@@ -93,10 +93,10 @@ src/testmod$(DBGOBJEXT): src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/logging$(DBGO
 # asserts #
 ###########
 
-TEST_ASSERTS_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT)
+TEST_ASSERTS_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_asserts.f90
 
 test_asserts$(BINEXT): $(TEST_ASSERTS_DEPS)
-	$(FC) $(OFLAG)test_asserts$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_ASSERTS_DEPS) test/test_asserts.f90
+	$(FC) $(OFLAG)test_asserts$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_ASSERTS_DEPS)
 
 asserts.jsonl: test_asserts$(BINEXT)
 	$(RUN)test_asserts$(BINEXT)
@@ -107,10 +107,10 @@ asserts.jsonl: test_asserts$(BINEXT)
 # dimcheck #
 ############
 
-TEST_DIMMOD_DEPS = src/asserts$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT)
+TEST_DIMMOD_DEPS = src/asserts$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_dimmod.f90
 
 test_dimmod$(BINEXT): $(TEST_DIMMOD_DEPS)
-	$(FC) $(OFLAG)test_dimmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_DIMMOD_DEPS) test/test_dimmod.f90
+	$(FC) $(OFLAG)test_dimmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_DIMMOD_DEPS)
 
 dimmod.jsonl: test_dimmod$(BINEXT)
 	$(RUN)test_dimmod$(BINEXT)
@@ -118,13 +118,43 @@ dimmod.jsonl: test_dimmod$(BINEXT)
 	test ! -e fort.*
 
 ###########
+# logging #
+###########
+
+TEST_LOGGING_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_logging.f90
+
+test_logging$(BINEXT): $(TEST_LOGGING_DEPS)
+	$(FC) $(OFLAG)test_logging$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_LOGGING_DEPS)
+
+logging.jsonl: test_logging$(BINEXT)
+	-$(RUN)test_logging$(BINEXT)
+	python3 test/tests_passed.py logging.jsonl
+	python3 test/tests_logging.py
+	test ! -e fort.*
+
+########
+# prec #
+########
+
+TEST_PREC_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_prec.f90
+
+test_prec$(BINEXT): $(TEST_PREC_DEPS)
+	$(FC) $(OFLAG)test_prec$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_PREC_DEPS)
+
+prec.jsonl: test_prec$(BINEXT)
+	-$(RUN)test_prec$(BINEXT)
+	python3 test/tests_passed.py prec.jsonl
+	test ! -e fort.*
+	test ! -e fort.*
+
+###########
 # testmod #
 ###########
 
-TEST_TESTMOD_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT)
+TEST_TESTMOD_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_testmod.f90
 
 test_testmod$(BINEXT): $(TEST_TESTMOD_DEPS)
-	$(FC) $(OFLAG)test_testmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_TESTMOD_DEPS) test/test_testmod.f90
+	$(FC) $(OFLAG)test_testmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_TESTMOD_DEPS)
 
 testmod.jsonl: test_testmod$(BINEXT)
 	$(RUN)test_testmod$(BINEXT)
