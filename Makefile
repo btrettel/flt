@@ -160,4 +160,5 @@ test_testmod$(BINEXT): $(TEST_TESTMOD_DEPS)
 testmod.jsonl: test_testmod$(BINEXT)
 	$(RUN)test_testmod$(BINEXT)
 	python3 test/passed.py $@
+	python3 test/test_testmod.py
 	test ! -e fort.*

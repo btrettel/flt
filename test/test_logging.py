@@ -14,6 +14,14 @@ from datetime import datetime
 import unittest
 import json
 
+# <https://stackoverflow.com/a/61569783/1124489>
+def datetime_valid(dt_str):
+    try:
+        datetime.fromisoformat(dt_str)
+    except:
+        return False
+    return True
+
 class log_lines(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -129,6 +137,21 @@ class log_lines(unittest.TestCase):
     def test_log_custom_rc_error(self):
         self.assertTrue(log_lines.custom_rc_error_present)
         self.assertEqual(log_lines.custom_rc_error_rc, 5678)
+
+class log_other(unittest.TestCase):
+    def test_time(self):
+        with open("logging.jsonl") as jsonl_file_handler:
+            line = jsonl_file_handler.readline()
+            while line:
+                data = json.loads(line)
+                
+                # Tests on the date in the logs is valid.
+                self.assertTrue(len(data["time"]) == 29)
+                self.assertTrue(not " " in data["time"])
+                self.assertTrue(datetime_valid(data["time"]))
+                
+                # Advance line
+                line = jsonl_file_handler.readline()
 
 if __name__ == "__main__":
     #unittest.main(verbosity=2)
