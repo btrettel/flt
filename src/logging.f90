@@ -45,8 +45,6 @@ subroutine start_log(log_filename)
     open(unit=LOG_UNIT, action="write", &
             status="replace", position="rewind", file=log_filename)
     
-    !write(unit=*, fmt=CHAR_FMT) " Writing to log file: " // LOG_FILENAME
-    
     close(unit=LOG_UNIT)
     
     return
@@ -111,7 +109,7 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
     write(unit=rc_string, fmt="(i7)") rc_set
     
     open(unit=LOG_UNIT, action="write", &
-            status="old", position="append", file=LOG_FILENAME)
+            status="old", position="append", file=log_filename)
     
     write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '{"time": "'
     write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") datetime

@@ -10,7 +10,6 @@
 # License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 # TODO: Add code coverage.
-# TODO: Add other compilers.
 
 .POSIX:
 
@@ -38,7 +37,8 @@ OBJEXT    = o
 OBJFLAGS  = -c -o 
 DBGOBJEXT = -dbg.$(OBJEXT)
 
-ELF90RM = *.exe *.lib *.map *.mod modtable.txt test/*.obj
+ELF90RM  = *.exe *.lib *.map *.mod modtable.txt test/*.obj
+SUNF95RM = *.dbg
 
 FAILDBGOBJ = src/fail$(DBGOBJEXT)
 
@@ -47,14 +47,26 @@ FAILDBGOBJ = src/fail$(DBGOBJEXT)
 ###############
 
 .PHONY: all
-all: test
+all:
+	$(MAKE) test
+	$(MAKE) clean
+	$(MAKE) elf90
+	$(MAKE) clean
+	$(MAKE) ifort
+	$(MAKE) clean
+	$(MAKE) ifx
+	$(MAKE) clean
+	$(MAKE) sunf95
+	$(MAKE) clean
+	$(MAKE) flang-7
+	$(MAKE) clean
 
 .SUFFIXES:
 .SUFFIXES: .f90 .$(OBJEXT) $(DBGOBJEXT)
 
 .PHONY: clean
 clean:
-	$(RM) $(ELF90RM) *.jsonl *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT)
+	$(RM) *.jsonl *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) $(ELF90RM) $(SUNF95RM)
 
 .f90$(DBGOBJEXT):
 	$(FC) $(OBJFLAGS)$@ $(FFLAGS) $(DBGFLAGS) $<
@@ -72,6 +84,23 @@ test: asserts.jsonl dimmod.jsonl logging.jsonl prec.jsonl testmod.jsonl
 .PHONY: elf90
 elf90:
 	$(MAKE) test FC='wine elf90' FFLAGS='-npause -fullwarn -winconsole' DBGFLAGS='' BINEXT='.exe' RUN='wine ' OFLAG='-out ' OBJEXT='lib' OBJFLAGS='' DBGOBJEXT='.lib' FAILDBGOBJ='src/fail_elf.lib'
+
+.PHONY: ifort
+ifort:
+	$(MAKE) test FC=ifort FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand f90 -diag-error-limit=1' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
+
+.PHONY: ifx
+ifx:
+	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f90 -diag-error-limit=1' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
+
+# The ability of this compiler to use case-sensitive variable names is unique.
+.PHONY: sunf95
+sunf95:
+	$(MAKE) test FC=sunf95 FFLAGS='-w4 -errwarn=%all -e -stackvar -ansi -C -U' DBGFLAGS='-g -fpover -xcheck=%all -fnonstd'
+
+.PHONY: flang-7
+flang-7:
+	$(MAKE) test FC=flang-7 FFLAGS='-Wdeprecated' DBGFLAGS='-g'
 
 ################
 # Dependencies #
