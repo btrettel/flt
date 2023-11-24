@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: testing module
+! Summary: Module for unit testing procedures.
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

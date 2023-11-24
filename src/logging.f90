@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: structured logging module
+! Summary: Module for structured logging in a JSON lines file.
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

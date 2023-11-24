@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: tests for the asserts module
+! Summary: tests for the checks module
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

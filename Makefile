@@ -77,7 +77,7 @@ elf90:
 # Dependencies #
 ################
 
-src/asserts$(DBGOBJEXT): src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/checks$(DBGOBJEXT): src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/dimmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
@@ -87,28 +87,28 @@ src/logging$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
 
-src/testmod$(DBGOBJEXT): src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/testmod$(DBGOBJEXT): src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
-###########
-# asserts #
-###########
+##########
+# checks #
+##########
 
-TEST_ASSERTS_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_asserts.f90
+TEST_CHECKS_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_checks.f90
 
-test_asserts$(BINEXT): $(TEST_ASSERTS_DEPS)
-	$(FC) $(OFLAG)test_asserts$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_ASSERTS_DEPS)
+test_checks$(BINEXT): $(TEST_CHECKS_DEPS)
+	$(FC) $(OFLAG)test_checks$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_CHECKS_DEPS)
 
-asserts.jsonl: test_asserts$(BINEXT)
-	$(RUN)test_asserts$(BINEXT)
+asserts.jsonl: test_checks$(BINEXT)
+	$(RUN)test_checks$(BINEXT)
 	python3 test/passed.py $@
-	python3 test/test_asserts.py
+	python3 test/test_checks.py
 	test ! -e fort.*
 
 ############
 # dimcheck #
 ############
 
-TEST_DIMMOD_DEPS = src/asserts$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_dimmod.f90
+TEST_DIMMOD_DEPS = src/checks$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_dimmod.f90
 
 test_dimmod$(BINEXT): $(TEST_DIMMOD_DEPS)
 	$(FC) $(OFLAG)test_dimmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_DIMMOD_DEPS)
@@ -122,7 +122,7 @@ dimmod.jsonl: test_dimmod$(BINEXT)
 # logging #
 ###########
 
-TEST_LOGGING_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_logging.f90
+TEST_LOGGING_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_logging.f90
 
 test_logging$(BINEXT): $(TEST_LOGGING_DEPS)
 	$(FC) $(OFLAG)test_logging$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_LOGGING_DEPS)
@@ -137,7 +137,7 @@ logging.jsonl: test_logging$(BINEXT)
 # prec #
 ########
 
-TEST_PREC_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_prec.f90
+TEST_PREC_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_prec.f90
 
 test_prec$(BINEXT): $(TEST_PREC_DEPS)
 	$(FC) $(OFLAG)test_prec$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_PREC_DEPS)
@@ -152,7 +152,7 @@ prec.jsonl: test_prec$(BINEXT)
 # testmod #
 ###########
 
-TEST_TESTMOD_DEPS = src/asserts$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_testmod.f90
+TEST_TESTMOD_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_testmod.f90
 
 test_testmod$(BINEXT): $(TEST_TESTMOD_DEPS)
 	$(FC) $(OFLAG)test_testmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_TESTMOD_DEPS)

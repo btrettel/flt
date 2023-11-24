@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: precisions, lengths, and constants at set precisions
+! Summary: Module to set precisions, lengths, and mathematical constants.
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

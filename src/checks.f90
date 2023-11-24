@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: assertions module
+! Summary: Module for procedures used for run-time checks.
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
