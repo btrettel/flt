@@ -100,7 +100,7 @@ test_asserts$(BINEXT): $(TEST_ASSERTS_DEPS)
 
 asserts.jsonl: test_asserts$(BINEXT)
 	$(RUN)test_asserts$(BINEXT)
-	python3 test/tests_passed.py asserts.jsonl
+	python3 test/tests_passed.py $@
 	test ! -e fort.*
 
 ############
@@ -114,7 +114,7 @@ test_dimmod$(BINEXT): $(TEST_DIMMOD_DEPS)
 
 dimmod.jsonl: test_dimmod$(BINEXT)
 	$(RUN)test_dimmod$(BINEXT)
-	python3 test/tests_passed.py dimmod.jsonl
+	python3 test/tests_passed.py $@
 	test ! -e fort.*
 
 ###########
@@ -128,7 +128,7 @@ test_logging$(BINEXT): $(TEST_LOGGING_DEPS)
 
 logging.jsonl: test_logging$(BINEXT)
 	-$(RUN)test_logging$(BINEXT)
-	python3 test/tests_passed.py logging.jsonl
+	python3 test/tests_passed.py $@
 	python3 test/tests_logging.py
 	test ! -e fort.*
 
@@ -143,7 +143,7 @@ test_prec$(BINEXT): $(TEST_PREC_DEPS)
 
 prec.jsonl: test_prec$(BINEXT)
 	-$(RUN)test_prec$(BINEXT)
-	python3 test/tests_passed.py prec.jsonl
+	python3 test/tests_passed.py $@
 	test ! -e fort.*
 	test ! -e fort.*
 
@@ -158,5 +158,5 @@ test_testmod$(BINEXT): $(TEST_TESTMOD_DEPS)
 
 testmod.jsonl: test_testmod$(BINEXT)
 	$(RUN)test_testmod$(BINEXT)
-	python3 test/tests_passed.py testmod.jsonl
+	python3 test/tests_passed.py $@
 	test ! -e fort.*
