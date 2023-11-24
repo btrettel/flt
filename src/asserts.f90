@@ -58,6 +58,10 @@ subroutine check(condition, log_filename, message, rc, dict_log)
     ! If `condition` is `.false.`, then print a message and increment `rc`.
     ! If `(rc /= RC_SUCCESS)` later, computation will stop.
     ! This is used for assertions and input validation.
+    ! Making `rc` increment is useful to string up multiple `check`s
+    ! without adding too much logic. The details of the `check` are
+    ! logged, so there's `rc` does not need to be meaningful beyond
+    ! pass/fail.
     
     use logging, only: dict, log_error
     

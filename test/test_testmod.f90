@@ -17,7 +17,7 @@ use testmod, only: test_type, logical_test, real_equality_test, real_inequality_
                     string_equality_test, start_tests, end_tests
 implicit none
 
-type(test_type)  :: test_data, test_data_2
+type(test_type) :: test_data, test_data_2
 
 character(len=*), parameter :: LOG_FILENAME = "testmod.jsonl"
 

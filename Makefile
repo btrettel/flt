@@ -61,6 +61,9 @@ clean:
 
 .PHONY: test
 test: asserts.jsonl dimmod.jsonl testmod.jsonl
+	@echo "----------------------------------------------------------------------"
+	@echo "All tests passed."
+	@echo "----------------------------------------------------------------------"
 
 ###################
 # Other compilers #
@@ -97,6 +100,7 @@ test_asserts$(BINEXT): $(TEST_ASSERTS_DEPS)
 
 asserts.jsonl: test_asserts$(BINEXT)
 	$(RUN)test_asserts$(BINEXT)
+	python3 test/tests_passed.py asserts.jsonl
 	test ! -e fort.*
 
 ############
@@ -110,6 +114,7 @@ test_dimmod$(BINEXT): $(TEST_DIMMOD_DEPS)
 
 dimmod.jsonl: test_dimmod$(BINEXT)
 	$(RUN)test_dimmod$(BINEXT)
+	python3 test/tests_passed.py dimmod.jsonl
 	test ! -e fort.*
 
 ###########
@@ -123,4 +128,5 @@ test_testmod$(BINEXT): $(TEST_TESTMOD_DEPS)
 
 testmod.jsonl: test_testmod$(BINEXT)
 	$(RUN)test_testmod$(BINEXT)
+	python3 test/tests_passed.py testmod.jsonl
 	test ! -e fort.*
