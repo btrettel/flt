@@ -13,7 +13,7 @@ program test_asserts
 
 use prec, only: I5, RP
 use logging, only: start_log, dict, LOG_UNIT, log_message, log_error, integer_dict, real_dict, string_dict
-use testmod, only: test_type, start_tests, end_tests, logical_test, string_equality_test
+use unittest, only: test_type, start_tests, end_tests, logical_test, string_equality_test
 implicit none
 
 type(test_type)                       :: test_data

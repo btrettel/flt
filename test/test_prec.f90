@@ -13,7 +13,7 @@ program test_asserts
 
 use prec, only: RP, PI
 use logging, only: start_log
-use testmod, only: test_type, start_tests, end_tests, real_equality_test
+use unittest, only: test_type, start_tests, end_tests, real_equality_test
 implicit none
 
 type(test_type) :: test_data

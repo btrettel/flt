@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: tests for testmod
+! Summary: tests for unittest
 ! Standard: Fortran 90, ELF90 subset
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
@@ -9,17 +9,17 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_testmod
+program test_unittest
 
 use logging, only: start_log
 use prec, only: I5, RP
-use testmod, only: test_type, start_tests, end_tests, &
+use unittest, only: test_type, start_tests, end_tests, &
                     logical_test, real_equality_test, real_inequality_test, integer_equality_test, string_equality_test
 implicit none
 
 type(test_type) :: test_data, test_data_2
 
-character(len=*), parameter :: LOG_FILENAME = "testmod.jsonl"
+character(len=*), parameter :: LOG_FILENAME = "unittest.jsonl"
 
 call start_tests(LOG_FILENAME, test_data)
 call start_tests(LOG_FILENAME, test_data_2) ! These are for tests which should fail.
@@ -109,4 +109,4 @@ call end_tests(test_data)
 
 stop
 
-end program test_testmod
+end program test_unittest

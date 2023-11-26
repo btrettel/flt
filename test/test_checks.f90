@@ -14,8 +14,8 @@ program test_asserts
 use asserts, only: is_close, check
 use logging, only: start_log, dict, integer_dict
 use prec, only: I5, RP
-use testmod, only: start_tests, end_tests, test_type, &
-                    logical_test, integer_equality_test
+use unittest, only: start_tests, end_tests, test_type, &
+                        logical_test, integer_equality_test
                     
 implicit none
 

@@ -10,6 +10,9 @@
 # License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 # TODO: Add code coverage.
+# TODO: Add linters before compilation. Lint each file before compiling it.
+# TODO: Valgrind to detect uninitialized variables. https://stackoverflow.com/a/52455413
+# TODO: Check other Makefiles to see which flags you use there.
 
 .POSIX:
 
@@ -60,6 +63,9 @@ all:
 	$(MAKE) clean
 	$(MAKE) flang-7
 	$(MAKE) clean
+	@echo "#######################################"
+	@echo "# All tests passed for all compilers. #"
+	@echo "#######################################"
 
 .SUFFIXES:
 .SUFFIXES: .f90 .$(OBJEXT) $(DBGOBJEXT)
@@ -72,10 +78,11 @@ clean:
 	$(FC) $(OBJFLAGS)$@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: asserts.jsonl dimmod.jsonl logging.jsonl prec.jsonl testmod.jsonl
+test: asserts.jsonl dimmod.jsonl logging.jsonl prec.jsonl unittest.jsonl
 	@echo "#####################"
 	@echo "# All tests passed. #"
 	@echo "#####################"
+	@echo "Compiler: $(FC)"
 
 ###################
 # Other compilers #
@@ -85,13 +92,14 @@ test: asserts.jsonl dimmod.jsonl logging.jsonl prec.jsonl testmod.jsonl
 elf90:
 	$(MAKE) test FC='wine elf90' FFLAGS='-npause -fullwarn -winconsole' DBGFLAGS='' BINEXT='.exe' RUN='wine ' OFLAG='-out ' OBJEXT='lib' OBJFLAGS='' DBGOBJEXT='.lib' FAILDBGOBJ='src/fail_elf.lib'
 
+# `-init=snan,arrays` leads to false positives. Probably of no consequence as ifort is being retired. There is no problem with ifx.
 .PHONY: ifort
 ifort:
 	$(MAKE) test FC=ifort FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand f90 -diag-error-limit=1' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
 
 .PHONY: ifx
 ifx:
-	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f90 -diag-error-limit=1' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
+	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f90 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
 
 # The ability of this compiler to use case-sensitive variable names is unique.
 .PHONY: sunf95
@@ -116,13 +124,13 @@ src/logging$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
 
-src/testmod$(DBGOBJEXT): src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 ##########
 # checks #
 ##########
 
-TEST_CHECKS_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_checks.f90
+TEST_CHECKS_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_checks.f90
 
 test_checks$(BINEXT): $(TEST_CHECKS_DEPS)
 	$(FC) $(OFLAG)test_checks$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_CHECKS_DEPS)
@@ -137,7 +145,7 @@ asserts.jsonl: test_checks$(BINEXT)
 # dimcheck #
 ############
 
-TEST_DIMMOD_DEPS = src/checks$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_dimmod.f90
+TEST_DIMMOD_DEPS = src/checks$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_dimmod.f90
 
 test_dimmod$(BINEXT): $(TEST_DIMMOD_DEPS)
 	$(FC) $(OFLAG)test_dimmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_DIMMOD_DEPS)
@@ -151,7 +159,7 @@ dimmod.jsonl: test_dimmod$(BINEXT)
 # logging #
 ###########
 
-TEST_LOGGING_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_logging.f90
+TEST_LOGGING_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_logging.f90
 
 test_logging$(BINEXT): $(TEST_LOGGING_DEPS)
 	$(FC) $(OFLAG)test_logging$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_LOGGING_DEPS)
@@ -166,7 +174,7 @@ logging.jsonl: test_logging$(BINEXT)
 # prec #
 ########
 
-TEST_PREC_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_prec.f90
+TEST_PREC_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
 
 test_prec$(BINEXT): $(TEST_PREC_DEPS)
 	$(FC) $(OFLAG)test_prec$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_PREC_DEPS)
@@ -178,16 +186,16 @@ prec.jsonl: test_prec$(BINEXT)
 	test ! -e fort.*
 
 ###########
-# testmod #
+# unittest #
 ###########
 
-TEST_TESTMOD_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/testmod$(DBGOBJEXT) test/test_testmod.f90
+TEST_unittest_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unittest.f90
 
-test_testmod$(BINEXT): $(TEST_TESTMOD_DEPS)
-	$(FC) $(OFLAG)test_testmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_TESTMOD_DEPS)
+test_unittest$(BINEXT): $(TEST_unittest_DEPS)
+	$(FC) $(OFLAG)test_unittest$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_unittest_DEPS)
 
-testmod.jsonl: test_testmod$(BINEXT)
-	$(RUN)test_testmod$(BINEXT)
+unittest.jsonl: test_unittest$(BINEXT)
+	$(RUN)test_unittest$(BINEXT)
 	python3 test/passed.py $@
-	python3 test/test_testmod.py
+	python3 test/test_unittest.py
 	test ! -e fort.*

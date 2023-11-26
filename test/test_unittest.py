@@ -17,7 +17,7 @@ import json
 class log_lines(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with open("testmod.jsonl") as jsonl_file_handler:
+        with open("unittest.jsonl") as jsonl_file_handler:
             line = jsonl_file_handler.readline()
             
             first_time_set = False
