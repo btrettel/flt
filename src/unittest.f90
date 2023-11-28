@@ -43,13 +43,13 @@ subroutine logical_test(condition, message, test_data, dict_log)
     
     use logging, only: CHAR_FMT, dict, log_message, integer_dict, string_dict
     
-    logical, intent(in)                            :: condition
-    character(len=*), intent(in)                   :: message
-    type(test_type), intent(in out)                :: test_data
-    type(dict), dimension(:), intent(in), optional :: dict_log
+    logical, intent(in)              :: condition
+    character(len=*), intent(in)     :: message
+    type(test_type), intent(in out)  :: test_data
+    type(dict), intent(in), optional :: dict_log(:)
     
-    type(dict), dimension(:), allocatable :: dict_set
-    integer(kind=I5) :: i_dict
+    type(dict), allocatable :: dict_set(:)
+    integer(kind=I5)        :: i_dict
     
     if (present(dict_log)) then
         allocate(dict_set(size(dict_log) + 3_I5))
@@ -94,7 +94,7 @@ subroutine real_equality_test(returned_real, expected_real, message, test_data, 
     
     real(kind=RP) :: abs_tol_set, abs_diff
     logical       :: test_passes
-    type(dict), dimension(4_I5) :: dict_log
+    type(dict)    :: dict_log(4_I5)
     
     if (present(abs_tol)) then
         abs_tol_set = abs_tol
@@ -142,7 +142,7 @@ subroutine real_inequality_test(returned_real, expected_real, message, test_data
     
     real(kind=RP) :: abs_diff
     logical       :: test_passes
-    type(dict), dimension(3_I5) :: dict_log
+    type(dict)    :: dict_log(3_I5)
     
     call real_dict("real returned", returned_real, dict_log(1_I5))
     call real_dict("real expected", expected_real, dict_log(2_I5))
@@ -181,8 +181,8 @@ subroutine integer_equality_test(actual_integer, expected_integer, message, test
     character(len=*), intent(in)    :: message
     type(test_type), intent(in out) :: test_data
     
-    logical :: test_passes
-    type(dict), dimension(3_I5) :: dict_log
+    logical    :: test_passes
+    type(dict) :: dict_log(3_I5)
     
     call integer_dict("integer returned", actual_integer, dict_log(1_I5))
     call integer_dict("integer expected", expected_integer, dict_log(2_I5))
@@ -210,8 +210,8 @@ subroutine string_equality_test(actual_string, expected_string, message, test_da
     character(len=*), intent(in)    :: message
     type(test_type), intent(in out) :: test_data
     
-    logical :: test_passes
-    type(dict), dimension(2_I5) :: dict_log
+    logical    :: test_passes
+    type(dict) :: dict_log(2_I5)
     
     call string_dict("string returned", actual_string, dict_log(1_I5))
     call string_dict("string expected", expected_string, dict_log(2_I5))
@@ -260,7 +260,7 @@ subroutine end_tests(test_data)
     
     character(len=CL) :: out_string
     real(kind=RP)     :: test_duration ! in seconds
-    type(dict), dimension(3_I5) :: dict_log
+    type(dict)        :: dict_log(3_I5)
     
     test_data%end_time = current_time()
     test_duration      = test_data%end_time - test_data%start_time

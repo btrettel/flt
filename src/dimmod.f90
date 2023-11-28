@@ -25,10 +25,10 @@ integer, public, parameter :: SUCCESS = 0_I5
 integer, public, parameter :: EIO     = 5_I5
 
 type, public :: config_type
-    character(len=N_DIMS)               :: dims
-    integer(kind=I5), dimension(N_DIMS) :: min_exp
-    integer(kind=I5), dimension(N_DIMS) :: max_exp
-    integer(kind=I5), dimension(N_DIMS) :: d ! denominator, for consistency with the type `rational`
+    character(len=N_DIMS) :: dims
+    integer(kind=I5)      :: min_exp(N_DIMS)
+    integer(kind=I5)      :: max_exp(N_DIMS)
+    integer(kind=I5)      :: d(N_DIMS) ! denominator, for consistency with the type `rational`
 end type config_type
 
 ! TODO: Switch `type_name` to use rational type for the exponents. Switch `indices` to `exp` here and in tests.f90.
@@ -53,8 +53,8 @@ contains
 ! TODO: test `rational_to_real`, which itself is really only going to be used for testing purposes
 
 function type_name(config, exps)
-    type(config_type), intent(in)            :: config
-    type(rational), dimension(*), intent(in) :: exps
+    type(config_type), intent(in) :: config
+    type(rational), intent(in)    :: exps(:)
     
     character(len=WIDTH*N_DIMS-1_I5) :: type_name
     
@@ -103,7 +103,7 @@ subroutine generate_types(config, rc)
                             max_i_dim_1, max_i_dim_2, max_i_dim_3
     logical          :: out_unit_open
     
-    type(rational), dimension(N_DIMS) :: exps
+    type(rational) :: exps(N_DIMS)
     
     rc = SUCCESS
     

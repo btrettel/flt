@@ -53,23 +53,23 @@ end subroutine start_log
 subroutine log_message(log_filename, message, rc, dict_log, stdout)
     ! Write to the log file.
     
-    character(len=*), intent(in)                   :: log_filename, message
-    integer(kind=I5), optional, intent(in)         :: rc
-    type(dict), dimension(:), optional, intent(in) :: dict_log
-    logical, optional, intent(in)                  :: stdout
+    character(len=*), intent(in)           :: log_filename, message
+    integer(kind=I5), optional, intent(in) :: rc
+    type(dict), optional, intent(in)       :: dict_log(:)
+    logical, optional, intent(in)          :: stdout
     
     integer(kind=I5)    :: rc_set, i_dict
     character(len=7_I5) :: rc_string
     
-    type(dict), dimension(:), allocatable :: dict_set
-    logical                               :: stdout_set
+    type(dict), allocatable :: dict_set(:)
+    logical                 :: stdout_set
     
-    character(len=5_I5)               :: zone
-    integer(kind=I5), dimension(8_I5) :: values
-    character(len=4)                  :: year
-    character(len=2)                  :: month, day, hour, minutes, seconds
-    character(len=3)                  :: milliseconds
-    character(len=29)                 :: datetime
+    character(len=5_I5)  :: zone
+    integer(kind=I5)     :: values(8_I5)
+    character(len=4_I5)  :: year
+    character(len=2_I5)  :: month, day, hour, minutes, seconds
+    character(len=3_I5)  :: milliseconds
+    character(len=29_I5) :: datetime
     
     if (present(rc)) then
         rc_set = rc
@@ -145,9 +145,9 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
 end subroutine log_message
 
 subroutine log_error(log_filename, message, rc, dict_log)
-    character(len=*), intent(in)                   :: log_filename, message
-    integer(kind=I5), optional, intent(in)         :: rc
-    type(dict), dimension(:), optional, intent(in) :: dict_log
+    character(len=*), intent(in)           :: log_filename, message
+    integer(kind=I5), optional, intent(in) :: rc
+    type(dict), optional, intent(in)       :: dict_log(:)
     
     integer(kind=I5) :: rc_set
     
@@ -169,11 +169,11 @@ end subroutine log_error
 function r2c(x)
     real(kind=RP), intent(in) :: x
     
-    character(len=41) :: r2c, r2c_before ! large enough to handle quad precision
+    character(len=41_I5) :: r2c, r2c_before ! large enough to handle quad precision
     
-    integer(kind=I5)  :: prec
-    character(len=2)  :: prec_string, len_string
-    character(len=11) :: full_prec_fmt
+    integer(kind=I5)     :: prec
+    character(len=2_I5)  :: prec_string, len_string
+    character(len=11_I5) :: full_prec_fmt
     
     ! es15.8:
     ! 2.00000000E+00
@@ -209,7 +209,7 @@ function upcase(string)
     
     do j = 1_I5, len(string)
         if(string(j:j) >= "a" .and. string(j:j) <= "z") then
-            upcase(j:j) = achar(iachar(string(j:j)) - 32)
+            upcase(j:j) = achar(iachar(string(j:j)) - 32_I5)
         else
             upcase(j:j) = string(j:j)
         end if

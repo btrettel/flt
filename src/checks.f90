@@ -69,8 +69,7 @@ subroutine check(condition, log_filename, message, rc, dict_log)
     character(len=*), intent(in)     :: log_filename
     character(len=*), intent(in)     :: message   ! error message to print if `condition` is `.false.`
     integer(kind=I5), intent(in out) :: rc        ! number of errors encountered
-    
-    type(dict), dimension(:), optional, intent(in) :: dict_log
+    type(dict), optional, intent(in) :: dict_log(:)
     
     if (.not. condition) then
         if (present(dict_log)) then

@@ -23,6 +23,8 @@ character(len=*), parameter :: LOG_FILENAME = "prec.jsonl"
 call start_tests(LOG_FILENAME, test_data)
 call start_log(LOG_FILENAME)
 
+! TODO: Test exponent range of `I5` and `RP`.
+
 ! Originally, I defined `PI` as `4.0_RP * atan(1.0_RP)` so that it automatically changed as the precision is changed with `RP`.
 ! But Fortran 95 doesn't allow initialization expressions containing non-integer and non-character arguments. So I now define
 ! `PI` as a number and test with the higher precision version, so that the test will fail if I switch to higher precision.
