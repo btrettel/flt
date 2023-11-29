@@ -63,9 +63,9 @@ all:
 	$(MAKE) clean
 	$(MAKE) flang-7
 	$(MAKE) clean
-	@echo "#######################################"
-	@echo "# All tests passed for all compilers. #"
-	@echo "#######################################"
+	@echo "***************************************"
+	@echo "* All tests passed for all compilers. *"
+	@echo "***************************************"
 
 .SUFFIXES:
 .SUFFIXES: .f90 .$(OBJEXT) $(DBGOBJEXT)
@@ -78,10 +78,10 @@ clean:
 	$(FC) $(OBJFLAGS)$@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: asserts.jsonl dimmod.jsonl logging.jsonl prec.jsonl unittest.jsonl
-	@echo "#####################"
-	@echo "# All tests passed. #"
-	@echo "#####################"
+test: asserts.jsonl dimmod.jsonl ga.jsonl logging.jsonl prec.jsonl unittest.jsonl
+	@echo "*********************"
+	@echo "* All tests passed. *"
+	@echo "*********************"
 	@echo "Compiler: $(FC)"
 
 ###################
@@ -155,6 +155,20 @@ dimmod.jsonl: test_dimmod$(BINEXT)
 	python3 test/passed.py $@
 	test ! -e fort.*
 
+######
+# ga #
+######
+
+TEST_GA_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/ga$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_ga.f90
+
+test_ga$(BINEXT): $(TEST_GA_DEPS)
+	$(FC) $(OFLAG)test_ga$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_GA_DEPS)
+
+ga.jsonl: test_ga$(BINEXT)
+	$(RUN)test_ga$(BINEXT)
+	python3 test/passed.py $@
+	test ! -e fort.*
+
 ###########
 # logging #
 ###########
@@ -185,9 +199,9 @@ prec.jsonl: test_prec$(BINEXT)
 	test ! -e fort.*
 	test ! -e fort.*
 
-###########
+############
 # unittest #
-###########
+############
 
 TEST_unittest_DEPS = src/checks$(DBGOBJEXT) $(FAILDBGOBJ) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unittest.f90
 

@@ -3,6 +3,7 @@
 Misc. Fortran libraries and tools (all at various stages of development):
 
 - checks.f90: Module for procedures used for run-time checks.
+- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm. (in progress)
 - logging.f90: Module for structured logging in a JSON lines file.
 - prec.f90: Module to set precisions, lengths, and mathematical constants.
 - unittest.f90: Module for unit testing procedures.
@@ -17,8 +18,10 @@ flt is intended only for my own use. Certain parts (like fmutate in particular) 
 
 ## To-do
 
-- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions.
-- fad.f90: Forward-mode automatic differentiation.
+- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
+- fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
 - fmutate: A primitive mutation tester for Fortran, written in Python. (A functional prototype is complete, but not yet copied to this repository from a private repository.)
-- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
 - Run fmutate on flt to spot gaps in the tests.
+- logging.f90
+    - Test `stdout` optional argument.
+    - Add `box_print` and other non-structured logging for the most important messages that I don't want to miss.

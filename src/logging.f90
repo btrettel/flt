@@ -205,7 +205,7 @@ function upcase(string)
     
     character(len=len(string)) :: upcase
     
-    integer :: j
+    integer(kind=I5) :: j
     
     do j = 1_I5, len(string)
         if(string(j:j) >= "a" .and. string(j:j) <= "z") then

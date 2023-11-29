@@ -21,7 +21,7 @@ integer, public, parameter :: N_FITNESS   = 8_I5  ! number of fitness/objective 
 
 type, public :: ga_config
     real(kind=RP)    :: p_select, p_elite, p_cross, p_mutate
-    integer(kind=IP) :: n_gener, n_stall, stop_time
+    integer(kind=I5) :: n_gener, n_stall, stop_time
 end type ga_config
 
 type, public :: bounds_type
@@ -44,8 +44,8 @@ type, public :: pop_type
     !integer(kind=I5) :: max_id ! maximum identification number
 end type pop_type
 
-public  :: rand_int, rand_cauchy
-private :: clip
+public :: rand_int, rand_cauchy
+public :: clip
 
 contains
 
@@ -87,12 +87,12 @@ subroutine clip(bounds, x)
     return
 end subroutine clip
 
-subroutine optimize(bounds, fun, best_ever_chromo, rc)
-    type(bounds_type), intent(in)  :: bounds(:)
-    type(chromo_type), intent(out) :: best_ever_chromo
-    integer(kind=I5), intent(out)  :: rc
-    
-    ! TODO: `fun`
-end subroutine optimize
+!subroutine optimize(bounds, fun, best_ever_chromo, rc)
+!    type(bounds_type), intent(in)  :: bounds(:)
+!    type(chromo_type), intent(out) :: best_ever_chromo
+!    integer(kind=I5), intent(out)  :: rc
+!    
+!    ! TODO: `fun`
+!end subroutine optimize
 
 end module ga
