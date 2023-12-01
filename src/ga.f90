@@ -63,10 +63,13 @@ end function rand_int
 
 function rand_cauchy(m, b, r)
     ! Notation follows <https://mathworld.wolfram.com/CauchyDistribution.html>.
+    ! TODO: Describe what `m` and `b` represent in comments.
     
     use prec, only: PI
     
-    real(kind=RP), intent(in) :: m, b, r
+    real(kind=RP), intent(in) :: m ! TODO median?
+    real(kind=RP), intent(in) :: b ! TODO scale factor similar to standard deviation?
+    real(kind=RP), intent(in) :: r ! random CDF value for inverse sampling
     
     real(kind=RP) :: rand_cauchy
     

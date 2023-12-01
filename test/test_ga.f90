@@ -42,10 +42,52 @@ call integer_equality_test(ri, 1_I5, "rand_int (4)", test_data)
 ri = rand_int(0_I5, 1_I5, 1.0_RP)
 call integer_equality_test(ri, 1_I5, "rand_int (5)", test_data)
 
-rr = rand_cauchy(0.0_RP, 1.0_RP, 0.75_RP)
-call real_equality_test(rr, 1.0_RP, "rand_cauchy (1)", test_data)
+!rr = rand_cauchy(0.0_RP, 1.0_RP, 0.75_RP)
+!call real_equality_test(rr, 1.0_RP, "rand_cauchy (1)", test_data)
 
-! TODO: Add more tests for `rand_cauchy`.
+! rand_cauchy = m + b * tan(PI * (r - 0.5_RP))
+
+! theta     sin         cos         tan         r
+! -PI/2     -1          0           -inf         r - 1/2 = 1/2 ==> r = 1
+! -PI/3     -sqrt(3)/2  1/2         -sqrt(3)    r - 1/2 = -1/3 ==> r = 1/6
+! -PI/4     -sqrt(2)/2  sqrt(2)/2   -1          r - 1/2 = -1/4 ==> r = 1/4
+! -PI/6     -1/2        sqrt(3)/2   -sqrt(3)/3  r - 1/2 = -1/6 ==> r = 1/3
+! 0         0           1           0           1/2
+! PI/6      1/2         sqrt(3)/2   sqrt(3)/3   r - 1/2 = 1/6 ==> r = 2/3
+! PI/4      sqrt(2)/2   sqrt(2)/2   1           r - 1/2 = 1/4 ==> r = 3/4
+! PI/3      sqrt(3)/2   1/2         sqrt(3)     r - 1/2 = 1/3 ==> r = 5/6
+! PI/2      1           0           inf         r - 1/2 = 1/2 ==> r = 1
+
+! TODO: Add more tests for `rand_cauchy`, covering full range of `r`.
+
+rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/6.0_RP)
+call real_equality_test(rr, -sqrt(3.0_RP), "rand_cauchy (r = 1/6)", test_data)
+
+rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/4.0_RP)
+call real_equality_test(rr, -1.0_RP, "rand_cauchy (r = 1/4)", test_data)
+
+rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/3.0_RP)
+call real_equality_test(rr, -sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 1/3)", test_data)
+
+rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/2.0_RP)
+call real_equality_test(rr, 0.0_RP, "rand_cauchy (r = 1/2)", test_data)
+
+rr = rand_cauchy(0.0_RP, 1.0_RP, 2.0_RP/3.0_RP)
+call real_equality_test(rr, sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 2/3)", test_data)
+
+rr = rand_cauchy(0.0_RP, 1.0_RP, 3.0_RP/4.0_RP)
+call real_equality_test(rr, 1.0_RP, "rand_cauchy (r = 3/4)", test_data)
+
+rr = rand_cauchy(0.0_RP, 1.0_RP, 5.0_RP/6.0_RP)
+call real_equality_test(rr, sqrt(3.0_RP), "rand_cauchy (r = 5/6)", test_data)
+
+rr = rand_cauchy(2.0_RP, 1.0_RP, 3.0_RP/4.0_RP)
+call real_equality_test(rr, 3.0_RP, "rand_cauchy (changed m)", test_data)
+
+rr = rand_cauchy(0.0_RP, 0.5_RP, 3.0_RP/4.0_RP)
+call real_equality_test(rr, 0.5_RP, "rand_cauchy (changed b)", test_data)
+
+! `clip`
 
 bounds%lower = 0.0_RP
 bounds%upper = 1.0_RP
