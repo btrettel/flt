@@ -12,7 +12,7 @@
 program test_ga
 
 use prec, only: I5, RP
-use ga, only: bounds_type, rand_int, rand_cauchy, clip
+use ga, only: bounds_type, rand_int, rand_uniform, rand_cauchy, clip
 use logging, only: start_log
 use unittest, only: test_type, start_tests, end_tests, integer_equality_test, real_equality_test
 implicit none
@@ -26,6 +26,8 @@ character(len=*), parameter :: LOG_FILENAME = "ga.jsonl"
 
 call start_tests(LOG_FILENAME, test_data)
 call start_log(LOG_FILENAME)
+
+! `rand_int`
 
 ri = rand_int(0_I5, 1_I5, 0.0_RP)
 call integer_equality_test(ri, 0_I5, "rand_int (1)", test_data)
@@ -41,6 +43,19 @@ call integer_equality_test(ri, 1_I5, "rand_int (4)", test_data)
 
 ri = rand_int(0_I5, 1_I5, 1.0_RP)
 call integer_equality_test(ri, 1_I5, "rand_int (5)", test_data)
+
+! `rand_uniform`
+
+rr = rand_uniform(-2.0_RP, 3.0_RP, 0.0_RP)
+call real_equality_test(rr, -2.0_RP, "rand_uniform (r = 0)", test_data)
+
+rr = rand_uniform(-2.0_RP, 3.0_RP, 0.5_RP)
+call real_equality_test(rr, 0.5_RP, "rand_uniform (r = 0.5)", test_data)
+
+rr = rand_uniform(-2.0_RP, 3.0_RP, 1.0_RP)
+call real_equality_test(rr, 3.0_RP, "rand_uniform (r = 1)", test_data)
+
+! `rand_cauchy`
 
 !rr = rand_cauchy(0.0_RP, 1.0_RP, 0.75_RP)
 !call real_equality_test(rr, 1.0_RP, "rand_cauchy (1)", test_data)
@@ -58,7 +73,7 @@ call integer_equality_test(ri, 1_I5, "rand_int (5)", test_data)
 ! PI/3      sqrt(3)/2   1/2         sqrt(3)     r - 1/2 = 1/3 ==> r = 5/6
 ! PI/2      1           0           inf         r - 1/2 = 1/2 ==> r = 1
 
-! TODO: Add more tests for `rand_cauchy`, covering full range of `r`.
+! TODO: Add tests for `rand_cauchy` for `r` approaching 0 and 1.
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/6.0_RP)
 call real_equality_test(rr, -sqrt(3.0_RP), "rand_cauchy (r = 1/6)", test_data)
