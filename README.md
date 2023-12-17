@@ -13,7 +13,7 @@ flt is intended only for my own use. Certain parts (like fmutate in particular) 
 ## Goals
 
 - Correctness: All libraries and tools are planned to be thoroughly tested. I will fall short of this goal, but intend to approach it asymptotically in time.
-- Portability: Typically the Fortran 90 standard will be used to maximize portability. Multiple compilers will be tested to ensure portability.
+- Portability: A subset of Fortran 2003 will be used to maximize portability. Multiple compilers will be tested to ensure portability. Not all Fortran 2003 features have been implemented properly in some compilers (for example, parameterized derived types), so those features will be avoided.
 - Simplicity: No convoluted or opaque build system or algorithms. The simplest approach that works is usually what I'll pick.
 
 ## To-do
@@ -22,8 +22,10 @@ flt is intended only for my own use. Certain parts (like fmutate in particular) 
 - fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
 - fps.f90: Module for Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
     - parker_monte_1997-1
+- f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
 - fmut: A primitive mutation tester for Fortran, written in Fortran. (A functional prototype written in Python is complete, but too sloppy for me to release.)
     - Run fmut on flt to spot gaps in the tests.
 - logging.f90
     - Test `stdout` optional argument.
     - Add `box_print` and other non-structured logging for the most important messages that I don't want to miss.
+- semgrep static analysis

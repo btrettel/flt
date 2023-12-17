@@ -254,7 +254,6 @@ end subroutine start_tests
 subroutine end_tests(test_data)
     use prec, only: CL
     use logging, only: CHAR_FMT, dict, log_message, log_error, real_dict, integer_dict
-    use fail, only: failure
     
     type(test_type), intent(in out) :: test_data
     
@@ -276,7 +275,7 @@ subroutine end_tests(test_data)
         write(unit=out_string, fmt="(a, i3, a)") "FAILED (failures=", test_data%number_of_failures, ")" ! NO COMMENT FMUTATE
         call log_error(test_data%log_filename, trim(adjustl(out_string)), rc=1_I5, dict_log=dict_log) ! NO COMMENT FMUTATE
         write(unit=*, fmt=CHAR_FMT) LONG_LINE ! NO COMMENT FMUTATE
-        call failure() ! NO COMMENT FMUTATE
+        stop 1 ! NO COMMENT FMUTATE
     else
         call log_message(test_data%log_filename, "All tests passed.", dict_log=dict_log)
         write(unit=*, fmt=CHAR_FMT) ! NO COMMENT FMUTATE
