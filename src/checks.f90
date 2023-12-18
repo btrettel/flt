@@ -50,8 +50,6 @@ function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     else
         is_close = .false.
     end if
-    
-    return
 end function is_close
 
 subroutine check(condition, log_filename, message, rc, dict_log)
@@ -80,8 +78,6 @@ subroutine check(condition, log_filename, message, rc, dict_log)
         
         rc = rc + 1_I5
     end if
-    
-    return
 end subroutine check
 
 end module asserts

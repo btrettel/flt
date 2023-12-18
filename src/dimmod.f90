@@ -81,8 +81,6 @@ function type_name(config, exps)
     end do
     
     ! The last "_" will be cut off and removed due to the length of `type_name`.
-    
-    return
 end function type_name
 
 function rational_to_real(x)
@@ -91,8 +89,6 @@ function rational_to_real(x)
     real(kind=RP) :: rational_to_real
     
     rational_to_real = real(x%n, RP) / real(x%d, RP)
-    
-    return
 end function rational_to_real
 
 subroutine generate_types(config, rc)
@@ -136,8 +132,6 @@ subroutine generate_types(config, rc)
     end do
 
     !allocate(dims(n_combos))
-    
-    return
 end subroutine generate_types
 
 end module dimmod

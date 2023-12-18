@@ -25,11 +25,8 @@ call start_log(LOG_FILENAME)
 
 ! TODO: Test exponent range of `I5` and `RP`.
 
-! Originally, I defined `PI` as `4.0_RP * atan(1.0_RP)` so that it automatically changed as the precision is changed with `RP`.
-! But Fortran 95 doesn't allow initialization expressions containing non-integer and non-character arguments. So I now define
-! `PI` as a number and test with the higher precision version, so that the test will fail if I switch to higher precision.
-!call real_equality_test(3.141592653589793_RP, PI, "PI value", test_data)
-call real_equality_test(4.0_RP * atan(1.0_RP), PI, "PI value", test_data)
+! This needs to be modified when changing the precision.
+call real_equality_test(3.141592653589793_RP, PI, "PI value", test_data)
 
 call end_tests(test_data)
 

@@ -77,8 +77,6 @@ subroutine logical_test(condition, message, test_data, dict_log)
         write(unit=*, fmt=CHAR_FMT) "fail: " // message ! NO COMMENT FMUTATE
         write(unit=*, fmt=CHAR_FMT) ! NO COMMENT FMUTATE
     end if
-    
-    return
 end subroutine logical_test
 
 subroutine real_equality_test(returned_real, expected_real, message, test_data, abs_tol)
@@ -126,8 +124,6 @@ subroutine real_equality_test(returned_real, expected_real, message, test_data, 
     
     call check(abs_diff >= 0.0_RP, test_data%log_filename, & ! NO FMUTATE
                 "real_equality_test, abs_diff < 0", test_data%number_of_failures) ! NO FMUTATE
-    
-    return
 end subroutine real_equality_test
 
 subroutine real_inequality_test(returned_real, expected_real, message, test_data)
@@ -168,8 +164,6 @@ subroutine real_inequality_test(returned_real, expected_real, message, test_data
     
     call check(abs_diff >= 0.0_RP, test_data%log_filename, & ! NO FMUTATE
                 "real_inequality_test, abs_diff < 0", test_data%number_of_failures) ! NO FMUTATE
-    
-    return
 end subroutine real_inequality_test
 
 subroutine integer_equality_test(actual_integer, expected_integer, message, test_data)
@@ -197,8 +191,6 @@ subroutine integer_equality_test(actual_integer, expected_integer, message, test
     end if
     
     call logical_test(test_passes, message, test_data, dict_log=dict_log)
-    
-    return
 end subroutine integer_equality_test
 
 subroutine string_equality_test(actual_string, expected_string, message, test_data)
@@ -224,8 +216,6 @@ subroutine string_equality_test(actual_string, expected_string, message, test_da
     end if
     
     call logical_test(test_passes, message, test_data, dict_log=dict_log)
-    
-    return
 end subroutine string_equality_test
 
 function current_time()
@@ -247,8 +237,6 @@ subroutine start_tests(log_filename, test_data)
     test_data%number_of_tests    = 0_I5
     test_data%start_time         = current_time()
     test_data%log_filename       = log_filename
-    
-    return
 end subroutine start_tests
 
 subroutine end_tests(test_data)
@@ -282,8 +270,6 @@ subroutine end_tests(test_data)
         write(unit=*, fmt=CHAR_FMT) "OK" ! NO COMMENT FMUTATE
         write(unit=*, fmt=CHAR_FMT) LONG_LINE ! NO COMMENT FMUTATE
     end if
-    
-    return
 end subroutine end_tests
 
 end module unittest

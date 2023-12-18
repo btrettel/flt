@@ -140,8 +140,6 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
     end if
     
     deallocate(dict_set) ! NO COMMENT FMUTATE
-    
-    return
 end subroutine log_message
 
 subroutine log_error(log_filename, message, rc, dict_log)
@@ -162,8 +160,6 @@ subroutine log_error(log_filename, message, rc, dict_log)
     else
         call log_message(log_filename, ERROR_PREFIX // message, rc=rc_set)
     end if
-    
-    return
 end subroutine log_error
 
 function r2c(x)
@@ -194,8 +190,6 @@ function r2c(x)
     write(unit=r2c_before, fmt=full_prec_fmt) x
     
     r2c = upcase(r2c_before)
-    
-    return
 end function r2c
 
 function upcase(string)
@@ -214,8 +208,6 @@ function upcase(string)
             upcase(j:j) = string(j:j)
         end if
     end do
-    
-    return
 end function upcase
 
 subroutine real_dict(key, real_in, dict_out)
@@ -225,8 +217,6 @@ subroutine real_dict(key, real_in, dict_out)
     
     dict_out%k = key
     dict_out%v = r2c(real_in)
-    
-    return
 end subroutine real_dict
 
 subroutine integer_dict(key, integer_in, dict_out)
@@ -239,8 +229,6 @@ subroutine integer_dict(key, integer_in, dict_out)
     dict_out%k = key
     write(unit=integer_char, fmt=FULL_INT_FMT) integer_in
     dict_out%v = trim(adjustl(integer_char))
-    
-    return
 end subroutine integer_dict
 
 subroutine string_dict(key, string_in, dict_out)
@@ -250,8 +238,6 @@ subroutine string_dict(key, string_in, dict_out)
     
     dict_out%k = key
     dict_out%v = '"' // trim(adjustl(string_in)) // '"'
-    
-    return
 end subroutine string_dict
 
 end module logging

@@ -77,8 +77,6 @@ function rand_int(lower_bound, upper_bound, r)
     
     ! The `min` function makes this not return `upper_bound + 1_I5` when `r = 1.0_RP`.
     rand_int = min(lower_bound + floor(real(upper_bound + 1_I5 - lower_bound, RP) * r), upper_bound)
-    
-    return
 end function rand_int
 
 function rand_uniform(lower_bound, upper_bound, r)
@@ -89,8 +87,6 @@ function rand_uniform(lower_bound, upper_bound, r)
     real(kind=RP) :: rand_uniform
     
     rand_uniform = lower_bound + (upper_bound - lower_bound) * r
-    
-    return
 end function rand_uniform
 
 function rand_cauchy(m, b, r)
@@ -111,8 +107,6 @@ function rand_cauchy(m, b, r)
     real(kind=RP) :: rand_cauchy
     
     rand_cauchy = m + b * tan(PI * (r - 0.5_RP))
-    
-    return
 end function rand_cauchy
 
 subroutine clip(bounds, x)
@@ -123,8 +117,6 @@ subroutine clip(bounds, x)
     
     x = min(x, bounds%upper)
     x = max(x, bounds%lower)
-    
-    return
 end subroutine clip
 
 subroutine initialize(config, pop)
@@ -140,8 +132,6 @@ subroutine initialize(config, pop)
             pop%individuals(i_pop)%chromo(i_gene) = rand_uniform(config%bounds(i_pop)%lower, config%bounds(i_pop)%lower, r)
         end do
     end do
-    
-    return
 end subroutine initialize
 
 !subroutine optimize(config, f, best_ever_individual, rc)

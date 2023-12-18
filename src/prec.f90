@@ -40,10 +40,6 @@ integer(kind=I5), public, parameter :: CL = 1024_I5 ! `CL` stands for character 
 
 ! PI: 3.1415926535897932384626433...
 ! <https://stackoverflow.com/a/49416279/1124489>
-! This needs to be modified when changing the precision.
-! See tests.f90 on `PI` for more details.
-!real(kind=RP), parameter, public :: PI = 4.0_RP * atan(1.0_RP) ! This initialization expression is not allowed in Fortran 95.
-! This is the maximum number of digits I can put in for double precision without gfortran complaining.
-real(kind=RP), public, parameter :: PI = 3.141592653589793_DP
+real(kind=RP), public, parameter :: PI = 4.0_RP * atan(1.0_RP)
 
 end module prec
