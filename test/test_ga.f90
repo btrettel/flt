@@ -1,7 +1,7 @@
 ! # $File$
 ! 
 ! Summary: tests for the ga module
-! Standard: Fortran 90, ELF90 subset
+! Standard: Fortran 2003
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Last updated: $Date$

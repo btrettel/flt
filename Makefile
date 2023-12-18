@@ -1,7 +1,7 @@
 # # $File$
 # 
 # Summary: Makefile for all components of flt, including tests
-# Standard: Fortran 90, ELF90 subset
+# Standard: POSIX
 # Preprocessor: none
 # Author: Ben Trettel (<http://trettel.us/>)
 # Last updated: $Date$
