@@ -18,6 +18,13 @@ flt is intended only for my own use. Certain parts (like fmutate in particular) 
 
 ## To-do
 
+General code cleanup:
+
+- change `write(unit=*, fmt=*)` to `write(*, *)`?
+- statement labels for `do` loops and `if` statements
+
+New modules and tools:
+
 - dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
 - fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
 - fps.f90: Module for Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.

@@ -109,7 +109,7 @@ function rand_cauchy(m, b, r)
     rand_cauchy = m + b * tan(PI * (r - 0.5_RP))
 end function rand_cauchy
 
-subroutine clip(bounds, x)
+pure subroutine clip(bounds, x)
     ! Clip variable `x` within upper and lower bounds.
     
     type(bounds_type), intent(in) :: bounds

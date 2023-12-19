@@ -22,7 +22,7 @@ public :: check
 
 contains
 
-function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
+pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     ! Determine whether two reals are close.
     
     real(kind=RP), intent(in)           :: input_real_1, input_real_2

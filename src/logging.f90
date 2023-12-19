@@ -162,7 +162,7 @@ subroutine log_error(log_filename, message, rc, dict_log)
     end if
 end subroutine log_error
 
-function r2c(x)
+pure function r2c(x)
     real(kind=RP), intent(in) :: x
     
     character(len=41_I5) :: r2c, r2c_before ! large enough to handle quad precision
@@ -192,7 +192,7 @@ function r2c(x)
     r2c = upcase(r2c_before)
 end function r2c
 
-function upcase(string)
+pure function upcase(string)
     ! <https://www.star.le.ac.uk/%7ecgp/fortran.html>
     
     character(len=*), intent(in) :: string
@@ -210,7 +210,7 @@ function upcase(string)
     end do
 end function upcase
 
-subroutine real_dict(key, real_in, dict_out)
+pure subroutine real_dict(key, real_in, dict_out)
     character(len=*), intent(in) :: key
     real(kind=RP), intent(in)    :: real_in
     type(dict), intent(out)      :: dict_out
@@ -219,7 +219,7 @@ subroutine real_dict(key, real_in, dict_out)
     dict_out%v = r2c(real_in)
 end subroutine real_dict
 
-subroutine integer_dict(key, integer_in, dict_out)
+pure subroutine integer_dict(key, integer_in, dict_out)
     character(len=*), intent(in) :: key
     integer(kind=I5), intent(in) :: integer_in
     type(dict), intent(out)      :: dict_out
@@ -231,7 +231,7 @@ subroutine integer_dict(key, integer_in, dict_out)
     dict_out%v = trim(adjustl(integer_char))
 end subroutine integer_dict
 
-subroutine string_dict(key, string_in, dict_out)
+pure subroutine string_dict(key, string_in, dict_out)
     character(len=*), intent(in) :: key
     character(len=*), intent(in) :: string_in
     type(dict), intent(out)      :: dict_out
