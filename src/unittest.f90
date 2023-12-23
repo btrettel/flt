@@ -20,6 +20,7 @@ public :: logical_test
 public :: real_equality_test
 public :: real_inequality_test
 public :: integer_equality_test
+public :: integer_greater_equal_test
 public :: string_equality_test
 public :: start_tests
 public :: end_tests
@@ -192,6 +193,31 @@ subroutine integer_equality_test(actual_integer, expected_integer, message, test
     
     call logical_test(test_passes, message, test_data, dict_log=dict_log)
 end subroutine integer_equality_test
+
+subroutine integer_greater_equal_test(test_integer, lower_integer, message, test_data)
+    ! Check whether one integer is greater than the other, increase `number_of_failures` if `.false.`.
+    
+    use logging, only: dict, log_message, integer_dict
+    
+    integer, intent(in)             :: test_integer, lower_integer
+    character(len=*), intent(in)    :: message
+    type(test_type), intent(in out) :: test_data
+    
+    logical    :: test_passes
+    type(dict) :: dict_log(3)
+    
+    call integer_dict("integer returned", test_integer, dict_log(1))
+    call integer_dict("lower integer", lower_integer, dict_log(2))
+    
+    test_passes = (test_integer >= lower_integer)
+    
+    if (.not. test_passes) then
+        write(unit=*, fmt="(a, i7)") "integer returned = ", test_integer ! NO COMMENT FMUTATE
+        write(unit=*, fmt="(a, i7)") "  not >= integer = ", lower_integer ! NO COMMENT FMUTATE
+    end if
+    
+    call logical_test(test_passes, message, test_data, dict_log=dict_log)
+end subroutine integer_greater_equal_test
 
 subroutine string_equality_test(actual_string, expected_string, message, test_data)
     ! Check whether two strings are identical, increase `number_of_failures` if `.false.`.

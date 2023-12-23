@@ -20,8 +20,12 @@ flt is intended only for my own use. Certain parts (like fmutate in particular) 
 
 General code cleanup:
 
+- Don't use `_I5` as the default in Fortran 2008 is `_I5`.
+- Add test to make sure that `RP` meet requirement.
+- Get test_prec.f90 working so that the Python tests pass.
+    - Fix prec.jsonl so that the junk fields aren't present, which I think is related to use of `I5` in `dict_log`.
 - change `write(unit=*, fmt=*)` to `write(*, *)`?
-- statement labels for `do` loops and `if` statements
+- construct names for `do` loops and `if` statements
 
 New modules and tools:
 
@@ -35,4 +39,5 @@ New modules and tools:
 - logging.f90
     - Test `stdout` optional argument.
     - Add `box_print` and other non-structured logging for the most important messages that I don't want to miss.
+- rng.f90: Includes a deterministic random number generator for testing purposes.
 - semgrep static analysis
