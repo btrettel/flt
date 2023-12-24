@@ -12,7 +12,7 @@
 program test_unittest
 
 use logging, only: start_log
-use prec, only: I5, RP
+use prec, only: RP
 use unittest, only: test_type, start_tests, end_tests, &
                     logical_test, real_equality_test, real_inequality_test, integer_equality_test, string_equality_test
 implicit none
@@ -25,11 +25,11 @@ call start_tests(LOG_FILENAME, test_data)
 call start_tests(LOG_FILENAME, test_data_2) ! These are for tests which should fail.
 call start_log(LOG_FILENAME)
 
-call integer_equality_test(test_data%number_of_failures, 0_I5, "test_data%number_of_failures at start", test_data)
-call integer_equality_test(test_data%number_of_tests, 1_I5, "test_data%number_of_tests at start", test_data)
+call integer_equality_test(test_data%number_of_failures, 0, "test_data%number_of_failures at start", test_data)
+call integer_equality_test(test_data%number_of_tests, 1, "test_data%number_of_tests at start", test_data)
 
-call integer_equality_test(test_data_2%number_of_failures, 0_I5, "test_data_2%number_of_failures at start", test_data)
-call integer_equality_test(test_data_2%number_of_tests, 0_I5, "test_data_2%number_of_tests at start", test_data)
+call integer_equality_test(test_data_2%number_of_failures, 0, "test_data_2%number_of_failures at start", test_data)
+call integer_equality_test(test_data_2%number_of_tests, 0, "test_data_2%number_of_tests at start", test_data)
 
 call logical_test(.true., "logical_test, .true.", test_data)
 
@@ -71,7 +71,7 @@ call real_inequality_test(0.0_RP, 100.0_RP * epsilon(1.0_RP), &
 call real_inequality_test(100.0_RP * epsilon(1.0_RP), 0.0_RP, &
     "real_inequality_test, one zero, one different (2)", test_data)
 
-call integer_equality_test(1_I5, 1_I5, "integer_equality_test", test_data)
+call integer_equality_test(1, 1, "integer_equality_test", test_data)
 
 call string_equality_test("a", "a", "string_equality_test", test_data)
 
@@ -89,9 +89,9 @@ call real_inequality_test(1.0_RP, 1.0_RP, "real_inequality_test, failure", test_
 
 call real_equality_test(10.0_RP, 5.0_RP, "real_equality_test, failure, abs_tol set", test_data_2, abs_tol=4.1_RP)
 
-call integer_equality_test(1_I5, 0_I5, "integer_equality_test, failure (greater)", test_data_2)
+call integer_equality_test(1, 0, "integer_equality_test, failure (greater)", test_data_2)
 
-call integer_equality_test(0_I5, 1_I5, "integer_equality_test, failure (less)", test_data_2)
+call integer_equality_test(0, 1, "integer_equality_test, failure (less)", test_data_2)
 
 call string_equality_test("a", "b", "string_equality_test, failure (greater)", test_data_2)
 
@@ -99,8 +99,8 @@ call string_equality_test("b", "a", "string_equality_test, failure (less)", test
 
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 
-call integer_equality_test(test_data_2%number_of_tests, 9_I5, "correct number of tests expected to fail", test_data)
-call integer_equality_test(test_data_2%number_of_failures, 9_I5, "correct number of tests expected to fail that fail", test_data)
+call integer_equality_test(test_data_2%number_of_tests, 9, "correct number of tests expected to fail", test_data)
+call integer_equality_test(test_data_2%number_of_failures, 9, "correct number of tests expected to fail that fail", test_data)
 
 test_data%number_of_tests    = test_data%number_of_tests + test_data_2%number_of_tests
 test_data%number_of_failures = test_data%number_of_failures + (test_data_2%number_of_tests - test_data_2%number_of_failures)

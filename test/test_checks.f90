@@ -13,14 +13,14 @@ program test_asserts
 
 use asserts, only: is_close, check
 use logging, only: start_log, dict, integer_dict
-use prec, only: I5, RP
+use prec, only: RP
 use unittest, only: start_tests, end_tests, test_type, &
                         logical_test, integer_equality_test
                     
 implicit none
 
-type(test_type)  :: test_data
-integer(kind=I5) :: rc_check
+type(test_type) :: test_data
+integer         :: rc_check
 type(dict), dimension(:), allocatable :: dict_log
 
 character(len=*), parameter :: LOG_FILENAME = "asserts.jsonl"
@@ -102,17 +102,17 @@ call logical_test(.not. is_close(1.0_RP, 0.0_RP, abs_tol=1.0_RP, rel_tol=0.0_RP)
 call logical_test(.not. is_close(1.0_RP, 0.0_RP, abs_tol=0.0_RP, rel_tol=1.0_RP), &
         "is_close, close numbers with set rel_tol, just outside", test_data)
 
-rc_check = 0_I5
+rc_check = 0
 call check(.true., LOG_FILENAME, "check, .true.", rc_check)
-call integer_equality_test(rc_check, 0_I5, "check, .true.", test_data)
+call integer_equality_test(rc_check, 0, "check, .true.", test_data)
 
-rc_check = 0_I5
+rc_check = 0
 call check(.false., LOG_FILENAME, "check, .false.", rc_check)
-call integer_equality_test(rc_check, 1_I5, "check, .false.", test_data)
+call integer_equality_test(rc_check, 1, "check, .false.", test_data)
 
-rc_check = 0_I5
-allocate(dict_log(1_I5))
-call integer_dict("check_integer", 67890, dict_log(1_I5))
+rc_check = 0
+allocate(dict_log(1))
+call integer_dict("check_integer", 67890, dict_log(1))
 call check(.false., LOG_FILENAME, "check, .false., dict_log", rc_check, dict_log=dict_log)
 deallocate(dict_log)
 

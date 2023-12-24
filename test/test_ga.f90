@@ -11,14 +11,14 @@
 
 program test_ga
 
-use prec, only: I5, RP
+use prec, only: RP
 use ga, only: bounds_type, rand_int, rand_uniform, rand_cauchy, clip
 use logging, only: start_log
 use unittest, only: test_type, start_tests, end_tests, integer_equality_test, real_equality_test
 implicit none
 
 type(test_type)   :: test_data
-integer(kind=I5)  :: ri
+integer           :: ri
 real(kind=RP)     :: rr
 type(bounds_type) :: bounds
 
@@ -29,20 +29,20 @@ call start_log(LOG_FILENAME)
 
 ! `rand_int`
 
-ri = rand_int(0_I5, 1_I5, 0.0_RP)
-call integer_equality_test(ri, 0_I5, "rand_int (1)", test_data)
+ri = rand_int(0, 1, 0.0_RP)
+call integer_equality_test(ri, 0, "rand_int (1)", test_data)
 
-ri = rand_int(0_I5, 1_I5, 0.49_RP)
-call integer_equality_test(ri, 0_I5, "rand_int (2)", test_data)
+ri = rand_int(0, 1, 0.49_RP)
+call integer_equality_test(ri, 0, "rand_int (2)", test_data)
 
-ri = rand_int(0_I5, 1_I5, 0.5_RP)
-call integer_equality_test(ri, 1_I5, "rand_int (3)", test_data)
+ri = rand_int(0, 1, 0.5_RP)
+call integer_equality_test(ri, 1, "rand_int (3)", test_data)
 
-ri = rand_int(0_I5, 1_I5, 0.99_RP)
-call integer_equality_test(ri, 1_I5, "rand_int (4)", test_data)
+ri = rand_int(0, 1, 0.99_RP)
+call integer_equality_test(ri, 1, "rand_int (4)", test_data)
 
-ri = rand_int(0_I5, 1_I5, 1.0_RP)
-call integer_equality_test(ri, 1_I5, "rand_int (5)", test_data)
+ri = rand_int(0, 1, 1.0_RP)
+call integer_equality_test(ri, 1, "rand_int (5)", test_data)
 
 ! `rand_uniform`
 

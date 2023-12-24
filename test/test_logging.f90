@@ -11,7 +11,7 @@
 
 program test_asserts
 
-use prec, only: I5, RP
+use prec, only: RP
 use logging, only: start_log, dict, LOG_UNIT, log_message, log_error, integer_dict, real_dict, string_dict
 use unittest, only: test_type, start_tests, end_tests, logical_test, string_equality_test
 implicit none
@@ -37,7 +37,7 @@ call logical_test(.not. unit_opened, "start_log, unit closed after return", test
 call log_message(LOG_FILENAME, "log_message test")
 call log_error(LOG_FILENAME, "log_error test")
 
-allocate(dict_log(0_I5))
+allocate(dict_log(0))
 
 call log_message(LOG_FILENAME, "dict_log(0) test", dict_log=dict_log)
 
@@ -45,30 +45,30 @@ call log_error(LOG_FILENAME, "dict_log(0) test (error)", dict_log=dict_log)
 
 deallocate(dict_log)
 
-allocate(dict_log(1_I5))
+allocate(dict_log(1))
 
-call integer_dict("test_integer", 1234, dict_log(1_I5))
+call integer_dict("test_integer", 1234, dict_log(1))
 call log_message(LOG_FILENAME, "dict_log(1) test", dict_log=dict_log)
 
-call integer_dict("test_integer", 9876, dict_log(1_I5))
+call integer_dict("test_integer", 9876, dict_log(1))
 call log_error(LOG_FILENAME, "dict_log(1) test (error)", dict_log=dict_log)
 
 deallocate(dict_log)
 
-allocate(dict_log(2_I5))
+allocate(dict_log(2))
 
-call integer_dict("test_integer_1", 3456, dict_log(1_I5))
-call integer_dict("test_integer_2", 890, dict_log(2_I5))
+call integer_dict("test_integer_1", 3456, dict_log(1))
+call integer_dict("test_integer_2", 890, dict_log(2))
 call log_message(LOG_FILENAME, "dict_log(2) test", dict_log=dict_log)
 
-call integer_dict("test_integer_1", 987, dict_log(1_I5))
-call integer_dict("test_integer_2", 5432, dict_log(2_I5))
+call integer_dict("test_integer_1", 987, dict_log(1))
+call integer_dict("test_integer_2", 5432, dict_log(2))
 call log_error(LOG_FILENAME, "dict_log(2) test (error)", dict_log=dict_log)
 
 deallocate(dict_log)
 
-call log_message(LOG_FILENAME, "custom rc test", rc=1234_I5)
-call log_error(LOG_FILENAME, "custom rc test (error)", rc=5678_I5)
+call log_message(LOG_FILENAME, "custom rc test", rc=1234)
+call log_error(LOG_FILENAME, "custom rc test (error)", rc=5678)
 
 ! dictionaries
 

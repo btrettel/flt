@@ -11,7 +11,7 @@
 
 module asserts
 
-use prec, only: I5, RP, CL
+use prec, only: RP, CL
 implicit none
 private
 
@@ -63,10 +63,11 @@ subroutine check(condition, log_filename, message, rc, dict_log)
     
     use logging, only: dict, log_error
     
-    logical, intent(in)              :: condition ! condition to check
-    character(len=*), intent(in)     :: log_filename
-    character(len=*), intent(in)     :: message   ! error message to print if `condition` is `.false.`
-    integer(kind=I5), intent(in out) :: rc        ! number of errors encountered
+    logical, intent(in)          :: condition ! condition to check
+    character(len=*), intent(in) :: log_filename
+    character(len=*), intent(in) :: message   ! error message to print if `condition` is `.false.`
+    integer, intent(in out)      :: rc        ! number of errors encountered
+    
     type(dict), optional, intent(in) :: dict_log(:)
     
     if (.not. condition) then
@@ -76,7 +77,7 @@ subroutine check(condition, log_filename, message, rc, dict_log)
             call log_error(log_filename, message)
         end if
         
-        rc = rc + 1_I5
+        rc = rc + 1
     end if
 end subroutine check
 

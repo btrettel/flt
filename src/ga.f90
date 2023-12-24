@@ -13,18 +13,18 @@
 
 module ga
 
-use prec, only: I5, RP
+use prec, only: RP
 implicit none
 private
 
 ! maximum population size
-integer, public, parameter :: MAX_N_POP = 64_I5
+integer, public, parameter :: MAX_N_POP = 64
 
 ! maximum number of genes
-integer, public, parameter :: MAX_N_GENES = 16_I5
+integer, public, parameter :: MAX_N_GENES = 16
 
 ! maximum number of fitness function values
-integer, public, parameter :: MAX_N_FITNESS = 8_I5
+integer, public, parameter :: MAX_N_FITNESS = 8
 
 type, public :: bounds_type
     ! lower and upper bounds
@@ -33,16 +33,16 @@ end type bounds_type
 
 type, public :: ga_config
     real(kind=RP)    :: p_select, p_elite, p_cross, p_mutate, stop_time
-    integer(kind=I5) :: n_gener, n_stall
+    integer :: n_gener, n_stall
     
     ! number of individuals in population
-    integer(kind=I5) :: n_pop
+    integer :: n_pop
     
     ! number of genes actually used
-    integer(kind=I5) :: n_genes
+    integer :: n_genes
     
     ! number of fitness functions actually used
-    integer(kind=I5) :: n_fitness
+    integer :: n_fitness
     
     type(bounds_type) :: bounds(MAX_N_GENES)
 end type ga_config
@@ -70,13 +70,13 @@ public :: initialize
 contains
 
 function rand_int(lower_bound, upper_bound, r)
-    integer(kind=I5), intent(in) :: lower_bound, upper_bound
-    real(kind=RP), intent(in)    :: r
+    integer, intent(in)       :: lower_bound, upper_bound
+    real(kind=RP), intent(in) :: r
     
-    integer(kind=I5) :: rand_int
+    integer :: rand_int
     
-    ! The `min` function makes this not return `upper_bound + 1_I5` when `r = 1.0_RP`.
-    rand_int = min(lower_bound + floor(real(upper_bound + 1_I5 - lower_bound, RP) * r), upper_bound)
+    ! The `min` function makes this not return `upper_bound + 1` when `r = 1.0_RP`.
+    rand_int = min(lower_bound + floor(real(upper_bound + 1 - lower_bound, RP) * r), upper_bound)
 end function rand_int
 
 function rand_uniform(lower_bound, upper_bound, r)
@@ -123,11 +123,11 @@ subroutine initialize(config, pop)
     type(ga_config), intent(in) :: config
     type(pop_type), intent(out) :: pop
     
-    integer(kind=I5) :: i_pop, i_gene
-    real(kind=RP)    :: r
+    integer       :: i_pop, i_gene
+    real(kind=RP) :: r
     
-    do i_pop = 1_I5, config%n_pop
-        do i_gene = 1_I5, config%n_genes
+    do i_pop = 1, config%n_pop
+        do i_gene = 1, config%n_genes
             call random_number(r)
             pop%individuals(i_pop)%chromo(i_gene) = rand_uniform(config%bounds(i_pop)%lower, config%bounds(i_pop)%lower, r)
         end do
@@ -137,7 +137,7 @@ end subroutine initialize
 !subroutine optimize(config, f, best_ever_individual, rc)
 !    type(ga_config), intent(in)        :: config
 !    type(individual_type), intent(out) :: best_ever_individual
-!    integer(kind=I5), intent(out)      :: rc
+!    integer, intent(out)      :: rc
     
 !    interface
 !        function f(x)

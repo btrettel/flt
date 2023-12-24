@@ -11,7 +11,7 @@
 
 module logging
 
-use prec, only: I5, RP, CL
+use prec, only: RP, CL
 implicit none
 private
 
@@ -25,8 +25,8 @@ public :: upcase
 
 private :: r2c
 
-integer(kind=I5), public, parameter :: KL       = 31_I5 ! dictionary key length
-integer(kind=I5), public, parameter :: LOG_UNIT = 10_I5
+integer, public, parameter :: KL       = 31 ! dictionary key length
+integer, public, parameter :: LOG_UNIT = 10
 
 character(len=*), public, parameter :: CHAR_FMT     = "(a)"
 character(len=*), public, parameter :: FULL_INT_FMT = "(i7)"
@@ -54,27 +54,27 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
     ! Write to the log file.
     
     character(len=*), intent(in)           :: log_filename, message
-    integer(kind=I5), optional, intent(in) :: rc
+    integer, optional, intent(in) :: rc
     type(dict), optional, intent(in)       :: dict_log(:)
     logical, optional, intent(in)          :: stdout
     
-    integer(kind=I5)    :: rc_set, i_dict
-    character(len=7_I5) :: rc_string
+    integer          :: rc_set, i_dict
+    character(len=7) :: rc_string
     
     type(dict), allocatable :: dict_set(:)
     logical                 :: stdout_set
     
-    character(len=5_I5)  :: zone
-    integer(kind=I5)     :: values(8_I5)
-    character(len=4_I5)  :: year
-    character(len=2_I5)  :: month, day, hour, minutes, seconds
-    character(len=3_I5)  :: milliseconds
-    character(len=29_I5) :: datetime
+    character(len=5)  :: zone
+    integer           :: values(8)
+    character(len=4)  :: year
+    character(len=2)  :: month, day, hour, minutes, seconds
+    character(len=3)  :: milliseconds
+    character(len=29) :: datetime
     
     if (present(rc)) then
         rc_set = rc
     else
-        rc_set = 0_I5
+        rc_set = 0
     end if
     
     if (present(stdout)) then
@@ -87,7 +87,7 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
         allocate(dict_set(size(dict_log)))
         dict_set = dict_log
     else
-        allocate(dict_set(0_I5)) ! NO FMUTATE
+        allocate(dict_set(0)) ! NO FMUTATE
     end if
     
     ! ISO 8601 date-time format.
@@ -95,16 +95,16 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
     
     call date_and_time(zone=zone, values=values)
     
-    write(unit=year, fmt="(i4.4)") values(1_I5)
-    write(unit=month, fmt="(i2.2)") values(2_I5)
-    write(unit=day, fmt="(i2.2)") values(3_I5)
-    write(unit=hour, fmt="(i2.2)") values(5_I5)
-    write(unit=minutes, fmt="(i2.2)") values(6_I5)
-    write(unit=seconds, fmt="(i2.2)") values(7_I5)
-    write(unit=milliseconds, fmt="(i3.3)") values(8_I5)
+    write(unit=year, fmt="(i4.4)") values(1)
+    write(unit=month, fmt="(i2.2)") values(2)
+    write(unit=day, fmt="(i2.2)") values(3)
+    write(unit=hour, fmt="(i2.2)") values(5)
+    write(unit=minutes, fmt="(i2.2)") values(6)
+    write(unit=seconds, fmt="(i2.2)") values(7)
+    write(unit=milliseconds, fmt="(i3.3)") values(8)
     
     datetime = year // "-" // month // "-" // day // "T" // hour // ":" // minutes // ":" // seconds // &
-                "." // milliseconds // zone(1_I5:3_I5) // ":" // zone(4_I5:5_I5)
+                "." // milliseconds // zone(1:3) // ":" // zone(4:5)
     
     write(unit=rc_string, fmt="(i7)") rc_set
     
@@ -119,7 +119,7 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
     write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") message
     write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '"'
     
-    do i_dict = 1_I5, size(dict_set)
+    do i_dict = 1, size(dict_set)
         write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") ", "
         
         write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '"' // trim(adjustl(dict_set(i_dict)%k)) // '": '
@@ -133,7 +133,7 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
     if (stdout_set) then
         write(unit=*, fmt=CHAR_FMT) message ! NO COMMENT FMUTATE
         
-        do i_dict = 1_I5, size(dict_set) ! NO FMUTATE
+        do i_dict = 1, size(dict_set) ! NO FMUTATE
             write(unit=*, fmt=CHAR_FMT, advance="no") trim(adjustl(dict_set(i_dict)%k)) // " = " ! NO COMMENT FMUTATE
             write(unit=*, fmt=CHAR_FMT) trim(adjustl(dict_set(i_dict)%v)) ! NO COMMENT FMUTATE
         end do
@@ -143,16 +143,16 @@ subroutine log_message(log_filename, message, rc, dict_log, stdout)
 end subroutine log_message
 
 subroutine log_error(log_filename, message, rc, dict_log)
-    character(len=*), intent(in)           :: log_filename, message
-    integer(kind=I5), optional, intent(in) :: rc
-    type(dict), optional, intent(in)       :: dict_log(:)
+    character(len=*), intent(in)     :: log_filename, message
+    integer, optional, intent(in)    :: rc
+    type(dict), optional, intent(in) :: dict_log(:)
     
-    integer(kind=I5) :: rc_set
+    integer :: rc_set
     
     if (present(rc)) then
         rc_set = rc
     else
-        rc_set = 1_I5
+        rc_set = 1
     end if
     
     if (present(dict_log)) then
@@ -165,11 +165,11 @@ end subroutine log_error
 pure function r2c(x)
     real(kind=RP), intent(in) :: x
     
-    character(len=41_I5) :: r2c, r2c_before ! large enough to handle quad precision
+    character(len=41) :: r2c, r2c_before ! large enough to handle quad precision
     
-    integer(kind=I5)     :: prec
-    character(len=2_I5)  :: prec_string, len_string
-    character(len=11_I5) :: full_prec_fmt
+    integer           :: prec
+    character(len=2)  :: prec_string, len_string
+    character(len=11) :: full_prec_fmt
     
     ! es15.8:
     ! 2.00000000E+00
@@ -183,7 +183,7 @@ pure function r2c(x)
     
     prec = precision(1.0_RP) ! NO FMUTATE
     write(unit=prec_string, fmt="(i2)") prec
-    write(unit=len_string, fmt="(i2)") prec + 7_I5
+    write(unit=len_string, fmt="(i2)") prec + 7
     
     full_prec_fmt = "(es" // len_string // "." // prec_string // "e2)"
     
@@ -199,11 +199,11 @@ pure function upcase(string)
     
     character(len=len(string)) :: upcase
     
-    integer(kind=I5) :: j
+    integer :: j
     
-    do j = 1_I5, len(string)
+    do j = 1, len(string)
         if(string(j:j) >= "a" .and. string(j:j) <= "z") then
-            upcase(j:j) = achar(iachar(string(j:j)) - 32_I5)
+            upcase(j:j) = achar(iachar(string(j:j)) - 32)
         else
             upcase(j:j) = string(j:j)
         end if
@@ -221,7 +221,7 @@ end subroutine real_dict
 
 pure subroutine integer_dict(key, integer_in, dict_out)
     character(len=*), intent(in) :: key
-    integer(kind=I5), intent(in) :: integer_in
+    integer, intent(in) :: integer_in
     type(dict), intent(out)      :: dict_out
     
     character(len=CL) :: integer_char
