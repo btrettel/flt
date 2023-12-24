@@ -204,7 +204,7 @@ subroutine integer_greater_equal_test(test_integer, lower_integer, message, test
     type(test_type), intent(in out) :: test_data
     
     logical    :: test_passes
-    type(dict) :: dict_log(3)
+    type(dict) :: dict_log(2)
     
     call integer_dict("integer returned", test_integer, dict_log(1))
     call integer_dict("lower integer", lower_integer, dict_log(2))

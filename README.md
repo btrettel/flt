@@ -20,10 +20,6 @@ flt is intended only for my own use. Certain parts (like fmutate in particular) 
 
 General code cleanup:
 
-- Don't use `_I5` as the default in Fortran 2008 is `_I5`.
-- Add test to make sure that `RP` meet requirement.
-- Get test_prec.f90 working so that the Python tests pass.
-    - Fix prec.jsonl so that the junk fields aren't present, which I think is related to use of `I5` in `dict_log`.
 - change `write(unit=*, fmt=*)` to `write(*, *)`?
 - construct names for `do` loops and `if` statements
 

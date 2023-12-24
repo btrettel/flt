@@ -221,7 +221,7 @@ end subroutine real_dict
 
 pure subroutine integer_dict(key, integer_in, dict_out)
     character(len=*), intent(in) :: key
-    integer, intent(in) :: integer_in
+    integer, intent(in)          :: integer_in
     type(dict), intent(out)      :: dict_out
     
     character(len=CL) :: integer_char

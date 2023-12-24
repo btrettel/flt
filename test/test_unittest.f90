@@ -14,12 +14,14 @@ program test_unittest
 use logging, only: start_log
 use prec, only: RP
 use unittest, only: test_type, start_tests, end_tests, &
-                    logical_test, real_equality_test, real_inequality_test, integer_equality_test, string_equality_test
+                    logical_test, real_equality_test, real_inequality_test, integer_equality_test, string_equality_test, &
+                    integer_greater_equal_test
 implicit none
 
 type(test_type) :: test_data, test_data_2
 
 character(len=*), parameter :: LOG_FILENAME = "unittest.jsonl"
+integer, parameter          :: N_FAILING    = 10
 
 call start_tests(LOG_FILENAME, test_data)
 call start_tests(LOG_FILENAME, test_data_2) ! These are for tests which should fail.
@@ -77,6 +79,10 @@ call string_equality_test("a", "a", "string_equality_test", test_data)
 
 call real_equality_test(10.0_RP, 5.0_RP, "real_equality_test, large abs_tol set", test_data, abs_tol=5.1_RP)
 
+call integer_greater_equal_test(2, 1, "integer_greater_equal_test, greater", test_data)
+
+call integer_greater_equal_test(2, 2, "integer_greater_equal_test, equal", test_data)
+
 ! tests which should fail
 
 call logical_test(.false., "logical_test, failure", test_data_2)
@@ -97,10 +103,13 @@ call string_equality_test("a", "b", "string_equality_test, failure (greater)", t
 
 call string_equality_test("b", "a", "string_equality_test, failure (less)", test_data_2)
 
+call integer_greater_equal_test(1, 2, "integer_greater_equal_test, failure", test_data_2)
+
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 
-call integer_equality_test(test_data_2%number_of_tests, 9, "correct number of tests expected to fail", test_data)
-call integer_equality_test(test_data_2%number_of_failures, 9, "correct number of tests expected to fail that fail", test_data)
+call integer_equality_test(test_data_2%number_of_tests, N_FAILING, "correct number of tests expected to fail", test_data)
+call integer_equality_test(test_data_2%number_of_failures, N_FAILING, &
+                                "correct number of tests expected to fail that fail", test_data)
 
 test_data%number_of_tests    = test_data%number_of_tests + test_data_2%number_of_tests
 test_data%number_of_failures = test_data%number_of_failures + (test_data_2%number_of_tests - test_data_2%number_of_failures)
