@@ -121,6 +121,4 @@ call real_equality_test(rr, 1.0_RP, "clip (above)", test_data)
 
 call end_tests(test_data)
 
-stop
-
 end program test_ga

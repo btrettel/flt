@@ -116,6 +116,4 @@ test_data%number_of_failures = test_data%number_of_failures + (test_data_2%numbe
 
 call end_tests(test_data)
 
-stop
-
 end program test_unittest

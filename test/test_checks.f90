@@ -118,6 +118,4 @@ deallocate(dict_log)
 
 call end_tests(test_data)
 
-stop
-
 end program test_asserts

@@ -59,6 +59,4 @@ write(unit=*, fmt=*) rc_types
 
 call end_tests(test_data)
 
-stop
-
 end program test_dimmod

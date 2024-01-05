@@ -90,6 +90,4 @@ call logical_test(test_passes, "dict, string, value", test_data)
 
 call end_tests(test_data)
 
-stop
-
 end program test_asserts

@@ -33,6 +33,4 @@ call real_equality_test(3.141592653589793_RP, PI, "PI value", test_data)
 
 call end_tests(test_data)
 
-stop
-
 end program test_asserts

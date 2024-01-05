@@ -71,11 +71,13 @@ all:
 clean:
 	$(RM) *.jsonl *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) $(SUNF95RM)
 
+# TODO: `.f90$(OBJEXT):`
+
 .f90$(DBGOBJEXT):
 	$(FC) $(OBJFLAGS)$@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: asserts.jsonl dimmod.jsonl ga.jsonl logging.jsonl prec.jsonl unittest.jsonl
+test: asserts.jsonl dimmod.jsonl ga.jsonl logging.jsonl prec.jsonl rngmod.jsonl unittest.jsonl
 	@echo "*********************"
 	@echo "* All tests passed. *"
 	@echo "*********************"
@@ -103,6 +105,11 @@ sunf95:
 flang-7:
 	$(MAKE) test FC=flang-7 FFLAGS='-Wdeprecated' DBGFLAGS='-g'
 
+# Doesn't work yet.
+#.PHONY: ftn95
+#ftn95:
+#	$(MAKE) test FC="wine ftn95" FFLAGS='/link /iso /restrict_syntax /errorlog' DBGFLAGS='/checkmate' OFLAG='' OBJEXT='obj' OBJFLAGS='' DBGOBJEXT='.obj'
+
 ################
 # Dependencies #
 ################
@@ -114,6 +121,8 @@ src/dimmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 src/logging$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
+
+src/rngmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
@@ -170,7 +179,7 @@ test_logging$(BINEXT): $(TEST_LOGGING_DEPS)
 	$(FC) $(OFLAG)test_logging$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_LOGGING_DEPS)
 
 logging.jsonl: test_logging$(BINEXT)
-	-$(RUN)test_logging$(BINEXT)
+	$(RUN)test_logging$(BINEXT)
 	python3 test/passed.py $@
 	python3 test/test_logging.py
 	test ! -e fort.*
@@ -185,19 +194,32 @@ test_prec$(BINEXT): $(TEST_PREC_DEPS)
 	$(FC) $(OFLAG)test_prec$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_PREC_DEPS)
 
 prec.jsonl: test_prec$(BINEXT)
-	-$(RUN)test_prec$(BINEXT)
+	$(RUN)test_prec$(BINEXT)
 	python3 test/passed.py $@
 	test ! -e fort.*
+
+##########
+# rngmod #
+##########
+
+TEST_RNGMOD_DEPS = src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/rngmod$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_rngmod.f90
+
+test_rngmod$(BINEXT): $(TEST_RNGMOD_DEPS)
+	$(FC) $(OFLAG)test_rngmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_RNGMOD_DEPS)
+
+rngmod.jsonl: test_rngmod$(BINEXT)
+	$(RUN)test_rngmod$(BINEXT)
+	python3 test/passed.py $@
 	test ! -e fort.*
 
 ############
 # unittest #
 ############
 
-TEST_unittest_DEPS = src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unittest.f90
+TEST_UNITTEST_DEPS = src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unittest.f90
 
-test_unittest$(BINEXT): $(TEST_unittest_DEPS)
-	$(FC) $(OFLAG)test_unittest$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_unittest_DEPS)
+test_unittest$(BINEXT): $(TEST_UNITTEST_DEPS)
+	$(FC) $(OFLAG)test_unittest$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_UNITTEST_DEPS)
 
 unittest.jsonl: test_unittest$(BINEXT)
 	$(RUN)test_unittest$(BINEXT)

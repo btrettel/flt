@@ -208,3 +208,4 @@ cython_debug/
 modtable.txt
 *.jsonl
 test_*
+!test_*.f90
