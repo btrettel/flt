@@ -17,23 +17,14 @@ use prec, only: RP
 implicit none
 private
 
-! maximum population size
-integer, public, parameter :: MAX_N_POP = 64
-
-! maximum number of genes
-integer, public, parameter :: MAX_N_GENES = 16
-
-! maximum number of fitness function values
-integer, public, parameter :: MAX_N_FITNESS = 8
-
 type, public :: bounds_type
     ! lower and upper bounds
     real(kind=RP) :: lower, upper
 end type bounds_type
 
 type, public :: ga_config
-    real(kind=RP)    :: p_select, p_elite, p_cross, p_mutate, stop_time
-    integer :: n_gener, n_stall
+    real(kind=RP) :: p_select, p_cross, p_mutate, stop_time
+    integer       :: n_gener, n_stall
     
     ! number of individuals in population
     integer :: n_pop
@@ -44,21 +35,21 @@ type, public :: ga_config
     ! number of fitness functions actually used
     integer :: n_fitness
     
-    type(bounds_type) :: bounds(MAX_N_GENES)
+    type(bounds_type), allocatable :: bounds(:)
 end type ga_config
 
 type, public :: individual_type
-    real(kind=RP) :: chromo(MAX_N_GENES)
+    real(kind=RP), allocatable :: chromo(:)
     
     ! whether the quality function(s) has/have been set
     logical :: set
     
     ! quality function values
-    real(kind=RP) :: fitness(MAX_N_FITNESS)
+    real(kind=RP), allocatable :: fitness(:)
 end type individual_type
 
 type, public :: pop_type
-    type(individual_type) :: individuals(MAX_N_POP)
+    type(individual_type), allocatable :: individuals(:)
     
     type(individual_type) :: best_pop_individual, best_ever_individual
 end type pop_type
@@ -69,44 +60,39 @@ public :: initialize
 
 contains
 
-function rand_int(lower_bound, upper_bound, r)
+function rand_int(lower_bound, upper_bound, nu)
     integer, intent(in)       :: lower_bound, upper_bound
-    real(kind=RP), intent(in) :: r
+    real(kind=RP), intent(in) :: nu
     
     integer :: rand_int
     
     ! The `min` function makes this not return `upper_bound + 1` when `r = 1.0_RP`.
-    rand_int = min(lower_bound + floor(real(upper_bound + 1 - lower_bound, RP) * r), upper_bound)
+    rand_int = min(lower_bound + floor(real(upper_bound + 1 - lower_bound, RP) * nu), upper_bound)
 end function rand_int
 
-function rand_uniform(lower_bound, upper_bound, r)
+function rand_uniform(lower_bound, upper_bound, nu)
     ! Returns a uniform random variable.
     
-    real(kind=RP), intent(in) :: lower_bound, upper_bound, r
+    real(kind=RP), intent(in) :: lower_bound, upper_bound, nu
     
     real(kind=RP) :: rand_uniform
     
-    rand_uniform = lower_bound + (upper_bound - lower_bound) * r
+    rand_uniform = lower_bound + (upper_bound - lower_bound) * nu
 end function rand_uniform
 
-function rand_cauchy(m, b, r)
+function rand_cauchy(m, b, nu)
     ! Returns a Cauchy random variable with inverse transform sampling.
     ! Notation follows <https://mathworld.wolfram.com/CauchyDistribution.html>.
     
     use prec, only: PI
     
-    ! median
-    real(kind=RP), intent(in) :: m
-    
-    ! half width
-    real(kind=RP), intent(in) :: b
-    
-    ! random CDF value for inverse sampling
-    real(kind=RP), intent(in) :: r
+    real(kind=RP), intent(in) :: m ! median
+    real(kind=RP), intent(in) :: b ! half width
+    real(kind=RP), intent(in) :: nu ! random CDF value for inverse sampling
     
     real(kind=RP) :: rand_cauchy
     
-    rand_cauchy = m + b * tan(PI * (r - 0.5_RP))
+    rand_cauchy = m + b * tan(PI * (nu - 0.5_RP))
 end function rand_cauchy
 
 pure subroutine clip(bounds, x)
@@ -124,12 +110,12 @@ subroutine initialize(config, pop)
     type(pop_type), intent(out) :: pop
     
     integer       :: i_pop, i_gene
-    real(kind=RP) :: r
+    real(kind=RP) :: nu
     
     do i_pop = 1, config%n_pop
         do i_gene = 1, config%n_genes
-            call random_number(r)
-            pop%individuals(i_pop)%chromo(i_gene) = rand_uniform(config%bounds(i_pop)%lower, config%bounds(i_pop)%lower, r)
+            call random_number(nu)
+            pop%individuals(i_pop)%chromo(i_gene) = rand_uniform(config%bounds(i_pop)%lower, config%bounds(i_pop)%lower, nu)
         end do
     end do
 end subroutine initialize
@@ -137,7 +123,7 @@ end subroutine initialize
 !subroutine optimize(config, f, best_ever_individual, rc)
 !    type(ga_config), intent(in)        :: config
 !    type(individual_type), intent(out) :: best_ever_individual
-!    integer, intent(out)      :: rc
+!    integer, intent(out)               :: rc
     
 !    interface
 !        function f(x)
@@ -146,9 +132,6 @@ end subroutine initialize
 !            real(kind=RP)                     :: f(:)
 !        end function fun
 !    end interface
-!    ! TODO: Check that `config%n_pop < MAX_N_POP`.
-!    ! TODO: Check that `config%n_genes < MAX_N_GENES`.
-!    ! TODO: Check that `config%n_fitness < MAX_N_GENES`.
 !end subroutine optimize
 
 end module ga

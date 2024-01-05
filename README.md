@@ -8,7 +8,7 @@ Misc. Fortran libraries and tools (all at various stages of development):
 - prec.f90: Module to set precisions, lengths, and mathematical constants.
 - unittest.f90: Module for unit testing procedures.
 
-flt is intended only for my own use. Certain parts (like fmutate in particular) are brittle and will only work for my own particular coding style.
+flt is intended only for my own use. Certain parts (like fmut in particular) are brittle and will only work for my own particular coding style.
 
 ## Goals
 
@@ -32,6 +32,11 @@ New modules and tools:
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
 - fmut: A primitive mutation tester for Fortran, written in Fortran. (A functional prototype written in Python is complete, but too sloppy for me to release.)
     - Run fmut on flt to spot gaps in the tests.
+    - Make fmut distinguish between compilation errors and test failures
+    - Mutate `function` return values.
+    - Mutate subroutine `intent(out)` and `intent(in out)` values.
+    - Pass in arrays of the wrong sizes to procedures to see if that's detected.
+    - Thought after skimming horner_method_2021: Code coverage misses equation terms. A mutation tester which deletes random equation terms could be useful.
 - logging.f90
     - Test `stdout` optional argument.
     - Add `box_print` and other non-structured logging for the most important messages that I don't want to miss.
