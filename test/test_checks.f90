@@ -23,7 +23,7 @@ type(test_type) :: test_data
 integer         :: rc_check
 type(dict), dimension(:), allocatable :: dict_log
 
-character(len=*), parameter :: LOG_FILENAME = "asserts.jsonl"
+character(len=*), parameter :: LOG_FILENAME = "checks.jsonl"
 
 call start_tests(LOG_FILENAME, test_data)
 call start_log(LOG_FILENAME)

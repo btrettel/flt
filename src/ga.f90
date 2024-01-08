@@ -14,6 +14,7 @@
 module ga
 
 use prec, only: RP
+use rngmod, only: determ, pseudo
 implicit none
 private
 

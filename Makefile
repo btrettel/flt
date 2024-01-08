@@ -1,7 +1,7 @@
 # # $File$
 # 
 # Summary: Makefile for all components of flt, including tests
-# Standard: POSIX
+# Standard: POSIX (tested on GNU Make and bmake)
 # Preprocessor: none
 # Author: Ben Trettel (<http://trettel.us/>)
 # Last updated: $Date$
@@ -9,6 +9,7 @@
 # Project: [flt](https://github.com/btrettel/flt)
 # License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
+# TODO: Figure out how to automate parts like `test/test_ga.f90` in `test_ga$(BINEXT):`
 # TODO: nvfortran to replace flang-7. <https://docs.nvidia.com/hpc-sdk//index.html>
 # TODO: lfortran
 # TODO: Add code coverage.
@@ -37,9 +38,9 @@ DBGFLAGS  = -Og -g -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow,unde
 BINEXT    = 
 RUN       = ./
 RM        = rm -rfv
-OFLAG     = -o 
+OFLAG     = -o
 OBJEXT    = o
-OBJFLAGS  = -c -o 
+OBJFLAGS  = -c -o
 DBGOBJEXT = -dbg.$(OBJEXT)
 
 SUNF95RM = *.dbg
@@ -74,10 +75,10 @@ clean:
 # TODO: `.f90$(OBJEXT):`
 
 .f90$(DBGOBJEXT):
-	$(FC) $(OBJFLAGS)$@ $(FFLAGS) $(DBGFLAGS) $<
+	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: asserts.jsonl dimmod.jsonl ga.jsonl logging.jsonl prec.jsonl rngmod.jsonl unittest.jsonl
+test: checks.jsonl dimmod.jsonl ga.jsonl logging.jsonl prec.jsonl rngmod.jsonl unittest.jsonl
 	@echo "*********************"
 	@echo "* All tests passed. *"
 	@echo "*********************"
@@ -118,6 +119,8 @@ src/checks$(DBGOBJEXT): src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/dimmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
+src/ga$(DBGOBJEXT): src/prec$(DBGOBJEXT) src/rngmod$(DBGOBJEXT)
+
 src/logging$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
@@ -130,12 +133,10 @@ src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/pre
 # checks #
 ##########
 
-TEST_CHECKS_DEPS = src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_checks.f90
+test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_checks.f90
 
-test_checks$(BINEXT): $(TEST_CHECKS_DEPS)
-	$(FC) $(OFLAG)test_checks$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_CHECKS_DEPS)
-
-asserts.jsonl: test_checks$(BINEXT)
+checks.jsonl: test_checks$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
 	python3 test/passed.py $@
 	python3 test/test_checks.py
@@ -145,10 +146,8 @@ asserts.jsonl: test_checks$(BINEXT)
 # dimcheck #
 ############
 
-TEST_DIMMOD_DEPS = src/checks$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_dimmod.f90
-
-test_dimmod$(BINEXT): $(TEST_DIMMOD_DEPS)
-	$(FC) $(OFLAG)test_dimmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_DIMMOD_DEPS)
+test_dimmod$(BINEXT): src/dimmod$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_dimmod.f90
 
 dimmod.jsonl: test_dimmod$(BINEXT)
 	$(RUN)test_dimmod$(BINEXT)
@@ -159,10 +158,8 @@ dimmod.jsonl: test_dimmod$(BINEXT)
 # ga #
 ######
 
-TEST_GA_DEPS = src/checks$(DBGOBJEXT) src/ga$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_ga.f90
-
-test_ga$(BINEXT): $(TEST_GA_DEPS)
-	$(FC) $(OFLAG)test_ga$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_GA_DEPS)
+test_ga$(BINEXT): src/ga$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_ga.f90
 
 ga.jsonl: test_ga$(BINEXT)
 	$(RUN)test_ga$(BINEXT)
@@ -173,10 +170,8 @@ ga.jsonl: test_ga$(BINEXT)
 # logging #
 ###########
 
-TEST_LOGGING_DEPS = src/checks$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_logging.f90
-
-test_logging$(BINEXT): $(TEST_LOGGING_DEPS)
-	$(FC) $(OFLAG)test_logging$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_LOGGING_DEPS)
+test_logging$(BINEXT): src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_logging.f90
 
 logging.jsonl: test_logging$(BINEXT)
 	$(RUN)test_logging$(BINEXT)
@@ -188,10 +183,8 @@ logging.jsonl: test_logging$(BINEXT)
 # prec #
 ########
 
-TEST_PREC_DEPS = src/checks$(DBGOBJEXT) src/dimmod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
-
-test_prec$(BINEXT): $(TEST_PREC_DEPS)
-	$(FC) $(OFLAG)test_prec$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_PREC_DEPS)
+test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_prec.f90
 
 prec.jsonl: test_prec$(BINEXT)
 	$(RUN)test_prec$(BINEXT)
@@ -202,10 +195,8 @@ prec.jsonl: test_prec$(BINEXT)
 # rngmod #
 ##########
 
-TEST_RNGMOD_DEPS = src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/rngmod$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_rngmod.f90
-
-test_rngmod$(BINEXT): $(TEST_RNGMOD_DEPS)
-	$(FC) $(OFLAG)test_rngmod$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_RNGMOD_DEPS)
+test_rngmod$(BINEXT): src/rngmod$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_rngmod.f90
 
 rngmod.jsonl: test_rngmod$(BINEXT)
 	$(RUN)test_rngmod$(BINEXT)
@@ -216,10 +207,8 @@ rngmod.jsonl: test_rngmod$(BINEXT)
 # unittest #
 ############
 
-TEST_UNITTEST_DEPS = src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unittest.f90
-
-test_unittest$(BINEXT): $(TEST_UNITTEST_DEPS)
-	$(FC) $(OFLAG)test_unittest$(BINEXT) $(FFLAGS) $(DBGFLAGS) $(TEST_UNITTEST_DEPS)
+test_unittest$(BINEXT): src/unittest$(DBGOBJEXT)
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unittest.f90
 
 unittest.jsonl: test_unittest$(BINEXT)
 	$(RUN)test_unittest$(BINEXT)
