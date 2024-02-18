@@ -29,24 +29,34 @@ private :: current_time
 
 character(len=70), private, parameter :: LONG_LINE = "----------------------------------------------------------------------"
 
-type, public :: test_type
-    integer  :: number_of_failures
-    integer  :: number_of_tests
+type, public :: test_results_type
+    integer           :: number_of_failures
+    integer           :: number_of_tests
     real(kind=RP)     :: start_time
     real(kind=RP)     :: end_time
-    character(len=CL) :: log_filename ! filename to write log to
-end type test_type
+    character(len=CL) :: log_filename
+contains
+    procedure :: logical_test => logical_test
+    procedure :: real_equality_test => real_equality_test
+    procedure :: real_inequality_test => real_inequality_test
+    procedure :: integer_equality_test => integer_equality_test
+    procedure :: integer_greater_equal_test => integer_greater_equal_test
+    procedure :: string_equality_test => string_equality_test
+    procedure :: start_tests => start_tests
+    procedure :: end_tests => end_tests
+end type test_results_type
 
 contains
 
-subroutine logical_test(condition, message, test_data, dict_log)
+subroutine logical_test(this, condition, message, dict_log)
     ! Check whether test `condition` is `.true.`, increase `number_of_failures` if `.false.`.
     
     use logging, only: CHAR_FMT, dict, log_message, integer_dict, string_dict
     
+    class(test_results_type), intent(in out) :: this
+    
     logical, intent(in)              :: condition
     character(len=*), intent(in)     :: message
-    type(test_type), intent(in out)  :: test_data
     type(dict), intent(in), optional :: dict_log(:)
     
     type(dict), allocatable :: dict_set(:)
@@ -62,33 +72,34 @@ subroutine logical_test(condition, message, test_data, dict_log)
         allocate(dict_set(3))
     end if
     
-    test_data%number_of_tests = test_data%number_of_tests + 1
+    this%number_of_tests = this%number_of_tests + 1
     
     call string_dict("type", "test", dict_set(1))
-    call integer_dict("cumulative tests", test_data%number_of_tests, dict_set(2))
+    call integer_dict("cumulative tests", this%number_of_tests, dict_set(2))
     
     if (condition) then
-        call integer_dict("cumulative failures", test_data%number_of_failures, dict_set(3))
-        call log_message(test_data%log_filename, "pass: " // message, dict_log=dict_set)
+        call integer_dict("cumulative failures", this%number_of_failures, dict_set(3))
+        call log_message(this%log_filename, "pass: " // message, dict_log=dict_set)
     else
-        test_data%number_of_failures = test_data%number_of_failures + 1
-        call integer_dict("cumulative failures", test_data%number_of_failures, dict_set(3))
-        call log_message(test_data%log_filename, "fail: " // message, rc=1, dict_log=dict_set)
+        this%number_of_failures = this%number_of_failures + 1
+        call integer_dict("cumulative failures", this%number_of_failures, dict_set(3))
+        call log_message(this%log_filename, "fail: " // message, rc=1, dict_log=dict_set)
         
         write(unit=*, fmt=CHAR_FMT) "fail: " // message ! NO COMMENT FMUTATE
         write(unit=*, fmt=CHAR_FMT) ! NO COMMENT FMUTATE
     end if
 end subroutine logical_test
 
-subroutine real_equality_test(returned_real, expected_real, message, test_data, abs_tol)
+subroutine real_equality_test(this, returned_real, expected_real, message, abs_tol)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
     use asserts, only: TOL_FACTOR, check, is_close
     use logging, only: dict, log_message, real_dict
     
+    class(test_results_type), intent(in out) :: this
+    
     real(kind=RP), intent(in)           :: returned_real, expected_real
     character(len=*), intent(in)        :: message
-    type(test_type), intent(in out)     :: test_data
     real(kind=RP), intent(in), optional :: abs_tol
     
     real(kind=RP) :: abs_tol_set, abs_diff
@@ -121,13 +132,13 @@ subroutine real_equality_test(returned_real, expected_real, message, test_data, 
         write(unit=*, fmt="(a, es15.8)") "    tolerance = ", abs_tol_set ! NO COMMENT FMUTATE
     end if ! NO COMMENT FMUTATE
     
-    call logical_test(test_passes, message, test_data, dict_log=dict_log)
+    call this%logical_test(test_passes, message, dict_log=dict_log)
     
-    call check(abs_diff >= 0.0_RP, test_data%log_filename, & ! NO FMUTATE
-                "real_equality_test, abs_diff < 0", test_data%number_of_failures) ! NO FMUTATE
+    call check(abs_diff >= 0.0_RP, this%log_filename, & ! NO FMUTATE
+                "real_equality_test, abs_diff < 0", this%number_of_failures) ! NO FMUTATE
 end subroutine real_equality_test
 
-subroutine real_inequality_test(returned_real, expected_real, message, test_data)
+subroutine real_inequality_test(this, returned_real, expected_real, message)
     ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
     
     use asserts, only: check, is_close
@@ -135,7 +146,8 @@ subroutine real_inequality_test(returned_real, expected_real, message, test_data
     
     real(kind=RP), intent(in)       :: returned_real, expected_real
     character(len=*), intent(in)    :: message
-    type(test_type), intent(in out) :: test_data
+    
+    class(test_results_type), intent(in out) :: this
     
     real(kind=RP) :: abs_diff
     logical       :: test_passes
@@ -161,20 +173,21 @@ subroutine real_inequality_test(returned_real, expected_real, message, test_data
         !write(unit=*, fmt="(a, es15.8)") "    tolerance = ", abs_tol_set
     end if
     
-    call logical_test(test_passes, message, test_data, dict_log=dict_log)
+    call this%logical_test(test_passes, message, dict_log=dict_log)
     
-    call check(abs_diff >= 0.0_RP, test_data%log_filename, & ! NO FMUTATE
-                "real_inequality_test, abs_diff < 0", test_data%number_of_failures) ! NO FMUTATE
+    call check(abs_diff >= 0.0_RP, this%log_filename, & ! NO FMUTATE
+                "real_inequality_test, abs_diff < 0", this%number_of_failures) ! NO FMUTATE
 end subroutine real_inequality_test
 
-subroutine integer_equality_test(actual_integer, expected_integer, message, test_data)
+subroutine integer_equality_test(this, actual_integer, expected_integer, message)
     ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.
     
     use logging, only: dict, log_message, integer_dict
     
     integer, intent(in)             :: actual_integer, expected_integer
     character(len=*), intent(in)    :: message
-    type(test_type), intent(in out) :: test_data
+    
+    class(test_results_type), intent(in out) :: this
     
     logical    :: test_passes
     type(dict) :: dict_log(3)
@@ -191,17 +204,18 @@ subroutine integer_equality_test(actual_integer, expected_integer, message, test
         write(unit=*, fmt="(a, i7)") "      difference = ", abs(actual_integer - expected_integer) ! NO FMUTATE
     end if
     
-    call logical_test(test_passes, message, test_data, dict_log=dict_log)
+    call this%logical_test(test_passes, message, dict_log=dict_log)
 end subroutine integer_equality_test
 
-subroutine integer_greater_equal_test(test_integer, lower_integer, message, test_data)
+subroutine integer_greater_equal_test(this, test_integer, lower_integer, message)
     ! Check whether one integer is greater than the other, increase `number_of_failures` if `.false.`.
     
     use logging, only: dict, log_message, integer_dict
     
     integer, intent(in)             :: test_integer, lower_integer
     character(len=*), intent(in)    :: message
-    type(test_type), intent(in out) :: test_data
+    
+    class(test_results_type), intent(in out) :: this
     
     logical    :: test_passes
     type(dict) :: dict_log(2)
@@ -216,17 +230,18 @@ subroutine integer_greater_equal_test(test_integer, lower_integer, message, test
         write(unit=*, fmt="(a, i7)") "  not >= integer = ", lower_integer ! NO COMMENT FMUTATE
     end if
     
-    call logical_test(test_passes, message, test_data, dict_log=dict_log)
+    call this%logical_test(test_passes, message, dict_log=dict_log)
 end subroutine integer_greater_equal_test
 
-subroutine string_equality_test(actual_string, expected_string, message, test_data)
+subroutine string_equality_test(this, actual_string, expected_string, message)
     ! Check whether two strings are identical, increase `number_of_failures` if `.false.`.
     
     use logging, only: CHAR_FMT, dict, log_message, string_dict
     
-    character(len=*), intent(in)    :: actual_string, expected_string
-    character(len=*), intent(in)    :: message
-    type(test_type), intent(in out) :: test_data
+    class(test_results_type), intent(in out) :: this
+    
+    character(len=*), intent(in) :: actual_string, expected_string
+    character(len=*), intent(in) :: message
     
     logical    :: test_passes
     type(dict) :: dict_log(2)
@@ -241,7 +256,7 @@ subroutine string_equality_test(actual_string, expected_string, message, test_da
         write(unit=*, fmt=CHAR_FMT) "string expected = " // trim(adjustl(expected_string)) ! NO COMMENT FMUTATE
     end if
     
-    call logical_test(test_passes, message, test_data, dict_log=dict_log)
+    call this%logical_test(test_passes, message, dict_log=dict_log)
 end subroutine string_equality_test
 
 function current_time()
@@ -255,43 +270,44 @@ function current_time()
     return
 end function current_time
 
-subroutine start_tests(log_filename, test_data)
-    character(len=*), intent(in) :: log_filename
-    type(test_type), intent(out) :: test_data
+subroutine start_tests(this, log_filename)
+    class(test_results_type), intent(out) :: this
     
-    test_data%number_of_failures = 0
-    test_data%number_of_tests    = 0
-    test_data%start_time         = current_time()
-    test_data%log_filename       = log_filename
+    character(len=*), intent(in) :: log_filename
+    
+    this%number_of_failures = 0
+    this%number_of_tests    = 0
+    this%start_time         = current_time()
+    this%log_filename       = log_filename
 end subroutine start_tests
 
-subroutine end_tests(test_data)
+subroutine end_tests(this)
     use prec, only: CL
     use logging, only: CHAR_FMT, dict, log_message, log_error, real_dict, integer_dict
     
-    type(test_type), intent(in out) :: test_data
+    class(test_results_type), intent(in out) :: this
     
     character(len=CL) :: out_string
     real(kind=RP)     :: test_duration ! in seconds
     type(dict)        :: dict_log(3)
     
-    test_data%end_time = current_time()
-    test_duration      = test_data%end_time - test_data%start_time
+    this%end_time = current_time()
+    test_duration      = this%end_time - this%start_time
     
-    call integer_dict("total tests", test_data%number_of_tests, dict_log(1))
-    call integer_dict("total failures", test_data%number_of_failures, dict_log(2))
+    call integer_dict("total tests", this%number_of_tests, dict_log(1))
+    call integer_dict("total failures", this%number_of_failures, dict_log(2))
     call real_dict("duration (s)", test_duration, dict_log(3))
     
-    write(unit=*, fmt="(a, i3, a, f5.3, a)") "Ran ", test_data%number_of_tests, & ! NO COMMENT FMUTATE
+    write(unit=*, fmt="(a, i3, a, f5.3, a)") "Ran ", this%number_of_tests, & ! NO COMMENT FMUTATE
                                                 " tests in ", test_duration, "s" ! NO COMMENT FMUTATE
     
-    if (test_data%number_of_failures /= 0) then ! NO OPERATOR 1 FMUTATE
-        write(unit=out_string, fmt="(a, i3, a)") "FAILED (failures=", test_data%number_of_failures, ")" ! NO COMMENT FMUTATE
-        call log_error(test_data%log_filename, trim(adjustl(out_string)), rc=1, dict_log=dict_log) ! NO COMMENT FMUTATE
+    if (this%number_of_failures /= 0) then ! NO OPERATOR 1 FMUTATE
+        write(unit=out_string, fmt="(a, i3, a)") "FAILED (failures=", this%number_of_failures, ")" ! NO COMMENT FMUTATE
+        call log_error(this%log_filename, trim(adjustl(out_string)), rc=1, dict_log=dict_log) ! NO COMMENT FMUTATE
         write(unit=*, fmt=CHAR_FMT) LONG_LINE ! NO COMMENT FMUTATE
         stop 1 ! NO COMMENT FMUTATE
     else
-        call log_message(test_data%log_filename, "All tests passed.", dict_log=dict_log)
+        call log_message(this%log_filename, "All tests passed.", dict_log=dict_log)
         write(unit=*, fmt=CHAR_FMT) ! NO COMMENT FMUTATE
         write(unit=*, fmt=CHAR_FMT) "OK" ! NO COMMENT FMUTATE
         write(unit=*, fmt=CHAR_FMT) LONG_LINE ! NO COMMENT FMUTATE

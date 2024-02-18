@@ -2,6 +2,8 @@
 
 Priorities:
 
+- `intent(in out)` to `intent(inout)` as the latter is more typical and I don't want to support ELF90 any longer.
+- Replace `dimension(:)` with shorter equivalent after the `::`.
 - Switch `unittest` to use type-bound procedures.
     - Rename `test_type` to `test_results_type`.
     - Change `log_filename` to be `log_type` instead.

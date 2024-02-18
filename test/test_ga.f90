@@ -14,51 +14,51 @@ program test_ga
 use prec, only: RP
 use ga, only: bounds_type, rand_int, rand_uniform, rand_cauchy, clip
 use logging, only: start_log
-use unittest, only: test_type, start_tests, end_tests, integer_equality_test, real_equality_test
+use unittest, only: test_results_type
 implicit none
 
-type(test_type)   :: test_data
-integer           :: ri
-real(kind=RP)     :: rr
-type(bounds_type) :: bounds
+type(test_results_type) :: test_data
+integer                 :: ri
+real(kind=RP)           :: rr
+type(bounds_type)       :: bounds
 
 character(len=*), parameter :: LOG_FILENAME = "ga.jsonl"
 
-call start_tests(LOG_FILENAME, test_data)
+call test_data%start_tests(LOG_FILENAME)
 call start_log(LOG_FILENAME)
 
 ! `rand_int`
 
 ri = rand_int(0, 1, 0.0_RP)
-call integer_equality_test(ri, 0, "rand_int (1)", test_data)
+call test_data%integer_equality_test(ri, 0, "rand_int (1)")
 
 ri = rand_int(0, 1, 0.49_RP)
-call integer_equality_test(ri, 0, "rand_int (2)", test_data)
+call test_data%integer_equality_test(ri, 0, "rand_int (2)")
 
 ri = rand_int(0, 1, 0.5_RP)
-call integer_equality_test(ri, 1, "rand_int (3)", test_data)
+call test_data%integer_equality_test(ri, 1, "rand_int (3)")
 
 ri = rand_int(0, 1, 0.99_RP)
-call integer_equality_test(ri, 1, "rand_int (4)", test_data)
+call test_data%integer_equality_test(ri, 1, "rand_int (4)")
 
 ri = rand_int(0, 1, 1.0_RP)
-call integer_equality_test(ri, 1, "rand_int (5)", test_data)
+call test_data%integer_equality_test(ri, 1, "rand_int (5)")
 
 ! `rand_uniform`
 
 rr = rand_uniform(-2.0_RP, 3.0_RP, 0.0_RP)
-call real_equality_test(rr, -2.0_RP, "rand_uniform (r = 0)", test_data)
+call test_data%real_equality_test(rr, -2.0_RP, "rand_uniform (r = 0)")
 
 rr = rand_uniform(-2.0_RP, 3.0_RP, 0.5_RP)
-call real_equality_test(rr, 0.5_RP, "rand_uniform (r = 0.5)", test_data)
+call test_data%real_equality_test(rr, 0.5_RP, "rand_uniform (r = 0.5)")
 
 rr = rand_uniform(-2.0_RP, 3.0_RP, 1.0_RP)
-call real_equality_test(rr, 3.0_RP, "rand_uniform (r = 1)", test_data)
+call test_data%real_equality_test(rr, 3.0_RP, "rand_uniform (r = 1)")
 
 ! `rand_cauchy`
 
 !rr = rand_cauchy(0.0_RP, 1.0_RP, 0.75_RP)
-!call real_equality_test(rr, 1.0_RP, "rand_cauchy (1)", test_data)
+!call real_equality_test(rr, 1.0_RP, "rand_cauchy (1)")
 
 ! rand_cauchy = m + b * tan(PI * (r - 0.5_RP))
 
@@ -76,31 +76,31 @@ call real_equality_test(rr, 3.0_RP, "rand_uniform (r = 1)", test_data)
 ! TODO: Add tests for `rand_cauchy` for `r` approaching 0 and 1.
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/6.0_RP)
-call real_equality_test(rr, -sqrt(3.0_RP), "rand_cauchy (r = 1/6)", test_data)
+call test_data%real_equality_test(rr, -sqrt(3.0_RP), "rand_cauchy (r = 1/6)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/4.0_RP)
-call real_equality_test(rr, -1.0_RP, "rand_cauchy (r = 1/4)", test_data)
+call test_data%real_equality_test(rr, -1.0_RP, "rand_cauchy (r = 1/4)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/3.0_RP)
-call real_equality_test(rr, -sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 1/3)", test_data)
+call test_data%real_equality_test(rr, -sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 1/3)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/2.0_RP)
-call real_equality_test(rr, 0.0_RP, "rand_cauchy (r = 1/2)", test_data)
+call test_data%real_equality_test(rr, 0.0_RP, "rand_cauchy (r = 1/2)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 2.0_RP/3.0_RP)
-call real_equality_test(rr, sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 2/3)", test_data)
+call test_data%real_equality_test(rr, sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 2/3)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 3.0_RP/4.0_RP)
-call real_equality_test(rr, 1.0_RP, "rand_cauchy (r = 3/4)", test_data)
+call test_data%real_equality_test(rr, 1.0_RP, "rand_cauchy (r = 3/4)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 5.0_RP/6.0_RP)
-call real_equality_test(rr, sqrt(3.0_RP), "rand_cauchy (r = 5/6)", test_data)
+call test_data%real_equality_test(rr, sqrt(3.0_RP), "rand_cauchy (r = 5/6)")
 
 rr = rand_cauchy(2.0_RP, 1.0_RP, 3.0_RP/4.0_RP)
-call real_equality_test(rr, 3.0_RP, "rand_cauchy (changed m)", test_data)
+call test_data%real_equality_test(rr, 3.0_RP, "rand_cauchy (changed m)")
 
 rr = rand_cauchy(0.0_RP, 0.5_RP, 3.0_RP/4.0_RP)
-call real_equality_test(rr, 0.5_RP, "rand_cauchy (changed b)", test_data)
+call test_data%real_equality_test(rr, 0.5_RP, "rand_cauchy (changed b)")
 
 ! `clip`
 
@@ -109,16 +109,16 @@ bounds%upper = 1.0_RP
 
 rr = -5.0_RP
 call clip(bounds, rr)
-call real_equality_test(rr, 0.0_RP, "clip (below)", test_data)
+call test_data%real_equality_test(rr, 0.0_RP, "clip (below)")
 
 rr = 0.5_RP
 call clip(bounds, rr)
-call real_equality_test(rr, 0.5_RP, "clip (no change)", test_data)
+call test_data%real_equality_test(rr, 0.5_RP, "clip (no change)")
 
 rr = 5.0_RP
 call clip(bounds, rr)
-call real_equality_test(rr, 1.0_RP, "clip (above)", test_data)
+call test_data%real_equality_test(rr, 1.0_RP, "clip (above)")
 
-call end_tests(test_data)
+call test_data%end_tests()
 
 end program test_ga
