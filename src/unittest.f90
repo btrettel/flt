@@ -53,7 +53,7 @@ subroutine logical_test(this, condition, message, dict_log)
     
     use logging, only: CHAR_FMT, dict, log_message, integer_dict, string_dict
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(inout) :: this
     
     logical, intent(in)              :: condition
     character(len=*), intent(in)     :: message
@@ -96,7 +96,7 @@ subroutine real_equality_test(this, returned_real, expected_real, message, abs_t
     use asserts, only: TOL_FACTOR, check, is_close
     use logging, only: dict, log_message, real_dict
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(inout) :: this
     
     real(kind=RP), intent(in)           :: returned_real, expected_real
     character(len=*), intent(in)        :: message
@@ -147,7 +147,7 @@ subroutine real_inequality_test(this, returned_real, expected_real, message)
     real(kind=RP), intent(in)       :: returned_real, expected_real
     character(len=*), intent(in)    :: message
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(inout) :: this
     
     real(kind=RP) :: abs_diff
     logical       :: test_passes
@@ -187,7 +187,7 @@ subroutine integer_equality_test(this, actual_integer, expected_integer, message
     integer, intent(in)             :: actual_integer, expected_integer
     character(len=*), intent(in)    :: message
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(inout) :: this
     
     logical    :: test_passes
     type(dict) :: dict_log(3)
@@ -215,7 +215,7 @@ subroutine integer_greater_equal_test(this, test_integer, lower_integer, message
     integer, intent(in)             :: test_integer, lower_integer
     character(len=*), intent(in)    :: message
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(inout) :: this
     
     logical    :: test_passes
     type(dict) :: dict_log(2)
@@ -238,7 +238,7 @@ subroutine string_equality_test(this, actual_string, expected_string, message)
     
     use logging, only: CHAR_FMT, dict, log_message, string_dict
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(inout) :: this
     
     character(len=*), intent(in) :: actual_string, expected_string
     character(len=*), intent(in) :: message
@@ -285,7 +285,7 @@ subroutine end_tests(this)
     use prec, only: CL
     use logging, only: CHAR_FMT, dict, log_message, log_error, real_dict, integer_dict
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(inout) :: this
     
     character(len=CL) :: out_string
     real(kind=RP)     :: test_duration ! in seconds

@@ -2,11 +2,6 @@
 
 Priorities:
 
-- `intent(in out)` to `intent(inout)` as the latter is more typical and I don't want to support ELF90 any longer.
-- Replace `dimension(:)` with shorter equivalent after the `::`.
-- Switch `unittest` to use type-bound procedures.
-    - Rename `test_type` to `test_results_type`.
-    - Change `log_filename` to be `log_type` instead.
 - `nmllog.f90`: Switch to Fortran namelist-based logging so that everything is in Fortran.
     - `log` namelist group
         - `timestamp`
@@ -15,6 +10,7 @@ Priorities:
         - return code?
     - Create `log_type` type which contains the unit number and any other relevant information?
         - `log%close()` (where `log` is `log_type`) will set the unit number negative so that it is invalid.
+    - `unittest`: Change `log_filename` to be `log_type` instead.
     - Roughly duplicate the Python logging module: <https://docs.python.org/3/howto/logging.html>
         - Make whether written to standard output depend on the level like in Python's logging.
     - Make `check` use logging.

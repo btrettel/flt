@@ -42,7 +42,7 @@ subroutine set_determ(values)
 end subroutine set_determ
 
 subroutine next_determ(rng)
-    type(rng_type), intent(in out) :: rng
+    type(rng_type), intent(inout) :: rng
     
     determ_rng%seed(1) = determ_rng%seed(1) + 1.0_RP
     
