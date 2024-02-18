@@ -81,4 +81,7 @@ subroutine check(condition, log_filename, message, rc, dict_log)
     end if
 end subroutine check
 
+! TODO: function to check whether arrays have identical sizes
+! <https://fortran-lang.discourse.group/t/add-a-conform-function-to-check-that-argument-dimensions-match/1018>
+
 end module asserts

@@ -9,11 +9,12 @@
 # Project: [flt](https://github.com/btrettel/flt)
 # License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
+# TODO: Add linters before compilation. Lint each file before compiling it.
+# TODO: Camfort
+# TODO: lfortran, particularly for the style suggestions
 # TODO: Figure out how to automate parts like `test/test_ga.f90` in `test_ga$(BINEXT):`
 # TODO: nvfortran to replace flang-7. <https://docs.nvidia.com/hpc-sdk//index.html>
-# TODO: lfortran
 # TODO: Add code coverage.
-# TODO: Add linters before compilation. Lint each file before compiling it.
 # TODO: Valgrind to detect uninitialized variables. https://stackoverflow.com/a/52455413
 # TODO: Check other Makefiles to see which flags you use there.
 
@@ -105,6 +106,10 @@ sunf95:
 .PHONY: flang-7
 flang-7:
 	$(MAKE) test FC=flang-7 FFLAGS='-Wdeprecated' DBGFLAGS='-g'
+
+.PHONY: lfortran
+lfortran:
+	$(MAKE) test FC=lfortran FFLAGS='--link-with-gcc' DBGFLAGS=''
 
 # Doesn't work yet.
 #.PHONY: ftn95

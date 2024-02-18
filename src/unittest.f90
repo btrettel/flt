@@ -27,7 +27,7 @@ public :: end_tests
 
 private :: current_time
 
-character(len=70), public, parameter :: LONG_LINE = "----------------------------------------------------------------------"
+character(len=70), private, parameter :: LONG_LINE = "----------------------------------------------------------------------"
 
 type, public :: test_type
     integer  :: number_of_failures
