@@ -1,0 +1,115 @@
+# To-do
+
+Priorities:
+
+- Switch `unittest` to use type-bound procedures.
+    - Rename `test_type` to `test_results_type`.
+    - Change `log_filename` to be `log_type` instead.
+- `nmllog.f90`: Switch to Fortran namelist-based logging so that everything is in Fortran.
+    - `log` namelist group
+        - `timestamp`
+        - `message`
+        - `level`: `debug`, `info`, `warning`, `error`, `critical`
+        - return code?
+    - Create `log_type` type which contains the unit number and any other relevant information?
+        - `log%close()` (where `log` is `log_type`) will set the unit number negative so that it is invalid.
+    - Roughly duplicate the Python logging module: <https://docs.python.org/3/howto/logging.html>
+        - Make whether written to standard output depend on the level like in Python's logging.
+    - Make `check` use logging.
+    - convenience subroutines
+        - `box_print` (other similar things for the most important messages that I don't want to miss)
+            - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
+        - `table_print` for iterative progress in particular.
+    - Check your notes for the following:
+        - /home/ben/notes/programming/file-formats-locations.txt section titled "logging"
+        - /home/ben/notes/programming/correctness/defensive-programming.txt section titled "error/exception handling and error messages"
+- f90lint: Start with procedure length enforcement.
+
+New modules and tools:
+
+- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
+- fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
+- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
+    - Make ga.f90 use rngmod.f90.
+    - herrera_tackling_1998
+    - Have multiple outputs.
+        - `chromo%f`
+        - `chromo%f_set`
+        - `chromo%out(:)` (for non-objective function outputs that may be of interest)
+- debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
+    - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
+        - parker_monte_1997-1
+    - FLOP counting.
+- f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
+    - Enforce some Power of 10 rules, particularly procedure lengths.
+    - Start tracking comment density and adding more code comments. Density > 25%?
+    - Require that all functions are pure.
+    - Require construct names for nested `do` loops and `if` statements.
+- fmutate.f90:
+    - Note: This will be brittle in the sense that it will only work for my own particular coding style.
+    - Distinguish between compilation errors and test failures in the mutation score.
+    - Mutation operators:
+        - TODO: Check Mothra and other papers on DTIC for more.
+        - `comment_line`: Comment out non-empty lines.
+        - `switch_arithmetic_operator`: Switch arithmetic operators (`+`, `-`, `*`, `/`).
+        - `switch_comparison_operator`: Switch comparison operators (`>`, `<`, `==`, `>=`, `<=`, `/=`).
+        - `off_by_one_assignment`: Add or subtract one in an assignment (or start of a loop).
+        - `off_by_one_do_loop_end`: Add or subtract one at the end of a loop
+        - `off_by_one_indices_or_arguments`: Add or subtract one in indices or procedure arguments.
+        - TODO: mutation operators like the off-by-one operators that change the sign.
+        - `switch_variables`: Switch variables.
+        - `return`: Prematurely `return` in a procedure.
+        - `cycle`: Prematurely `cycle` in a loop.
+        - `exit`: Prematurely `exit` in a loop.
+        - `zero`: Set a variable to zero in an assignment (or at the start of a loop).
+        - `function_result`: Mutate `function` result values.
+        - `subroutine_out`: Mutate subroutine `intent(out)` and `intent(in out)` values.
+        - `array_size`: Increase or decrease array sizes by one.
+        - `delete_term`: Delete random equation terms. (Thought after skimming [this paper](https://doi.org/10.1115/1.4049322): Code coverage misses equation terms. A mutation tester which deletes random equation terms could be useful.)
+        - Swap intrinsics like sin and cos which are likely to be accidentally switched.
+        - Mutate `intent(in)` to `intent(out)`.
+        - Mutate `intent(out)` to `intent(in)`.
+        - Change order of exponentiation: `x**y` to `y**x`.
+- make_checker.py: Runs both GNU Make and BSD Make on all targets and identifies which fail.
+- rng.f90: Includes a deterministic random number generator for testing purposes.
+    - Base the interface on NumPy:
+        - <https://numpy.org/doc/stable/reference/random/generator.html>
+    - Start with non-`pure` RNGs and later switch to `pure` like NumPy's:
+        - <https://numpy.org/neps/nep-0019-rng-policy.html>
+- semgrep static analysis
+- compiler_tests.f90: Tests for intrinsics used in these libraries.
+    - How can I identify all the intrinsics used here?
+- Program to ensure that all error codes in errors and assertions are unique.
+- <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
+- <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
+- Maybe: Break `prec.f90` into `prec_dp.f90` and `prec_sp.f90`. Both of these modules will be named `prec` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `prec` module choice.
+    - Might just be better to make a project-specific version of prec.f90 as appropriate if I want different precision.
+- unittest.f90:
+    - Print tolerance in output.
+    - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
+        - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
+            - FortranFan seems skeptical.
+        - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
+    - Make `real_equality_test` and `real_inequality_test` use `is_close`.
+- input validation
+    - Write module to ease input validation. For example, a subroutine to write a message about a variable being out of bounds.
+    - `call validate_bounds(x, "x", rc, lower=0, lower_inclusive=.true.)`
+        - message: "x must be greater than or equal to 0."
+    - `call validate_bounds(x, "x", rc, lower=0)`
+        - message: "x must be greater than 0."
+        - I don't think that this is not inclusive is obvious enough.
+- data validation
+    - Base on <https://pandera.readthedocs.io/en/stable/index.html>?
+- latex.f90:
+    - Calculated numbers in papers: Write procedure to output LaTeX code to a file (appending by default) with a particular number format. Could pass in a Fortran format string.
+- read and save CSV and Sqlite files:
+    - regex validation field for CSV
+- fuzz.f90: property/fuzz tester
+    - Property and fuzz tests on procedures and input files
+    - Make depend on ga.f90
+    - namelist generator for fuzzing
+- convergence.f90: convergence testing framework
+    - grid convergence
+    - temporal convergence
+    - MC convergence
+- Add validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
