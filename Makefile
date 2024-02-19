@@ -79,7 +79,7 @@ clean:
 	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: checks.jsonl dimmod.jsonl ga.jsonl logging.jsonl prec.jsonl rngmod.jsonl unittest.jsonl
+test: checks.jsonl dimmod.jsonl ga.jsonl nmllog.jsonl prec.jsonl rngmod.jsonl unittest.jsonl
 	@echo "*********************"
 	@echo "* All tests passed. *"
 	@echo "*********************"
@@ -120,19 +120,19 @@ lfortran:
 # Dependencies #
 ################
 
-src/checks$(DBGOBJEXT): src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/checks$(DBGOBJEXT): src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/dimmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/ga$(DBGOBJEXT): src/prec$(DBGOBJEXT) src/rngmod$(DBGOBJEXT)
 
-src/logging$(DBGOBJEXT): src/prec$(DBGOBJEXT)
+src/nmllog$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
 
 src/rngmod$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
-src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/logging$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 ##########
 # checks #
@@ -171,17 +171,17 @@ ga.jsonl: test_ga$(BINEXT)
 	python3 test/passed.py $@
 	test ! -e fort.*
 
-###########
-# logging #
-###########
+##########
+# nmllog #
+##########
 
-test_logging$(BINEXT): src/logging$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_logging.f90
+test_nmllog$(BINEXT): src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_nmllog.f90
 
-logging.jsonl: test_logging$(BINEXT)
-	$(RUN)test_logging$(BINEXT)
-	python3 test/passed.py $@
-	python3 test/test_logging.py
+nmllog.nml: test_nmllog$(BINEXT)
+	$(RUN)test_nmllog$(BINEXT)
+	#python3 test/passed.py $@
+	#python3 test/test_logging.py
 	test ! -e fort.*
 
 ########
@@ -191,7 +191,7 @@ logging.jsonl: test_logging$(BINEXT)
 test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_prec.f90
 
-prec.jsonl: test_prec$(BINEXT)
+prec.nml: test_prec$(BINEXT)
 	$(RUN)test_prec$(BINEXT)
 	python3 test/passed.py $@
 	test ! -e fort.*

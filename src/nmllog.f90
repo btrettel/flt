@@ -15,229 +15,174 @@ use prec, only: RP, CL
 implicit none
 private
 
-public :: start_log
-public :: log_message
-public :: log_error
-public :: real_dict
-public :: integer_dict
-public :: string_dict
-public :: upcase
+public :: now
 
-private :: r2c
+integer, parameter :: LOG_UNIT      = 10
+integer, parameter :: MAX_TRIES     = 10
+integer, parameter :: TIMESTAMP_LEN = 29
 
-integer, public, parameter :: KL       = 31 ! dictionary key length
-integer, public, parameter :: LOG_UNIT = 10
+integer, public, parameter :: UNIT_CLOSED = -1
 
-character(len=*), public, parameter :: CHAR_FMT     = "(a)"
-character(len=*), public, parameter :: FULL_INT_FMT = "(i7)"
-character(len=*), public, parameter :: ERROR_PREFIX = "ERROR: "
+character(len=*), public, parameter :: NOT_SET_LEVEL  = 0
+character(len=*), public, parameter :: DEBUG_LEVEL    = 10
+character(len=*), public, parameter :: INFO_LEVEL     = 20
+character(len=*), public, parameter :: WARNING_LEVEL  = 30
+character(len=*), public, parameter :: ERROR_LEVEL    = 40
+character(len=*), public, parameter :: CRITICAL_LEVEL = 50
 
-type, public :: dict
-    character(len=KL) :: k ! key
-    character(len=CL) :: v ! value
-end type dict
+type, public :: log_type
+    character(len=CL) :: filename
+    integer           :: unit  = UNIT_CLOSED
+    integer           :: level = WARNING_LEVEL
+contains
+    public :: log_open => open
+    public :: log_close => close
+    public :: log_debug => debug
+    public :: log_info => info
+    public :: log_warning => warning
+    public :: log_error => error
+    public :: log_critical => critical
+end type log_type
 
 contains
 
-subroutine start_log(log_filename)
-    character(len=*), intent(in) :: log_filename ! filename to write log to
-    
-    open(unit=LOG_UNIT, action="write", &
-            status="replace", position="rewind", file=log_filename)
-    
-    close(unit=LOG_UNIT)
-    
-    return
-end subroutine start_log
-
-subroutine log_message(log_filename, message, rc, dict_log, stdout)
-    ! Write to the log file.
-    
-    character(len=*), intent(in)           :: log_filename, message
-    integer, optional, intent(in) :: rc
-    type(dict), optional, intent(in)       :: dict_log(:)
-    logical, optional, intent(in)          :: stdout
-    
-    integer          :: rc_set, i_dict
-    character(len=7) :: rc_string
-    
-    type(dict), allocatable :: dict_set(:)
-    logical                 :: stdout_set
-    
-    character(len=5)  :: zone
-    integer           :: values(8)
-    character(len=4)  :: year
-    character(len=2)  :: month, day, hour, minutes, seconds
-    character(len=3)  :: milliseconds
-    character(len=29) :: datetime
-    
-    if (present(rc)) then
-        rc_set = rc
-    else
-        rc_set = 0
-    end if
-    
-    if (present(stdout)) then
-        stdout_set = stdout ! NO COMMENT FMUTATE
-    else ! NO COMMENT FMUTATE
-        stdout_set = .false. ! NO COMMENT FMUTATE
-    end if
-    
-    if (present(dict_log)) then
-        allocate(dict_set(size(dict_log)))
-        dict_set = dict_log
-    else
-        allocate(dict_set(0)) ! NO FMUTATE
-    end if
+function now()
+    character(len=5)             :: zone
+    integer                      :: values(8)
+    character(len=4)             :: year
+    character(len=2)             :: month, day, hour, minutes, seconds
+    character(len=3)             :: milliseconds
+    character(len=TIMESTAMP_LEN) :: timestamp
     
     ! ISO 8601 date-time format.
     ! <https://en.wikipedia.org/wiki/ISO_8601>
     
     call date_and_time(zone=zone, values=values)
     
-    write(unit=year, fmt="(i4.4)") values(1)
-    write(unit=month, fmt="(i2.2)") values(2)
-    write(unit=day, fmt="(i2.2)") values(3)
-    write(unit=hour, fmt="(i2.2)") values(5)
-    write(unit=minutes, fmt="(i2.2)") values(6)
-    write(unit=seconds, fmt="(i2.2)") values(7)
+    write(unit=year,         fmt="(i4.4)") values(1)
+    write(unit=month,        fmt="(i2.2)") values(2)
+    write(unit=day,          fmt="(i2.2)") values(3)
+    write(unit=hour,         fmt="(i2.2)") values(5)
+    write(unit=minutes,      fmt="(i2.2)") values(6)
+    write(unit=seconds,      fmt="(i2.2)") values(7)
     write(unit=milliseconds, fmt="(i3.3)") values(8)
     
-    datetime = year // "-" // month // "-" // day // "T" // hour // ":" // minutes // ":" // seconds // &
+    now = year // "-" // month // "-" // day // "T" // hour // ":" // minutes // ":" // seconds // &
                 "." // milliseconds // zone(1:3) // ":" // zone(4:5)
+end function now
+
+subroutine log_open(this, filename, level)
+    type(log_type), intent(out) :: this
     
-    write(unit=rc_string, fmt="(i7)") rc_set
+    character(len=*), intent(in)  :: filename
+    integer, optional, intent(in) :: level
     
-    open(unit=LOG_UNIT, action="write", &
-            status="old", position="append", file=log_filename)
+    integer :: unit_tries
+    logical :: unit_opened
     
-    write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '{"time": "'
-    write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") datetime
-    write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '", "rc": '
-    write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") trim(adjustl(rc_string))
-    write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") ', "message": "'
-    write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") message
-    write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '"'
+    if (present(level)) then
+        this%level = level
+    end if
     
-    do i_dict = 1, size(dict_set)
-        write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") ", "
+    this%unit = LOG_UNIT
+    do unit_tries = 1, MAX_TRIES
+        inquire(unit=this%unit, opened=unit_opened)
         
-        write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") '"' // trim(adjustl(dict_set(i_dict)%k)) // '": '
+        if (.not. unit_opened) then
+            exit
+        end if
         
-        write(unit=LOG_UNIT, fmt=CHAR_FMT, advance="no") trim(adjustl(dict_set(i_dict)%v))
+        this%unit = this%unit + 1
     end do
     
-    write(unit=LOG_UNIT, fmt=CHAR_FMT) "}"
-    close(unit=LOG_UNIT)
-    
-    if (stdout_set) then
-        write(unit=*, fmt=CHAR_FMT) message ! NO COMMENT FMUTATE
-        
-        do i_dict = 1, size(dict_set) ! NO FMUTATE
-            write(unit=*, fmt=CHAR_FMT, advance="no") trim(adjustl(dict_set(i_dict)%k)) // " = " ! NO COMMENT FMUTATE
-            write(unit=*, fmt=CHAR_FMT) trim(adjustl(dict_set(i_dict)%v)) ! NO COMMENT FMUTATE
-        end do
+    if (unit_opened) then
+        this%unit = UNIT_CLOSED
+    else
+        this%filename = filename
+        open(unit=this%unit, action="write", status="replace", position="rewind", file=trim(this%filename))
     end if
-    
-    deallocate(dict_set) ! NO COMMENT FMUTATE
-end subroutine log_message
+end subroutine log_open
 
-subroutine log_error(log_filename, message, rc, dict_log)
-    character(len=*), intent(in)     :: log_filename, message
-    integer, optional, intent(in)    :: rc
-    type(dict), optional, intent(in) :: dict_log(:)
+subroutine log_close(this)
+    type(log_type), intent(out) :: this
     
-    integer :: rc_set
+    close(unit=this%unit)
+    this%unit = UNIT_CLOSED
+end subroutine log_close
+
+subroutine log_writer(this, message, level_code)
+    type(log_type) :: this
     
-    if (present(rc)) then
-        rc_set = rc
-    else
-        rc_set = 1
+    character(len=*), intent(in) :: message
+    integer, intent(in)          :: level_code
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=:), allocatable :: level
+    
+    namelist /log/ timestamp, message, level
+    
+    timestamp = now()
+    
+    select case (level_code)
+        case (DEBUG_LEVEL)
+            level = "debug"
+        case (INFO_LEVEL)
+            level = "info"
+        case (WARNING_LEVEL)
+            level = "warning"
+        case (ERROR_LEVEL)
+            level = "error"
+        case (CRITICAL_LEVEL)
+            level = "critical"
+        case default
+            level = "not set"
+    end select
+    
+    write(unit=this%unit, nml=log)
+    
+    if (level_code >= this%level) then
+        write(unit=*, fmt="(a, a, a, a, a)") timestamp, " [", level, "] ", message
     end if
+end subroutine log_writer
+
+subroutine log_debug(this, message)
+    type(log_type) :: this
     
-    if (present(dict_log)) then
-        call log_message(log_filename, ERROR_PREFIX // message, rc=rc_set, dict_log=dict_log, stdout=.true.)
-    else
-        call log_message(log_filename, ERROR_PREFIX // message, rc=rc_set)
-    end if
+    character(len=*), intent(in) :: message
+    
+    call this%log_writer(message, DEBUG_LEVEL)
+end subroutine log_debug
+
+subroutine log_info(this, message)
+    type(log_type) :: this
+    
+    character(len=*), intent(in) :: message
+    
+    call this%log_writer(message, INFO_LEVEL)
+end subroutine log_info
+
+subroutine log_warning(this, message)
+    type(log_type) :: this
+    
+    character(len=*), intent(in) :: message
+    
+    call this%log_writer(message, WARNING_LEVEL)
+end subroutine log_warning
+
+subroutine log_error(this, message)
+    type(log_type) :: this
+    
+    character(len=*), intent(in) :: message
+    
+    call this%log_writer(message, ERROR_LEVEL)
 end subroutine log_error
 
-pure function r2c(x)
-    real(kind=RP), intent(in) :: x
+subroutine log_critical(this, message)
+    type(log_type) :: this
     
-    character(len=41) :: r2c, r2c_before ! large enough to handle quad precision
+    character(len=*), intent(in) :: message
     
-    integer           :: prec
-    character(len=2)  :: prec_string, len_string
-    character(len=11) :: full_prec_fmt
-    
-    ! es15.8:
-    ! 2.00000000E+00
-    ! 12345678901234 (I guess an extra is needed for the possibility of a negative sign)
-    !   12345678
-    ! negative sign, first number, decimal point, digits of precision, e+, 2 digits for exponent
-    ! 1 + 1 + 1 + prec + 2 + 2
-    ! prec + 7
-    
-    ! Originally I used 3 digits for the exponent, but flang-7 would only write 2 digits for the exponent.
-    
-    prec = precision(1.0_RP) ! NO FMUTATE
-    write(unit=prec_string, fmt="(i2)") prec
-    write(unit=len_string, fmt="(i2)") prec + 7
-    
-    full_prec_fmt = "(es" // len_string // "." // prec_string // "e2)"
-    
-    write(unit=r2c_before, fmt=full_prec_fmt) x
-    
-    r2c = upcase(r2c_before)
-end function r2c
-
-pure function upcase(string)
-    ! <https://www.star.le.ac.uk/%7ecgp/fortran.html>
-    
-    character(len=*), intent(in) :: string
-    
-    character(len=len(string)) :: upcase
-    
-    integer :: j
-    
-    do j = 1, len(string)
-        if(string(j:j) >= "a" .and. string(j:j) <= "z") then
-            upcase(j:j) = achar(iachar(string(j:j)) - 32)
-        else
-            upcase(j:j) = string(j:j)
-        end if
-    end do
-end function upcase
-
-pure subroutine real_dict(key, real_in, dict_out)
-    character(len=*), intent(in) :: key
-    real(kind=RP), intent(in)    :: real_in
-    type(dict), intent(out)      :: dict_out
-    
-    dict_out%k = key
-    dict_out%v = r2c(real_in)
-end subroutine real_dict
-
-pure subroutine integer_dict(key, integer_in, dict_out)
-    character(len=*), intent(in) :: key
-    integer, intent(in)          :: integer_in
-    type(dict), intent(out)      :: dict_out
-    
-    character(len=CL) :: integer_char
-    
-    dict_out%k = key
-    write(unit=integer_char, fmt=FULL_INT_FMT) integer_in
-    dict_out%v = trim(adjustl(integer_char))
-end subroutine integer_dict
-
-pure subroutine string_dict(key, string_in, dict_out)
-    character(len=*), intent(in) :: key
-    character(len=*), intent(in) :: string_in
-    type(dict), intent(out)      :: dict_out
-    
-    dict_out%k = key
-    dict_out%v = '"' // trim(adjustl(string_in)) // '"'
-end subroutine string_dict
+    call this%log_writer(message, CRITICAL_LEVEL)
+end subroutine log_critical
 
 end module logging

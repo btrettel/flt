@@ -9,10 +9,10 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_asserts
+program test_checks
 
-use asserts, only: is_close, check
-use logging, only: start_log, dict, integer_dict
+use checks, only: is_close, check
+use nmllog, only: log_type
 use prec, only: RP
 use unittest, only: test_results_type
 
@@ -24,8 +24,8 @@ type(dict), allocatable :: dict_log(:)
 
 character(len=*), parameter :: LOG_FILENAME = "checks.jsonl"
 
-call test_data%start_tests(LOG_FILENAME)
 call start_log(LOG_FILENAME)
+call test_data%start_tests(logger)
 
 call test_data%logical_test(is_close(1.0_RP, 1.0_RP), "is_close, identical numbers (1)")
 
@@ -109,12 +109,6 @@ rc_check = 0
 call check(.false., LOG_FILENAME, "check, .false.", rc_check)
 call test_data%integer_equality_test(rc_check, 1, "check, .false.")
 
-rc_check = 0
-allocate(dict_log(1))
-call integer_dict("check_integer", 67890, dict_log(1))
-call check(.false., LOG_FILENAME, "check, .false., dict_log", rc_check, dict_log=dict_log)
-deallocate(dict_log)
-
 call test_data%end_tests()
 
-end program test_asserts
+end program test_checks

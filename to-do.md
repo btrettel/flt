@@ -2,26 +2,20 @@
 
 Priorities:
 
+- Convert passed.py to passed.f90.
+- Convert all .jsonl files to .nml.
+- Merge tests from `test_*.py` into the associated Fortran test files.
+- Make as much as possible `pure`.
 - `nmllog.f90`: Switch to Fortran namelist-based logging so that everything is in Fortran.
-    - `log` namelist group
-        - `timestamp`
-        - `message`
-        - `level`: `debug`, `info`, `warning`, `error`, `critical`
-        - return code?
-    - Create `log_type` type which contains the unit number and any other relevant information?
-        - `log%close()` (where `log` is `log_type`) will set the unit number negative so that it is invalid.
-    - `unittest`: Change `log_filename` to be `log_type` instead.
-    - Roughly duplicate the Python logging module: <https://docs.python.org/3/howto/logging.html>
-        - Make whether written to standard output depend on the level like in Python's logging.
-    - Make `check` use logging.
-    - convenience subroutines
-        - `box_print` (other similar things for the most important messages that I don't want to miss)
-            - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
-        - `table_print` for iterative progress in particular.
     - Check your notes for the following:
         - /home/ben/notes/programming/file-formats-locations.txt section titled "logging"
         - /home/ben/notes/programming/correctness/defensive-programming.txt section titled "error/exception handling and error messages"
 - f90lint: Start with procedure length enforcement.
+- `io.f90`:
+    - convenience subroutines
+        - `box_print` (other similar things for the most important messages that I don't want to miss)
+            - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
+        - `table_print` for iterative progress in particular.
 
 New modules and tools:
 

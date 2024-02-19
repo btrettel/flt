@@ -12,82 +12,49 @@
 program test_asserts
 
 use prec, only: RP
-use logging, only: start_log, dict, LOG_UNIT, log_message, log_error, integer_dict, real_dict, string_dict
+use logging, only: log_type
 use unittest, only: test_results_type
 implicit none
 
+type(log_type)          :: logger, test_logger
 type(test_results_type) :: test_data
 logical                 :: unit_opened, test_passes
-type(dict), allocatable :: dict_log(:)
-type(dict)              :: dict_test
+integer                 :: test_logger_unit
 
-character(len=*), parameter :: LOG_FILENAME = "logging.jsonl"
+character(len=*), parameter :: TEST_FILENAME = "test.nml"
 
-call test_data%start_tests(LOG_FILENAME)
-call start_log(LOG_FILENAME)
+character
 
-! This needs to be put here as the `log_message` below will close the `LOG_UNIT` if this is not here.
-inquire(unit=LOG_UNIT, opened=unit_opened)
-if (unit_opened) then
-    close(unit=LOG_UNIT)
-end if
+call logger%open("nmllog.nml")
+call test_data%start_tests(logger)
 
-call test_data%logical_test(.not. unit_opened, "start_log, unit closed after return")
+call test_data%integer_equality_test(test_logger%unit, UNIT_CLOSED, "logger, unit closed before opening")
+call test_logger%open(TEST_FILENAME)
 
-call log_message(LOG_FILENAME, "log_message test")
-call log_error(LOG_FILENAME, "log_error test")
+test_logger_unit = test_logger%unit
 
-allocate(dict_log(0))
+call test_data%string_equality_test(test_logger%filename, TEST_FILENAME, "logger, filename")
+call test_data%integer_equality_test(test_logger%unit, logger%unit + 1, "logger, unit after opening")
+call test_data%integer_equality_test(test_logger%level, WARNING_LEVEL, "logger, level before opening")
 
-call log_message(LOG_FILENAME, "dict_log(0) test", dict_log=dict_log)
+call test_logger%debug("Debug level test")
+call test_logger%info("Info level test")
+call test_logger%warning("Warning level test")
+call test_logger%error("Error level test")
+call test_logger%critical("Critical level test")
+call test_logger%close()
 
-call log_error(LOG_FILENAME, "dict_log(0) test (error)", dict_log=dict_log)
+! TODO: Test where `LOG_UNIT` is already open to see if `logger%unit` is set to another unit.
+! TODO: Test where `MAX_TRIES` criteria is met to make sure that the unit number is negative as the `logger%open` operation failed.
+! TODO: Read log file to make sure that all messages are written properly.
+! TODO: Test to make sure that log is closed after `logger%close()`
+! TODO: Test `now()`
 
-deallocate(dict_log)
-
-allocate(dict_log(1))
-
-call integer_dict("test_integer", 1234, dict_log(1))
-call log_message(LOG_FILENAME, "dict_log(1) test", dict_log=dict_log)
-
-call integer_dict("test_integer", 9876, dict_log(1))
-call log_error(LOG_FILENAME, "dict_log(1) test (error)", dict_log=dict_log)
-
-deallocate(dict_log)
-
-allocate(dict_log(2))
-
-call integer_dict("test_integer_1", 3456, dict_log(1))
-call integer_dict("test_integer_2", 890, dict_log(2))
-call log_message(LOG_FILENAME, "dict_log(2) test", dict_log=dict_log)
-
-call integer_dict("test_integer_1", 987, dict_log(1))
-call integer_dict("test_integer_2", 5432, dict_log(2))
-call log_error(LOG_FILENAME, "dict_log(2) test (error)", dict_log=dict_log)
-
-deallocate(dict_log)
-
-call log_message(LOG_FILENAME, "custom rc test", rc=1234)
-call log_error(LOG_FILENAME, "custom rc test (error)", rc=5678)
-
-! dictionaries
-
-call real_dict("test_real", 1.23e-4_RP, dict_test)
-call test_data%string_equality_test(dict_test%k, "test_real", "dict, real, key")
-call test_data%string_equality_test(dict_test%v, "1.230000000000000E-04", "dict, real, value")
-
-call integer_dict("test_integer", 50, dict_test)
-call test_data%string_equality_test(dict_test%k, "test_integer", "dict, integer, key")
-call test_data%string_equality_test(dict_test%v, "50", "dict, integer, value")
-
-call string_dict("test_string", "dictionary string", dict_test)
-call test_data%string_equality_test(dict_test%k, "test_string", "dict, string, key")
-
-! `string_equality_test` can't be used because the dictionaries automatically quote string, so that would lead to double quoting
-! here in the output.
-test_passes = (trim(adjustl(dict_test%v)) == '"dictionary string"')
-call test_data%logical_test(test_passes, "dict, string, value")
+! Delete `TEST_FILENAME`.
+open(unit=test_logger_unit, file=TEST_FILENAME, status="old")
+close(unit=test_logger_unit, status="delete")
 
 call test_data%end_tests()
+call logger%close()
 
 end program test_asserts

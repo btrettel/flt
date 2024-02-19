@@ -21,15 +21,15 @@ type(test_results_type) :: test_data, test_data_2
 character(len=*), parameter :: LOG_FILENAME = "unittest.jsonl"
 integer, parameter          :: N_FAILING    = 10
 
+call start_log(LOG_FILENAME)
 call test_data%start_tests(LOG_FILENAME)
 call test_data_2%start_tests(LOG_FILENAME) ! These are for tests which should fail.
-call start_log(LOG_FILENAME)
 
-call test_data%integer_equality_test(test_data%number_of_failures, 0, "test_data%number_of_failures at start")
-call test_data%integer_equality_test(test_data%number_of_tests, 1, "test_data%number_of_tests at start")
+call test_data%integer_equality_test(test_data%n_failures, 0, "test_data%n_failures at start")
+call test_data%integer_equality_test(test_data%n_tests, 1, "test_data%n_tests at start")
 
-call test_data%integer_equality_test(test_data_2%number_of_failures, 0, "test_data_2%number_of_failures at start")
-call test_data%integer_equality_test(test_data_2%number_of_tests, 0, "test_data_2%number_of_tests at start")
+call test_data%integer_equality_test(test_data_2%n_failures, 0, "test_data_2%n_failures at start")
+call test_data%integer_equality_test(test_data_2%n_tests, 0, "test_data_2%n_tests at start")
 
 call test_data%logical_test(.true., "logical_test, .true.")
 
@@ -105,13 +105,13 @@ call test_data_2%integer_greater_equal_test(1, 2, "integer_greater_equal_test, f
 
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 
-call test_data%integer_equality_test(test_data_2%number_of_tests, N_FAILING, "correct number of tests expected to fail")
+call test_data%integer_equality_test(test_data_2%n_tests, N_FAILING, "correct number of tests expected to fail")
 
-call test_data%integer_equality_test(test_data_2%number_of_failures, N_FAILING, &
+call test_data%integer_equality_test(test_data_2%n_failures, N_FAILING, &
                                 "correct number of tests expected to fail that fail")
 
-test_data%number_of_tests    = test_data%number_of_tests + test_data_2%number_of_tests
-test_data%number_of_failures = test_data%number_of_failures + (test_data_2%number_of_tests - test_data_2%number_of_failures)
+test_data%n_tests    = test_data%n_tests + test_data_2%n_tests
+test_data%n_failures = test_data%n_failures + (test_data_2%n_tests - test_data_2%n_failures)
 
 call test_data%end_tests()
 

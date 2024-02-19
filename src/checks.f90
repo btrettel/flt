@@ -9,7 +9,7 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-module asserts
+module checks
 
 use prec, only: RP, CL
 implicit none
@@ -52,7 +52,7 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     end if
 end function is_close
 
-subroutine check(condition, log_filename, message, rc, dict_log)
+subroutine check(condition, logger, message, rc)
     ! If `condition` is `.false.`, then print a message and increment `rc`.
     ! If `(rc /= RC_SUCCESS)` later, computation will stop.
     ! This is used for assertions and input validation.
@@ -61,21 +61,15 @@ subroutine check(condition, log_filename, message, rc, dict_log)
     ! logged, so there's `rc` does not need to be meaningful beyond
     ! pass/fail.
     
-    use logging, only: dict, log_error
+    use nmllog, only: log_type
     
     logical, intent(in)          :: condition ! condition to check
-    character(len=*), intent(in) :: log_filename
+    type(log_type), intent(in)   :: logger
     character(len=*), intent(in) :: message   ! error message to print if `condition` is `.false.`
-    integer, intent(inout)      :: rc        ! number of errors encountered
-    
-    type(dict), optional, intent(in) :: dict_log(:)
+    integer, intent(inout)       :: rc        ! number of errors encountered
     
     if (.not. condition) then
-        if (present(dict_log)) then
-            call log_error(log_filename, message, dict_log=dict_log)
-        else
-            call log_error(log_filename, message)
-        end if
+        call logger%error(message)
         
         rc = rc + 1
     end if
@@ -84,4 +78,4 @@ end subroutine check
 ! TODO: function to check whether arrays have identical sizes
 ! <https://fortran-lang.discourse.group/t/add-a-conform-function-to-check-that-argument-dimensions-match/1018>
 
-end module asserts
+end module checks
