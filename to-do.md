@@ -2,6 +2,10 @@
 
 Priorities:
 
+- `string_` to `character_`
+- `*_equality_test` to `eq` with generics, similar for others.
+- `%logical_test(.not.` to `%false(`
+- Remove all `fmutate` annotations.
 - Convert passed.py to passed.f90.
 - Convert all .jsonl files to .nml.
 - Merge tests from `test_*.py` into the associated Fortran test files.
@@ -74,8 +78,9 @@ New modules and tools:
 - Program to ensure that all error codes in errors and assertions are unique.
 - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
 - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
-- Maybe: Break `prec.f90` into `prec_dp.f90` and `prec_sp.f90`. Both of these modules will be named `prec` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `prec` module choice.
-    - Might just be better to make a project-specific version of prec.f90 as appropriate if I want different precision.
+- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
+    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
+    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
 - unittest.f90:
     - Print tolerance in output.
     - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?

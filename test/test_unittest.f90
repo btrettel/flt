@@ -11,19 +11,20 @@
 
 program test_unittest
 
-use logging, only: start_log
+use nmllog, only: log_type
 use prec, only: RP
 use unittest, only: test_results_type
 implicit none
 
+type(log_type)          :: logger
 type(test_results_type) :: test_data, test_data_2
 
-character(len=*), parameter :: LOG_FILENAME = "unittest.jsonl"
+character(len=*), parameter :: LOG_FILENAME = "unittest.nml"
 integer, parameter          :: N_FAILING    = 10
 
-call start_log(LOG_FILENAME)
-call test_data%start_tests(LOG_FILENAME)
-call test_data_2%start_tests(LOG_FILENAME) ! These are for tests which should fail.
+call logger%open(LOG_FILENAME)
+call test_data%start_tests(logger)
+call test_data_2%start_tests(logger) ! These are for tests which should fail.
 
 call test_data%integer_equality_test(test_data%n_failures, 0, "test_data%n_failures at start")
 call test_data%integer_equality_test(test_data%n_tests, 1, "test_data%n_tests at start")
@@ -73,7 +74,7 @@ call test_data%real_inequality_test(100.0_RP * epsilon(1.0_RP), 0.0_RP, &
 
 call test_data%integer_equality_test(1, 1, "integer_equality_test")
 
-call test_data%string_equality_test("a", "a", "string_equality_test")
+call test_data%character_equality_test("a", "a", "character_equality_test")
 
 call test_data%real_equality_test(10.0_RP, 5.0_RP, "real_equality_test, large abs_tol set", abs_tol=5.1_RP)
 
@@ -97,9 +98,9 @@ call test_data_2%integer_equality_test(1, 0, "integer_equality_test, failure (gr
 
 call test_data_2%integer_equality_test(0, 1, "integer_equality_test, failure (less)")
 
-call test_data_2%string_equality_test("a", "b", "string_equality_test, failure (greater)")
+call test_data_2%character_equality_test("a", "b", "character_equality_test, failure (greater)")
 
-call test_data_2%string_equality_test("b", "a", "string_equality_test, failure (less)")
+call test_data_2%character_equality_test("b", "a", "character_equality_test, failure (less)")
 
 call test_data_2%integer_greater_equal_test(1, 2, "integer_greater_equal_test, failure")
 
@@ -114,5 +115,6 @@ test_data%n_tests    = test_data%n_tests + test_data_2%n_tests
 test_data%n_failures = test_data%n_failures + (test_data_2%n_tests - test_data_2%n_failures)
 
 call test_data%end_tests()
+call logger%close()
 
 end program test_unittest

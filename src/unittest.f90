@@ -30,7 +30,7 @@ contains
     procedure :: real_inequality_test => real_inequality_test
     procedure :: integer_equality_test => integer_equality_test
     procedure :: integer_greater_equal_test => integer_greater_equal_test
-    procedure :: string_equality_test => string_equality_test
+    procedure :: character_equality_test => character_equality_test
     procedure :: start_tests => start_tests
     procedure :: end_tests => end_tests
 end type test_results_type
@@ -45,11 +45,10 @@ subroutine logical_test(this, condition, message)
     logical, intent(in)          :: condition
     character(len=*), intent(in) :: message
     
-    character(len=*), parameter :: variable_type = "logical"
+    character(len=7) :: variable_type
+    logical :: test_passes, returned_logical
     
     namelist /test_result/ variable_type, test_passes, message, returned_logical
-    
-    this%n_tests = this%n_tests + 1
     
     if (.not. condition) then
         this%n_failures = this%n_failures + 1
@@ -57,27 +56,46 @@ subroutine logical_test(this, condition, message)
         write(unit=*, fmt="(a)")
     end if
     
+    variable_type    = "logical"
     test_passes      = condition
     returned_logical = condition
     write(unit=this%logger%unit, nml=test_result)
+    
+    this%n_tests = this%n_tests + 1
 end subroutine logical_test
 
-subroutine real_equality_test(this, returned_real, expected_real, message, abs_tol)
+! Not used yet. Will use later after I figure out a good way to make `returned_logical` not equal to `condition` for this special 
+! case in `logical_test`.
+!subroutine logical_not_test(this, condition, message)
+!    ! Check whether test `condition` is `.true.`, increase `number_of_failures` if `.false.`.
+    
+!    class(test_results_type), intent(inout) :: this
+    
+!    logical, intent(in)          :: condition
+!    character(len=*), intent(in) :: message
+    
+!    call logical_test(this, .not. condition, message)
+!end subroutine logical_not_test
+
+subroutine real_equality_test(this, returned_real, compared_real, message, abs_tol, ne)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
-    use asserts, only: TOL_FACTOR, check, is_close
+    use checks, only: TOL_FACTOR, check, is_close
     
     class(test_results_type), intent(inout) :: this
     
-    real(kind=RP), intent(in)           :: returned_real, expected_real
-    character(len=*), intent(in)        :: message
+    real(kind=RP), intent(in)    :: returned_real, compared_real
+    character(len=*), intent(in) :: message
+    
     real(kind=RP), intent(in), optional :: abs_tol
+    logical, intent(in), optional       :: ne ! `.false.` for checking equality, `.true.` for checking inequality
     
-    character(len=*), parameter :: variable_type = "real"
-    logical       :: test_passes
-    real(kind=RP) :: tolerance, difference
+    character(len=4) :: variable_type
+    character(len=2) :: test_operator
+    logical          :: test_passes, checking_equality
+    real(kind=RP)    :: tolerance, difference
     
-    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_real, expected_real, tolerance, difference
+    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_real, compared_real, tolerance, difference
     
     if (present(abs_tol)) then
         tolerance = abs_tol
@@ -85,150 +103,170 @@ subroutine real_equality_test(this, returned_real, expected_real, message, abs_t
         tolerance = TOL_FACTOR * epsilon(1.0_RP)
     end if
     
-    test_passes = is_close(returned_real, expected_real, abs_tol=tolerance)
+    if (present(ne)) then
+        checking_equality = .not. ne
+    else
+        checking_equality = .true.
+    end if
+    
+    difference = abs(returned_real - compared_real)
+    test_passes = is_close(returned_real, compared_real, abs_tol=tolerance)
+    
+    if (checking_equality) then
+        test_operator = "=="
+    else
+        test_operator = "/="
+        test_passes = .not. test_passes
+    end if
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
         write(unit=*, fmt="(a, es15.8)") "real returned = ", returned_real
-        write(unit=*, fmt="(a, es15.8)") "real expected = ", expected_real
+        
+        if (checking_equality) then
+            write(unit=*, fmt="(a, es15.8)") "real expected = ", compared_real
+        else
+            write(unit=*, fmt="(a, es15.8)") "      /= real = ", compared_real
+        end if
+        
         write(unit=*, fmt="(a, es15.8)") "    tolerance = ", tolerance
-        if (is_close(abs(expected_real), 0.0_RP)) then
+        if (is_close(abs(compared_real), 0.0_RP)) then
             write(unit=*, fmt="(a, es15.8)") "   difference = ", difference
         else
             write(unit=*, fmt="(a, es15.8, a, f6.3, a)") "   difference = ", difference, &
-                                                        " (", 100.0_RP * difference / abs(expected_real), "%)"
+                                                        " (", 100.0_RP * difference / abs(compared_real), "%)"
         end if
         write(unit=*, fmt="(a, a)") "fail: ", message
         write(unit=*, fmt="(a)")
     end if
     
-    call check(abs_diff >= 0.0_RP, this%logger, "real_equality_test, abs_diff < 0", this%n_failures)
+    call check(difference >= 0.0_RP, this%logger, "real_equality_test, difference < 0", this%n_failures)
     
-    test_operator = "=="
+    variable_type = "real"
     write(unit=this%logger%unit, nml=test_result)
+    
+    this%n_tests = this%n_tests + 1
 end subroutine real_equality_test
 
-subroutine real_inequality_test(this, returned_real, expected_real, message)
+subroutine real_inequality_test(this, returned_real, compared_real, message, abs_tol)
     ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
     
-    ! TODO: START HERE
-    
-    use asserts, only: check, is_close
-    
-    real(kind=RP), intent(in)    :: returned_real, expected_real
-    character(len=*), intent(in) :: message
+    use checks, only: TOL_FACTOR
     
     class(test_results_type), intent(inout) :: this
     
-    real(kind=RP) :: abs_diff
-    logical       :: test_passes
+    real(kind=RP), intent(in)    :: returned_real, compared_real
+    character(len=*), intent(in) :: message
     
-    call real_dict("real returned", returned_real, dict_log(1))
-    call real_dict("real expected", expected_real, dict_log(2))
-    abs_diff = abs(returned_real - expected_real)
-    call real_dict("difference", abs_diff, dict_log(3))
-    !call real_dict("tolerance", abs_tol_set, dict_log(4))
+    real(kind=RP), intent(in), optional :: abs_tol
     
-    test_passes = .not. is_close(returned_real, expected_real)
+    real(kind=RP) :: tolerance
     
-    if (.not. test_passes) then
-        write(unit=*, fmt="(a, es15.8)") "real returned = ", returned_real
-        write(unit=*, fmt="(a, es15.8)") "real expected = ", expected_real
-        if (is_close(abs(expected_real), 0.0_RP)) then ! NO ARG FMUTATE
-            write(unit=*, fmt="(a, es15.8)") "   difference = ", abs_diff
-        else
-            write(unit=*, fmt="(a, es15.8, a, f6.3, a)") "   difference = ", abs_diff, &
-                                                        " (", 100.0_RP * abs_diff / abs(expected_real), "%)"
-        end if
-        !write(unit=*, fmt="(a, es15.8)") "    tolerance = ", abs_tol_set
+    if (present(abs_tol)) then
+        tolerance = abs_tol
+    else
+        tolerance = TOL_FACTOR * epsilon(1.0_RP)
     end if
     
-    call this%logical_test(test_passes, message, dict_log=dict_log)
-    
-    call check(abs_diff >= 0.0_RP, this%log_filename, "real_inequality_test, abs_diff < 0", this%n_failures)
-    
-    write(unit=this%logger%unit, nml=test_result)
+    call real_equality_test(this, returned_real, compared_real, message, abs_tol=tolerance, ne=.true.)
 end subroutine real_inequality_test
 
-subroutine integer_equality_test(this, returned_integer, expected_integer, message)
+subroutine integer_equality_test(this, returned_integer, compared_integer, message)
     ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.
     
-    integer, intent(in)          :: returned_integer, expected_integer
-    character(len=*), intent(in) :: message
-    
     class(test_results_type), intent(inout) :: this
+    
+    integer, intent(in)          :: returned_integer, compared_integer
+    character(len=*), intent(in) :: message
     
     logical :: test_passes
     
-    call integer_dict("integer returned", returned_integer, dict_log(1))
-    call integer_dict("integer expected", expected_integer, dict_log(2))
-    call integer_dict("difference", abs(returned_integer - expected_integer), dict_log(3))
+    character(len=7) :: variable_type
+    character(len=2) :: test_operator
     
-    test_passes = (returned_integer == expected_integer)
+    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    
+    test_passes = (returned_integer == compared_integer)
     
     if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
         write(unit=*, fmt="(a, i7)") "integer returned = ", returned_integer
-        write(unit=*, fmt="(a, i7)") "integer expected = ", expected_integer
-        write(unit=*, fmt="(a, i7)") "      difference = ", abs(returned_integer - expected_integer)
+        write(unit=*, fmt="(a, i7)") "integer expected = ", compared_integer
+        write(unit=*, fmt="(a, i7)") "      difference = ", abs(returned_integer - compared_integer)
+        write(unit=*, fmt="(a, a)") "fail: ", message
+        write(unit=*, fmt="(a)")
     end if
     
-    call this%logical_test(test_passes, message, dict_log=dict_log)
-    
+    variable_type = "integer"
+    test_operator = "=="
     write(unit=this%logger%unit, nml=test_result)
+    
+    this%n_tests = this%n_tests + 1
 end subroutine integer_equality_test
 
-subroutine integer_greater_equal_test(this, test_integer, lower_integer, message)
-    ! Check whether one integer is greater than the other, increase `number_of_failures` if `.false.`.
-    
-    integer, intent(in)          :: test_integer, lower_integer
-    character(len=*), intent(in) :: message
+subroutine integer_greater_equal_test(this, returned_integer, compared_integer, message)
+    ! Check whether `returned_integer` is greater than `compared_integer`, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
+    
+    integer, intent(in)          :: returned_integer, compared_integer
+    character(len=*), intent(in) :: message
     
     logical :: test_passes
     
-    call integer_dict("integer returned", test_integer, dict_log(1))
-    call integer_dict("lower integer", lower_integer, dict_log(2))
+    character(len=7) :: variable_type
+    character(len=2) :: test_operator
     
-    test_passes = (test_integer >= lower_integer)
+    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    
+    test_passes = (returned_integer >= compared_integer)
     
     if (.not. test_passes) then
-        write(unit=*, fmt="(a, i7)") "integer returned = ", test_integer
-        write(unit=*, fmt="(a, i7)") "  not >= integer = ", lower_integer
+        this%n_failures = this%n_failures + 1
+        write(unit=*, fmt="(a, i7)") "integer returned = ", returned_integer
+        write(unit=*, fmt="(a, i7)") "  not >= integer = ", compared_integer
+        write(unit=*, fmt="(a, a)") "fail: ", message
+        write(unit=*, fmt="(a)")
     end if
     
-    call this%logical_test(test_passes, message, dict_log=dict_log)
-    
+    variable_type = "integer"
+    test_operator = ">="
     write(unit=this%logger%unit, nml=test_result)
+    
+    this%n_tests = this%n_tests + 1
 end subroutine integer_greater_equal_test
 
-subroutine string_equality_test(this, returned_string, expected_string, message)
-    ! Check whether two strings are identical, increase `number_of_failures` if `.false.`.
-    
-    use logging, only: "(a)", dict, log_message, string_dict
+subroutine character_equality_test(this, returned_string, compared_string, message)
+    ! Check whether two character variables are identical, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
     
-    character(len=*), intent(in) :: returned_string, expected_string
+    character(len=*), intent(in) :: returned_string, compared_string
     character(len=*), intent(in) :: message
     
-    logical    :: test_passes
-    type(dict) :: dict_log(2)
+    logical :: test_passes
     
-    call string_dict("string returned", returned_string, dict_log(1))
-    call string_dict("string expected", expected_string, dict_log(2))
+    character(len=9) :: variable_type
+    character(len=2) :: test_operator
     
-    test_passes = (trim(adjustl(returned_string)) == trim(adjustl(expected_string)))
+    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_string, compared_string
+    
+    test_passes = (trim(adjustl(returned_string)) == trim(adjustl(compared_string)))
     
     if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
         write(unit=*, fmt="(a)") "string returned = " // trim(adjustl(returned_string))
-        write(unit=*, fmt="(a)") "string expected = " // trim(adjustl(expected_string))
+        write(unit=*, fmt="(a)") "string expected = " // trim(adjustl(compared_string))
+        write(unit=*, fmt="(a, a)") "fail: ", message
+        write(unit=*, fmt="(a)")
     end if
     
-    call this%logical_test(test_passes, message, dict_log=dict_log)
-    
+    variable_type = "character"
+    test_operator = "=="
     write(unit=this%logger%unit, nml=test_result)
-end subroutine string_equality_test
+    
+    this%n_tests = this%n_tests + 1
+end subroutine character_equality_test
 
 function current_time()
     real(kind=RP) :: current_time ! in seconds
@@ -256,15 +294,15 @@ subroutine end_tests(this)
     integer       :: n_tests, n_failures
     real(kind=RP) :: duration ! in seconds
     
-    namelist /tests_end/ n_tests, n_failures, duration
+    namelist /tests_summary/ n_tests, n_failures, duration
     
     this%end_time = current_time()
     duration      = this%end_time - this%start_time
     n_tests       = this%n_tests
     n_failures    = this%n_failures
-    write(unit=this%unit, nml=tests_end)
+    write(unit=this%logger%unit, nml=tests_summary)
     
-    write(unit=*, fmt="(a, i0, a, f5.3, a)") "Ran ", this%n_tests, " tests in ", test_duration, "s"
+    write(unit=*, fmt="(a, i0, a, f5.3, a)") "Ran ", this%n_tests, " tests in ", duration, "s"
     
     if (this%n_failures /= 0) then
         write(unit=*, fmt="(a, i0, a)") "FAILED (failures=", this%n_failures, ")"
@@ -280,10 +318,10 @@ end subroutine end_tests
 
 !subroutine result_reader(filename)
 !    namelist /test_result/ variable_type, test_operator, test_passes, message, &
-!                            returned_logical, &
-!                            returned_real, expected_real, tolerance. &
-!                            returned_integer, expected_integer, &
-!                            returned_string, expected_string
+!                            returned_logical,
+!                            returned_real, compared_real, tolerance, difference, &
+!                            returned_integer, compared_integer, &
+!                            returned_string, compared_string
 !end subroutine result_reader
 
 end module unittest

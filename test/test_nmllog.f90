@@ -9,21 +9,18 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_asserts
+program test_nmllog
 
-use prec, only: RP
-use logging, only: log_type
+use nmllog, only: log_type, UNIT_CLOSED, WARNING_LEVEL
 use unittest, only: test_results_type
 implicit none
 
 type(log_type)          :: logger, test_logger
 type(test_results_type) :: test_data
-logical                 :: unit_opened, test_passes
+!logical                 :: unit_opened
 integer                 :: test_logger_unit
 
 character(len=*), parameter :: TEST_FILENAME = "test.nml"
-
-character
 
 call logger%open("nmllog.nml")
 call test_data%start_tests(logger)
@@ -33,7 +30,7 @@ call test_logger%open(TEST_FILENAME)
 
 test_logger_unit = test_logger%unit
 
-call test_data%string_equality_test(test_logger%filename, TEST_FILENAME, "logger, filename")
+call test_data%character_equality_test(test_logger%filename, TEST_FILENAME, "logger, filename")
 call test_data%integer_equality_test(test_logger%unit, logger%unit + 1, "logger, unit after opening")
 call test_data%integer_equality_test(test_logger%level, WARNING_LEVEL, "logger, level before opening")
 
@@ -57,4 +54,4 @@ close(unit=test_logger_unit, status="delete")
 call test_data%end_tests()
 call logger%close()
 
-end program test_asserts
+end program test_nmllog

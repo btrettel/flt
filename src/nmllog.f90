@@ -1,6 +1,6 @@
 ! # $File$
 ! 
-! Summary: Module for structured logging in a JSON lines file.
+! Summary: Module for structured logging in a namelist file.
 ! Standard: Fortran 2003
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
@@ -9,7 +9,10 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-module logging
+! Based roughly on the Python logging module.
+! <https://docs.python.org/3/howto/logging.html>
+
+module nmllog
 
 use prec, only: RP, CL
 implicit none
@@ -23,25 +26,25 @@ integer, parameter :: TIMESTAMP_LEN = 29
 
 integer, public, parameter :: UNIT_CLOSED = -1
 
-character(len=*), public, parameter :: NOT_SET_LEVEL  = 0
-character(len=*), public, parameter :: DEBUG_LEVEL    = 10
-character(len=*), public, parameter :: INFO_LEVEL     = 20
-character(len=*), public, parameter :: WARNING_LEVEL  = 30
-character(len=*), public, parameter :: ERROR_LEVEL    = 40
-character(len=*), public, parameter :: CRITICAL_LEVEL = 50
+integer, public, parameter :: NOT_SET_LEVEL  = 0
+integer, public, parameter :: DEBUG_LEVEL    = 10
+integer, public, parameter :: INFO_LEVEL     = 20
+integer, public, parameter :: WARNING_LEVEL  = 30
+integer, public, parameter :: ERROR_LEVEL    = 40
+integer, public, parameter :: CRITICAL_LEVEL = 50
 
 type, public :: log_type
-    character(len=CL) :: filename
-    integer           :: unit  = UNIT_CLOSED
-    integer           :: level = WARNING_LEVEL
+    character(len=:), allocatable :: filename
+    integer :: unit  = UNIT_CLOSED
+    integer :: level = WARNING_LEVEL
 contains
-    public :: log_open => open
-    public :: log_close => close
-    public :: log_debug => debug
-    public :: log_info => info
-    public :: log_warning => warning
-    public :: log_error => error
-    public :: log_critical => critical
+    procedure :: open => log_open
+    procedure :: close => log_close
+    procedure :: debug => log_debug
+    procedure :: info => log_info
+    procedure :: warning => log_warning
+    procedure :: error => log_error
+    procedure :: critical => log_critical
 end type log_type
 
 contains
@@ -52,7 +55,7 @@ function now()
     character(len=4)             :: year
     character(len=2)             :: month, day, hour, minutes, seconds
     character(len=3)             :: milliseconds
-    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=TIMESTAMP_LEN) :: now
     
     ! ISO 8601 date-time format.
     ! <https://en.wikipedia.org/wiki/ISO_8601>
@@ -72,7 +75,7 @@ function now()
 end function now
 
 subroutine log_open(this, filename, level)
-    type(log_type), intent(out) :: this
+    class(log_type), intent(out) :: this
     
     character(len=*), intent(in)  :: filename
     integer, optional, intent(in) :: level
@@ -104,7 +107,7 @@ subroutine log_open(this, filename, level)
 end subroutine log_open
 
 subroutine log_close(this)
-    type(log_type), intent(out) :: this
+    class(log_type), intent(inout) :: this
     
     close(unit=this%unit)
     this%unit = UNIT_CLOSED
@@ -146,43 +149,43 @@ subroutine log_writer(this, message, level_code)
 end subroutine log_writer
 
 subroutine log_debug(this, message)
-    type(log_type) :: this
+    class(log_type) :: this
     
     character(len=*), intent(in) :: message
     
-    call this%log_writer(message, DEBUG_LEVEL)
+    call log_writer(this, message, DEBUG_LEVEL)
 end subroutine log_debug
 
 subroutine log_info(this, message)
-    type(log_type) :: this
+    class(log_type) :: this
     
     character(len=*), intent(in) :: message
     
-    call this%log_writer(message, INFO_LEVEL)
+    call log_writer(this, message, INFO_LEVEL)
 end subroutine log_info
 
 subroutine log_warning(this, message)
-    type(log_type) :: this
+    class(log_type) :: this
     
     character(len=*), intent(in) :: message
     
-    call this%log_writer(message, WARNING_LEVEL)
+    call log_writer(this, message, WARNING_LEVEL)
 end subroutine log_warning
 
 subroutine log_error(this, message)
-    type(log_type) :: this
+    class(log_type) :: this
     
     character(len=*), intent(in) :: message
     
-    call this%log_writer(message, ERROR_LEVEL)
+    call log_writer(this, message, ERROR_LEVEL)
 end subroutine log_error
 
 subroutine log_critical(this, message)
-    type(log_type) :: this
+    class(log_type) :: this
     
     character(len=*), intent(in) :: message
     
-    call this%log_writer(message, CRITICAL_LEVEL)
+    call log_writer(this, message, CRITICAL_LEVEL)
 end subroutine log_critical
 
-end module logging
+end module nmllog

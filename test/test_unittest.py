@@ -94,14 +94,14 @@ class log_lines(unittest.TestCase):
                     cls.integer_test_fail_expected = int(data["integer expected"])
                     cls.integer_test_fail_diff     = int(data["difference"])
                 
-                if data["message"] == "pass: string_equality_test":
+                if data["message"] == "pass: character_equality_test":
                     cls.string_test_present  = True
                     cls.string_test_rc       = int(data["rc"])
                     cls.string_test_type     = data["type"]
                     cls.string_test_returned = data["string returned"]
                     cls.string_test_expected = data["string expected"]
                 
-                if data["message"] == "fail: string_equality_test, failure (greater)":
+                if data["message"] == "fail: character_equality_test, failure (greater)":
                     cls.string_test_fail_present  = True
                     cls.string_test_fail_rc       = int(data["rc"])
                     cls.string_test_fail_type     = data["type"]

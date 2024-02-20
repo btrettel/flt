@@ -71,7 +71,7 @@ all:
 
 .PHONY: clean
 clean:
-	$(RM) *.jsonl *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) $(SUNF95RM)
+	$(RM) *.nml *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) $(SUNF95RM)
 
 # TODO: `.f90$(OBJEXT):`
 
@@ -79,7 +79,7 @@ clean:
 	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: checks.jsonl dimmod.jsonl ga.jsonl nmllog.jsonl prec.jsonl rngmod.jsonl unittest.jsonl
+test: checks.nml dimmod.nml ga.nml nmllog.nml prec.nml rngmod.nml unittest.nml
 	@echo "*********************"
 	@echo "* All tests passed. *"
 	@echo "*********************"
@@ -138,10 +138,10 @@ src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec
 # checks #
 ##########
 
-test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_checks.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_checks.f90
 
-checks.jsonl: test_checks$(BINEXT)
+checks.nml: test_checks$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
 	python3 test/passed.py $@
 	python3 test/test_checks.py
@@ -151,10 +151,10 @@ checks.jsonl: test_checks$(BINEXT)
 # dimcheck #
 ############
 
-test_dimmod$(BINEXT): src/dimmod$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+test_dimmod$(BINEXT): src/dimmod$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_dimmod.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_dimmod.f90
 
-dimmod.jsonl: test_dimmod$(BINEXT)
+dimmod.nml: test_dimmod$(BINEXT)
 	$(RUN)test_dimmod$(BINEXT)
 	python3 test/passed.py $@
 	test ! -e fort.*
@@ -163,10 +163,10 @@ dimmod.jsonl: test_dimmod$(BINEXT)
 # ga #
 ######
 
-test_ga$(BINEXT): src/ga$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+test_ga$(BINEXT): src/ga$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_ga.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_ga.f90
 
-ga.jsonl: test_ga$(BINEXT)
+ga.nml: test_ga$(BINEXT)
 	$(RUN)test_ga$(BINEXT)
 	python3 test/passed.py $@
 	test ! -e fort.*
@@ -175,7 +175,7 @@ ga.jsonl: test_ga$(BINEXT)
 # nmllog #
 ##########
 
-test_nmllog$(BINEXT): src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+test_nmllog$(BINEXT): src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_nmllog.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_nmllog.f90
 
 nmllog.nml: test_nmllog$(BINEXT)
@@ -188,7 +188,7 @@ nmllog.nml: test_nmllog$(BINEXT)
 # prec #
 ########
 
-test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_prec.f90
 
 prec.nml: test_prec$(BINEXT)
@@ -200,10 +200,10 @@ prec.nml: test_prec$(BINEXT)
 # rngmod #
 ##########
 
-test_rngmod$(BINEXT): src/rngmod$(DBGOBJEXT) src/unittest$(DBGOBJEXT)
+test_rngmod$(BINEXT): src/rngmod$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_rngmod.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_rngmod.f90
 
-rngmod.jsonl: test_rngmod$(BINEXT)
+rngmod.nml: test_rngmod$(BINEXT)
 	$(RUN)test_rngmod$(BINEXT)
 	python3 test/passed.py $@
 	test ! -e fort.*
@@ -212,11 +212,11 @@ rngmod.jsonl: test_rngmod$(BINEXT)
 # unittest #
 ############
 
-test_unittest$(BINEXT): src/unittest$(DBGOBJEXT)
+test_unittest$(BINEXT): src/unittest$(DBGOBJEXT) test/test_unittest.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unittest.f90
 
-unittest.jsonl: test_unittest$(BINEXT)
+unittest.nml: test_unittest$(BINEXT)
 	$(RUN)test_unittest$(BINEXT)
-	python3 test/passed.py $@
-	python3 test/test_unittest.py
+	#python3 test/passed.py $@
+	#python3 test/test_unittest.py
 	test ! -e fort.*
