@@ -37,31 +37,34 @@ end type test_results_type
 
 contains
 
-subroutine logical_test(this, condition, message)
+subroutine logical_test(this, condition, message_in)
     ! Check whether test `condition` is `.true.`, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
     
     logical, intent(in)          :: condition
-    character(len=*), intent(in) :: message
+    character(len=*), intent(in) :: message_in
     
-    character(len=TIMESTAMP_LEN) :: timestamp
-    character(len=7)             :: variable_type
-    logical                      :: test_passes, returned_logical
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    logical                       :: test_passes, returned_logical
+    character(len=:), allocatable :: message
     
     namelist /test_result/ timestamp, variable_type, test_passes, message, returned_logical
+    
+    timestamp        = now()
+    variable_type    = "logical"
+    message          = message_in
+    returned_logical = condition
+    
+    test_passes  = condition
+    write(unit=this%logger%unit, nml=test_result)
     
     if (.not. condition) then
         this%n_failures = this%n_failures + 1
         write(unit=*, fmt="(a, a)") "fail: ", message
         write(unit=*, fmt="(a)")
     end if
-    
-    timestamp        = now()
-    variable_type    = "logical"
-    test_passes      = condition
-    returned_logical = condition
-    write(unit=this%logger%unit, nml=test_result)
     
     this%n_tests = this%n_tests + 1
 end subroutine logical_test
@@ -79,7 +82,7 @@ end subroutine logical_test
 !    call logical_test(this, .not. condition, message)
 !end subroutine logical_not_test
 
-subroutine real_equality_test(this, returned_real, compared_real, message, abs_tol, ne)
+subroutine real_equality_test(this, returned_real, compared_real, message_in, abs_tol, ne)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
     use checks, only: TOL_FACTOR, check, is_close
@@ -87,16 +90,17 @@ subroutine real_equality_test(this, returned_real, compared_real, message, abs_t
     class(test_results_type), intent(inout) :: this
     
     real(kind=RP), intent(in)    :: returned_real, compared_real
-    character(len=*), intent(in) :: message
+    character(len=*), intent(in) :: message_in
     
     real(kind=RP), intent(in), optional :: abs_tol
     logical, intent(in), optional       :: ne ! `.false.` for checking equality, `.true.` for checking inequality
     
-    character(len=TIMESTAMP_LEN) :: timestamp
-    character(len=4)             :: variable_type
-    character(len=2)             :: test_operator
-    logical                      :: test_passes, checking_equality
-    real(kind=RP)                :: tolerance, difference
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=4)              :: variable_type
+    character(len=2)              :: test_operator
+    logical                       :: test_passes, checking_equality
+    character(len=:), allocatable :: message
+    real(kind=RP)                 :: tolerance, difference
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
                             returned_real, compared_real, tolerance, difference
@@ -123,6 +127,12 @@ subroutine real_equality_test(this, returned_real, compared_real, message, abs_t
         test_passes = .not. test_passes
     end if
     
+    timestamp     = now()
+    variable_type = "real"
+    message       = message_in
+    
+    write(unit=this%logger%unit, nml=test_result)
+    
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
         write(unit=*, fmt="(a, es15.8)") "real returned = ", returned_real
@@ -146,14 +156,10 @@ subroutine real_equality_test(this, returned_real, compared_real, message, abs_t
     
     call check(difference >= 0.0_RP, this%logger, "real_equality_test, difference < 0", this%n_failures)
     
-    timestamp     = now()
-    variable_type = "real"
-    write(unit=this%logger%unit, nml=test_result)
-    
     this%n_tests = this%n_tests + 1
 end subroutine real_equality_test
 
-subroutine real_inequality_test(this, returned_real, compared_real, message, abs_tol)
+subroutine real_inequality_test(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
     
     use checks, only: TOL_FACTOR
@@ -161,7 +167,7 @@ subroutine real_inequality_test(this, returned_real, compared_real, message, abs
     class(test_results_type), intent(inout) :: this
     
     real(kind=RP), intent(in)    :: returned_real, compared_real
-    character(len=*), intent(in) :: message
+    character(len=*), intent(in) :: message_in
     
     real(kind=RP), intent(in), optional :: abs_tol
     
@@ -173,26 +179,32 @@ subroutine real_inequality_test(this, returned_real, compared_real, message, abs
         tolerance = TOL_FACTOR * epsilon(1.0_RP)
     end if
     
-    call real_equality_test(this, returned_real, compared_real, message, abs_tol=tolerance, ne=.true.)
+    call real_equality_test(this, returned_real, compared_real, message_in, abs_tol=tolerance, ne=.true.)
 end subroutine real_inequality_test
 
-subroutine integer_equality_test(this, returned_integer, compared_integer, message)
+subroutine integer_equality_test(this, returned_integer, compared_integer, message_in)
     ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
     
     integer, intent(in)          :: returned_integer, compared_integer
-    character(len=*), intent(in) :: message
+    character(len=*), intent(in) :: message_in
     
-    logical :: test_passes
-    
-    character(len=TIMESTAMP_LEN) :: timestamp
-    character(len=7)             :: variable_type
-    character(len=2)             :: test_operator
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    character(len=2)              :: test_operator
+    logical                       :: test_passes
+    character(len=:), allocatable :: message
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
     
+    timestamp     = now()
+    variable_type = "integer"
+    message       = message_in
+    test_operator = "=="
+    
     test_passes = (returned_integer == compared_integer)
+    write(unit=this%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
@@ -203,32 +215,33 @@ subroutine integer_equality_test(this, returned_integer, compared_integer, messa
         write(unit=*, fmt="(a)")
     end if
     
-    
-    timestamp     = now()
-    variable_type = "integer"
-    test_operator = "=="
-    write(unit=this%logger%unit, nml=test_result)
-    
     this%n_tests = this%n_tests + 1
 end subroutine integer_equality_test
 
-subroutine integer_greater_equal_test(this, returned_integer, compared_integer, message)
+subroutine integer_greater_equal_test(this, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer` is greater than `compared_integer`, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
     
     integer, intent(in)          :: returned_integer, compared_integer
-    character(len=*), intent(in) :: message
+    character(len=*), intent(in) :: message_in
     
     logical :: test_passes
     
-    character(len=TIMESTAMP_LEN) :: timestamp
-    character(len=7)             :: variable_type
-    character(len=2)             :: test_operator
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    character(len=2)              :: test_operator
+    character(len=:), allocatable :: message
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
     
+    timestamp     = now()
+    variable_type = "integer"
+    test_operator = ">="
+    message       = message_in
+    
     test_passes = (returned_integer >= compared_integer)
+    write(unit=this%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
@@ -238,32 +251,35 @@ subroutine integer_greater_equal_test(this, returned_integer, compared_integer, 
         write(unit=*, fmt="(a)")
     end if
     
-    
-    timestamp     = now()
-    variable_type = "integer"
-    test_operator = ">="
-    write(unit=this%logger%unit, nml=test_result)
-    
     this%n_tests = this%n_tests + 1
 end subroutine integer_greater_equal_test
 
-subroutine character_equality_test(this, returned_string, compared_string, message)
+subroutine character_equality_test(this, returned_string_in, compared_string_in, message_in)
     ! Check whether two character variables are identical, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
     
-    character(len=*), intent(in) :: returned_string, compared_string
-    character(len=*), intent(in) :: message
+    character(len=*), intent(in) :: returned_string_in, compared_string_in
+    character(len=*), intent(in) :: message_in
     
     logical :: test_passes
     
-    character(len=TIMESTAMP_LEN) :: timestamp
-    character(len=9)             :: variable_type
-    character(len=2)             :: test_operator
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=9)              :: variable_type
+    character(len=2)              :: test_operator
+    character(len=:), allocatable :: message, returned_string, compared_string
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_string, compared_string
     
+    timestamp       = now()
+    variable_type   = "character"
+    test_operator   = "=="
+    message         = message_in
+    returned_string = returned_string_in
+    compared_string = compared_string_in
+    
     test_passes = (trim(adjustl(returned_string)) == trim(adjustl(compared_string)))
+    write(unit=this%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
@@ -272,11 +288,6 @@ subroutine character_equality_test(this, returned_string, compared_string, messa
         write(unit=*, fmt="(a, a)") "fail: ", message
         write(unit=*, fmt="(a)")
     end if
-    
-    timestamp     = now()
-    variable_type = "character"
-    test_operator = "=="
-    write(unit=this%logger%unit, nml=test_result)
     
     this%n_tests = this%n_tests + 1
 end subroutine character_equality_test

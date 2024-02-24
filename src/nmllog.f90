@@ -121,16 +121,16 @@ subroutine log_close(this)
     this%unit = UNIT_CLOSED
 end subroutine log_close
 
-subroutine log_writer(this, message, level_code)
+subroutine log_writer(this, message_in, level_code)
     ! TODO: When FTN95 supports `error_unit`, make `ERROR_LEVEL` and higher write to `error_unit`.
     
     type(log_type) :: this
     
-    character(len=*), intent(in) :: message
+    character(len=*), intent(in) :: message_in
     integer, intent(in)          :: level_code
     
     character(len=TIMESTAMP_LEN)  :: timestamp
-    character(len=:), allocatable :: level
+    character(len=:), allocatable :: message, level
     
     namelist /log/ timestamp, message, level
     
@@ -151,6 +151,7 @@ subroutine log_writer(this, message, level_code)
             level = NOT_SET_STRING
     end select
     
+    message = message_in
     write(unit=this%unit, nml=log)
     
     if (level_code >= this%level) then

@@ -99,9 +99,10 @@ ifx:
 	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f08 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
 
 # The ability of this compiler to use case-sensitive variable names is unique.
+# `-ansi` seems to do Fortran 95 compliance.
 .PHONY: sunf95
 sunf95:
-	$(MAKE) test FC=sunf95 FFLAGS='-w4 -errwarn=%all -e -stackvar -ansi -C -U' DBGFLAGS='-g -fpover -xcheck=%all -fnonstd'
+	$(MAKE) test FC=sunf95 FFLAGS='-w4 -errwarn=%all -e -stackvar -C -U' DBGFLAGS='-g -fpover -xcheck=%all -fnonstd'
 
 .PHONY: flang-7
 flang-7:
