@@ -2,6 +2,7 @@
 
 Priorities:
 
+- `newunit`
 - Remove Git keywords for simplicity and portability.
 - `string_` to `character_`
 - `*_equality_test` to `eq` with generics, similar for others.

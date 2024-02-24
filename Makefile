@@ -11,7 +11,7 @@
 
 # TODO: Add linters before compilation. Lint each file before compiling it.
 # TODO: Camfort
-# TODO: lfortran, particularly for the style suggestions
+# LATER: lfortran, particularly for the style suggestions
 # TODO: Figure out how to automate parts like `test/test_ga.f90` in `test_ga$(BINEXT):`
 # TODO: nvfortran to replace flang-7. <https://docs.nvidia.com/hpc-sdk//index.html>
 # TODO: Add code coverage.
@@ -44,8 +44,6 @@ OBJEXT    = o
 OBJFLAGS  = -c -o
 DBGOBJEXT = -dbg.$(OBJEXT)
 
-SUNF95RM = *.dbg
-
 ###############
 # Boilerplate #
 ###############
@@ -58,8 +56,6 @@ all:
 	$(MAKE) clean
 	$(MAKE) ifx
 	$(MAKE) clean
-	$(MAKE) sunf95
-	$(MAKE) clean
 	$(MAKE) flang-7
 	$(MAKE) clean
 	@echo "***************************************"
@@ -71,7 +67,7 @@ all:
 
 .PHONY: clean
 clean:
-	$(RM) *.nml *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) $(SUNF95RM)
+	$(RM) *.nml *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg
 
 # TODO: `.f90$(OBJEXT):`
 
@@ -98,24 +94,13 @@ ifort:
 ifx:
 	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f08 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
 
-# The ability of this compiler to use case-sensitive variable names is unique.
-# `-ansi` seems to do Fortran 95 compliance.
-.PHONY: sunf95
-sunf95:
-	$(MAKE) test FC=sunf95 FFLAGS='-w4 -errwarn=%all -e -stackvar -C -U' DBGFLAGS='-g -fpover -xcheck=%all -fnonstd'
-
 .PHONY: flang-7
 flang-7:
 	$(MAKE) test FC=flang-7 FFLAGS='-Wdeprecated' DBGFLAGS='-g'
 
-.PHONY: lfortran
-lfortran:
-	$(MAKE) test FC=lfortran FFLAGS='--link-with-gcc' DBGFLAGS=''
-
-# Doesn't work yet.
-#.PHONY: ftn95
-#ftn95:
-#	$(MAKE) test FC="wine ftn95" FFLAGS='/link /iso /restrict_syntax /errorlog' DBGFLAGS='/checkmate' OFLAG='' OBJEXT='obj' OBJFLAGS='' DBGOBJEXT='.obj'
+#.PHONY: lfortran
+#lfortran:
+#	$(MAKE) test FC=lfortran FFLAGS='--link-with-gcc' DBGFLAGS=''
 
 ################
 # Dependencies #

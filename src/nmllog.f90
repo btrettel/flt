@@ -20,8 +20,8 @@ private
 
 public :: now
 
-integer, parameter :: LOG_UNIT      = 10
-integer, parameter :: MAX_TRIES     = 10
+integer, parameter :: LOG_UNIT  = 10
+integer, parameter :: MAX_TRIES = 10
 
 integer, public, parameter :: TIMESTAMP_LEN = 29
 integer, public, parameter :: UNIT_CLOSED = -1
@@ -124,7 +124,7 @@ end subroutine log_close
 subroutine log_writer(this, message_in, level_code)
     ! TODO: When FTN95 supports `error_unit`, make `ERROR_LEVEL` and higher write to `error_unit`.
     
-    type(log_type) :: this
+    type(log_type), intent(in) :: this
     
     character(len=*), intent(in) :: message_in
     integer, intent(in)          :: level_code
@@ -160,7 +160,7 @@ subroutine log_writer(this, message_in, level_code)
 end subroutine log_writer
 
 subroutine log_debug(this, message)
-    class(log_type) :: this
+    class(log_type), intent(in) :: this
     
     character(len=*), intent(in) :: message
     
@@ -168,7 +168,7 @@ subroutine log_debug(this, message)
 end subroutine log_debug
 
 subroutine log_info(this, message)
-    class(log_type) :: this
+    class(log_type), intent(in) :: this
     
     character(len=*), intent(in) :: message
     
@@ -176,7 +176,7 @@ subroutine log_info(this, message)
 end subroutine log_info
 
 subroutine log_warning(this, message)
-    class(log_type) :: this
+    class(log_type), intent(in) :: this
     
     character(len=*), intent(in) :: message
     
@@ -184,7 +184,7 @@ subroutine log_warning(this, message)
 end subroutine log_warning
 
 subroutine log_error(this, message)
-    class(log_type) :: this
+    class(log_type), intent(in) :: this
     
     character(len=*), intent(in) :: message
     
@@ -192,7 +192,7 @@ subroutine log_error(this, message)
 end subroutine log_error
 
 subroutine log_critical(this, message)
-    class(log_type) :: this
+    class(log_type), intent(in) :: this
     
     character(len=*), intent(in) :: message
     
@@ -201,14 +201,16 @@ end subroutine log_critical
 
 subroutine log_debug_info(this)
     use, intrinsic :: iso_fortran_env, only: compiler_opt => compiler_options, compiler_ver => compiler_version
+    use, intrinsic :: ieee_arithmetic, only: ieee_support_denormal
     use prec, only: RP
     
-    ! Later, when FTN95 supports it:
-    ! - <https://fortranwiki.org/fortran/show/ieee_arithmetic>, particularly `ieee_support_denormal`.
+    ! Maybe:
+    ! - `epsilon`
+    ! - `spacing`
+    ! - kind code, range, and huge for `I5`
+    ! - more from <https://fortranwiki.org/fortran/show/ieee_arithmetic>
     
-    ! Maybe: `epsilon`, `spacing`, kind code, range, and huge for `I5`
-    
-    class(log_type) :: this
+    class(log_type), intent(in) :: this
     
     character(len=:), allocatable :: compiler_options, compiler_version, level
     character(len=TIMESTAMP_LEN)  :: timestamp
@@ -216,9 +218,10 @@ subroutine log_debug_info(this)
     real(kind=RP) :: real_huge
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
                         integer_kind_code, integer_range, integer_huge
+    logical       :: real_support_denormal
     
     namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
-                    real_kind_code, real_precision, real_range, real_radix, real_huge, &
+                    real_kind_code, real_precision, real_range, real_radix, real_huge, real_support_denormal, &
                     integer_kind_code, integer_range, integer_huge
     
     timestamp        = now()
@@ -226,11 +229,12 @@ subroutine log_debug_info(this)
     compiler_options = compiler_opt()
     compiler_version = compiler_ver()
     
-    real_kind_code = RP
-    real_precision = precision(1.0_RP)
-    real_range     = range(1.0_RP)
-    real_radix     = radix(1.0_RP)
-    real_huge      = huge(1.0_RP)
+    real_kind_code        = RP
+    real_precision        = precision(1.0_RP)
+    real_range            = range(1.0_RP)
+    real_radix            = radix(1.0_RP)
+    real_huge             = huge(1.0_RP)
+    real_support_denormal = ieee_support_denormal(1.0_RP)
     
     integer_kind_code = kind(1)
     integer_range     = range(1)

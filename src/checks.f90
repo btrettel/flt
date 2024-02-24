@@ -11,7 +11,7 @@
 
 module checks
 
-use prec, only: RP, CL
+use prec, only: RP
 implicit none
 private
 
