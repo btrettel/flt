@@ -12,7 +12,7 @@
 module unittest
 
 use prec, only: RP, CL
-use nmllog, only: log_type
+use nmllog, only: log_type, now, TIMESTAMP_LEN
 implicit none
 private
 
@@ -45,10 +45,11 @@ subroutine logical_test(this, condition, message)
     logical, intent(in)          :: condition
     character(len=*), intent(in) :: message
     
-    character(len=7) :: variable_type
-    logical :: test_passes, returned_logical
+    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=7)             :: variable_type
+    logical                      :: test_passes, returned_logical
     
-    namelist /test_result/ variable_type, test_passes, message, returned_logical
+    namelist /test_result/ timestamp, variable_type, test_passes, message, returned_logical
     
     if (.not. condition) then
         this%n_failures = this%n_failures + 1
@@ -56,6 +57,7 @@ subroutine logical_test(this, condition, message)
         write(unit=*, fmt="(a)")
     end if
     
+    timestamp        = now()
     variable_type    = "logical"
     test_passes      = condition
     returned_logical = condition
@@ -90,12 +92,14 @@ subroutine real_equality_test(this, returned_real, compared_real, message, abs_t
     real(kind=RP), intent(in), optional :: abs_tol
     logical, intent(in), optional       :: ne ! `.false.` for checking equality, `.true.` for checking inequality
     
-    character(len=4) :: variable_type
-    character(len=2) :: test_operator
-    logical          :: test_passes, checking_equality
-    real(kind=RP)    :: tolerance, difference
+    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=4)             :: variable_type
+    character(len=2)             :: test_operator
+    logical                      :: test_passes, checking_equality
+    real(kind=RP)                :: tolerance, difference
     
-    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_real, compared_real, tolerance, difference
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
+                            returned_real, compared_real, tolerance, difference
     
     if (present(abs_tol)) then
         tolerance = abs_tol
@@ -142,6 +146,7 @@ subroutine real_equality_test(this, returned_real, compared_real, message, abs_t
     
     call check(difference >= 0.0_RP, this%logger, "real_equality_test, difference < 0", this%n_failures)
     
+    timestamp     = now()
     variable_type = "real"
     write(unit=this%logger%unit, nml=test_result)
     
@@ -181,10 +186,11 @@ subroutine integer_equality_test(this, returned_integer, compared_integer, messa
     
     logical :: test_passes
     
-    character(len=7) :: variable_type
-    character(len=2) :: test_operator
+    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=7)             :: variable_type
+    character(len=2)             :: test_operator
     
-    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
     
     test_passes = (returned_integer == compared_integer)
     
@@ -197,6 +203,8 @@ subroutine integer_equality_test(this, returned_integer, compared_integer, messa
         write(unit=*, fmt="(a)")
     end if
     
+    
+    timestamp     = now()
     variable_type = "integer"
     test_operator = "=="
     write(unit=this%logger%unit, nml=test_result)
@@ -214,10 +222,11 @@ subroutine integer_greater_equal_test(this, returned_integer, compared_integer, 
     
     logical :: test_passes
     
-    character(len=7) :: variable_type
-    character(len=2) :: test_operator
+    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=7)             :: variable_type
+    character(len=2)             :: test_operator
     
-    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
     
     test_passes = (returned_integer >= compared_integer)
     
@@ -229,6 +238,8 @@ subroutine integer_greater_equal_test(this, returned_integer, compared_integer, 
         write(unit=*, fmt="(a)")
     end if
     
+    
+    timestamp     = now()
     variable_type = "integer"
     test_operator = ">="
     write(unit=this%logger%unit, nml=test_result)
@@ -246,10 +257,11 @@ subroutine character_equality_test(this, returned_string, compared_string, messa
     
     logical :: test_passes
     
-    character(len=9) :: variable_type
-    character(len=2) :: test_operator
+    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=9)             :: variable_type
+    character(len=2)             :: test_operator
     
-    namelist /test_result/ variable_type, test_operator, test_passes, message, returned_string, compared_string
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_string, compared_string
     
     test_passes = (trim(adjustl(returned_string)) == trim(adjustl(compared_string)))
     
@@ -261,6 +273,7 @@ subroutine character_equality_test(this, returned_string, compared_string, messa
         write(unit=*, fmt="(a)")
     end if
     
+    timestamp     = now()
     variable_type = "character"
     test_operator = "=="
     write(unit=this%logger%unit, nml=test_result)
@@ -317,7 +330,7 @@ subroutine end_tests(this)
 end subroutine end_tests
 
 !subroutine result_reader(filename)
-!    namelist /test_result/ variable_type, test_operator, test_passes, message, &
+!    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
 !                            returned_logical,
 !                            returned_real, compared_real, tolerance, difference, &
 !                            returned_integer, compared_integer, &

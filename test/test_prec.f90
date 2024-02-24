@@ -12,7 +12,7 @@
 program test_asserts
 
 use prec, only: I5, I9, RP, PI
-use logging, only: start_log
+use nmllog, only: start_log
 use unittest, only: test_results_type
 implicit none
 

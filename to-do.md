@@ -2,6 +2,7 @@
 
 Priorities:
 
+- Remove Git keywords for simplicity and portability.
 - `string_` to `character_`
 - `*_equality_test` to `eq` with generics, similar for others.
 - `%logical_test(.not.` to `%false(`
@@ -20,6 +21,7 @@ Priorities:
         - `box_print` (other similar things for the most important messages that I don't want to miss)
             - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
         - `table_print` for iterative progress in particular.
+- `check` to `assert`
 
 New modules and tools:
 
@@ -41,7 +43,10 @@ New modules and tools:
     - Start tracking comment density and adding more code comments. Density > 25%?
     - Require that all functions are pure.
     - Require construct names for nested `do` loops and `if` statements.
+    - Check that assertions have unique messages. List relevant variable values in error message.
 - fmutate.f90:
+    - TODO: Look at mutation testing literature for particular types of errors to introduce:
+    - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.
     - Note: This will be brittle in the sense that it will only work for my own particular coding style.
     - Distinguish between compilation errors and test failures in the mutation score.
     - Mutation operators:
@@ -66,6 +71,8 @@ New modules and tools:
         - Mutate `intent(in)` to `intent(out)`.
         - Mutate `intent(out)` to `intent(in)`.
         - Change order of exponentiation: `x**y` to `y**x`.
+        - changing order of magnitude of numbers
+        - moving parentheses (common mistake)
 - make_checker.py: Runs both GNU Make and BSD Make on all targets and identifies which fail.
 - rng.f90: Includes a deterministic random number generator for testing purposes.
     - Base the interface on NumPy:
@@ -102,9 +109,10 @@ New modules and tools:
 - read and save CSV and Sqlite files:
     - regex validation field for CSV
 - fuzz.f90: property/fuzz tester
-    - Property and fuzz tests on procedures and input files
+    - Property and fuzz tests on procedures and input files (namelist files)
     - Make depend on ga.f90
-    - namelist generator for fuzzing
+    - Make clone of Hypothesis/etc.
+    - Fuzzers can *optimize*, but property testing can only look at binary outcomes?
 - convergence.f90: convergence testing framework
     - grid convergence
     - temporal convergence
