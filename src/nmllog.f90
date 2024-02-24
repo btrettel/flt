@@ -20,8 +20,11 @@ private
 
 public :: now
 
+integer, parameter :: LOG_UNIT  = 10
+integer, parameter :: MAX_TRIES = 10
+
 integer, public, parameter :: TIMESTAMP_LEN = 29
-integer, public, parameter :: UNIT_CLOSED   = -1
+integer, public, parameter :: UNIT_CLOSED = -1
 
 integer, public, parameter :: NOT_SET_LEVEL  = 0
 integer, public, parameter :: DEBUG_LEVEL    = 10
@@ -85,12 +88,30 @@ subroutine log_open(this, filename, level)
     character(len=*), intent(in)  :: filename
     integer, optional, intent(in) :: level
     
+    integer :: unit_tries
+    logical :: unit_opened
+    
     if (present(level)) then
         this%level = level
     end if
     
-    this%filename = filename
-    open(newunit=this%unit, action="write", status="replace", position="rewind", file=this%filename)
+    this%unit = LOG_UNIT
+    do unit_tries = 1, MAX_TRIES
+        inquire(unit=this%unit, opened=unit_opened)
+        
+        if (.not. unit_opened) then
+            exit
+        end if
+        
+        this%unit = this%unit + 1
+    end do
+    
+    if (unit_opened) then
+        this%unit = UNIT_CLOSED
+    else
+        this%filename = filename
+        open(unit=this%unit, action="write", status="replace", position="rewind", file=trim(this%filename))
+    end if
 end subroutine log_open
 
 subroutine log_close(this)
@@ -180,14 +201,14 @@ end subroutine log_critical
 
 subroutine log_debug_info(this)
     use, intrinsic :: iso_fortran_env, only: compiler_opt => compiler_options, compiler_ver => compiler_version
-    use, intrinsic :: ieee_arithmetic, only: ieee_support_denormal
+    use, intrinsic :: ieee_arithmetic, only: ieee_support_datatype, ieee_support_denormal, ieee_support_divide, &
+                                                ieee_support_inf, ieee_support_nan, ieee_support_sqrt, ieee_support_standard
     use prec, only: RP
     
     ! Maybe:
     ! - `epsilon`
     ! - `spacing`
     ! - kind code, range, and huge for `I5`
-    ! - more from <https://fortranwiki.org/fortran/show/ieee_arithmetic>
     
     class(log_type), intent(in) :: this
     
@@ -197,11 +218,14 @@ subroutine log_debug_info(this)
     real(kind=RP) :: real_huge
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
                         integer_kind_code, integer_range, integer_huge
-    logical       :: real_support_denormal
+    logical       :: real_support_datatype, real_support_denormal, real_support_divide, &
+                        real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
     
     namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
-                    real_kind_code, real_precision, real_range, real_radix, real_huge, real_support_denormal, &
-                    integer_kind_code, integer_range, integer_huge
+                            real_kind_code, real_precision, real_range, real_radix, real_huge, &
+                            real_support_datatype, real_support_denormal, real_support_divide, &
+                            real_support_inf, real_support_nan, real_support_sqrt, real_support_standard, &
+                            integer_kind_code, integer_range, integer_huge
     
     timestamp        = now()
     level            = DEBUG_STRING
@@ -213,7 +237,13 @@ subroutine log_debug_info(this)
     real_range            = range(1.0_RP)
     real_radix            = radix(1.0_RP)
     real_huge             = huge(1.0_RP)
+    real_support_datatype = ieee_support_datatype(1.0_RP)
     real_support_denormal = ieee_support_denormal(1.0_RP)
+    real_support_divide   = ieee_support_divide(1.0_RP)
+    real_support_inf      = ieee_support_inf(1.0_RP)
+    real_support_nan      = ieee_support_nan(1.0_RP)
+    real_support_sqrt     = ieee_support_sqrt(1.0_RP)
+    real_support_standard = ieee_support_standard(1.0_RP)
     
     integer_kind_code = kind(1)
     integer_range     = range(1)

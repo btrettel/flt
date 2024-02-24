@@ -17,8 +17,7 @@ implicit none
 
 type(log_type)          :: logger, test_logger
 type(test_results_type) :: test_data
-!logical                 :: unit_opened
-integer                 :: rm_unit
+!integer                 :: rm_unit
 
 character(len=*), parameter :: TEST_FILENAME = "test.nml"
 
@@ -36,15 +35,19 @@ call test_logger%info("Info level test")
 call test_logger%warning("Warning level test")
 call test_logger%error("Error level test")
 call test_logger%critical("Critical level test")
+
+call test_logger%debug_info()
+
 call test_logger%close()
 
 ! TODO: Read log file to make sure that all messages are written properly.
 ! TODO: Test to make sure that log is closed after `logger%close()`
 ! TODO: Test `now()`
+! TODO: Test `log_debug_info`
 
 ! Delete `TEST_FILENAME`.
-open(newunit=rm_unit, file=TEST_FILENAME, status="old")
-close(unit=rm_unit, status="delete")
+!open(newunit=rm_unit, file=TEST_FILENAME, status="old")
+!close(unit=rm_unit, status="delete")
 
 call test_data%end_tests()
 call logger%close()
