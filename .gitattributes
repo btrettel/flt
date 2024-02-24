@@ -1,7 +1,0 @@
-# .gitattributes
-# Map file extensions to git filters
-
-*.f90 filter=rcs-keywords
-*.F90 filter=rcs-keywords
-*.py filter=rcs-keywords
-Makefile filter=rcs-keywords

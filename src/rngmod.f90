@@ -1,11 +1,7 @@
-! # $File$
-! 
-! Summary: Module for random number generators, including a deterministic "random number" generator for testing.
-! Standard: Fortran 2003
+! Module for random number generators, including a deterministic "random number" generator for testing.
+! Standard: Fortran 2008
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
-! Last updated: $Date$
-! Revision: $Revision$
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 

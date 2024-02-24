@@ -1,11 +1,7 @@
-! # $File$
-! 
-! Summary: Module for derivative-free optimization of `real`s with a genetic algorithm.
-! Standard: Fortran 2003
+! Module for derivative-free optimization of `real`s with a genetic algorithm.
+! Standard: Fortran 2008
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
-! Last updated: $Date$
-! Revision: $Revision$
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
@@ -113,12 +109,12 @@ subroutine initialize(config, pop)
     integer       :: i_pop, i_gene
     real(kind=RP) :: nu
     
-    do i_pop = 1, config%n_pop
-        do i_gene = 1, config%n_genes
+    pop_loop: do i_pop = 1, config%n_pop
+        gene_loop: do i_gene = 1, config%n_genes
             call random_number(nu)
             pop%individuals(i_pop)%chromo(i_gene) = rand_uniform(config%bounds(i_pop)%lower, config%bounds(i_pop)%lower, nu)
-        end do
-    end do
+        end do gene_loop
+    end do pop_loop
 end subroutine initialize
 
 !subroutine optimize(config, f, best_ever_individual, rc)
