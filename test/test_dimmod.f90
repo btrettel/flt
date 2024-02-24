@@ -38,7 +38,7 @@ exps(2)%d = 2
 exps(3)%d = 2
 type_name_output = type_name(config, exps)
 write(unit=*, fmt=*) type_name_output
-call test_data%character_equality_test(type_name_output, "mp000_lp000_tp000", "type_name, zeros")
+call test_data%character_eq(type_name_output, "mp000_lp000_tp000", "type_name, zeros")
 
 !indices = (/-1, -1, -1/)
 exps(1)%n = -1

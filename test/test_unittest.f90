@@ -22,89 +22,89 @@ call logger%open(LOG_FILENAME)
 call test_data%start_tests(logger)
 call test_data_2%start_tests(logger) ! These are for tests which should fail.
 
-call test_data%integer_equality_test(test_data%n_failures, 0, "test_data%n_failures at start")
-call test_data%integer_equality_test(test_data%n_tests, 1, "test_data%n_tests at start")
+call test_data%integer_eq(test_data%n_failures, 0, "test_data%n_failures at start")
+call test_data%integer_eq(test_data%n_tests, 1, "test_data%n_tests at start")
 
-call test_data%integer_equality_test(test_data_2%n_failures, 0, "test_data_2%n_failures at start")
-call test_data%integer_equality_test(test_data_2%n_tests, 0, "test_data_2%n_tests at start")
+call test_data%integer_eq(test_data_2%n_failures, 0, "test_data_2%n_failures at start")
+call test_data%integer_eq(test_data_2%n_tests, 0, "test_data_2%n_tests at start")
 
-call test_data%logical_test(.true., "logical_test, .true.")
+call test_data%logical_true(.true., "logical_true, .true.")
 
-call test_data%real_equality_test(1.0_RP, 1.0_RP, "real_equality_test, identical numbers (1)")
+call test_data%real_eq(1.0_RP, 1.0_RP, "real_eq, identical numbers (1)")
 
-call test_data%real_equality_test(15.0_RP, 15.0_RP, "real_equality_test, identical numbers (2)")
+call test_data%real_eq(15.0_RP, 15.0_RP, "real_eq, identical numbers (2)")
 
-call test_data%real_equality_test(0.0001_RP, 0.0001_RP, "real_equality_test, identical numbers (3)")
+call test_data%real_eq(0.0001_RP, 0.0001_RP, "real_eq, identical numbers (3)")
 
-call test_data%real_inequality_test(1.0_RP, 10.0_RP, "real_inequality_test, different numbers (1)")
+call test_data%real_ne(1.0_RP, 10.0_RP, "real_ne, different numbers (1)")
 
-call test_data%real_inequality_test(5.0_RP, 1000.0_RP, "real_inequality_test, different numbers (2)")
+call test_data%real_ne(5.0_RP, 1000.0_RP, "real_ne, different numbers (2)")
 
-call test_data%real_inequality_test(0.1_RP, 1000.0_RP, "real_inequality_test, different numbers (3)")
+call test_data%real_ne(0.1_RP, 1000.0_RP, "real_ne, different numbers (3)")
 
-call test_data%real_equality_test(1.0_RP, 1.0_RP + 5.0_RP * epsilon(1.0_RP), &
-    "real_equality_test, different numbers within tolerance (1)")
+call test_data%real_eq(1.0_RP, 1.0_RP + 5.0_RP * epsilon(1.0_RP), &
+    "real_eq, different numbers within tolerance (1)")
 
-call test_data%real_equality_test(100.0_RP, 100.0_RP + 5.0_RP * epsilon(1.0_RP), &
-    "real_equality_test, different numbers within tolerance (2)")
+call test_data%real_eq(100.0_RP, 100.0_RP + 5.0_RP * epsilon(1.0_RP), &
+    "real_eq, different numbers within tolerance (2)")
 
-call test_data%real_equality_test(0.1_RP, 0.1_RP + 5.0_RP * epsilon(1.0_RP), &
-    "real_equality_test, different numbers within tolerance (3)")
+call test_data%real_eq(0.1_RP, 0.1_RP + 5.0_RP * epsilon(1.0_RP), &
+    "real_eq, different numbers within tolerance (3)")
 
-call test_data%real_inequality_test(1.0_RP, 1.0_RP + 20.0_RP * epsilon(1.0_RP), &
-    "real_inequality_test, barely different numbers (1)")
+call test_data%real_ne(1.0_RP, 1.0_RP + 20.0_RP * epsilon(1.0_RP), &
+    "real_ne, barely different numbers (1)")
 
-call test_data%real_inequality_test(100.0_RP, 100.0_RP + 1000.0_RP * epsilon(1.0_RP), &
-    "real_inequality_test, barely different numbers (2)")
+call test_data%real_ne(100.0_RP, 100.0_RP + 1000.0_RP * epsilon(1.0_RP), &
+    "real_ne, barely different numbers (2)")
 
-call test_data%real_inequality_test(0.1_RP, 0.1_RP + 11.0_RP * epsilon(1.0_RP), &
-    "real_inequality_test, barely different numbers (3)")
+call test_data%real_ne(0.1_RP, 0.1_RP + 11.0_RP * epsilon(1.0_RP), &
+    "real_ne, barely different numbers (3)")
 
-call test_data%real_equality_test(0.0_RP, 0.0_RP, "real_equality_test, both zero")
+call test_data%real_eq(0.0_RP, 0.0_RP, "real_eq, both zero")
 
-call test_data%real_inequality_test(0.0_RP, 100.0_RP * epsilon(1.0_RP), &
-    "real_inequality_test, one zero, one different (1)")
+call test_data%real_ne(0.0_RP, 100.0_RP * epsilon(1.0_RP), &
+    "real_ne, one zero, one different (1)")
 
-call test_data%real_inequality_test(100.0_RP * epsilon(1.0_RP), 0.0_RP, &
-    "real_inequality_test, one zero, one different (2)")
+call test_data%real_ne(100.0_RP * epsilon(1.0_RP), 0.0_RP, &
+    "real_ne, one zero, one different (2)")
 
-call test_data%integer_equality_test(1, 1, "integer_equality_test")
+call test_data%integer_eq(1, 1, "integer_eq")
 
-call test_data%character_equality_test("a", "a", "character_equality_test")
+call test_data%character_eq("a", "a", "character_eq")
 
-call test_data%real_equality_test(10.0_RP, 5.0_RP, "real_equality_test, large abs_tol set", abs_tol=5.1_RP)
+call test_data%real_eq(10.0_RP, 5.0_RP, "real_eq, large abs_tol set", abs_tol=5.1_RP)
 
-call test_data%integer_greater_equal_test(2, 1, "integer_greater_equal_test, greater")
+call test_data%integer_ge(2, 1, "integer_ge, greater")
 
-call test_data%integer_greater_equal_test(2, 2, "integer_greater_equal_test, equal")
+call test_data%integer_ge(2, 2, "integer_ge, equal")
 
 ! tests which should fail
 
-call test_data_2%logical_test(.false., "logical_test, failure")
+call test_data_2%logical_true(.false., "logical_true, failure")
 
-call test_data_2%real_equality_test(1.0_RP, 0.0_RP, "real_equality_test, failure (greater)")
+call test_data_2%real_eq(1.0_RP, 0.0_RP, "real_eq, failure (greater)")
 
-call test_data_2%real_equality_test(0.0_RP, 1.0_RP, "real_equality_test, failure (less)")
+call test_data_2%real_eq(0.0_RP, 1.0_RP, "real_eq, failure (less)")
 
-call test_data_2%real_inequality_test(1.0_RP, 1.0_RP, "real_inequality_test, failure")
+call test_data_2%real_ne(1.0_RP, 1.0_RP, "real_ne, failure")
 
-call test_data_2%real_equality_test(10.0_RP, 5.0_RP, "real_equality_test, failure, abs_tol set", abs_tol=4.1_RP)
+call test_data_2%real_eq(10.0_RP, 5.0_RP, "real_eq, failure, abs_tol set", abs_tol=4.1_RP)
 
-call test_data_2%integer_equality_test(1, 0, "integer_equality_test, failure (greater)")
+call test_data_2%integer_eq(1, 0, "integer_eq, failure (greater)")
 
-call test_data_2%integer_equality_test(0, 1, "integer_equality_test, failure (less)")
+call test_data_2%integer_eq(0, 1, "integer_eq, failure (less)")
 
-call test_data_2%character_equality_test("a", "b", "character_equality_test, failure (greater)")
+call test_data_2%character_eq("a", "b", "character_eq, failure (greater)")
 
-call test_data_2%character_equality_test("b", "a", "character_equality_test, failure (less)")
+call test_data_2%character_eq("b", "a", "character_eq, failure (less)")
 
-call test_data_2%integer_greater_equal_test(1, 2, "integer_greater_equal_test, failure")
+call test_data_2%integer_ge(1, 2, "integer_ge, failure")
 
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 
-call test_data%integer_equality_test(test_data_2%n_tests, N_FAILING, "correct number of tests expected to fail")
+call test_data%integer_eq(test_data_2%n_tests, N_FAILING, "correct number of tests expected to fail")
 
-call test_data%integer_equality_test(test_data_2%n_failures, N_FAILING, &
+call test_data%integer_eq(test_data_2%n_failures, N_FAILING, &
                                 "correct number of tests expected to fail that fail")
 
 test_data%n_tests    = test_data%n_tests + test_data_2%n_tests

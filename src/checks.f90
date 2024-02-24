@@ -39,7 +39,7 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
         abs_tol_set = TOL_FACTOR * epsilon(1.0_RP)
     end if
     
-    tol = max(rel_tol_set * abs(input_real_1), rel_tol_set * abs(input_real_2), abs_tol_set) ! NO OPERATOR 1 FMUTATE NO ARG FMUTATE
+    tol = max(rel_tol_set * abs(input_real_1), rel_tol_set * abs(input_real_2), abs_tol_set)
     
     if (abs(input_real_1 - input_real_2) < tol) then
         is_close = .true.

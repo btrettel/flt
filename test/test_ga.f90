@@ -27,35 +27,35 @@ call test_data%start_tests(logger)
 ! `rand_int`
 
 ri = rand_int(0, 1, 0.0_RP)
-call test_data%integer_equality_test(ri, 0, "rand_int (1)")
+call test_data%integer_eq(ri, 0, "rand_int (1)")
 
 ri = rand_int(0, 1, 0.49_RP)
-call test_data%integer_equality_test(ri, 0, "rand_int (2)")
+call test_data%integer_eq(ri, 0, "rand_int (2)")
 
 ri = rand_int(0, 1, 0.5_RP)
-call test_data%integer_equality_test(ri, 1, "rand_int (3)")
+call test_data%integer_eq(ri, 1, "rand_int (3)")
 
 ri = rand_int(0, 1, 0.99_RP)
-call test_data%integer_equality_test(ri, 1, "rand_int (4)")
+call test_data%integer_eq(ri, 1, "rand_int (4)")
 
 ri = rand_int(0, 1, 1.0_RP)
-call test_data%integer_equality_test(ri, 1, "rand_int (5)")
+call test_data%integer_eq(ri, 1, "rand_int (5)")
 
 ! `rand_uniform`
 
 rr = rand_uniform(-2.0_RP, 3.0_RP, 0.0_RP)
-call test_data%real_equality_test(rr, -2.0_RP, "rand_uniform (r = 0)")
+call test_data%real_eq(rr, -2.0_RP, "rand_uniform (r = 0)")
 
 rr = rand_uniform(-2.0_RP, 3.0_RP, 0.5_RP)
-call test_data%real_equality_test(rr, 0.5_RP, "rand_uniform (r = 0.5)")
+call test_data%real_eq(rr, 0.5_RP, "rand_uniform (r = 0.5)")
 
 rr = rand_uniform(-2.0_RP, 3.0_RP, 1.0_RP)
-call test_data%real_equality_test(rr, 3.0_RP, "rand_uniform (r = 1)")
+call test_data%real_eq(rr, 3.0_RP, "rand_uniform (r = 1)")
 
 ! `rand_cauchy`
 
 !rr = rand_cauchy(0.0_RP, 1.0_RP, 0.75_RP)
-!call real_equality_test(rr, 1.0_RP, "rand_cauchy (1)")
+!call real_eq(rr, 1.0_RP, "rand_cauchy (1)")
 
 ! rand_cauchy = m + b * tan(PI * (r - 0.5_RP))
 
@@ -73,31 +73,31 @@ call test_data%real_equality_test(rr, 3.0_RP, "rand_uniform (r = 1)")
 ! TODO: Add tests for `rand_cauchy` for `r` approaching 0 and 1.
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/6.0_RP)
-call test_data%real_equality_test(rr, -sqrt(3.0_RP), "rand_cauchy (r = 1/6)")
+call test_data%real_eq(rr, -sqrt(3.0_RP), "rand_cauchy (r = 1/6)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/4.0_RP)
-call test_data%real_equality_test(rr, -1.0_RP, "rand_cauchy (r = 1/4)")
+call test_data%real_eq(rr, -1.0_RP, "rand_cauchy (r = 1/4)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/3.0_RP)
-call test_data%real_equality_test(rr, -sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 1/3)")
+call test_data%real_eq(rr, -sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 1/3)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 1.0_RP/2.0_RP)
-call test_data%real_equality_test(rr, 0.0_RP, "rand_cauchy (r = 1/2)")
+call test_data%real_eq(rr, 0.0_RP, "rand_cauchy (r = 1/2)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 2.0_RP/3.0_RP)
-call test_data%real_equality_test(rr, sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 2/3)")
+call test_data%real_eq(rr, sqrt(3.0_RP)/3.0_RP, "rand_cauchy (r = 2/3)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 3.0_RP/4.0_RP)
-call test_data%real_equality_test(rr, 1.0_RP, "rand_cauchy (r = 3/4)")
+call test_data%real_eq(rr, 1.0_RP, "rand_cauchy (r = 3/4)")
 
 rr = rand_cauchy(0.0_RP, 1.0_RP, 5.0_RP/6.0_RP)
-call test_data%real_equality_test(rr, sqrt(3.0_RP), "rand_cauchy (r = 5/6)")
+call test_data%real_eq(rr, sqrt(3.0_RP), "rand_cauchy (r = 5/6)")
 
 rr = rand_cauchy(2.0_RP, 1.0_RP, 3.0_RP/4.0_RP)
-call test_data%real_equality_test(rr, 3.0_RP, "rand_cauchy (changed m)")
+call test_data%real_eq(rr, 3.0_RP, "rand_cauchy (changed m)")
 
 rr = rand_cauchy(0.0_RP, 0.5_RP, 3.0_RP/4.0_RP)
-call test_data%real_equality_test(rr, 0.5_RP, "rand_cauchy (changed b)")
+call test_data%real_eq(rr, 0.5_RP, "rand_cauchy (changed b)")
 
 ! `clip`
 
@@ -106,15 +106,15 @@ bounds%upper = 1.0_RP
 
 rr = -5.0_RP
 call clip(bounds, rr)
-call test_data%real_equality_test(rr, 0.0_RP, "clip (below)")
+call test_data%real_eq(rr, 0.0_RP, "clip (below)")
 
 rr = 0.5_RP
 call clip(bounds, rr)
-call test_data%real_equality_test(rr, 0.5_RP, "clip (no change)")
+call test_data%real_eq(rr, 0.5_RP, "clip (no change)")
 
 rr = 5.0_RP
 call clip(bounds, rr)
-call test_data%real_equality_test(rr, 1.0_RP, "clip (above)")
+call test_data%real_eq(rr, 1.0_RP, "clip (above)")
 
 call test_data%end_tests()
 call logger%close()

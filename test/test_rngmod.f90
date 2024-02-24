@@ -31,16 +31,16 @@ call test_data%start_tests(logger)
 
 call set_determ([0.4_RP])
 output = select_rng(rng=determ)
-call test_data%real_equality_test(output, 0.4_RP, "set_determ (size=1, #1)")
-call test_data%real_equality_test(output, 0.4_RP, "set_determ (size=1, #2)")
+call test_data%real_eq(output, 0.4_RP, "set_determ (size=1, #1)")
+call test_data%real_eq(output, 0.4_RP, "set_determ (size=1, #2)")
 
 call set_determ([0.1_RP, 0.7_RP])
 output = select_rng(rng=determ)
-call test_data%real_equality_test(output, 0.1_RP, "set_determ (size=2, #1)")
+call test_data%real_eq(output, 0.1_RP, "set_determ (size=2, #1)")
 output = select_rng(rng=determ)
-call test_data%real_equality_test(output, 0.7_RP, "set_determ (size=2, #2)")
+call test_data%real_eq(output, 0.7_RP, "set_determ (size=2, #2)")
 output = select_rng(rng=determ)
-call test_data%real_equality_test(output, 0.1_RP, "set_determ (size=2, #3)")
+call test_data%real_eq(output, 0.1_RP, "set_determ (size=2, #3)")
 
 ! `pseudo`
 

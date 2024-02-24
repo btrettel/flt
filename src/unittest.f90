@@ -21,19 +21,19 @@ type, public :: test_results_type
     real(kind=RP)  :: end_time
     type(log_type) :: logger
 contains
-    procedure :: logical_test => logical_test
-    procedure :: real_equality_test => real_equality_test
-    procedure :: real_inequality_test => real_inequality_test
-    procedure :: integer_equality_test => integer_equality_test
-    procedure :: integer_greater_equal_test => integer_greater_equal_test
-    procedure :: character_equality_test => character_equality_test
+    procedure :: logical_true => logical_true
+    procedure :: real_eq => real_eq
+    procedure :: real_ne => real_ne
+    procedure :: integer_eq => integer_eq
+    procedure :: integer_ge => integer_ge
+    procedure :: character_eq => character_eq
     procedure :: start_tests => start_tests
     procedure :: end_tests => end_tests
 end type test_results_type
 
 contains
 
-subroutine logical_test(this, condition, message_in)
+subroutine logical_true(this, condition, message_in)
     ! Check whether test `condition` is `.true.`, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
@@ -63,10 +63,10 @@ subroutine logical_test(this, condition, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
-end subroutine logical_test
+end subroutine logical_true
 
 ! Not used yet. Will use later after I figure out a good way to make `returned_logical` not equal to `condition` for this special 
-! case in `logical_test`.
+! case in `logical_true`.
 !subroutine logical_not_test(this, condition, message)
 !    ! Check whether test `condition` is `.true.`, increase `number_of_failures` if `.false.`.
     
@@ -75,10 +75,10 @@ end subroutine logical_test
 !    logical, intent(in)          :: condition
 !    character(len=*), intent(in) :: message
     
-!    call logical_test(this, .not. condition, message)
+!    call logical_true(this, .not. condition, message)
 !end subroutine logical_not_test
 
-subroutine real_equality_test(this, returned_real, compared_real, message_in, abs_tol, ne)
+subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
     use checks, only: TOL_FACTOR, check, is_close
@@ -150,12 +150,12 @@ subroutine real_equality_test(this, returned_real, compared_real, message_in, ab
         write(unit=*, fmt="(a)")
     end if
     
-    call check(difference >= 0.0_RP, this%logger, "real_equality_test, difference < 0", this%n_failures)
+    call check(difference >= 0.0_RP, this%logger, "real_eq, difference < 0", this%n_failures)
     
     this%n_tests = this%n_tests + 1
-end subroutine real_equality_test
+end subroutine real_eq
 
-subroutine real_inequality_test(this, returned_real, compared_real, message_in, abs_tol)
+subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
     
     use checks, only: TOL_FACTOR
@@ -175,10 +175,10 @@ subroutine real_inequality_test(this, returned_real, compared_real, message_in, 
         tolerance = TOL_FACTOR * epsilon(1.0_RP)
     end if
     
-    call real_equality_test(this, returned_real, compared_real, message_in, abs_tol=tolerance, ne=.true.)
-end subroutine real_inequality_test
+    call real_eq(this, returned_real, compared_real, message_in, abs_tol=tolerance, ne=.true.)
+end subroutine real_ne
 
-subroutine integer_equality_test(this, returned_integer, compared_integer, message_in)
+subroutine integer_eq(this, returned_integer, compared_integer, message_in)
     ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
@@ -212,9 +212,9 @@ subroutine integer_equality_test(this, returned_integer, compared_integer, messa
     end if
     
     this%n_tests = this%n_tests + 1
-end subroutine integer_equality_test
+end subroutine integer_eq
 
-subroutine integer_greater_equal_test(this, returned_integer, compared_integer, message_in)
+subroutine integer_ge(this, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer` is greater than `compared_integer`, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
@@ -248,14 +248,14 @@ subroutine integer_greater_equal_test(this, returned_integer, compared_integer, 
     end if
     
     this%n_tests = this%n_tests + 1
-end subroutine integer_greater_equal_test
+end subroutine integer_ge
 
-subroutine character_equality_test(this, returned_string_in, compared_string_in, message_in)
+subroutine character_eq(this, returned_character_in, compared_character_in, message_in)
     ! Check whether two character variables are identical, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
     
-    character(len=*), intent(in) :: returned_string_in, compared_string_in
+    character(len=*), intent(in) :: returned_character_in, compared_character_in
     character(len=*), intent(in) :: message_in
     
     logical :: test_passes
@@ -271,8 +271,8 @@ subroutine character_equality_test(this, returned_string_in, compared_string_in,
     variable_type   = "character"
     test_operator   = "=="
     message         = message_in
-    returned_string = returned_string_in
-    compared_string = compared_string_in
+    returned_string = returned_character_in
+    compared_string = compared_character_in
     
     test_passes = (trim(adjustl(returned_string)) == trim(adjustl(compared_string)))
     write(unit=this%logger%unit, nml=test_result)
@@ -286,7 +286,7 @@ subroutine character_equality_test(this, returned_string_in, compared_string_in,
     end if
     
     this%n_tests = this%n_tests + 1
-end subroutine character_equality_test
+end subroutine character_eq
 
 function current_time()
     real(kind=RP) :: current_time ! in seconds

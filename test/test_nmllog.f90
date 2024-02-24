@@ -13,18 +13,18 @@ implicit none
 
 type(log_type)          :: logger, test_logger
 type(test_results_type) :: test_data
-!integer                 :: rm_unit
+integer                 :: rm_unit
 
 character(len=*), parameter :: TEST_FILENAME = "test.nml"
 
 call logger%open("nmllog.nml")
 call test_data%start_tests(logger)
 
-call test_data%integer_equality_test(test_logger%unit, UNIT_CLOSED, "logger, unit closed before opening")
+call test_data%integer_eq(test_logger%unit, UNIT_CLOSED, "logger, unit closed before opening")
 call test_logger%open(TEST_FILENAME)
 
-call test_data%character_equality_test(test_logger%filename, TEST_FILENAME, "logger, filename")
-call test_data%integer_equality_test(test_logger%level, WARNING_LEVEL, "logger, level before opening")
+call test_data%character_eq(test_logger%filename, TEST_FILENAME, "logger, filename")
+call test_data%integer_eq(test_logger%level, WARNING_LEVEL, "logger, level before opening")
 
 call test_logger%debug("Debug level test")
 call test_logger%info("Info level test")
@@ -42,8 +42,8 @@ call test_logger%close()
 ! TODO: Test `log_debug_info`
 
 ! Delete `TEST_FILENAME`.
-!open(newunit=rm_unit, file=TEST_FILENAME, status="old")
-!close(unit=rm_unit, status="delete")
+open(newunit=rm_unit, file=TEST_FILENAME, status="old")
+close(unit=rm_unit, status="delete")
 
 call test_data%end_tests()
 call logger%close()

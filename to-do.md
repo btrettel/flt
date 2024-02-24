@@ -2,10 +2,6 @@
 
 Priorities:
 
-- `string_` to `character_`
-- `*_equality_test` to `eq` with generics, similar for others.
-- `%logical_test(.not.` to `%false(`
-- Remove all `fmutate` annotations.
 - Convert all .jsonl files to .nml.
 - Eliminate Python from this repository.
     - Convert passed.py to passed.f90.
@@ -96,7 +92,9 @@ New modules and tools:
         - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
             - FortranFan seems skeptical.
         - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
-    - Make `real_equality_test` and `real_inequality_test` use `is_close`.
+    - Make `real_eq` and `real_ne` use `is_close`.
+    - Instead of `integer_eq`, `real_eq`, use generic `eq`?
+    - `%logical_true(.not.` to `%logical_false(`
 - input validation
     - Write module to ease input validation. For example, a subroutine to write a message about a variable being out of bounds.
     - `call validate_bounds(x, "x", rc, lower=0, lower_inclusive=.true.)`
