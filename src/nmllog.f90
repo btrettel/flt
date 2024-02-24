@@ -20,11 +20,8 @@ private
 
 public :: now
 
-integer, parameter :: LOG_UNIT  = 10
-integer, parameter :: MAX_TRIES = 10
-
 integer, public, parameter :: TIMESTAMP_LEN = 29
-integer, public, parameter :: UNIT_CLOSED = -1
+integer, public, parameter :: UNIT_CLOSED   = -1
 
 integer, public, parameter :: NOT_SET_LEVEL  = 0
 integer, public, parameter :: DEBUG_LEVEL    = 10
@@ -88,30 +85,12 @@ subroutine log_open(this, filename, level)
     character(len=*), intent(in)  :: filename
     integer, optional, intent(in) :: level
     
-    integer :: unit_tries
-    logical :: unit_opened
-    
     if (present(level)) then
         this%level = level
     end if
     
-    this%unit = LOG_UNIT
-    do unit_tries = 1, MAX_TRIES
-        inquire(unit=this%unit, opened=unit_opened)
-        
-        if (.not. unit_opened) then
-            exit
-        end if
-        
-        this%unit = this%unit + 1
-    end do
-    
-    if (unit_opened) then
-        this%unit = UNIT_CLOSED
-    else
-        this%filename = filename
-        open(unit=this%unit, action="write", status="replace", position="rewind", file=trim(this%filename))
-    end if
+    this%filename = filename
+    open(newunit=this%unit, action="write", status="replace", position="rewind", file=this%filename)
 end subroutine log_open
 
 subroutine log_close(this)
