@@ -13,19 +13,20 @@ program test_ga
 
 use prec, only: RP
 use ga, only: bounds_type, rand_int, rand_uniform, rand_cauchy, clip
-use logging, only: start_log
+use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
+type(log_type)          :: logger
 type(test_results_type) :: test_data
 integer                 :: ri
 real(kind=RP)           :: rr
 type(bounds_type)       :: bounds
 
-character(len=*), parameter :: LOG_FILENAME = "ga.jsonl"
+character(len=*), parameter :: LOG_FILENAME = "ga.nml"
 
-call test_data%start_tests(LOG_FILENAME)
-call start_log(LOG_FILENAME)
+call logger%open(LOG_FILENAME)
+call test_data%start_tests(logger)
 
 ! `rand_int`
 
@@ -120,5 +121,6 @@ call clip(bounds, rr)
 call test_data%real_equality_test(rr, 1.0_RP, "clip (above)")
 
 call test_data%end_tests()
+call logger%close()
 
 end program test_ga

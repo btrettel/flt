@@ -12,16 +12,17 @@
 program test_asserts
 
 use prec, only: I5, I9, RP, PI
-use nmllog, only: start_log
+use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
+type(log_type)          :: logger
 type(test_results_type) :: test_data
 
-character(len=*), parameter :: LOG_FILENAME = "prec.jsonl"
+character(len=*), parameter :: LOG_FILENAME = "prec.nml"
 
-call test_data%start_tests(LOG_FILENAME)
-call start_log(LOG_FILENAME)
+call logger%open(LOG_FILENAME)
+call test_data%start_tests(logger)
 
 call test_data%integer_greater_equal_test(range(1), 5, "default integer exponent range")
 call test_data%integer_greater_equal_test(range(1_I5), 5, "integer kind I5 exponent range")
@@ -32,5 +33,6 @@ call test_data%integer_greater_equal_test(range(1.0_RP), 15, "real kind RP expon
 call test_data%real_equality_test(3.141592653589793_RP, PI, "PI value")
 
 call test_data%end_tests()
+call logger%close()
 
 end program test_asserts

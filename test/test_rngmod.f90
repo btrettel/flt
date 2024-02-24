@@ -13,17 +13,18 @@ program test_rngmod
 
 use prec, only: RP
 use rngmod, only: set_determ, determ, pseudo
-use logging, only: start_log
-use unittest, only: test_results_type, start_tests, end_tests, real_equality_test
+use nmllog, only: log_type
+use unittest, only: test_results_type
 implicit none
 
+type(log_type)          :: logger
 type(test_results_type) :: test_data
 real(kind=RP)   :: output
 
-character(len=*), parameter :: LOG_FILENAME = "rngmod.jsonl"
+character(len=*), parameter :: LOG_FILENAME = "rngmod.nml"
 
-call test_data%start_tests(LOG_FILENAME)
-call start_log(LOG_FILENAME)
+call logger%open(LOG_FILENAME)
+call test_data%start_tests(logger)
 
 ! TODO: add direct tests using `determ` and `select_rng` directly
 ! TODO: `set_determ`
@@ -50,7 +51,8 @@ call test_data%real_equality_test(output, 0.1_RP, "set_determ (size=2, #3)")
 output = select_rng(rng=pseudo)
 write(unit=*, fmt=*) output
 
-call end_tests(test_data)
+call test_data%end_tests()
+call logger%close()
 
 contains
 

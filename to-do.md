@@ -7,9 +7,11 @@ Priorities:
 - `*_equality_test` to `eq` with generics, similar for others.
 - `%logical_test(.not.` to `%false(`
 - Remove all `fmutate` annotations.
-- Convert passed.py to passed.f90.
 - Convert all .jsonl files to .nml.
-- Merge tests from `test_*.py` into the associated Fortran test files.
+- Eliminate Python from this repository.
+    - Convert passed.py to passed.f90.
+    - Merge tests from `test_*.py` into the associated Fortran test files.
+    - Remove Python from .gitignore.
 - Make as much as possible `pure`.
 - `nmllog.f90`: Switch to Fortran namelist-based logging so that everything is in Fortran.
     - Check your notes for the following:
@@ -22,6 +24,7 @@ Priorities:
             - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
         - `table_print` for iterative progress in particular.
 - `check` to `assert`
+- Move `rand_int` and `rand_cauchy` to `rngmod`.
 
 New modules and tools:
 

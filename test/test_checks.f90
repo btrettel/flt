@@ -18,13 +18,13 @@ use unittest, only: test_results_type
 
 implicit none
 
+type(log_type)          :: logger
 type(test_results_type) :: test_data
 integer                 :: rc_check
-type(dict), allocatable :: dict_log(:)
 
-character(len=*), parameter :: LOG_FILENAME = "checks.jsonl"
+character(len=*), parameter :: LOG_FILENAME = "checks.nml"
 
-call start_log(LOG_FILENAME)
+call logger%open(LOG_FILENAME)
 call test_data%start_tests(logger)
 
 call test_data%logical_test(is_close(1.0_RP, 1.0_RP), "is_close, identical numbers (1)")
@@ -102,13 +102,14 @@ call test_data%logical_test(.not. is_close(1.0_RP, 0.0_RP, abs_tol=0.0_RP, rel_t
         "is_close, close numbers with set rel_tol, just outside")
 
 rc_check = 0
-call check(.true., LOG_FILENAME, "check, .true.", rc_check)
+call check(.true., logger, "check, .true.", rc_check)
 call test_data%integer_equality_test(rc_check, 0, "check, .true.")
 
 rc_check = 0
-call check(.false., LOG_FILENAME, "check, .false.", rc_check)
+call check(.false., logger, "check, .false.", rc_check)
 call test_data%integer_equality_test(rc_check, 1, "check, .false.")
 
 call test_data%end_tests()
+call logger%close()
 
 end program test_checks

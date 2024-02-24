@@ -143,8 +143,8 @@ test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_
 
 checks.nml: test_checks$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
-	python3 test/passed.py $@
-	python3 test/test_checks.py
+	#python3 test/passed.py $@
+	#python3 test/test_checks.py
 	test ! -e fort.*
 
 ############
@@ -156,7 +156,7 @@ test_dimmod$(BINEXT): src/dimmod$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_
 
 dimmod.nml: test_dimmod$(BINEXT)
 	$(RUN)test_dimmod$(BINEXT)
-	python3 test/passed.py $@
+	#python3 test/passed.py $@
 	test ! -e fort.*
 
 ######
@@ -168,7 +168,7 @@ test_ga$(BINEXT): src/ga$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_ga.f90
 
 ga.nml: test_ga$(BINEXT)
 	$(RUN)test_ga$(BINEXT)
-	python3 test/passed.py $@
+	#python3 test/passed.py $@
 	test ! -e fort.*
 
 ##########
@@ -193,7 +193,7 @@ test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec
 
 prec.nml: test_prec$(BINEXT)
 	$(RUN)test_prec$(BINEXT)
-	python3 test/passed.py $@
+	#python3 test/passed.py $@
 	test ! -e fort.*
 
 ##########
@@ -205,7 +205,7 @@ test_rngmod$(BINEXT): src/rngmod$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_
 
 rngmod.nml: test_rngmod$(BINEXT)
 	$(RUN)test_rngmod$(BINEXT)
-	python3 test/passed.py $@
+	#python3 test/passed.py $@
 	test ! -e fort.*
 
 ############

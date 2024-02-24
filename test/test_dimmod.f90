@@ -12,20 +12,21 @@
 program test_dimmod
 
 use dimmod, only: WIDTH, N_DIMS, config_type, rational, type_name, generate_types
-use logging, only: start_log
+use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
+type(log_type)               :: logger
 type(config_type)            :: config
 character(len=WIDTH*N_DIMS)  :: type_name_output
 type(rational), dimension(3) :: exps
 integer                      :: rc_types
 type(test_results_type)      :: test_data
 
-character(len=*), parameter :: LOG_FILENAME = "dimmod.jsonl"
+character(len=*), parameter :: LOG_FILENAME = "dimmod.nml"
 
-call test_data%start_tests(LOG_FILENAME)
-call start_log(LOG_FILENAME)
+call logger%open(LOG_FILENAME)
+call test_data%start_tests(logger)
 
 config%dims    = "mlt"
 config%min_exp = -1
@@ -57,6 +58,7 @@ call generate_types(config, rc_types)
 
 write(unit=*, fmt=*) rc_types
 
-call test_data%end_tests
+call test_data%end_tests()
+call logger%close()
 
 end program test_dimmod
