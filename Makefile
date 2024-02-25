@@ -30,7 +30,7 @@ MAKEFLAGS = --warn-undefined-variables
 # gfortran
 
 FC        = gfortran
-FFLAGS    = -Wall -Wextra -Werror -pedantic-errors -std=f2008 -Wconversion -Wconversion-extra -fimplicit-none -fmax-errors=1 -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=-2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -ffree-line-length-132
+FFLAGS    = -Wall -Wextra -Werror -pedantic-errors -Wno-maybe-uninitialized -std=f2008 -Wconversion -Wconversion-extra -fimplicit-none -fmax-errors=1 -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=-2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -ffree-line-length-132
 DBGFLAGS  = -Og -g -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow,underflow,denormal
 # --coverage
 # -fsanitize=leak doesn't work on trident for some reason. It does work on bison.

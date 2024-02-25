@@ -19,7 +19,7 @@ Priorities:
             - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
         - `table_print` for iterative progress in particular.
 - `check` to `assert`
-- Move `rand_int` and `rand_cauchy` to `rngmod`.
+- Move `rand_int` and `rand_cauchy` to `rngmod` (or rename `rngmod` to `random`).
 
 New modules and tools:
 

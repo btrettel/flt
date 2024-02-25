@@ -29,12 +29,12 @@ integer, public, parameter :: WARNING_LEVEL  = 30
 integer, public, parameter :: ERROR_LEVEL    = 40
 integer, public, parameter :: CRITICAL_LEVEL = 50
 
-character(len=*), parameter :: NOT_SET_STRING  = "not set"
-character(len=*), parameter :: DEBUG_STRING    = "debug"
-character(len=*), parameter :: INFO_STRING     = "info"
-character(len=*), parameter :: WARNING_STRING  = "warning"
-character(len=*), parameter :: ERROR_STRING    = "error"
-character(len=*), parameter :: CRITICAL_STRING = "critical"
+character(len=*), public, parameter :: NOT_SET_STRING  = "not set"
+character(len=*), public, parameter :: DEBUG_STRING    = "debug"
+character(len=*), public, parameter :: INFO_STRING     = "info"
+character(len=*), public, parameter :: WARNING_STRING  = "warning"
+character(len=*), public, parameter :: ERROR_STRING    = "error"
+character(len=*), public, parameter :: CRITICAL_STRING = "critical"
 
 type, public :: log_type
     character(len=:), allocatable :: filename
@@ -106,7 +106,7 @@ subroutine log_open(this, filename, level)
         this%unit = UNIT_CLOSED
     else
         this%filename = filename
-        open(unit=this%unit, action="write", status="replace", position="rewind", file=trim(this%filename))
+        open(unit=this%unit, action="write", status="replace", position="rewind", file=trim(this%filename), delim="quote")
     end if
 end subroutine log_open
 
@@ -118,17 +118,19 @@ subroutine log_close(this)
 end subroutine log_close
 
 subroutine log_writer(this, message_in, level_code)
-    ! TODO: When FTN95 supports `error_unit`, make `ERROR_LEVEL` and higher write to `error_unit`.
+    use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT, ERROR_UNIT
     
     type(log_type), intent(in) :: this
     
     character(len=*), intent(in) :: message_in
     integer, intent(in)          :: level_code
     
-    character(len=TIMESTAMP_LEN)  :: timestamp
-    character(len=:), allocatable :: message, level
+    integer :: print_unit
     
-    namelist /log/ timestamp, message, level
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=:), allocatable :: level, message
+    
+    namelist /log/ timestamp, level, message
     
     timestamp = now()
     
@@ -150,8 +152,14 @@ subroutine log_writer(this, message_in, level_code)
     message = message_in
     write(unit=this%unit, nml=log)
     
+    if (level_code >= WARNING_LEVEL) then
+        print_unit = ERROR_UNIT
+    else
+        print_unit = OUTPUT_UNIT
+    end if
+    
     if (level_code >= this%level) then
-        write(unit=*, fmt="(a, a, a, a, a)") timestamp, " [", level, "] ", message
+        write(unit=print_unit, fmt="(a, a, a, a, a)") timestamp, " [", level, "] ", message
     end if
 end subroutine log_writer
 
@@ -205,6 +213,8 @@ subroutine log_debug_info(this)
     ! - `epsilon`
     ! - `spacing`
     ! - kind code, range, and huge for `I5`
+    
+    ! TODO: If `DEBUG_LEVEL >= this%level` then print this information to stdout.
     
     class(log_type), intent(in) :: this
     
