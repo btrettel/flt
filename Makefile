@@ -23,6 +23,9 @@
 .DELETE_ON_ERROR:
 MAKEFLAGS = --warn-undefined-variables
 
+NML = checks.nml dimmod.nml ga.nml nmllog.nml prec.nml rngmod.nml unittest.nml
+.PRECIOUS: $(NML)
+
 #############
 # Compilers #
 #############
@@ -73,7 +76,7 @@ clean:
 	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: checks.nml dimmod.nml ga.nml nmllog.nml prec.nml rngmod.nml unittest.nml
+test: $(NML)
 	@echo "*********************"
 	@echo "* All tests passed. *"
 	@echo "*********************"

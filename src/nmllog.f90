@@ -215,6 +215,8 @@ subroutine log_debug_info(this)
     ! - kind code, range, and huge for `I5`
     
     ! TODO: If `DEBUG_LEVEL >= this%level` then print this information to stdout.
+    ! TODO: Print version number, Git revision, revision date, compile date, and whether there are local code modifications.
+    ! Similar to <https://github.com/firemodels/fds/blob/master/Source/cons.f90#L278>.
     
     class(log_type), intent(in) :: this
     
