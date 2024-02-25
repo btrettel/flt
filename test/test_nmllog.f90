@@ -427,6 +427,7 @@ subroutine test_log_debug_info(tests)
     character(len=8)             :: level
     character(len=CL)            :: compiler_options, compiler_version
     
+    ! Search nmllog.f90 for `real_huge` to see why this is commented out.
     !real(kind=RP) :: real_huge
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
                         integer_kind_code, integer_range, integer_huge
@@ -434,7 +435,7 @@ subroutine test_log_debug_info(tests)
                         real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
     
     namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
-                            real_kind_code, real_precision, real_range, real_radix, & !, real_huge, &
+                            real_kind_code, real_precision, real_range, real_radix, & !real_huge, &
                             real_support_datatype, real_support_denormal, real_support_divide, &
                             real_support_inf, real_support_nan, real_support_sqrt, real_support_standard, &
                             integer_kind_code, integer_range, integer_huge
@@ -451,6 +452,7 @@ subroutine test_log_debug_info(tests)
     real_precision        = -1
     real_range            = -1
     real_radix            = -1
+    !real_huge             = 0.0_RP
     real_support_datatype = .false.
     real_support_denormal = .false.
     real_support_divide   = .false.
@@ -464,7 +466,7 @@ subroutine test_log_debug_info(tests)
     
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=debug_info)
-    close(unit=nml_unit)!, status="delete")
+    close(unit=nml_unit, status="delete")
     
     call validate_timestamp(tests, timestamp, "test_log_debug_info, timestamp")
     call tests%character_eq(level, DEBUG_STRING, "test_log_debug_info, level")
@@ -473,8 +475,11 @@ subroutine test_log_debug_info(tests)
     call tests%integer_ge(real_kind_code, 1, "test_log_debug_info, real_kind_code")
     call tests%integer_eq(real_precision, 15, "test_log_debug_info, real_precision")
     
+    ! TODO: Complete this.
+    
 !    real_range            = -1
 !    real_radix            = -1
+!    real_huge             = 0.0_RP
 !    real_support_datatype = .false.
 !    real_support_denormal = .false.
 !    real_support_divide   = .false.

@@ -234,9 +234,7 @@ subroutine log_debug_info(this)
     character(len=:), allocatable :: compiler_options, compiler_version, level
     character(len=TIMESTAMP_LEN)  :: timestamp
     
-    ! Removed because ifort and ifx can't read `huge` from namelists? Presumably `real_huge` is being read as single-precision.
     !real(kind=RP) :: real_huge
-    
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
                         integer_kind_code, integer_range, integer_huge
     logical       :: real_support_datatype, real_support_denormal, real_support_divide, &
@@ -270,7 +268,12 @@ subroutine log_debug_info(this)
     integer_range     = range(1)
     integer_huge      = huge(1)
     
-    write(unit=this%unit, nml=debug_info)
+    ! `round="down"` is needed to prevent ifort and ifx from getting irritated when reading in `real_huge`
+    ! <https://fortran-lang.discourse.group/t/ifort-namelist-bug/5399>
+    ! But: `round="down"` is not supported by flang-7.
+    ! Later: When flang-7 or nvfortran or whatever supports `round="down"`, uncomment the `real_huge` lines here and in
+    ! test_nmllog.f90.
+    write(unit=this%unit, nml=debug_info) !, round="down")
 end subroutine log_debug_info
 
 end module nmllog
