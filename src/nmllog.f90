@@ -20,7 +20,12 @@ integer, parameter :: LOG_UNIT  = 10
 integer, parameter :: MAX_TRIES = 10
 
 integer, public, parameter :: TIMESTAMP_LEN = 29
-integer, public, parameter :: UNIT_CLOSED = -1
+integer, public, parameter :: UNIT_CLOSED   = -1
+
+! Needed or else ifort truncates namelist file lines and can't read them back correctly.
+! 10000 is arbitrary. Just pick a number larger than anything you expect to use.
+! gfortran had a strange run-time error with 1000.
+integer, public, parameter :: NML_RECL = 10000
 
 integer, public, parameter :: NOT_SET_LEVEL  = 0
 integer, public, parameter :: DEBUG_LEVEL    = 10
@@ -106,7 +111,13 @@ subroutine log_open(this, filename, level)
         this%unit = UNIT_CLOSED
     else
         this%filename = filename
-        open(unit=this%unit, action="write", status="replace", position="rewind", file=trim(this%filename), delim="quote")
+        open(unit=this%unit, &
+                action="write", &
+                status="replace", &
+                position="rewind", &
+                file=trim(this%filename), &
+                delim="quote", &
+                recl=NML_RECL)
     end if
 end subroutine log_open
 
@@ -223,14 +234,16 @@ subroutine log_debug_info(this)
     character(len=:), allocatable :: compiler_options, compiler_version, level
     character(len=TIMESTAMP_LEN)  :: timestamp
     
-    real(kind=RP) :: real_huge
+    ! Removed because ifort and ifx can't read `huge` from namelists? Presumably `real_huge` is being read as single-precision.
+    !real(kind=RP) :: real_huge
+    
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
                         integer_kind_code, integer_range, integer_huge
     logical       :: real_support_datatype, real_support_denormal, real_support_divide, &
                         real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
     
     namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
-                            real_kind_code, real_precision, real_range, real_radix, real_huge, &
+                            real_kind_code, real_precision, real_range, real_radix, & !real_huge, &
                             real_support_datatype, real_support_denormal, real_support_divide, &
                             real_support_inf, real_support_nan, real_support_sqrt, real_support_standard, &
                             integer_kind_code, integer_range, integer_huge
@@ -244,7 +257,7 @@ subroutine log_debug_info(this)
     real_precision        = precision(1.0_RP)
     real_range            = range(1.0_RP)
     real_radix            = radix(1.0_RP)
-    real_huge             = huge(1.0_RP)
+    !real_huge             = huge(1.0_RP)
     real_support_datatype = ieee_support_datatype(1.0_RP)
     real_support_denormal = ieee_support_denormal(1.0_RP)
     real_support_divide   = ieee_support_divide(1.0_RP)

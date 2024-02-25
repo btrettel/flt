@@ -2,7 +2,6 @@
 
 Priorities:
 
-- Convert all .jsonl files to .nml.
 - Eliminate Python from this repository.
     - Convert passed.py to passed.f90.
     - Merge tests from `test_*.py` into the associated Fortran test files.

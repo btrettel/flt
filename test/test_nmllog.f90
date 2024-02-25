@@ -14,16 +14,15 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests
 
+character(len=*), parameter :: TEST_FILENAME = "test.nml"
+
 call logger%open("nmllog.nml")
 call tests%start_tests(logger)
 
 call test_validate_timestamp(tests)
 call test_now(tests)
 call test_log_subroutines(tests)
-
-! TODO: Read log file to make sure that all messages are written properly.
-! TODO: Test `log_debug_info`
-! TODO: Test `validate_timestamp`.
+call test_log_debug_info(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -306,14 +305,13 @@ end subroutine test_now
 subroutine test_log_subroutines(tests)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
     use prec, only: CL
-    use nmllog, only: DEBUG_STRING, INFO_STRING, WARNING_STRING, ERROR_STRING, CRITICAL_STRING
+    use nmllog, only: DEBUG_STRING, INFO_STRING, WARNING_STRING, ERROR_STRING, CRITICAL_STRING, NML_RECL
     
     type(test_results_type), intent(inout) :: tests
     
     type(log_type) :: test_logger
     integer        :: nml_unit, rc_nml, num_nml_groups, n_debug, n_info, n_warning, n_error, n_critical, n_not_set
     
-    character(len=*), parameter :: TEST_FILENAME    = "test.nml"
     character(len=*), parameter :: DEBUG_MESSAGE    = "Debug level test"
     character(len=*), parameter :: INFO_MESSAGE     = "Info level test"
     character(len=*), parameter :: WARNING_MESSAGE  = "Warning level test"
@@ -348,7 +346,7 @@ subroutine test_log_subroutines(tests)
     
     call tests%integer_eq(test_logger%unit, UNIT_CLOSED, "logger, unit closed after closing")
     
-    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote")
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     num_nml_groups = 0
     n_debug        = 0
     n_info         = 0
@@ -415,5 +413,78 @@ subroutine test_log_subroutines(tests)
     call tests%integer_eq(n_critical, 1, "nmllog, number of critical levels")
     call tests%integer_eq(n_not_set, 0, "nmllog, no unknown levels")
 end subroutine test_log_subroutines
+
+subroutine test_log_debug_info(tests)
+    use prec, only: CL
+    use nmllog, only: DEBUG_STRING, NML_RECL
+    
+    type(test_results_type), intent(inout) :: tests
+    
+    type(log_type) :: test_logger
+    integer        :: nml_unit
+    
+    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=8)             :: level
+    character(len=CL)            :: compiler_options, compiler_version
+    
+    !real(kind=RP) :: real_huge
+    integer       :: real_kind_code, real_precision, real_range, real_radix, &
+                        integer_kind_code, integer_range, integer_huge
+    logical       :: real_support_datatype, real_support_denormal, real_support_divide, &
+                        real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
+    
+    namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
+                            real_kind_code, real_precision, real_range, real_radix, & !, real_huge, &
+                            real_support_datatype, real_support_denormal, real_support_divide, &
+                            real_support_inf, real_support_nan, real_support_sqrt, real_support_standard, &
+                            integer_kind_code, integer_range, integer_huge
+    
+    call test_logger%open(TEST_FILENAME)
+    call test_logger%debug_info()
+    call test_logger%close()
+    
+    timestamp             = ""
+    level                 = ""
+    compiler_options      = ""
+    compiler_version      = ""
+    real_kind_code        = -1
+    real_precision        = -1
+    real_range            = -1
+    real_radix            = -1
+    real_support_datatype = .false.
+    real_support_denormal = .false.
+    real_support_divide   = .false.
+    real_support_inf      = .false.
+    real_support_nan      = .false.
+    real_support_sqrt     = .false.
+    real_support_standard = .false.
+    integer_kind_code     = -1
+    integer_range         = -1
+    integer_huge          = 0
+    
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=debug_info)
+    close(unit=nml_unit)!, status="delete")
+    
+    call validate_timestamp(tests, timestamp, "test_log_debug_info, timestamp")
+    call tests%character_eq(level, DEBUG_STRING, "test_log_debug_info, level")
+    call tests%integer_ge(len(trim(compiler_options)), 1, "test_log_debug_info, compiler_options")
+    call tests%integer_ge(len(trim(compiler_version)), 1, "test_log_debug_info, compiler_version")
+    call tests%integer_ge(real_kind_code, 1, "test_log_debug_info, real_kind_code")
+    call tests%integer_eq(real_precision, 15, "test_log_debug_info, real_precision")
+    
+!    real_range            = -1
+!    real_radix            = -1
+!    real_support_datatype = .false.
+!    real_support_denormal = .false.
+!    real_support_divide   = .false.
+!    real_support_inf      = .false.
+!    real_support_nan      = .false.
+!    real_support_sqrt     = .false.
+!    real_support_standard = .false.
+!    integer_kind_code     = -1
+!    integer_range         = -1
+!    integer_huge          = 0
+end subroutine test_log_debug_info
 
 end program test_nmllog
