@@ -14,13 +14,13 @@ use unittest, only: test_results_type
 implicit none
 
 type(log_type)          :: logger
-type(test_results_type) :: test_data
-real(kind=RP)   :: output
+type(test_results_type) :: tests
+real(kind=RP)           :: output
 
 character(len=*), parameter :: LOG_FILENAME = "rngmod.nml"
 
 call logger%open(LOG_FILENAME)
-call test_data%start_tests(logger)
+call tests%start_tests(logger)
 
 ! TODO: add direct tests using `determ` and `select_rng` directly
 ! TODO: `set_determ`
@@ -31,23 +31,23 @@ call test_data%start_tests(logger)
 
 call set_determ([0.4_RP])
 output = select_rng(rng=determ)
-call test_data%real_eq(output, 0.4_RP, "set_determ (size=1, #1)")
-call test_data%real_eq(output, 0.4_RP, "set_determ (size=1, #2)")
+call tests%real_eq(output, 0.4_RP, "set_determ (size=1, #1)")
+call tests%real_eq(output, 0.4_RP, "set_determ (size=1, #2)")
 
 call set_determ([0.1_RP, 0.7_RP])
 output = select_rng(rng=determ)
-call test_data%real_eq(output, 0.1_RP, "set_determ (size=2, #1)")
+call tests%real_eq(output, 0.1_RP, "set_determ (size=2, #1)")
 output = select_rng(rng=determ)
-call test_data%real_eq(output, 0.7_RP, "set_determ (size=2, #2)")
+call tests%real_eq(output, 0.7_RP, "set_determ (size=2, #2)")
 output = select_rng(rng=determ)
-call test_data%real_eq(output, 0.1_RP, "set_determ (size=2, #3)")
+call tests%real_eq(output, 0.1_RP, "set_determ (size=2, #3)")
 
 ! `pseudo`
 
 output = select_rng(rng=pseudo)
 write(unit=*, fmt=*) output
 
-call test_data%end_tests()
+call tests%end_tests()
 call logger%close()
 
 contains

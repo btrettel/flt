@@ -2,7 +2,6 @@
 
 Priorities:
 
-- `test_data` to `tests`
 - Convert all .jsonl files to .nml.
 - Eliminate Python from this repository.
     - Convert passed.py to passed.f90.

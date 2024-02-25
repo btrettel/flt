@@ -13,22 +13,22 @@ use unittest, only: test_results_type
 implicit none
 
 type(log_type)          :: logger
-type(test_results_type) :: test_data
+type(test_results_type) :: tests
 
 character(len=*), parameter :: LOG_FILENAME = "prec.nml"
 
 call logger%open(LOG_FILENAME)
-call test_data%start_tests(logger)
+call tests%start_tests(logger)
 
-call test_data%integer_ge(range(1), 5, "default integer exponent range")
-call test_data%integer_ge(range(1_I5), 5, "integer kind I5 exponent range")
-call test_data%integer_ge(range(1_I9), 9, "integer kind I9 exponent range")
-call test_data%integer_ge(range(1.0_RP), 15, "real kind RP exponent range")
+call tests%integer_ge(range(1), 5, "default integer exponent range")
+call tests%integer_ge(range(1_I5), 5, "integer kind I5 exponent range")
+call tests%integer_ge(range(1_I9), 9, "integer kind I9 exponent range")
+call tests%integer_ge(range(1.0_RP), 15, "real kind RP exponent range")
 
 ! This needs to be modified when changing the precision.
-call test_data%real_eq(3.141592653589793_RP, PI, "PI value")
+call tests%real_eq(3.141592653589793_RP, PI, "PI value")
 
-call test_data%end_tests()
+call tests%end_tests()
 call logger%close()
 
 end program test_asserts

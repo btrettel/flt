@@ -17,12 +17,12 @@ type(config_type)            :: config
 character(len=WIDTH*N_DIMS)  :: type_name_output
 type(rational), dimension(3) :: exps
 integer                      :: rc_types
-type(test_results_type)      :: test_data
+type(test_results_type)      :: tests
 
 character(len=*), parameter :: LOG_FILENAME = "dimmod.nml"
 
 call logger%open(LOG_FILENAME)
-call test_data%start_tests(logger)
+call tests%start_tests(logger)
 
 config%dims    = "mlt"
 config%min_exp = -1
@@ -38,7 +38,7 @@ exps(2)%d = 2
 exps(3)%d = 2
 type_name_output = type_name(config, exps)
 write(unit=*, fmt=*) type_name_output
-call test_data%character_eq(type_name_output, "mp000_lp000_tp000", "type_name, zeros")
+call tests%character_eq(type_name_output, "mp000_lp000_tp000", "type_name, zeros")
 
 !indices = (/-1, -1, -1/)
 exps(1)%n = -1
@@ -54,7 +54,7 @@ call generate_types(config, rc_types)
 
 write(unit=*, fmt=*) rc_types
 
-call test_data%end_tests()
+call tests%end_tests()
 call logger%close()
 
 end program test_dimmod
