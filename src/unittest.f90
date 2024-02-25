@@ -25,7 +25,9 @@ contains
     procedure :: real_eq => real_eq
     procedure :: real_ne => real_ne
     procedure :: integer_eq => integer_eq
+    procedure :: integer_ne => integer_ne
     procedure :: integer_ge => integer_ge
+    procedure :: integer_le => integer_le
     procedure :: character_eq => character_eq
     procedure :: start_tests => start_tests
     procedure :: end_tests => end_tests
@@ -214,8 +216,44 @@ subroutine integer_eq(this, returned_integer, compared_integer, message_in)
     this%n_tests = this%n_tests + 1
 end subroutine integer_eq
 
+subroutine integer_ne(this, returned_integer, compared_integer, message_in)
+    ! Check whether `returned_integer` equal than `compared_integer`, increase `number_of_failures` if `.true.`.
+    
+    class(test_results_type), intent(inout) :: this
+    
+    integer, intent(in)          :: returned_integer, compared_integer
+    character(len=*), intent(in) :: message_in
+    
+    logical :: test_passes
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    character(len=2)              :: test_operator
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    
+    timestamp     = now()
+    variable_type = "integer"
+    test_operator = "/="
+    message       = message_in
+    
+    test_passes = (returned_integer /= compared_integer)
+    write(unit=this%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
+        write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
+        write(unit=*, fmt="(a, i7)") "which should be /= integer = ", compared_integer
+        write(unit=*, fmt="(a, a)") "fail: ", message
+        write(unit=*, fmt="(a)")
+    end if
+    
+    this%n_tests = this%n_tests + 1
+end subroutine integer_ne
+
 subroutine integer_ge(this, returned_integer, compared_integer, message_in)
-    ! Check whether `returned_integer` is greater than `compared_integer`, increase `number_of_failures` if `.false.`.
+    ! Check whether `returned_integer` is greater or equal than `compared_integer`, increase `number_of_failures` if `.false.`.
     
     class(test_results_type), intent(inout) :: this
     
@@ -241,14 +279,50 @@ subroutine integer_ge(this, returned_integer, compared_integer, message_in)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a, i7)") "integer returned = ", returned_integer
-        write(unit=*, fmt="(a, i7)") "  not >= integer = ", compared_integer
+        write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
+        write(unit=*, fmt="(a, i7)") "which should be >= integer = ", compared_integer
         write(unit=*, fmt="(a, a)") "fail: ", message
         write(unit=*, fmt="(a)")
     end if
     
     this%n_tests = this%n_tests + 1
 end subroutine integer_ge
+
+subroutine integer_le(this, returned_integer, compared_integer, message_in)
+    ! Check whether `returned_integer` is less or equal than `compared_integer`, increase `number_of_failures` if `.false.`.
+    
+    class(test_results_type), intent(inout) :: this
+    
+    integer, intent(in)          :: returned_integer, compared_integer
+    character(len=*), intent(in) :: message_in
+    
+    logical :: test_passes
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    character(len=2)              :: test_operator
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    
+    timestamp     = now()
+    variable_type = "integer"
+    test_operator = "<="
+    message       = message_in
+    
+    test_passes = (returned_integer <= compared_integer)
+    write(unit=this%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
+        write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
+        write(unit=*, fmt="(a, i7)") "which should be <= integer = ", compared_integer
+        write(unit=*, fmt="(a, a)") "fail: ", message
+        write(unit=*, fmt="(a)")
+    end if
+    
+    this%n_tests = this%n_tests + 1
+end subroutine integer_le
 
 subroutine character_eq(this, returned_character_in, compared_character_in, message_in)
     ! Check whether two character variables are identical, increase `number_of_failures` if `.false.`.

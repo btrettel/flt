@@ -16,7 +16,7 @@ type(log_type)          :: logger
 type(test_results_type) :: test_data, test_data_2
 
 character(len=*), parameter :: LOG_FILENAME = "unittest.nml"
-integer, parameter          :: N_FAILING    = 10
+integer, parameter          :: N_FAILING    = 12
 
 call logger%open(LOG_FILENAME)
 call test_data%start_tests(logger)
@@ -78,6 +78,12 @@ call test_data%integer_ge(2, 1, "integer_ge, greater")
 
 call test_data%integer_ge(2, 2, "integer_ge, equal")
 
+call test_data%integer_le(1, 2, "integer_le, greater")
+
+call test_data%integer_le(2, 2, "integer_le, equal")
+
+call test_data%integer_le(1, 2, "integer_ne, equal")
+
 ! tests which should fail
 
 call test_data_2%logical_true(.false., "logical_true, failure")
@@ -94,11 +100,15 @@ call test_data_2%integer_eq(1, 0, "integer_eq, failure (greater)")
 
 call test_data_2%integer_eq(0, 1, "integer_eq, failure (less)")
 
+call test_data_2%integer_ne(2, 2, "integer_ne, failure")
+
+call test_data_2%integer_ge(1, 2, "integer_ge, failure")
+
+call test_data_2%integer_le(2, 1, "integer_le, failure")
+
 call test_data_2%character_eq("a", "b", "character_eq, failure (greater)")
 
 call test_data_2%character_eq("b", "a", "character_eq, failure (less)")
-
-call test_data_2%integer_ge(1, 2, "integer_ge, failure")
 
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 
