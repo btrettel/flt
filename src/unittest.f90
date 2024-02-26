@@ -12,6 +12,8 @@ use nmllog, only: log_type, now, TIMESTAMP_LEN
 implicit none
 private
 
+public :: validate_timestamp
+
 character(len=70), parameter :: LONG_LINE = "----------------------------------------------------------------------"
 
 type, public :: test_results_type
@@ -410,12 +412,100 @@ subroutine end_tests(this)
     end if
 end subroutine end_tests
 
-!subroutine result_reader(filename)
-!    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
-!                            returned_logical,
-!                            returned_real, compared_real, tolerance, difference, &
-!                            returned_integer, compared_integer, &
-!                            returned_string, compared_string
-!end subroutine result_reader
+subroutine validate_timestamp(tests, timestamp, message)
+    type(test_results_type), intent(inout) :: tests
+    
+    character(len=*), intent(in) :: timestamp, message
+    integer :: year, month, day, hour, minutes, seconds, milliseconds, timezone_hour, timezone_minutes, rc_read
+    
+    ! TODO: If any of these fail, write the timestamp to the log.
+    
+    call tests%integer_eq(len(trim(timestamp)), TIMESTAMP_LEN, message // ", timestamp is correct length")
+    
+    ! There will be a run-time error if the timestamp is too short, so don't do these tests in that case.
+    ! The "timestamp is correct length" test will fail, alerting you to that problem if it occurs.
+    if (len(trim(timestamp)) >= TIMESTAMP_LEN) then
+        read(timestamp(1:4), "(i4)", iostat=rc_read) year
+        call tests%integer_eq(rc_read, 0, message // ", year is numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(year, 2000, message // ", year lower bound")
+            call tests%integer_le(year, 2050, message // ", year upper bound")
+        end if
+        
+        call tests%character_eq(timestamp(5:5), "-", message // ", timestamp(5)")
+        
+        read(timestamp(6:7), "(i2)", iostat=rc_read) month
+        call tests%integer_eq(rc_read, 0, message // ", month is numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(month, 1, message // ", month lower bound")
+            call tests%integer_le(month, 12, message // ", month upper bound")
+        end if
+        
+        call tests%character_eq(timestamp(8:8), "-", message // ", timestamp(8)")
+        
+        read(timestamp(9:10), "(i2)", iostat=rc_read) day
+        call tests%integer_eq(rc_read, 0, message // ", day is numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(day, 1, message // ", day lower bound")
+            call tests%integer_le(day, 31, message // ", day upper bound")
+        end if
+        
+        call tests%character_eq(timestamp(11:11), "T", message // ", timestamp(11)")
+        
+        read(timestamp(12:13), "(i2)", iostat=rc_read) hour
+        call tests%integer_eq(rc_read, 0, message // ", hour is numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(hour, 0, message // ", hour lower bound")
+            call tests%integer_le(hour, 23, message // ", hour upper bound")
+        end if
+        
+        call tests%character_eq(timestamp(14:14), ":", message // ", timestamp(14)")
+        
+        read(timestamp(15:16), "(i2)", iostat=rc_read) minutes
+        call tests%integer_eq(rc_read, 0, message // ", minutes are numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(minutes, 0, message // ", minutes lower bound")
+            call tests%integer_le(minutes, 59, message // ", minutes upper bound")
+        end if
+        
+        call tests%character_eq(timestamp(17:17), ":", message // ", timestamp(17)")
+        
+        read(timestamp(18:19), "(i2)", iostat=rc_read) seconds
+        call tests%integer_eq(rc_read, 0, message // ", seconds are numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(seconds, 0, message // ", seconds lower bound")
+            call tests%integer_le(seconds, 59, message // ", seconds upper bound")
+        end if
+        
+        call tests%character_eq(timestamp(20:20), ".", message // ", timestamp(20)")
+        
+        read(timestamp(21:23), "(i3)", iostat=rc_read) milliseconds
+        call tests%integer_eq(rc_read, 0, message // ", milliseconds are numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(milliseconds, 0, message // ", milliseconds lower bound")
+            
+            ! This is commented out as I guess I can't make milliseconds too high.
+!            call tests%integer_le(milliseconds, 999, message // ", milliseconds upper bound")
+        end if
+        
+        call tests%character_eq(timestamp(24:24), "-", message // ", timestamp(24)")
+        
+        read(timestamp(25:26), "(i2)", iostat=rc_read) timezone_hour
+        call tests%integer_eq(rc_read, 0, message // ", timezone_hour is numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(timezone_hour, 0, message // ", timezone_hour lower bound")
+            call tests%integer_le(timezone_hour, 23, message // ", timezone_hour upper bound")
+        end if
+        
+        call tests%character_eq(timestamp(27:27), ":", message // ", timestamp(27)")
+        
+        read(timestamp(28:29), "(i2)", iostat=rc_read) timezone_minutes
+        call tests%integer_eq(rc_read, 0, message // ", timezone_minutes is numeric")
+        if (rc_read == 0) then
+            call tests%integer_ge(timezone_minutes, 0, message // ", timezone_minutes lower bound")
+            call tests%integer_le(timezone_minutes, 59, message // ", timezone_minutes upper bound")
+        end if
+    end if
+end subroutine validate_timestamp
 
 end module unittest
