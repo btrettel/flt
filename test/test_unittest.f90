@@ -16,7 +16,7 @@ type(log_type)          :: logger
 type(test_results_type) :: tests, failing_tests
 
 character(len=*), parameter :: LOG_FILENAME = "unittest.nml"
-integer, parameter          :: N_FAILING    = 12
+integer, parameter          :: N_FAILING    = 13
 
 call logger%open(LOG_FILENAME)
 call tests%start_tests(logger)
@@ -29,6 +29,8 @@ call tests%integer_eq(failing_tests%n_failures, 0, "failing_tests%n_failures at 
 call tests%integer_eq(failing_tests%n_tests, 0, "failing_tests%n_tests at start")
 
 call tests%logical_true(.true., "logical_true, .true.")
+
+call tests%logical_false(.false., "logical_true, .false.")
 
 call tests%real_eq(1.0_RP, 1.0_RP, "real_eq, identical numbers (1)")
 
@@ -88,6 +90,8 @@ call tests%integer_le(1, 2, "integer_ne, equal")
 
 call failing_tests%logical_true(.false., "logical_true, failure")
 
+call failing_tests%logical_false(.true., "logical_false, failure")
+
 call failing_tests%real_eq(1.0_RP, 0.0_RP, "real_eq, failure (greater)")
 
 call failing_tests%real_eq(0.0_RP, 1.0_RP, "real_eq, failure (less)")
@@ -121,6 +125,7 @@ tests%n_tests    = tests%n_tests + failing_tests%n_tests
 tests%n_failures = tests%n_failures + (failing_tests%n_tests - failing_tests%n_failures)
 
 call test_validate_timestamp(tests)
+call test_read_unittest_nml(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -294,70 +299,94 @@ subroutine test_validate_timestamp(tests)
     call tests%integer_eq(failing_tests%n_failures, n_failing, "test_validate_timestamp, correct number of tests that fail")
 end subroutine test_validate_timestamp
 
-!function read_unittest_nml(tests)
-!    use prec, only: CL
+subroutine test_read_unittest_nml(tests)
+    use prec, only: RP, CL
+    use unittest, only: validate_timestamp
+    use nmllog, only: TIMESTAMP_LEN, NML_RECL
     
-!    type(test_results_type), intent(inout) :: tests
+    type(test_results_type), intent(inout) :: tests
     
-!    character(len=*), parameter :: TEST_FILENAME = "test.nml"
-!    type(test_results_type)     :: nml_tests
-!    type(log_type)              :: logger
-!    integer                     :: nml_unit
+    character(len=*), parameter :: TEST_FILENAME = "test.nml"
+    type(test_results_type)     :: nml_tests
+    type(log_type)              :: logger
+    integer                     :: nml_unit
     
-!    character(len=TIMESTAMP_LEN) :: timestamp
-!    character(len=7)             :: variable_type
-!    character(len=2)             :: test_operator
-!    logical                      :: test_passes, returned_logical
-!    character(len=CL)            :: message, returned_string, compared_string
-!    real(kind=RP)                :: returned_real, compared_real, tolerance, difference
-!    integer                      :: returned_integer, compared_integer
+    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=7)             :: variable_type
+    character(len=2)             :: test_operator
+    logical                      :: test_passes, returned_logical, compared_logical
+    character(len=CL)            :: message, returned_string, compared_string
+    real(kind=RP)                :: returned_real, compared_real, tolerance, difference
+    integer                      :: returned_integer, compared_integer
     
-!    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
-!                            returned_logical,
-!                            returned_real, compared_real, tolerance, difference, &
-!                            returned_integer, compared_integer, &
-!                            returned_string, compared_string
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
+                            returned_logical, compared_logical, &
+                            returned_real, compared_real, tolerance, difference, &
+                            returned_integer, compared_integer, &
+                            returned_string, compared_string
     
-!    timestamp        = ""
-!    variable_type    = ""
-!    test_operator    = ""
-!    test_passes      = .false.
-!    message          = ""
-!    returned_logical = .false.
-!    returned_real    = 0.0_RP
-!    compared_real    = 0.0_RP
-!    tolerance        = 0.0_RP
-!    difference       = 0.0_RP
-!    returned_integer = 0
-!    compared_integer = 0
-!    returned_string  = ""
-!    compared_string  = ""
+    timestamp        = ""
+    variable_type    = ""
+    test_operator    = ""
+    test_passes      = .false.
+    message          = ""
+    returned_logical = .false.
+    compared_logical = .false.
+    returned_real    = 0.0_RP
+    compared_real    = 0.0_RP
+    tolerance        = 0.0_RP
+    difference       = 0.0_RP
+    returned_integer = 0
+    compared_integer = 0
+    returned_string  = ""
+    compared_string  = ""
     
-!    ! TODO: logical_true (pass)
-!    ! TODO: logical_true (fail)
-!    ! TODO: real_eq (pass)
-!    ! TODO: real_eq (fail)
-!    ! TODO: real_ne (pass)
-!    ! TODO: real_ne (fail)
-!    ! TODO: integer_eq (pass)
-!    ! TODO: integer_eq (fail)
-!    ! TODO: integer_ne (pass)
-!    ! TODO: integer_ne (fail)
-!    ! TODO: integer_ge (pass)
-!    ! TODO: integer_ge (fail)
-!    ! TODO: integer_le (pass)
-!    ! TODO: integer_le (fail)
-!    ! TODO: character_eq (pass)
-!    ! TODO: character_eq (fail)
+    ! logical_true (pass)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    call nml_tests%logical_true(.true., "logical_true (pass)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, logical_true (pass)")
+    call tests%character_eq(variable_type, "logical", "test_read_unittest_nml, logical_true (pass), variable_type")
+    call tests%logical_true(test_passes, "test_read_unittest_nml, logical_true (pass), test_passes")
+    call tests%character_eq(trim(message), "logical_true (pass)", "test_read_unittest_nml, logical_true (pass), message")
+    call tests%logical_true(returned_logical, "test_read_unittest_nml, logical_true (pass), returned_logical")
+    call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_true (pass), compared_logical")
     
-!    call logger%open(TEST_FILENAME)
-!    call nml_tests%start_tests(logger)
-!    call nml_tests%logical_true(.true., "logical_true (pass)")
-!    call logger%close()
-!    open(newunit=nml_unit, file=TEST_FILENAME, status="old")
-!    close(unit=nml_unit, status="delete")
-!    timestamp, variable_type, test_passes, message, returned_logical
+    ! logical_true (fail)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    call nml_tests%logical_true(.false., "logical_true (fail)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, logical_true (fail)")
+    call tests%character_eq(variable_type, "logical", "test_read_unittest_nml, logical_true (fail), variable_type")
+    call tests%logical_false(test_passes, "test_read_unittest_nml, logical_true (fail), test_passes")
+    call tests%character_eq(trim(message), "logical_true (fail)", "test_read_unittest_nml, logical_true (fail), message")
+    call tests%logical_false(returned_logical, "test_read_unittest_nml, logical_true (fail), returned_logical")
+    call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_true (fail), compared_logical")
     
-!end function read_unittest_nml
+    ! TODO: logical_false (pass)
+    ! TODO: logical_false (fail)
+    ! TODO: real_eq (pass)
+    ! TODO: real_eq (fail)
+    ! TODO: real_ne (pass)
+    ! TODO: real_ne (fail)
+    ! TODO: integer_eq (pass)
+    ! TODO: integer_eq (fail)
+    ! TODO: integer_ne (pass)
+    ! TODO: integer_ne (fail)
+    ! TODO: integer_ge (pass)
+    ! TODO: integer_ge (fail)
+    ! TODO: integer_le (pass)
+    ! TODO: integer_le (fail)
+    ! TODO: character_eq (pass)
+    ! TODO: character_eq (fail)
+end subroutine test_read_unittest_nml
 
 end program test_unittest

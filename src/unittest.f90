@@ -24,6 +24,7 @@ type, public :: test_results_type
     type(log_type) :: logger
 contains
     procedure :: logical_true => logical_true
+    procedure :: logical_false => logical_false
     procedure :: real_eq => real_eq
     procedure :: real_ne => real_ne
     procedure :: integer_eq => integer_eq
@@ -47,20 +48,21 @@ subroutine logical_true(this, condition, message_in)
     
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=7)              :: variable_type
-    logical                       :: test_passes, returned_logical
+    logical                       :: test_passes, returned_logical, compared_logical
     character(len=:), allocatable :: message
     
-    namelist /test_result/ timestamp, variable_type, test_passes, message, returned_logical
+    namelist /test_result/ timestamp, variable_type, test_passes, message, returned_logical, compared_logical
     
     timestamp        = now()
     variable_type    = "logical"
     message          = message_in
     returned_logical = condition
+    compared_logical = .true.
     
-    test_passes  = condition
+    test_passes = condition
     write(unit=this%logger%unit, nml=test_result)
     
-    if (.not. condition) then
+    if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
         write(unit=*, fmt="(a, a)") "fail: ", message
         write(unit=*, fmt="(a)")
@@ -69,18 +71,38 @@ subroutine logical_true(this, condition, message_in)
     this%n_tests = this%n_tests + 1
 end subroutine logical_true
 
-! Not used yet. Will use later after I figure out a good way to make `returned_logical` not equal to `condition` for this special 
-! case in `logical_true`.
-!subroutine logical_not_test(this, condition, message)
-!    ! Check whether test `condition` is `.true.`, increase `number_of_failures` if `.false.`.
+subroutine logical_false(this, condition, message_in)
+    ! Check whether test `condition` is `.false.`, increase `number_of_failures` if `.true.`.
     
-!    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(inout) :: this
     
-!    logical, intent(in)          :: condition
-!    character(len=*), intent(in) :: message
+    logical, intent(in)          :: condition
+    character(len=*), intent(in) :: message_in
     
-!    call logical_true(this, .not. condition, message)
-!end subroutine logical_not_test
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    logical                       :: test_passes, returned_logical, compared_logical
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_passes, message, returned_logical, compared_logical
+    
+    timestamp        = now()
+    variable_type    = "logical"
+    message          = message_in
+    returned_logical = condition
+    compared_logical = .false.
+    
+    test_passes = .not. condition
+    write(unit=this%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
+        write(unit=*, fmt="(a, a)") "fail: ", message
+        write(unit=*, fmt="(a)")
+    end if
+    
+    this%n_tests = this%n_tests + 1
+end subroutine logical_false
 
 subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
@@ -403,6 +425,7 @@ subroutine end_tests(this)
     if (this%n_failures /= 0) then
         write(unit=*, fmt="(a, i0, a)") "FAILED (failures=", this%n_failures, ")"
         write(unit=*, fmt="(a)") LONG_LINE
+        call this%logger%close()
         stop 1
     else
         write(unit=*, fmt="(a)") "All tests passed."
