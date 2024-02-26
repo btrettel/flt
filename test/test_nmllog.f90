@@ -430,12 +430,14 @@ subroutine test_log_debug_info(tests)
     ! Search nmllog.f90 for `real_huge` to see why this is commented out.
     !real(kind=RP) :: real_huge
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
+                        real_min_exponent, real_max_exponent, &
                         integer_kind_code, integer_range, integer_huge
     logical       :: real_support_datatype, real_support_denormal, real_support_divide, &
                         real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
     
     namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
                             real_kind_code, real_precision, real_range, real_radix, & !real_huge, &
+                            real_min_exponent, real_max_exponent, &
                             real_support_datatype, real_support_denormal, real_support_divide, &
                             real_support_inf, real_support_nan, real_support_sqrt, real_support_standard, &
                             integer_kind_code, integer_range, integer_huge
@@ -453,6 +455,8 @@ subroutine test_log_debug_info(tests)
     real_range            = -1
     real_radix            = -1
     !real_huge             = 0.0_RP
+    real_min_exponent     = -1
+    real_max_exponent     = -1
     real_support_datatype = .false.
     real_support_denormal = .false.
     real_support_divide   = .false.
@@ -474,22 +478,24 @@ subroutine test_log_debug_info(tests)
     call tests%integer_ge(len(trim(compiler_version)), 1, "test_log_debug_info, compiler_version")
     call tests%integer_ge(real_kind_code, 1, "test_log_debug_info, real_kind_code")
     call tests%integer_eq(real_precision, 15, "test_log_debug_info, real_precision")
+    call tests%integer_eq(real_range, 307, "test_log_debug_info, real_range")
+    call tests%integer_eq(real_radix, 2, "test_log_debug_info, real_radix")
+    ! real_huge
+    call tests%integer_eq(real_min_exponent, -1021, "test_log_debug_info, real_min_exponent")
+    call tests%integer_eq(real_max_exponent, 1024, "test_log_debug_info, real_max_exponent")
+    call tests%logical_true(real_support_datatype, "test_log_debug_info, real_support_datatype")
     
-    ! TODO: Complete this.
+    ! Later: flang-7 does not support denormals. Check if nvfortran does later.
+    ! call tests%logical_true(real_support_denormal, "test_log_debug_info, real_support_denormal")
     
-!    real_range            = -1
-!    real_radix            = -1
-!    real_huge             = 0.0_RP
-!    real_support_datatype = .false.
-!    real_support_denormal = .false.
-!    real_support_divide   = .false.
-!    real_support_inf      = .false.
-!    real_support_nan      = .false.
-!    real_support_sqrt     = .false.
-!    real_support_standard = .false.
-!    integer_kind_code     = -1
-!    integer_range         = -1
-!    integer_huge          = 0
+    call tests%logical_true(real_support_divide, "test_log_debug_info, real_support_divide")
+    call tests%logical_true(real_support_inf, "test_log_debug_info, real_support_inf")
+    call tests%logical_true(real_support_nan, "test_log_debug_info, real_support_nan")
+    call tests%logical_true(real_support_sqrt, "test_log_debug_info, real_support_sqrt")
+    call tests%logical_true(real_support_standard, "test_log_debug_info, real_support_standard")
+    call tests%integer_ge(integer_kind_code, 1, "test_log_debug_info, integer_kind_code")
+    call tests%integer_eq(integer_range, 9, "test_log_debug_info, integer_range")
+    call tests%integer_eq(integer_huge, 2147483647, "test_log_debug_info, integer_huge")
 end subroutine test_log_debug_info
 
 end program test_nmllog

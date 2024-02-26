@@ -236,12 +236,14 @@ subroutine log_debug_info(this)
     
     !real(kind=RP) :: real_huge
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
+                        real_min_exponent, real_max_exponent, &
                         integer_kind_code, integer_range, integer_huge
     logical       :: real_support_datatype, real_support_denormal, real_support_divide, &
                         real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
     
     namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
                             real_kind_code, real_precision, real_range, real_radix, & !real_huge, &
+                            real_min_exponent, real_max_exponent, &
                             real_support_datatype, real_support_denormal, real_support_divide, &
                             real_support_inf, real_support_nan, real_support_sqrt, real_support_standard, &
                             integer_kind_code, integer_range, integer_huge
@@ -256,6 +258,8 @@ subroutine log_debug_info(this)
     real_range            = range(1.0_RP)
     real_radix            = radix(1.0_RP)
     !real_huge             = huge(1.0_RP)
+    real_min_exponent     = minexponent(1.0_RP)
+    real_max_exponent     = maxexponent(1.0_RP)
     real_support_datatype = ieee_support_datatype(1.0_RP)
     real_support_denormal = ieee_support_denormal(1.0_RP)
     real_support_divide   = ieee_support_divide(1.0_RP)
