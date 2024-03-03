@@ -387,6 +387,7 @@ subroutine test_read_unittest_nml(tests)
     ! TODO: integer_le (fail)
     ! TODO: character_eq (pass)
     ! TODO: character_eq (fail)
+    ! TODO: test log duration
 end subroutine test_read_unittest_nml
 
 end program test_unittest

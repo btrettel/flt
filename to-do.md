@@ -2,25 +2,20 @@
 
 Priorities:
 
+- <https://softpanorama.org/SE/programming_style.shtml>: > Traditionally different levels can be specified  for STDOUT and log file, so two variables exists called msglevel1 and msglevel2. 
+    - `file_level`, `stdout_level`, `level` does both
+    - Make `unittest` respect the logging `level` for the stdout printing.
+    - Then set up the expected failing tests to not print by default
+- Search for `TODO` and finish those tasks.
 - Eliminate Python from this repository.
     - Convert passed.py to passed.f90.
     - Merge tests from `test_*.py` into the associated Fortran test files.
     - Remove Python from .gitignore.
 - Make as much as possible `pure`.
-- `nmllog.f90`: Switch to Fortran namelist-based logging so that everything is in Fortran.
-    - Check your notes for the following:
-        - /home/ben/notes/programming/file-formats-locations.txt section titled "logging"
-        - /home/ben/notes/programming/correctness/defensive-programming.txt section titled "error/exception handling and error messages"
-- f90lint: Start with procedure length enforcement.
-- `io.f90`:
-    - convenience subroutines
-        - `box_print` (other similar things for the most important messages that I don't want to miss)
-            - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
-        - `table_print` for iterative progress in particular.
 - `check` to `assert`
 - Move `rand_int` and `rand_cauchy` to `rngmod` (or rename `rngmod` to `random`).
 
-New modules and tools:
+Later:
 
 - dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
 - fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
@@ -35,6 +30,7 @@ New modules and tools:
     - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
         - parker_monte_1997-1
     - FLOP counting.
+    - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
     - Enforce some Power of 10 rules, particularly procedure lengths.
     - Start tracking comment density and adding more code comments. Density > 25%?
@@ -117,3 +113,37 @@ New modules and tools:
     - temporal convergence
     - MC convergence
 - Add validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
+- <https://docs.python.org/3/library/timeit.html>
+    - `result = timeit(subroutine_with_no_arguments, number=10000)`
+    - <https://news.ycombinator.com/item?id=22085172>
+- `test_compiler.f90`: Tests for accuracy of important intrinsics in different compilers.
+- Poisson solvers, using same or similar interface as FISHPACK
+    - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>
+        - Old: <https://people.math.sc.edu/Burkardt/f77_src/fishpack/fishpack.html>
+    - <https://github.com/firemodels/fds/blob/master/Source/pois.f90>
+    - <https://github.com/jlokimlin/fishpack>
+    - <https://www.netlib.org/fishpack/>
+    - <https://ascl.net/1609.005>
+    - <https://arc.ucar.edu/knowledge_base/71991310>
+        - <https://github.com/NCAR/NCAR-Classic-Libraries-for-Geophysics>
+- Add a generic Makefile template for Fortran projects to FLT.
+- `nmllog.f90`: Switch to Fortran namelist-based logging so that everything is in Fortran.
+    - Option to not write at all, even to file?
+    - Check your notes for the following:
+        - /home/ben/notes/programming/file-formats-locations.txt section titled "logging"
+        - /home/ben/notes/programming/correctness/defensive-programming.txt section titled "error/exception handling and error messages"
+- f90lint: Start with procedure length enforcement.
+- `io.f90`:
+    - convenience subroutines
+        - `print_box` (other similar things for the most important messages that I don't want to miss)
+            - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
+        - `print_table*` for iterative progress in particular.
+            - `print_table_heading`
+            - `print_table_row` (different versions for integer first columns and character first columns?)
+            - Also useful for input to compare defaults and current values. See oran_numerical_1987 p. 75.
+            - Column heading could go off-screen for long tables, so reprint the heading periodically?
+        - `print_dict`
+            - Inspired by <https://youtu.be/PxmvTsrCTZg?t=103>:
+                - `iteration=2200, residual=0.0937`
+            - This is good for long lists because the column header in the table can go off-screen.
+        - Look into how other CFD softwares output iterative progress for ideas. Which metrics do they output?
