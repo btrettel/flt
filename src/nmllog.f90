@@ -43,8 +43,9 @@ character(len=*), public, parameter :: CRITICAL_STRING = "critical"
 
 type, public :: log_type
     character(len=:), allocatable :: filename
-    integer :: unit  = UNIT_CLOSED
-    integer :: level = WARNING_LEVEL
+    integer :: unit         = UNIT_CLOSED
+    integer :: file_level   = WARNING_LEVEL
+    integer :: stdout_level = WARNING_LEVEL
 contains
     procedure :: open => log_open
     procedure :: close => log_close
@@ -83,17 +84,26 @@ function now()
                 "." // milliseconds // zone(1:3) // ":" // zone(4:5)
 end function now
 
-subroutine log_open(this, filename, level)
+subroutine log_open(this, filename, level, file_level, stdout_level)
     class(log_type), intent(out) :: this
     
     character(len=*), intent(in)  :: filename
-    integer, optional, intent(in) :: level
+    integer, optional, intent(in) :: level, file_level, stdout_level
     
     integer :: unit_tries
     logical :: unit_opened
     
     if (present(level)) then
-        this%level = level
+        this%file_level   = level
+        this%stdout_level = level
+    end if
+    
+    if (present(file_level)) then
+        this%file_level = level
+    end if
+    
+    if (present(stdout_level)) then
+        this%stdout_level = level
     end if
     
     this%unit = LOG_UNIT
@@ -161,7 +171,9 @@ subroutine log_writer(this, message_in, level_code)
     end select
     
     message = message_in
-    write(unit=this%unit, nml=log)
+    if (level_code >= this%file_level) then
+        write(unit=this%unit, nml=log)
+    end if
     
     if (level_code >= WARNING_LEVEL) then
         print_unit = ERROR_UNIT
@@ -169,7 +181,7 @@ subroutine log_writer(this, message_in, level_code)
         print_unit = OUTPUT_UNIT
     end if
     
-    if (level_code >= this%level) then
+    if (level_code >= this%stdout_level) then
         write(unit=print_unit, fmt="(a, a, a, a, a)") timestamp, " [", level, "] ", message
     end if
 end subroutine log_writer
@@ -225,7 +237,7 @@ subroutine log_debug_info(this)
     ! - `spacing`
     ! - kind code, range, and huge for `I5`
     
-    ! TODO: If `DEBUG_LEVEL >= this%level` then print this information to stdout.
+    ! TODO: If `DEBUG_LEVEL >= this%stdout_level` then print this information to stdout.
     ! TODO: Print version number, Git revision, revision date, compile date, and whether there are local code modifications.
     ! Similar to <https://github.com/firemodels/fds/blob/master/Source/cons.f90#L278>.
     

@@ -398,12 +398,16 @@ function current_time()
 end function current_time
 
 subroutine start_tests(this, logger)
+    use nmllog, only: DEBUG_LEVEL
+    
     class(test_results_type), intent(out) :: this
     
     type(log_type), intent(in) :: logger
     
-    this%start_time = current_time()
-    this%logger     = logger
+    this%start_time          = current_time()
+    this%logger              = logger
+    this%logger%stdout_level = DEBUG_LEVEL
+    this%logger%file_level   = DEBUG_LEVEL
 end subroutine start_tests
 
 subroutine end_tests(this)

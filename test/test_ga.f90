@@ -19,9 +19,7 @@ integer                 :: ri
 real(kind=RP)           :: rr
 type(bounds_type)       :: bounds
 
-character(len=*), parameter :: LOG_FILENAME = "ga.nml"
-
-call logger%open(LOG_FILENAME)
+call logger%open("ga.nml")
 call tests%start_tests(logger)
 
 ! `rand_int`

@@ -17,9 +17,7 @@ type(log_type)          :: logger
 type(test_results_type) :: tests
 real(kind=RP)           :: output
 
-character(len=*), parameter :: LOG_FILENAME = "rngmod.nml"
-
-call logger%open(LOG_FILENAME)
+call logger%open("rngmod.nml")
 call tests%start_tests(logger)
 
 ! TODO: add direct tests using `determ` and `select_rng` directly

@@ -19,9 +19,7 @@ type(rational), dimension(3) :: exps
 integer                      :: rc_types
 type(test_results_type)      :: tests
 
-character(len=*), parameter :: LOG_FILENAME = "dimmod.nml"
-
-call logger%open(LOG_FILENAME)
+call logger%open("dimmod.nml")
 call tests%start_tests(logger)
 
 config%dims    = "mlt"

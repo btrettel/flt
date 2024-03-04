@@ -18,9 +18,7 @@ type(log_type)          :: logger
 type(test_results_type) :: tests
 integer                 :: rc_check
 
-character(len=*), parameter :: LOG_FILENAME = "checks.nml"
-
-call logger%open(LOG_FILENAME)
+call logger%open("checks.nml")
 call tests%start_tests(logger)
 
 call tests%logical_true(is_close(1.0_RP, 1.0_RP), "is_close, identical numbers (1)")

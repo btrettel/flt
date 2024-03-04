@@ -44,7 +44,7 @@ end subroutine test_now
 subroutine test_log_subroutines(tests)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
     use prec, only: CL
-    use nmllog, only: DEBUG_STRING, INFO_STRING, WARNING_STRING, ERROR_STRING, CRITICAL_STRING, NML_RECL
+    use nmllog, only: DEBUG_LEVEL, DEBUG_STRING, INFO_STRING, WARNING_STRING, ERROR_STRING, CRITICAL_STRING, NML_RECL
     use unittest, only: validate_timestamp
     
     type(test_results_type), intent(inout) :: tests
@@ -69,11 +69,16 @@ subroutine test_log_subroutines(tests)
     
     call tests%integer_eq(test_logger%unit, UNIT_CLOSED, "logger, unit closed before opening")
     call test_logger%open(TEST_FILENAME)
-
+    
     call tests%character_eq(test_logger%filename, TEST_FILENAME, "logger, filename")
-    call tests%integer_eq(test_logger%level, WARNING_LEVEL, "logger, level before opening")
+    
+    ! Test the default levels.
+    call tests%integer_eq(test_logger%stdout_level, WARNING_LEVEL, "logger, stdout_level before opening")
+    call tests%integer_eq(test_logger%file_level, WARNING_LEVEL, "logger, file_level before opening")
+    
     call tests%integer_ne(test_logger%unit, UNIT_CLOSED, "logger, unit open after opening")
-
+    
+    test_logger%file_level = DEBUG_LEVEL ! Set so that the next lines pass.
     call test_logger%debug(DEBUG_MESSAGE)
     call test_logger%info(INFO_MESSAGE)
     call test_logger%warning(WARNING_MESSAGE)

@@ -7,7 +7,7 @@
 
 program test_unittest
 
-use nmllog, only: log_type
+use nmllog, only: log_type, WARNING_LEVEL, CRITICAL_LEVEL
 use prec, only: RP
 use unittest, only: test_results_type
 implicit none
@@ -15,10 +15,9 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests, failing_tests
 
-character(len=*), parameter :: LOG_FILENAME = "unittest.nml"
-integer, parameter          :: N_FAILING    = 13
+integer, parameter :: N_FAILING = 13
 
-call logger%open(LOG_FILENAME)
+call logger%open("unittest.nml")
 call tests%start_tests(logger)
 call failing_tests%start_tests(logger) ! These are for tests which should fail.
 
@@ -88,6 +87,9 @@ call tests%integer_le(1, 2, "integer_ne, equal")
 
 ! tests which should fail
 
+! Don't print these to stdout.
+logger%stdout_level = CRITICAL_LEVEL + 1
+
 call failing_tests%logical_true(.false., "logical_true, failure")
 
 call failing_tests%logical_false(.true., "logical_false, failure")
@@ -113,6 +115,8 @@ call failing_tests%integer_le(2, 1, "integer_le, failure")
 call failing_tests%character_eq("a", "b", "character_eq, failure (greater)")
 
 call failing_tests%character_eq("b", "a", "character_eq, failure (less)")
+
+logger%stdout_level = WARNING_LEVEL + 1
 
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 

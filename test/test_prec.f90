@@ -15,9 +15,7 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests
 
-character(len=*), parameter :: LOG_FILENAME = "prec.nml"
-
-call logger%open(LOG_FILENAME)
+call logger%open("prec.nml")
 call tests%start_tests(logger)
 
 call tests%integer_ge(range(1), 5, "default integer exponent range")
