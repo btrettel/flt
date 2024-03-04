@@ -8,7 +8,7 @@
 module unittest
 
 use prec, only: RP, CL
-use nmllog, only: log_type, now, TIMESTAMP_LEN
+use nmllog, only: log_type, now, TIMESTAMP_LEN, DEBUG_LEVEL
 implicit none
 private
 
@@ -64,8 +64,11 @@ subroutine logical_true(this, condition, message_in)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a, a)") "fail: ", message
-        write(unit=*, fmt="(a)")
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=*, fmt="(a, a)") "fail: ", message
+            write(unit=*, fmt="(a)")
+        end if
     end if
     
     this%n_tests = this%n_tests + 1
@@ -97,8 +100,11 @@ subroutine logical_false(this, condition, message_in)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a, a)") "fail: ", message
-        write(unit=*, fmt="(a)")
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=*, fmt="(a, a)") "fail: ", message
+            write(unit=*, fmt="(a)")
+        end if
     end if
     
     this%n_tests = this%n_tests + 1
@@ -157,23 +163,26 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a, es15.8)") "real returned = ", returned_real
         
-        if (checking_equality) then
-            write(unit=*, fmt="(a, es15.8)") "real expected = ", compared_real
-        else
-            write(unit=*, fmt="(a, es15.8)") "      /= real = ", compared_real
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=*, fmt="(a, es15.8)") "real returned = ", returned_real
+            
+            if (checking_equality) then
+                write(unit=*, fmt="(a, es15.8)") "real expected = ", compared_real
+            else
+                write(unit=*, fmt="(a, es15.8)") "      /= real = ", compared_real
+            end if
+            
+            write(unit=*, fmt="(a, es15.8)") "    tolerance = ", tolerance
+            if (is_close(abs(compared_real), 0.0_RP)) then
+                write(unit=*, fmt="(a, es15.8)") "   difference = ", difference
+            else
+                write(unit=*, fmt="(a, es15.8, a, f6.3, a)") "   difference = ", difference, &
+                                                            " (", 100.0_RP * difference / abs(compared_real), "%)"
+            end if
+            write(unit=*, fmt="(a, a)") "fail: ", message
+            write(unit=*, fmt="(a)")
         end if
-        
-        write(unit=*, fmt="(a, es15.8)") "    tolerance = ", tolerance
-        if (is_close(abs(compared_real), 0.0_RP)) then
-            write(unit=*, fmt="(a, es15.8)") "   difference = ", difference
-        else
-            write(unit=*, fmt="(a, es15.8, a, f6.3, a)") "   difference = ", difference, &
-                                                        " (", 100.0_RP * difference / abs(compared_real), "%)"
-        end if
-        write(unit=*, fmt="(a, a)") "fail: ", message
-        write(unit=*, fmt="(a)")
     end if
     
     call check(difference >= 0.0_RP, this%logger, "real_eq, difference < 0", this%n_failures)
@@ -230,11 +239,14 @@ subroutine integer_eq(this, returned_integer, compared_integer, message_in)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a, i7)") "integer returned = ", returned_integer
-        write(unit=*, fmt="(a, i7)") "integer expected = ", compared_integer
-        write(unit=*, fmt="(a, i7)") "      difference = ", abs(returned_integer - compared_integer)
-        write(unit=*, fmt="(a, a)") "fail: ", message
-        write(unit=*, fmt="(a)")
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=*, fmt="(a, i7)") "integer returned = ", returned_integer
+            write(unit=*, fmt="(a, i7)") "integer expected = ", compared_integer
+            write(unit=*, fmt="(a, i7)") "      difference = ", abs(returned_integer - compared_integer)
+            write(unit=*, fmt="(a, a)") "fail: ", message
+            write(unit=*, fmt="(a)")
+        end if
     end if
     
     this%n_tests = this%n_tests + 1
@@ -267,10 +279,13 @@ subroutine integer_ne(this, returned_integer, compared_integer, message_in)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
-        write(unit=*, fmt="(a, i7)") "which should be /= integer = ", compared_integer
-        write(unit=*, fmt="(a, a)") "fail: ", message
-        write(unit=*, fmt="(a)")
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
+            write(unit=*, fmt="(a, i7)") "which should be /= integer = ", compared_integer
+            write(unit=*, fmt="(a, a)") "fail: ", message
+            write(unit=*, fmt="(a)")
+        end if
     end if
     
     this%n_tests = this%n_tests + 1
@@ -303,10 +318,13 @@ subroutine integer_ge(this, returned_integer, compared_integer, message_in)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
-        write(unit=*, fmt="(a, i7)") "which should be >= integer = ", compared_integer
-        write(unit=*, fmt="(a, a)") "fail: ", message
-        write(unit=*, fmt="(a)")
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
+            write(unit=*, fmt="(a, i7)") "which should be >= integer = ", compared_integer
+            write(unit=*, fmt="(a, a)") "fail: ", message
+            write(unit=*, fmt="(a)")
+        end if
     end if
     
     this%n_tests = this%n_tests + 1
@@ -339,10 +357,13 @@ subroutine integer_le(this, returned_integer, compared_integer, message_in)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
-        write(unit=*, fmt="(a, i7)") "which should be <= integer = ", compared_integer
-        write(unit=*, fmt="(a, a)") "fail: ", message
-        write(unit=*, fmt="(a)")
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=*, fmt="(a, i7)") "          integer returned = ", returned_integer
+            write(unit=*, fmt="(a, i7)") "which should be <= integer = ", compared_integer
+            write(unit=*, fmt="(a, a)") "fail: ", message
+            write(unit=*, fmt="(a)")
+        end if
     end if
     
     this%n_tests = this%n_tests + 1
@@ -377,10 +398,13 @@ subroutine character_eq(this, returned_character_in, compared_character_in, mess
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
-        write(unit=*, fmt="(a)") "string returned = " // trim(adjustl(returned_string))
-        write(unit=*, fmt="(a)") "string expected = " // trim(adjustl(compared_string))
-        write(unit=*, fmt="(a, a)") "fail: ", message
-        write(unit=*, fmt="(a)")
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=*, fmt="(a)") "string returned = " // trim(adjustl(returned_string))
+            write(unit=*, fmt="(a)") "string expected = " // trim(adjustl(compared_string))
+            write(unit=*, fmt="(a, a)") "fail: ", message
+            write(unit=*, fmt="(a)")
+        end if
     end if
     
     this%n_tests = this%n_tests + 1

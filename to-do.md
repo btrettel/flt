@@ -2,10 +2,6 @@
 
 Priorities:
 
-- <https://softpanorama.org/SE/programming_style.shtml>: > Traditionally different levels can be specified  for STDOUT and log file, so two variables exists called msglevel1 and msglevel2. 
-    - `file_level`, `stdout_level`, `level` does both
-    - Make `unittest` respect the logging `level` for the stdout printing.
-    - Then set up the expected failing tests to not print by default
 - Search for `TODO` and finish those tasks.
 - Eliminate Python from this repository.
     - Convert passed.py to passed.f90.

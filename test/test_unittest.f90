@@ -7,7 +7,7 @@
 
 program test_unittest
 
-use nmllog, only: log_type, WARNING_LEVEL, CRITICAL_LEVEL
+use nmllog, only: log_type, CRITICAL_LEVEL
 use prec, only: RP
 use unittest, only: test_results_type
 implicit none
@@ -88,7 +88,7 @@ call tests%integer_le(1, 2, "integer_ne, equal")
 ! tests which should fail
 
 ! Don't print these to stdout.
-logger%stdout_level = CRITICAL_LEVEL + 1
+failing_tests%logger%stdout_level = CRITICAL_LEVEL + 1
 
 call failing_tests%logical_true(.false., "logical_true, failure")
 
@@ -116,8 +116,6 @@ call failing_tests%character_eq("a", "b", "character_eq, failure (greater)")
 
 call failing_tests%character_eq("b", "a", "character_eq, failure (less)")
 
-logger%stdout_level = WARNING_LEVEL + 1
-
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 
 call tests%integer_eq(failing_tests%n_tests, N_FAILING, "correct number of tests expected to fail")
@@ -138,6 +136,7 @@ contains
 
 subroutine test_validate_timestamp(tests)
     use unittest, only: validate_timestamp
+    use nmllog, only: CRITICAL_LEVEL
     
     type(test_results_type), intent(inout) :: tests
     
@@ -147,6 +146,7 @@ subroutine test_validate_timestamp(tests)
     integer :: n_tests, n_failing
     
     call failing_tests%start_tests(tests%logger)
+    failing_tests%logger%stdout_level=CRITICAL_LEVEL
     n_tests   = 0
     n_failing = 0
     
@@ -363,6 +363,7 @@ subroutine test_read_unittest_nml(tests)
     ! logical_true (fail)
     call logger%open(TEST_FILENAME)
     call nml_tests%start_tests(logger)
+    nml_tests%logger%stdout_level=CRITICAL_LEVEL
     call nml_tests%logical_true(.false., "logical_true (fail)")
     call logger%close()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
