@@ -316,10 +316,10 @@ subroutine test_read_unittest_nml(tests)
     integer                     :: nml_unit
     
     character(len=TIMESTAMP_LEN) :: timestamp
-    character(len=7)             :: variable_type
+    character(len=9)             :: variable_type
     character(len=2)             :: test_operator
     logical                      :: test_passes, returned_logical, compared_logical
-    character(len=CL)            :: message, returned_string, compared_string
+    character(len=CL)            :: message, returned_character, compared_character
     real(kind=RP)                :: returned_real, compared_real, tolerance, difference
     integer                      :: returned_integer, compared_integer
     
@@ -327,23 +327,28 @@ subroutine test_read_unittest_nml(tests)
                             returned_logical, compared_logical, &
                             returned_real, compared_real, tolerance, difference, &
                             returned_integer, compared_integer, &
-                            returned_string, compared_string
+                            returned_character, compared_character
     
-    timestamp        = ""
-    variable_type    = ""
-    test_operator    = ""
-    test_passes      = .false.
-    message          = ""
-    returned_logical = .false.
-    compared_logical = .false.
-    returned_real    = 0.0_RP
-    compared_real    = 0.0_RP
-    tolerance        = 0.0_RP
-    difference       = 0.0_RP
-    returned_integer = 0
-    compared_integer = 0
-    returned_string  = ""
-    compared_string  = ""
+    integer       :: n_tests, n_failures
+    real(kind=RP) :: duration ! in seconds
+    
+    namelist /tests_summary/ n_tests, n_failures, duration
+    
+    timestamp          = ""
+    variable_type      = ""
+    test_operator      = ""
+    test_passes        = .false.
+    message            = ""
+    returned_logical   = .false.
+    compared_logical   = .false.
+    returned_real      = 0.0_RP
+    compared_real      = 0.0_RP
+    tolerance          = 0.0_RP
+    difference         = 0.0_RP
+    returned_integer   = 0
+    compared_integer   = 0
+    returned_character = ""
+    compared_character = ""
     
     ! logical_true (pass)
     call logger%open(TEST_FILENAME)
@@ -438,19 +443,208 @@ subroutine test_read_unittest_nml(tests)
     call tests%real_eq(returned_real, 3.0_RP, "test_read_unittest_nml, real_eq (fail), returned_real")
     call tests%real_eq(compared_real, 2.0_RP, "test_read_unittest_nml, real_eq (fail), compared_real")
     
-    ! TODO: real_ne (pass)
-    ! TODO: real_ne (fail)
-    ! TODO: integer_eq (pass)
-    ! TODO: integer_eq (fail)
-    ! TODO: integer_ne (pass)
-    ! TODO: integer_ne (fail)
-    ! TODO: integer_ge (pass)
-    ! TODO: integer_ge (fail)
-    ! TODO: integer_le (pass)
-    ! TODO: integer_le (fail)
-    ! TODO: character_eq (pass)
-    ! TODO: character_eq (fail)
-    ! TODO: test log duration
+    ! real_ne (pass)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    call nml_tests%real_ne(0.0_RP, 1.0_RP, "real_ne (pass)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, real_ne (pass)")
+    call tests%character_eq(variable_type, "real", "test_read_unittest_nml, real_ne (pass), variable_type")
+    call tests%logical_true(test_passes, "test_read_unittest_nml, real_ne (pass), test_passes")
+    call tests%character_eq(trim(message), "real_ne (pass)", "test_read_unittest_nml, real_ne (pass), message")
+    call tests%real_eq(returned_real, 0.0_RP, "test_read_unittest_nml, real_ne (pass), returned_real")
+    call tests%real_eq(compared_real, 1.0_RP, "test_read_unittest_nml, real_ne (pass), compared_real")
+    
+    ! real_ne (fail)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%real_ne(3.0_RP, 3.0_RP, "real_ne (fail)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, real_ne (fail)")
+    call tests%character_eq(variable_type, "real", "test_read_unittest_nml, real_ne (fail), variable_type")
+    call tests%logical_false(test_passes, "test_read_unittest_nml, real_ne (fail), test_passes")
+    call tests%character_eq(trim(message), "real_ne (fail)", "test_read_unittest_nml, real_ne (fail), message")
+    call tests%real_eq(returned_real, 3.0_RP, "test_read_unittest_nml, real_ne (fail), returned_real")
+    call tests%real_eq(compared_real, 3.0_RP, "test_read_unittest_nml, real_ne (fail), compared_real")
+    
+    ! integer_eq (pass)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    call nml_tests%integer_eq(2, 2, "integer_eq (pass)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, integer_eq (pass)")
+    call tests%character_eq(variable_type, "integer", "test_read_unittest_nml, integer_eq (pass), variable_type")
+    call tests%logical_true(test_passes, "test_read_unittest_nml, integer_eq (pass), test_passes")
+    call tests%character_eq(trim(message), "integer_eq (pass)", "test_read_unittest_nml, integer_eq (pass), message")
+    call tests%integer_eq(returned_integer, 2, "test_read_unittest_nml, integer_eq (pass), returned_integer")
+    call tests%integer_eq(compared_integer, 2, "test_read_unittest_nml, integer_eq (pass), compared_integer")
+    
+    ! integer_eq (fail)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%integer_eq(-1, 4, "integer_eq (fail)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, integer_eq (fail)")
+    call tests%character_eq(variable_type, "integer", "test_read_unittest_nml, integer_eq (fail), variable_type")
+    call tests%logical_false(test_passes, "test_read_unittest_nml, integer_eq (fail), test_passes")
+    call tests%character_eq(trim(message), "integer_eq (fail)", "test_read_unittest_nml, integer_eq (fail), message")
+    call tests%integer_eq(returned_integer, -1, "test_read_unittest_nml, integer_eq (fail), returned_integer")
+    call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_eq (fail), compared_integer")
+    
+    ! integer_ne (pass)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    call nml_tests%integer_ne(2, 1, "integer_ne (pass)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, integer_ne (pass)")
+    call tests%character_eq(variable_type, "integer", "test_read_unittest_nml, integer_ne (pass), variable_type")
+    call tests%logical_true(test_passes, "test_read_unittest_nml, integer_ne (pass), test_passes")
+    call tests%character_eq(trim(message), "integer_ne (pass)", "test_read_unittest_nml, integer_ne (pass), message")
+    call tests%integer_eq(returned_integer, 2, "test_read_unittest_nml, integer_ne (pass), returned_integer")
+    call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_ne (pass), compared_integer")
+    
+    ! integer_ne (fail)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%integer_ne(4, 4, "integer_ne (fail)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, integer_ne (fail)")
+    call tests%character_eq(variable_type, "integer", "test_read_unittest_nml, integer_ne (fail), variable_type")
+    call tests%logical_false(test_passes, "test_read_unittest_nml, integer_ne (fail), test_passes")
+    call tests%character_eq(trim(message), "integer_ne (fail)", "test_read_unittest_nml, integer_ne (fail), message")
+    call tests%integer_eq(returned_integer, 4, "test_read_unittest_nml, integer_ne (fail), returned_integer")
+    call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_ne (fail), compared_integer")
+    
+    ! integer_ge (pass)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    call nml_tests%integer_ge(2, 1, "integer_ge (pass)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, integer_ge (pass)")
+    call tests%character_eq(variable_type, "integer", "test_read_unittest_nml, integer_ge (pass), variable_type")
+    call tests%logical_true(test_passes, "test_read_unittest_nml, integer_ge (pass), test_passes")
+    call tests%character_eq(trim(message), "integer_ge (pass)", "test_read_unittest_nml, integer_ge (pass), message")
+    call tests%integer_eq(returned_integer, 2, "test_read_unittest_nml, integer_ge (pass), returned_integer")
+    call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_ge (pass), compared_integer")
+    
+    ! integer_ge (fail)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%integer_ge(3, 4, "integer_ge (fail)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, integer_ge (fail)")
+    call tests%character_eq(variable_type, "integer", "test_read_unittest_nml, integer_ge (fail), variable_type")
+    call tests%logical_false(test_passes, "test_read_unittest_nml, integer_ge (fail), test_passes")
+    call tests%character_eq(trim(message), "integer_ge (fail)", "test_read_unittest_nml, integer_ge (fail), message")
+    call tests%integer_eq(returned_integer, 3, "test_read_unittest_nml, integer_ge (fail), returned_integer")
+    call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_ge (fail), compared_integer")
+    
+    ! integer_le (pass)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    call nml_tests%integer_le(0, 1, "integer_le (pass)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, integer_le (pass)")
+    call tests%character_eq(variable_type, "integer", "test_read_unittest_nml, integer_le (pass), variable_type")
+    call tests%logical_true(test_passes, "test_read_unittest_nml, integer_le (pass), test_passes")
+    call tests%character_eq(trim(message), "integer_le (pass)", "test_read_unittest_nml, integer_le (pass), message")
+    call tests%integer_eq(returned_integer, 0, "test_read_unittest_nml, integer_le (pass), returned_integer")
+    call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_le (pass), compared_integer")
+    
+    ! integer_le (fail)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%integer_le(5, 2, "integer_le (fail)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, integer_le (fail)")
+    call tests%character_eq(variable_type, "integer", "test_read_unittest_nml, integer_le (fail), variable_type")
+    call tests%logical_false(test_passes, "test_read_unittest_nml, integer_le (fail), test_passes")
+    call tests%character_eq(trim(message), "integer_le (fail)", "test_read_unittest_nml, integer_le (fail), message")
+    call tests%integer_eq(returned_integer, 5, "test_read_unittest_nml, integer_le (fail), returned_integer")
+    call tests%integer_eq(compared_integer, 2, "test_read_unittest_nml, integer_le (fail), compared_integer")
+    
+    ! character_eq (pass)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    call nml_tests%character_eq("a", "a", "character_eq (pass)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, character_eq (pass)")
+    call tests%character_eq(variable_type, "character", "test_read_unittest_nml, character_eq (pass), variable_type")
+    call tests%logical_true(test_passes, "test_read_unittest_nml, character_eq (pass), test_passes")
+    call tests%character_eq(trim(message), "character_eq (pass)", "test_read_unittest_nml, character_eq (pass), message")
+    call tests%character_eq(returned_character, "a", "test_read_unittest_nml, character_eq (pass), returned_character")
+    call tests%character_eq(compared_character, "a", "test_read_unittest_nml, character_eq (pass), compared_character")
+    
+    ! character_eq (fail)
+    call logger%open(TEST_FILENAME)
+    call nml_tests%start_tests(logger)
+    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%character_eq("a", "b", "character_eq (fail)")
+    call logger%close()
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=test_result)
+    close(unit=nml_unit, status="delete")
+    call validate_timestamp(tests, timestamp, "test_read_unittest_nml, character_eq (fail)")
+    call tests%character_eq(variable_type, "character", "test_read_unittest_nml, character_eq (fail), variable_type")
+    call tests%logical_false(test_passes, "test_read_unittest_nml, character_eq (fail), test_passes")
+    call tests%character_eq(trim(message), "character_eq (fail)", "test_read_unittest_nml, character_eq (fail), message")
+    call tests%character_eq(returned_character, "a", "test_read_unittest_nml, character_eq (fail), returned_character")
+    call tests%character_eq(compared_character, "b", "test_read_unittest_nml, character_eq (fail), compared_character")
+    
+    ! tests summary
+    open(newunit=nml_unit, file="prec.nml", status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=tests_summary)
+    close(unit=nml_unit)
+    call tests%integer_eq(n_tests, 5, "test_read_unittest_nml, tests_summary, n_tests")
+    call tests%integer_eq(n_failures, 0, "test_read_unittest_nml, tests_summary, n_tests")
+    ! TODO: duration
+    ! Unfortunately the duration for prec.nml is often zero due to the low precision of the clock.
+    ! So I can't test whether it's greater than zero. And I don't have a `real_gt` test subroutine yet.
+    ! I had the following in the Python tests:
+    ! ```
+    ! duration = datetime.fromisoformat(log_lines.last_time) - datetime.fromisoformat(log_lines.first_time)
+    ! 
+    ! # Once, this failed for flang-7 for unknown reasons.
+    ! self.assertAlmostEqual(log_lines.duration, duration.total_seconds(), places=1)
+    ! ```
 end subroutine test_read_unittest_nml
 
 end program test_unittest

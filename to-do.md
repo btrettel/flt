@@ -5,18 +5,18 @@ Priorities:
 - Search for `TODO` and finish those tasks.
 - Eliminate Python from this repository.
     - Convert passed.py to passed.f90.
-    - Merge tests from `test_*.py` into the associated Fortran test files.
     - Remove Python from .gitignore.
 - Make as much as possible `pure`.
 - `check` to `assert`
     - Eliminate return codes in `assert` and make the code `error stop` instead. Then `assert` can be pure (if `error stop` writes a message) and I can get a backtrace in some compilers.
     - Allow for disabling `assert` in a way that a compiler will optimize out without having to use a preprocessor.
 - Move `rand_int` and `rand_cauchy` to `rngmod` (or rename `rngmod` to `random`).
+- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
 
 Later:
 
-- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
 - fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
+    - Modify your AD to be vectorized
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
     - Make ga.f90 use rngmod.f90.
     - herrera_tackling_1998
@@ -40,6 +40,8 @@ Later:
     - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.
     - Note: This will be brittle in the sense that it will only work for my own particular coding style.
     - Distinguish between compilation errors and test failures in the mutation score.
+    - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
+    - Make highly parallelizable. Run as many mutants as possible in parallel for speed. The compiler can't run on GPUs, but the code can. So run the compiler separately in a first pass. This will allow me to note if the compilation fails as well. Then queue the codes that compiled and run them on GPUs. If that only uses a low number of GPUs, then parallelize the tests.
     - Mutation operators:
         - TODO: Check Mothra and other papers on DTIC for more.
         - `comment_line`: Comment out non-empty lines.
@@ -111,10 +113,9 @@ Later:
     - temporal convergence
     - MC convergence
 - Add validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
-- <https://docs.python.org/3/library/timeit.html>
-    - `result = timeit(subroutine_with_no_arguments, number=10000)`
-    - <https://news.ycombinator.com/item?id=22085172>
-- `test_compiler.f90`: Tests for accuracy of important intrinsics in different compilers.
+- `test_compiler.f90`: Tests for different compilers.
+    - accuracy of important intrinsics
+    - `precision(1)` shows that the default integer has sufficient precision
 - Poisson solvers, using same or similar interface as FISHPACK
     - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>
         - Old: <https://people.math.sc.edu/Burkardt/f77_src/fishpack/fishpack.html>
@@ -154,3 +155,26 @@ Later:
         - > For Fortran, an object file depends on the source file it is compiled from AND all the .mod files for any modules USEd in the source file. A .mod file depends on the source file in which that module is defined. An executable depends on all the object files for all the code it uses, and code they use, etc, even if that code wasn’t in a module, and so doesn’t get included via a USE statement.
     - <https://aoterodelaroza.github.io/devnotes/modern-fortran-makefiles/>
     - <https://fortran-lang.org/en/learn/building_programs/project_make/>
+- Add tests to compare speed of parallel vs. serial
+- timer.f90
+    - Make `unittest` use this for the timing.
+    - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
+        - Maybe later: `wall_precision`, `cpu_precision`
+    - In test output, write how long test took to run so that you know how long each test takes?
+    - `timer%start()` before what you want to time
+    - `timer%end()` after
+    - Make the derived type have 0 time when initialized. Then you can start the timer again with start.
+    - `timer%seconds`
+    - <https://youtu.be/qUeud6DvOWI?t=322>
+        - `time.perf_counter()`
+        - <https://docs.python.org/3/library/time.html#time.perf_counter>
+    - Data type contains both CPU time and wall clock time for comparison?
+    - <https://docs.python.org/3/library/timeit.html>
+        - `result = timeit(subroutine_with_no_arguments, number=10000)`
+        - <https://news.ycombinator.com/item?id=22085172>
+    - Tests
+        - serial case where CPU and wall time should be close.
+        - parallel case where CPU time should be a multiple of wall time
+        - separate non-standard test code using `sleep(1)`
+            - <https://gcc.gnu.org/onlinedocs/gcc-7.5.0/gfortran/SLEEP.html>
+            - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>

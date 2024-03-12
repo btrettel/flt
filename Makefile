@@ -131,7 +131,6 @@ test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_
 checks.nml: test_checks$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
 	#python3 test/passed.py $@
-	#python3 test/test_checks.py
 	test ! -e fort.*
 
 ############
@@ -168,7 +167,6 @@ test_nmllog$(BINEXT): src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_
 nmllog.nml: test_nmllog$(BINEXT)
 	$(RUN)test_nmllog$(BINEXT)
 	#python3 test/passed.py $@
-	#python3 test/test_logging.py
 	test ! -e fort.*
 
 ########
@@ -202,8 +200,7 @@ rngmod.nml: test_rngmod$(BINEXT)
 test_unittest$(BINEXT): src/unittest$(DBGOBJEXT) test/test_unittest.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unittest.f90
 
-unittest.nml: test_unittest$(BINEXT)
+unittest.nml: test_unittest$(BINEXT) prec.nml
 	$(RUN)test_unittest$(BINEXT)
 	#python3 test/passed.py $@
-	#python3 test/test_unittest.py
 	test ! -e fort.*

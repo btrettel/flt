@@ -27,11 +27,14 @@ contains
     procedure :: logical_false => logical_false
     procedure :: real_eq => real_eq
     procedure :: real_ne => real_ne
+    ! TODO: real_gt, real_ge, real_lt, real_le
     procedure :: integer_eq => integer_eq
     procedure :: integer_ne => integer_ne
     procedure :: integer_ge => integer_ge
     procedure :: integer_le => integer_le
+    ! TODO: integer_gt, integer_lt
     procedure :: character_eq => character_eq
+    ! TODO: character_ne
     procedure :: start_tests => start_tests
     procedure :: end_tests => end_tests
 end type test_results_type
@@ -382,26 +385,29 @@ subroutine character_eq(this, returned_character_in, compared_character_in, mess
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=9)              :: variable_type
     character(len=2)              :: test_operator
-    character(len=:), allocatable :: message, returned_string, compared_string
+    character(len=:), allocatable :: message, returned_character, compared_character
     
-    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_string, compared_string
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_character, compared_character
     
-    timestamp       = now()
-    variable_type   = "character"
-    test_operator   = "=="
-    message         = message_in
-    returned_string = returned_character_in
-    compared_string = compared_character_in
+    timestamp          = now()
+    variable_type      = "character"
+    test_operator      = "=="
+    message            = message_in
+    returned_character = trim(returned_character_in)
+    compared_character = trim(compared_character_in)
     
-    test_passes = (trim(adjustl(returned_string)) == trim(adjustl(compared_string)))
+    ! It's not clear to me why `returned_character` needs to be trimmed.
+    ! The namelist file will have a lot of spaces otherwise.
+    
+    test_passes = (trim(returned_character) == trim(compared_character))
     write(unit=this%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
         this%n_failures = this%n_failures + 1
         
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
-            write(unit=*, fmt="(a)") "string returned = " // trim(adjustl(returned_string))
-            write(unit=*, fmt="(a)") "string expected = " // trim(adjustl(compared_string))
+            write(unit=*, fmt="(a)") "character returned = " // returned_character
+            write(unit=*, fmt="(a)") "character expected = " // compared_character
             write(unit=*, fmt="(a, a)") "fail: ", message
             write(unit=*, fmt="(a)")
         end if
@@ -454,7 +460,7 @@ subroutine end_tests(this)
         write(unit=*, fmt="(a, i0, a)") "FAILED (failures=", this%n_failures, ")"
         write(unit=*, fmt="(a)") LONG_LINE
         call this%logger%close()
-        stop 1
+        error stop
     else
         write(unit=*, fmt="(a)") "All tests passed."
         write(unit=*, fmt="(a)")
