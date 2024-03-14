@@ -10,33 +10,33 @@ Priorities:
 - `check` to `assert`
     - Eliminate return codes in `assert` and make the code `error stop` instead. Then `assert` can be pure (if `error stop` writes a message) and I can get a backtrace in some compilers.
     - Allow for disabling `assert` in a way that a compiler will optimize out without having to use a preprocessor.
+    - `assert_true`
+    - `assert_false`
+    - `assert_eq`
+    - `assert_ne`
+    - `assert_gt`
+    - `assert_ge`
+    - `assert_lt`
+    - `assert_le`
+    - `assert_same_shape_as`: Assert that two arrays have the same shape.
+        - <https://fortran-lang.discourse.group/t/whats-the-purpose-of-array-size-inside-subroutine-arguments/7297/16>
+        - <https://fortran-lang.discourse.group/t/add-a-conform-function-to-check-that-argument-dimensions-match/1018/15>
+    - `assert` that sets `rc` instead of `error stop`
 - Move `rand_int` and `rand_cauchy` to `rngmod` (or rename `rngmod` to `random`).
-- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
-
-Later:
-
-- fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
-    - Modify your AD to be vectorized
-- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
-    - Make ga.f90 use rngmod.f90.
-    - herrera_tackling_1998
-    - Have multiple outputs.
-        - `chromo%f`
-        - `chromo%f_set`
-        - `chromo%out(:)` (for non-objective function outputs that may be of interest)
-- debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
-    - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
-        - parker_monte_1997-1
-    - FLOP counting.
-    - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
-- f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
-    - Enforce some Power of 10 rules, particularly procedure lengths.
-    - Start tracking comment density and adding more code comments. Density > 25%?
-    - Require that all functions are pure.
-    - Require construct names for nested `do` loops and `if` statements.
-    - Check that assertions have unique messages. List relevant variable values in error message.
+- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
+    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
+    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
+- unittest.f90:
+    - Print tolerance in output.
+    - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
+        - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
+            - FortranFan seems skeptical.
+        - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
+    - Make `real_eq` and `real_ne` use `is_close`.
+    - Instead of `integer_eq`, `real_eq`, use generic `eq`?
+    - `%logical_true(.not.` to `%logical_false(`
 - fmutate.f90:
-    - TODO: Look at mutation testing literature for particular types of errors to introduce:
+    - TODO: Look at mutation testing literature for particular types of errors to introduce.
     - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.
     - Note: This will be brittle in the sense that it will only work for my own particular coding style.
     - Distinguish between compilation errors and test failures in the mutation score.
@@ -66,6 +66,30 @@ Later:
         - Change order of exponentiation: `x**y` to `y**x`.
         - changing order of magnitude of numbers
         - moving parentheses (common mistake)
+
+Later:
+
+- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
+- fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
+    - Modify your AD to be vectorized. See personal notes on automatic differentiation for other speed ideas too.
+- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
+    - Make ga.f90 use rngmod.f90.
+    - herrera_tackling_1998
+    - Have multiple outputs.
+        - `chromo%f`
+        - `chromo%f_set`
+        - `chromo%out(:)` (for non-objective function outputs that may be of interest)
+- debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
+    - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
+        - parker_monte_1997-1
+    - FLOP counting.
+    - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
+- f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
+    - Enforce some Power of 10 rules, particularly procedure lengths.
+    - Start tracking comment density and adding more code comments. Density > 25%?
+    - Require that all functions are pure.
+    - Require construct names for nested `do` loops and `if` statements.
+    - Check that assertions have unique messages. List relevant variable values in error message.
 - make_checker.py: Runs both GNU Make and BSD Make on all targets and identifies which fail.
 - rng.f90: Includes a deterministic random number generator for testing purposes.
     - Base the interface on NumPy:
@@ -78,18 +102,6 @@ Later:
 - Program to ensure that all error codes in errors and assertions are unique.
 - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
 - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
-- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
-    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
-    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
-- unittest.f90:
-    - Print tolerance in output.
-    - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
-        - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
-            - FortranFan seems skeptical.
-        - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
-    - Make `real_eq` and `real_ne` use `is_close`.
-    - Instead of `integer_eq`, `real_eq`, use generic `eq`?
-    - `%logical_true(.not.` to `%logical_false(`
 - input validation
     - Write module to ease input validation. For example, a subroutine to write a message about a variable being out of bounds.
     - `call validate_bounds(x, "x", rc, lower=0, lower_inclusive=.true.)`
@@ -160,6 +172,7 @@ Later:
     - Make `unittest` use this for the timing.
     - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
         - Maybe later: `wall_precision`, `cpu_precision`
+    - Base interface on <https://math.nist.gov/StopWatch/QUICKSTART>, for example: `timer%start()`, `timer%stop`, `timer%reset()`, etc.
     - In test output, write how long test took to run so that you know how long each test takes?
     - `timer%start()` before what you want to time
     - `timer%end()` after
