@@ -3,4 +3,5 @@
 #define assert_info(condition, info_) call assert_(condition, __FILE__, __LINE__, info=info_)
 #else
 #define assert(condition, info)
+#define assert_info(condition, info_)
 #endif
