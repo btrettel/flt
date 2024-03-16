@@ -9,9 +9,7 @@
 
 # TODO: Add linters before compilation. Lint each file before compiling it.
 # TODO: Camfort
-# LATER: lfortran, particularly for the style suggestions
 # TODO: Figure out how to automate parts like `test/test_ga.f90` in `test_ga$(BINEXT):`
-# TODO: nvfortran to replace flang-7. <https://docs.nvidia.com/hpc-sdk//index.html>
 # TODO: Add code coverage.
 # TODO: Valgrind to detect uninitialized variables. https://stackoverflow.com/a/52455413
 # TODO: Check other Makefiles to see which flags you use there.
@@ -55,7 +53,7 @@ all:
 	$(MAKE) clean
 	$(MAKE) ifx
 	$(MAKE) clean
-	$(MAKE) flang-7
+	$(MAKE) nvfortran
 	$(MAKE) clean
 	@echo "***************************************"
 	@echo "* All tests passed for all compilers. *"
@@ -88,10 +86,11 @@ test: $(NML)
 ifx:
 	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
 
-.PHONY: flang-7
-flang-7:
-	$(MAKE) test FC=flang-7 FFLAGS='-Wdeprecated' DBGFLAGS='-g'
+.PHONY: nvfortran
+nvfortran:
+	$(MAKE) test FC=nvfortran FFLAGS='' DBGFLAGS='-g'
 
+# LATER: lfortran, particularly for the style suggestions
 #.PHONY: lfortran
 #lfortran:
 #	$(MAKE) test FC=lfortran FFLAGS='--link-with-gcc' DBGFLAGS=''

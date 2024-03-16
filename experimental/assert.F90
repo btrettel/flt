@@ -2,7 +2,7 @@
 
 ! `gfortran -std=f2018 -cpp -g assert.F90`
 ! `ifx -stand:f18 -traceback -fpp assert.F90`
-! `flang-7 assert.F90`
+! `nvfortran -Mpreprocess -g assert.F90`
 
 program test
 
@@ -14,7 +14,10 @@ x = 1
 y = 2
 
 assert(x == y)
-!assert_info(x == y, "Test message")
+!assert_info(x == y, "Test message.")
+
+! TODO: can pass in array of values to print as namelists don't work in nvfortran.
+! TODO: return code with filename and line number
 
 contains
 
