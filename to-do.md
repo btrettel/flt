@@ -35,6 +35,7 @@ Priorities:
     - Make `real_eq` and `real_ne` use `is_close`.
     - Instead of `integer_eq`, `real_eq`, use generic `eq`?
     - `%logical_true(.not.` to `%logical_false(`
+- A module containing errno codes, other internal return codes, and exit codes. Could make a derived type with the number and a message.
 - fmutate.f90:
     - TODO: Look at mutation testing literature for particular types of errors to introduce.
     - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.

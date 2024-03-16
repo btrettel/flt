@@ -33,7 +33,7 @@ NML = checks.nml dimmod.nml ga.nml nmllog.nml prec.nml rngmod.nml unittest.nml
 # gfortran
 
 FC        = gfortran
-FFLAGS    = -Wall -Wextra -Werror -pedantic-errors -Wno-maybe-uninitialized -std=f2008 -Wconversion -Wconversion-extra -fimplicit-none -fmax-errors=1 -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=-2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -ffree-line-length-132
+FFLAGS    = -Wall -Wextra -Werror -pedantic-errors -Wno-maybe-uninitialized -std=f2018 -Wconversion -Wconversion-extra -fimplicit-none -fmax-errors=1 -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=-2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -ffree-line-length-132
 DBGFLAGS  = -Og -g -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow,underflow,denormal
 # --coverage
 # -fsanitize=leak doesn't work on trident for some reason. It does work on bison.
@@ -52,8 +52,6 @@ DBGOBJEXT = -dbg.$(OBJEXT)
 .PHONY: all
 all:
 	$(MAKE) test
-	$(MAKE) clean
-	$(MAKE) ifort
 	$(MAKE) clean
 	$(MAKE) ifx
 	$(MAKE) clean
@@ -86,14 +84,9 @@ test: $(NML)
 # Other compilers #
 ###################
 
-# `-init=snan,arrays` leads to false positives. Probably of no consequence as ifort is being retired. There is no problem with ifx.
-.PHONY: ifort
-ifort:
-	$(MAKE) test FC=ifort FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand f08 -diag-error-limit=1' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
-
 .PHONY: ifx
 ifx:
-	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f08 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
+	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
 
 .PHONY: flang-7
 flang-7:
