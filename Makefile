@@ -49,7 +49,7 @@ DBGOBJEXT = -dbg.$(OBJEXT)
 
 .PHONY: all
 all:
-	$(MAKE) test
+	$(MAKE) test # gfortran
 	$(MAKE) clean
 	$(MAKE) ifx
 	$(MAKE) clean
@@ -82,9 +82,11 @@ test: $(NML)
 # Other compilers #
 ###################
 
+# `-check uninit` has false positives.
+# <https://community.intel.com/t5/Intel-Fortran-Compiler/Bogus-uninit-check-with-ifx-works-fine-with-ifort/m-p/1525024>
 .PHONY: ifx
 ifx:
-	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
+	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all,nouninit -fpe0'
 
 .PHONY: nvfortran
 nvfortran:

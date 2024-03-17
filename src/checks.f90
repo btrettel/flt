@@ -13,8 +13,18 @@ private
 
 real(kind=RP), public, parameter :: TOL_FACTOR = 10.0_RP
 
-public :: is_close
+logical, parameter :: DEBUG = .true.
+
+public :: is_close ! TODO: make rel_tol zero by default, abs_tol based on local spacing
+public :: assert ! TODO: test
 public :: check
+public :: same_shape_as ! TODO: test
+
+interface same_shape_as
+    module procedure same_shape_as_real_rank_1
+    module procedure same_shape_as_real_rank_2
+    module procedure same_shape_as_real_rank_3
+end interface same_shape_as
 
 contains
 
@@ -24,8 +34,8 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     real(kind=RP), intent(in)           :: input_real_1, input_real_2
     real(kind=RP), intent(in), optional :: rel_tol, abs_tol
     
-    real(kind=RP)                       :: rel_tol_set, abs_tol_set, tol
-    logical                             :: is_close
+    real(kind=RP) :: rel_tol_set, abs_tol_set, tol
+    logical       :: is_close
     
     if (present(rel_tol)) then
         rel_tol_set = rel_tol
@@ -47,6 +57,30 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
         is_close = .false.
     end if
 end function is_close
+
+pure subroutine assert(condition, message)
+    logical, intent(in) :: condition
+    
+    character(len=*), intent(in), optional :: message
+    
+    character(len=:), allocatable :: message_, full_message
+    
+    if (present(message)) then
+        message_ = new_line("a") // message
+    else
+        message_ = ""
+    end if
+    
+    if (DEBUG) then
+        if (.not. condition) then
+            ! Why not concatenate the strings on the `error stop` line?
+            ! That leads to ifx garbling the error message as of version `ifx (IFX) 2024.0.2 20231213`.
+            full_message = "***" // new_line("a") // "Assertion failed." // message_
+            
+            error stop full_message
+        end if
+    end if
+end subroutine assert
 
 subroutine check(condition, logger, message, rc)
     ! If `condition` is `.false.`, then print a message and increment `rc`.
@@ -71,7 +105,40 @@ subroutine check(condition, logger, message, rc)
     end if
 end subroutine check
 
-! TODO: function to check whether arrays have identical sizes
-! <https://fortran-lang.discourse.group/t/add-a-conform-function-to-check-that-argument-dimensions-match/1018>
+pure function same_shape_as_real_rank_1(a, b)
+    real(kind=RP), intent(in) :: a(:), b(:)
+    
+    logical :: same_shape_as_real_rank_1
+    
+    if (any(shape(a) /= shape(b))) then
+        same_shape_as_real_rank_1 = .false.
+    else
+        same_shape_as_real_rank_1 = .true.
+    end if
+end function same_shape_as_real_rank_1
+
+pure function same_shape_as_real_rank_2(a, b)
+    real(kind=RP), intent(in) :: a(:, :), b(:, :)
+    
+    logical :: same_shape_as_real_rank_2
+    
+    if (any(shape(a) /= shape(b))) then
+        same_shape_as_real_rank_2 = .false.
+    else
+        same_shape_as_real_rank_2 = .true.
+    end if
+end function same_shape_as_real_rank_2
+
+pure function same_shape_as_real_rank_3(a, b)
+    real(kind=RP), intent(in) :: a(:, :, :), b(:, :, :)
+    
+    logical :: same_shape_as_real_rank_3
+    
+    if (any(shape(a) /= shape(b))) then
+        same_shape_as_real_rank_3 = .false.
+    else
+        same_shape_as_real_rank_3 = .true.
+    end if
+end function same_shape_as_real_rank_3
 
 end module checks

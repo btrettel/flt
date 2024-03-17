@@ -90,9 +90,6 @@ subroutine log_open(this, filename, level, file_level, stdout_level)
     character(len=*), intent(in)  :: filename
     integer, optional, intent(in) :: level, file_level, stdout_level
     
-    integer :: unit_tries
-    logical :: unit_opened
-    
     if (present(level)) then
         this%file_level   = level
         this%stdout_level = level
@@ -106,29 +103,14 @@ subroutine log_open(this, filename, level, file_level, stdout_level)
         this%stdout_level = level
     end if
     
-    this%unit = LOG_UNIT
-    do unit_tries = 1, MAX_TRIES
-        inquire(unit=this%unit, opened=unit_opened)
-        
-        if (.not. unit_opened) then
-            exit
-        end if
-        
-        this%unit = this%unit + 1
-    end do
-    
-    if (unit_opened) then
-        this%unit = UNIT_CLOSED
-    else
-        this%filename = filename
-        open(unit=this%unit, &
-                action="write", &
-                status="replace", &
-                position="rewind", &
-                file=trim(this%filename), &
-                delim="quote", &
-                recl=NML_RECL)
-    end if
+    this%filename = filename
+    open(newunit=this%unit, &
+            action="write", &
+            status="replace", &
+            position="rewind", &
+            file=trim(this%filename), &
+            delim="quote", &
+            recl=NML_RECL)
 end subroutine log_open
 
 subroutine log_close(this)

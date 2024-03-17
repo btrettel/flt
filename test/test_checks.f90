@@ -11,7 +11,6 @@ use checks, only: is_close, check
 use nmllog, only: log_type
 use prec, only: RP
 use unittest, only: test_results_type
-
 implicit none
 
 type(log_type)          :: logger
