@@ -2,27 +2,16 @@
 
 Priorities:
 
+- Move incomplete and not-in-progress modules and tests to separate directory so you can focus on the complete and in-progress ones.
 - Search for `TODO` and finish those tasks.
 - Eliminate Python from this repository.
     - Convert passed.py to passed.f90.
     - Remove Python from .gitignore.
 - Make as much as possible `pure`.
-- `check` to `assert`
-    - Eliminate return codes in `assert` and make the code `error stop` instead. Then `assert` can be pure (if `error stop` writes a message) and I can get a backtrace in some compilers.
+- `assert`
     - Allow for disabling `assert` in a way that a compiler will optimize out without having to use a preprocessor.
-    - `assert_true`
-    - `assert_false`
-    - `assert_eq`
-    - `assert_ne`
-    - `assert_gt`
-    - `assert_ge`
-    - `assert_lt`
-    - `assert_le`
-    - `assert_same_shape_as`: Assert that two arrays have the same shape.
-        - <https://fortran-lang.discourse.group/t/whats-the-purpose-of-array-size-inside-subroutine-arguments/7297/16>
-        - <https://fortran-lang.discourse.group/t/add-a-conform-function-to-check-that-argument-dimensions-match/1018/15>
-    - `assert` that sets `rc` instead of `error stop`
-- Move `rand_int` and `rand_cauchy` to `rngmod` (or rename `rngmod` to `random`).
+- rename `rngmod` to `random`
+- Move `rand_int` and `rand_cauchy` to `random`.
 - Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
@@ -42,7 +31,7 @@ Priorities:
     - Note: This will be brittle in the sense that it will only work for my own particular coding style.
     - Distinguish between compilation errors and test failures in the mutation score.
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
-    - Make highly parallelizable. Run as many mutants as possible in parallel for speed. The compiler can't run on GPUs, but the code can. So run the compiler separately in a first pass. This will allow me to note if the compilation fails as well. Then queue the codes that compiled and run them on GPUs. If that only uses a low number of GPUs, then parallelize the tests.
+    - Make highly parallelizable. Run as many mutants as possible in parallel for speed. The compiler can't run on GPUs, but the code can. So run the compiler separately in a first pass. This will allow me to note if the compilation fails as well. Then queue the codes that compiled and run them on GPUs. I'm not sure the extent by which the GPU runs can be parallelized, however.
     - Mutation operators:
         - TODO: Check Mothra and other papers on DTIC for more.
         - `comment_line`: Comment out non-empty lines.
