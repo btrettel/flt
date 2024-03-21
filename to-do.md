@@ -2,7 +2,6 @@
 
 Priorities:
 
-- Move incomplete and not-in-progress modules and tests to separate directory so you can focus on the complete and in-progress ones.
 - Search for `TODO` and finish those tasks.
 - Eliminate Python from this repository.
     - Convert passed.py to passed.f90.
