@@ -65,7 +65,7 @@ all:
 
 .PHONY: clean
 clean:
-	$(RM) *.nml *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg
+	$(RM) *.nml *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg passed$(BINEXT)
 
 # TODO: `.f90$(OBJEXT):`
 
@@ -111,15 +111,22 @@ src/prec$(DBGOBJEXT):
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 ##########
+# passed #
+##########
+
+passed$(BINEXT): src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) test/passed.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/passed.f90
+
+##########
 # checks #
 ##########
 
 test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_checks.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_checks.f90
 
-checks.nml: test_checks$(BINEXT)
+checks.nml: test_checks$(BINEXT) passed$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
-	#python3 test/passed.py $@
+	./passed $@
 	test ! -e fort.*
 
 ##########
@@ -129,9 +136,9 @@ checks.nml: test_checks$(BINEXT)
 test_nmllog$(BINEXT): src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_nmllog.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_nmllog.f90
 
-nmllog.nml: test_nmllog$(BINEXT)
+nmllog.nml: test_nmllog$(BINEXT) passed$(BINEXT)
 	$(RUN)test_nmllog$(BINEXT)
-	#python3 test/passed.py $@
+	./passed $@
 	test ! -e fort.*
 
 ########
@@ -141,9 +148,9 @@ nmllog.nml: test_nmllog$(BINEXT)
 test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_prec.f90
 
-prec.nml: test_prec$(BINEXT)
+prec.nml: test_prec$(BINEXT) passed$(BINEXT)
 	$(RUN)test_prec$(BINEXT)
-	#python3 test/passed.py $@
+	./passed $@
 	test ! -e fort.*
 
 ############
@@ -153,7 +160,7 @@ prec.nml: test_prec$(BINEXT)
 test_unittest$(BINEXT): src/unittest$(DBGOBJEXT) test/test_unittest.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unittest.f90
 
-unittest.nml: test_unittest$(BINEXT) prec.nml
+unittest.nml: test_unittest$(BINEXT) prec.nml passed$(BINEXT)
 	$(RUN)test_unittest$(BINEXT)
-	#python3 test/passed.py $@
+	./passed $@
 	test ! -e fort.*

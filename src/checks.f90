@@ -1,5 +1,5 @@
 ! Module for procedures used for run-time checks.
-! Standard: Fortran 2008
+! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [flt](https://github.com/btrettel/flt)
@@ -13,7 +13,7 @@ private
 
 real(kind=RP), public, parameter :: TOL_FACTOR = 10.0_RP
 
-logical, parameter :: DEBUG = .true.
+logical :: debug = .true.
 
 public :: is_close ! TODO: make rel_tol zero by default, abs_tol based on local spacing
 public :: assert ! TODO: test
@@ -71,7 +71,7 @@ pure subroutine assert(condition, message)
         message_ = ""
     end if
     
-    if (DEBUG) then
+    if (debug) then
         if (.not. condition) then
             ! Why not concatenate the strings on the `error stop` line?
             ! That leads to ifx garbling the error message as of version `ifx (IFX) 2024.0.2 20231213`.

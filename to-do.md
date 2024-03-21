@@ -4,25 +4,46 @@ Priorities:
 
 - Search for `TODO` and finish those tasks.
 - Eliminate Python from this repository.
-    - Convert passed.py to passed.f90.
+    - Test passed.f90 with some test namelist files: test/fail.nml and test/success.nml.
     - Remove Python from .gitignore.
 - Make as much as possible `pure`.
-- `assert`
-    - Allow for disabling `assert` in a way that a compiler will optimize out without having to use a preprocessor.
 - rename `rngmod` to `random`
 - Move `rand_int` and `rand_cauchy` to `random`.
 - Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
 - unittest.f90:
-    - Print tolerance in output.
     - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
         - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
             - FortranFan seems skeptical.
         - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
     - Make `real_eq` and `real_ne` use `is_close`.
-    - Instead of `integer_eq`, `real_eq`, use generic `eq`?
     - `%logical_true(.not.` to `%logical_false(`
+- timer.f90
+    - Make `unittest` use this for the timing.
+    - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
+        - Maybe later: `wall_precision`, `cpu_precision`
+    - Base interface on <https://math.nist.gov/StopWatch/QUICKSTART>, for example: `timer%start()`, `timer%stop`, `timer%reset()`, etc.
+    - In test output, write how long test took to run so that you know how long each test takes?
+    - `timer%start()` before what you want to time
+    - `timer%end()` after
+    - Make the derived type have 0 time when initialized. Then you can start the timer again with start.
+    - `timer%seconds`
+    - <https://youtu.be/qUeud6DvOWI?t=322>
+        - `time.perf_counter()`
+        - <https://docs.python.org/3/library/time.html#time.perf_counter>
+    - Data type contains both CPU time and wall clock time for comparison?
+    - <https://docs.python.org/3/library/timeit.html>
+        - `result = timeit(subroutine_with_no_arguments, number=10000)`
+        - <https://news.ycombinator.com/item?id=22085172>
+            - Return minimum time to account for OS jitter?
+            - Return multiple times I guess to get a better idea of the overall distribution.
+    - Tests
+        - serial case where CPU and wall time should be close.
+        - parallel case where CPU time should be a multiple of wall time
+        - separate non-standard test code using `sleep(1)`
+            - <https://gcc.gnu.org/onlinedocs/gcc-7.5.0/gfortran/SLEEP.html>
+            - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>
 - A module containing errno codes, other internal return codes, and exit codes. Could make a derived type with the number and a message.
 - fmutate.f90:
     - TODO: Look at mutation testing literature for particular types of errors to introduce.
@@ -157,26 +178,4 @@ Later:
     - <https://aoterodelaroza.github.io/devnotes/modern-fortran-makefiles/>
     - <https://fortran-lang.org/en/learn/building_programs/project_make/>
 - Add tests to compare speed of parallel vs. serial
-- timer.f90
-    - Make `unittest` use this for the timing.
-    - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
-        - Maybe later: `wall_precision`, `cpu_precision`
-    - Base interface on <https://math.nist.gov/StopWatch/QUICKSTART>, for example: `timer%start()`, `timer%stop`, `timer%reset()`, etc.
-    - In test output, write how long test took to run so that you know how long each test takes?
-    - `timer%start()` before what you want to time
-    - `timer%end()` after
-    - Make the derived type have 0 time when initialized. Then you can start the timer again with start.
-    - `timer%seconds`
-    - <https://youtu.be/qUeud6DvOWI?t=322>
-        - `time.perf_counter()`
-        - <https://docs.python.org/3/library/time.html#time.perf_counter>
-    - Data type contains both CPU time and wall clock time for comparison?
-    - <https://docs.python.org/3/library/timeit.html>
-        - `result = timeit(subroutine_with_no_arguments, number=10000)`
-        - <https://news.ycombinator.com/item?id=22085172>
-    - Tests
-        - serial case where CPU and wall time should be close.
-        - parallel case where CPU time should be a multiple of wall time
-        - separate non-standard test code using `sleep(1)`
-            - <https://gcc.gnu.org/onlinedocs/gcc-7.5.0/gfortran/SLEEP.html>
-            - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>
+- unittest.f90 maybe: Instead of `integer_eq`, `real_eq`, use generic `eq`?

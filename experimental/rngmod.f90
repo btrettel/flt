@@ -1,5 +1,5 @@
 ! Module for random number generators, including a deterministic "random number" generator for testing.
-! Standard: Fortran 2008
+! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [flt](https://github.com/btrettel/flt)

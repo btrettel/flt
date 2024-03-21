@@ -1,5 +1,5 @@
 ! generator of a dimcheck module
-! Standard: Fortran 2008
+! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [dimcheck](https://github.com/btrettel/dimcheck)

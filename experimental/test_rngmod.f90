@@ -1,5 +1,5 @@
 ! tests for the rngmod module
-! Standard: Fortran 2004
+! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [flt](https://github.com/btrettel/flt)
