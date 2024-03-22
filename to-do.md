@@ -4,14 +4,14 @@ Priorities:
 
 - Search for `TODO` and finish those tasks.
 - Eliminate Python from this repository.
-    - Test passed.f90 with some test namelist files: test/fail.nml and test/success.nml.
+    - Eliminate passed.f90 as it probably does not serve any purpose given that all modern compilers should have non-zero exit codes if I specific the exit code specifically. I now recall that I had this before for ELF90, which doesn't allow exit codes. There's no other reason to have it. crayftn has a zero exit code for `error stop "message"`, but I won't use that for the tests. I should have another check for that case when doing a full run integration test.
     - Remove Python from .gitignore.
 - Make as much as possible `pure`.
-- rename `rngmod` to `random`
-- Move `rand_int` and `rand_cauchy` to `random`.
-- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
-    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
-    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
+- `random`
+    - rename `rngmod` to `random`
+    - Make `pure` random number generator. Obtain random number generator from elsewhere as you're not qualified to program one.
+    - Use standard tests for random number generators to make sure this one is good.
+    - Move `rand_int` and `rand_cauchy` to `random`.
 - unittest.f90:
     - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
         - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
@@ -52,6 +52,10 @@ Priorities:
     - Distinguish between compilation errors and test failures in the mutation score.
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
     - Make highly parallelizable. Run as many mutants as possible in parallel for speed. The compiler can't run on GPUs, but the code can. So run the compiler separately in a first pass. This will allow me to note if the compilation fails as well. Then queue the codes that compiled and run them on GPUs. I'm not sure the extent by which the GPU runs can be parallelized, however.
+    - List tests that never fail. Those tests may always pass, so they should be checked to make sure that they actually discriminate between working and non-working code.
+        - List percent of times a test fails with a mutation. Sort the list to see which tests are most and least sensitive/discriminating.
+        - For tests that always pass, reduce tolerances so that the tests are more sensitive.
+        - For faster testing, consider eliminating tests which always pass, particularly if they take a long time.
     - Mutation operators:
         - TODO: Check Mothra and other papers on DTIC for more.
         - `comment_line`: Comment out non-empty lines.
@@ -179,3 +183,7 @@ Later:
     - <https://fortran-lang.org/en/learn/building_programs/project_make/>
 - Add tests to compare speed of parallel vs. serial
 - unittest.f90 maybe: Instead of `integer_eq`, `real_eq`, use generic `eq`?
+
+- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
+    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
+    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>

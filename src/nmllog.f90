@@ -16,9 +16,6 @@ private
 
 public :: now
 
-integer, parameter :: LOG_UNIT  = 10
-integer, parameter :: MAX_TRIES = 10
-
 integer, public, parameter :: TIMESTAMP_LEN = 29
 integer, public, parameter :: UNIT_CLOSED   = -1
 

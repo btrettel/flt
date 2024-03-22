@@ -30,14 +30,10 @@ open(newunit=nml_unit, file=trim(filename), status="old", action="read", delim="
 read(unit=nml_unit, nml=tests_summary)
 close(unit=nml_unit)
 
-! `error stop` does not always have a non-zero exit code. Specifically, crayftn has a zero exit code for `error stop`.
-! So I am going to use `stop 1` here. It's not an *internal* error, so I suppose I could fashion a reason saying that `error stop`
-! is for internal failures only.
-
-write(unit=*, fmt="(a, i0, a, i0, a, f10.3, a)") "n_tests=", n_tests, " n_failures=", n_failures, " duration=", duration, " s"
+write(unit=*, fmt="(a, i0, a, i0, a, f0.3, a)") "n_tests=", n_tests, " n_failures=", n_failures, " duration=", duration, " s"
 
 if (n_failures > 0) then
-    stop 1
+    error stop 1
 else
     stop 0
 end if
