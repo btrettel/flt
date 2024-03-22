@@ -71,8 +71,7 @@ subroutine logical_true(this, condition, message_in)
         this%n_failures = this%n_failures + 1
         
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
-            write(unit=ERROR_UNIT, fmt="(a, a)") "fail: ", message
-            write(unit=ERROR_UNIT, fmt="(a)")
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
@@ -109,8 +108,7 @@ subroutine logical_false(this, condition, message_in)
         this%n_failures = this%n_failures + 1
         
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
-            write(unit=ERROR_UNIT, fmt="(a, a)") "fail: ", message
-            write(unit=ERROR_UNIT, fmt="(a)")
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
@@ -188,8 +186,7 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
                 write(unit=ERROR_UNIT, fmt="(a, es15.8, a, f6.3, a)") "   difference = ", difference, &
                                                             " (", 100.0_RP * difference / abs(compared_real), "%)"
             end if
-            write(unit=ERROR_UNIT, fmt="(a, a)") "fail: ", message
-            write(unit=ERROR_UNIT, fmt="(a)")
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
@@ -254,8 +251,7 @@ subroutine integer_eq(this, returned_integer, compared_integer, message_in)
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer expected = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      difference = ", abs(returned_integer - compared_integer)
-            write(unit=ERROR_UNIT, fmt="(a, a)") "fail: ", message
-            write(unit=ERROR_UNIT, fmt="(a)")
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
@@ -295,8 +291,7 @@ subroutine integer_ne(this, returned_integer, compared_integer, message_in)
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "          integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "which should be /= integer = ", compared_integer
-            write(unit=ERROR_UNIT, fmt="(a, a)") "fail: ", message
-            write(unit=ERROR_UNIT, fmt="(a)")
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
@@ -336,8 +331,7 @@ subroutine integer_ge(this, returned_integer, compared_integer, message_in)
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "          integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "which should be >= integer = ", compared_integer
-            write(unit=ERROR_UNIT, fmt="(a, a)") "fail: ", message
-            write(unit=ERROR_UNIT, fmt="(a)")
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
@@ -377,8 +371,7 @@ subroutine integer_le(this, returned_integer, compared_integer, message_in)
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "          integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "which should be <= integer = ", compared_integer
-            write(unit=ERROR_UNIT, fmt="(a, a)") "fail: ", message
-            write(unit=ERROR_UNIT, fmt="(a)")
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
@@ -423,8 +416,7 @@ subroutine character_eq(this, returned_character_in, compared_character_in, mess
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a)") "character returned = " // returned_character
             write(unit=ERROR_UNIT, fmt="(a)") "character expected = " // compared_character
-            write(unit=ERROR_UNIT, fmt="(a, a)") "fail: ", message
-            write(unit=ERROR_UNIT, fmt="(a)")
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
@@ -471,16 +463,15 @@ subroutine end_tests(this)
     n_failures    = this%n_failures
     write(unit=this%logger%unit, nml=tests_summary)
     
-    write(unit=*, fmt="(a, i0, a, f5.3, a)") "Ran ", this%n_tests, " tests in ", duration, "s"
+    write(unit=*, fmt="(a, i0, a, f0.3, a)") "Ran ", this%n_tests, " tests in ", duration, "s"
     
     if (this%n_failures /= 0) then
         write(unit=ERROR_UNIT, fmt="(a, i0, a)") "FAILED (failures=", this%n_failures, ")"
         write(unit=ERROR_UNIT, fmt="(a)") LONG_LINE
         call this%logger%close()
-        error stop 1
+        stop 1
     else
-        write(unit=*, fmt="(a)") "All tests passed."
-        write(unit=*, fmt="(a)")
+        write(unit=*, fmt="(a, a)") "All tests passed.", new_line("a")
         write(unit=*, fmt="(a)") "OK"
         write(unit=*, fmt="(a)") LONG_LINE
     end if

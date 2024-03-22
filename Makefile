@@ -65,7 +65,7 @@ all:
 
 .PHONY: clean
 clean:
-	$(RM) *.nml *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg passed$(BINEXT)
+	$(RM) *.nml *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg
 
 # TODO: `.f90$(OBJEXT):`
 
@@ -91,7 +91,7 @@ ifx:
 
 .PHONY: nvfortran
 nvfortran:
-	$(MAKE) test FC=nvfortran FFLAGS='' DBGFLAGS='-g'
+	$(MAKE) test FC=nvfortran FFLAGS='-Minform=inform -Werror' DBGFLAGS='-g'
 
 # LATER: lfortran, particularly for the style suggestions
 #.PHONY: lfortran
@@ -111,22 +111,14 @@ src/prec$(DBGOBJEXT):
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 ##########
-# passed #
-##########
-
-passed$(BINEXT): src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) test/passed.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/passed.f90
-
-##########
 # checks #
 ##########
 
 test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_checks.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_checks.f90
 
-checks.nml: test_checks$(BINEXT) passed$(BINEXT)
+checks.nml: test_checks$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
-	./passed $@
 	test ! -e fort.*
 
 ##########
@@ -136,9 +128,8 @@ checks.nml: test_checks$(BINEXT) passed$(BINEXT)
 test_nmllog$(BINEXT): src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_nmllog.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_nmllog.f90
 
-nmllog.nml: test_nmllog$(BINEXT) passed$(BINEXT)
+nmllog.nml: test_nmllog$(BINEXT)
 	$(RUN)test_nmllog$(BINEXT)
-	./passed $@
 	test ! -e fort.*
 
 ########
@@ -148,9 +139,8 @@ nmllog.nml: test_nmllog$(BINEXT) passed$(BINEXT)
 test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_prec.f90
 
-prec.nml: test_prec$(BINEXT) passed$(BINEXT)
+prec.nml: test_prec$(BINEXT)
 	$(RUN)test_prec$(BINEXT)
-	./passed $@
 	test ! -e fort.*
 
 ############
@@ -160,7 +150,6 @@ prec.nml: test_prec$(BINEXT) passed$(BINEXT)
 test_unittest$(BINEXT): src/unittest$(DBGOBJEXT) test/test_unittest.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unittest.f90
 
-unittest.nml: test_unittest$(BINEXT) prec.nml passed$(BINEXT)
+unittest.nml: test_unittest$(BINEXT) prec.nml
 	$(RUN)test_unittest$(BINEXT)
-	./passed $@
 	test ! -e fort.*

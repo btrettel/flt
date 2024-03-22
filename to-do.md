@@ -3,9 +3,7 @@
 Priorities:
 
 - Search for `TODO` and finish those tasks.
-- Eliminate Python from this repository.
-    - Eliminate passed.f90 as it probably does not serve any purpose given that all modern compilers should have non-zero exit codes if I specific the exit code specifically. I now recall that I had this before for ELF90, which doesn't allow exit codes. There's no other reason to have it. crayftn has a zero exit code for `error stop "message"`, but I won't use that for the tests. I should have another check for that case when doing a full run integration test.
-    - Remove Python from .gitignore.
+- Remove Python from .gitignore.
 - Make as much as possible `pure`.
 - `random`
     - rename `rngmod` to `random`
