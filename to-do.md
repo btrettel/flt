@@ -5,6 +5,7 @@ Priorities:
 - Search for `TODO` and finish those tasks.
 - Remove Python from .gitignore.
 - Make as much as possible `pure`.
+- test `assert` and other things in check.f90.
 - `random`
     - rename `rngmod` to `random`
     - Make `pure` random number generator. Obtain random number generator from elsewhere as you're not qualified to program one.
@@ -15,8 +16,8 @@ Priorities:
         - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
             - FortranFan seems skeptical.
         - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
-    - Make `real_eq` and `real_ne` use `is_close`.
     - `%logical_true(.not.` to `%logical_false(`
+    - Change `call check(difference >= 0.0_RP` to an `assert`
 - timer.f90
     - Make `unittest` use this for the timing.
     - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
@@ -46,6 +47,8 @@ Priorities:
 - fmutate.f90:
     - TODO: Look at mutation testing literature for particular types of errors to introduce.
     - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.
+        - <https://web.archive.org/web/20221016055309/http://cs.gmu.edu/~offutt/rsrch/mut.html#MOTHRA>
+    - Check /home/ben/notes/programming/correctness/code-testing.txt for more ideas.
     - Note: This will be brittle in the sense that it will only work for my own particular coding style.
     - Distinguish between compilation errors and test failures in the mutation score.
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
@@ -78,6 +81,7 @@ Priorities:
         - Change order of exponentiation: `x**y` to `y**x`.
         - changing order of magnitude of numbers
         - moving parentheses (common mistake)
+    - When complete, add here: <https://fortranwiki.org/fortran/show/Mutation+testing+frameworks>
 
 Later:
 

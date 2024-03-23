@@ -115,7 +115,7 @@ subroutine logical_false(this, condition, message_in)
     this%n_tests = this%n_tests + 1
 end subroutine logical_false
 
-subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
+subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
@@ -127,12 +127,11 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
     character(len=*), intent(in) :: message_in
     
     real(kind=RP), intent(in), optional :: abs_tol
-    logical, intent(in), optional       :: ne ! `.false.` for checking equality, `.true.` for checking inequality
     
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=4)              :: variable_type
     character(len=2)              :: test_operator
-    logical                       :: test_passes, checking_equality
+    logical                       :: test_passes
     character(len=:), allocatable :: message
     real(kind=RP)                 :: tolerance, difference
     
@@ -145,22 +144,10 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
         tolerance = TOL_FACTOR * epsilon(1.0_RP)
     end if
     
-    if (present(ne)) then
-        checking_equality = .not. ne
-    else
-        checking_equality = .true.
-    end if
-    
     difference = abs(returned_real - compared_real)
     test_passes = is_close(returned_real, compared_real, abs_tol=tolerance)
     
-    if (checking_equality) then
-        test_operator = "=="
-    else
-        test_operator = "/="
-        test_passes = .not. test_passes
-    end if
-    
+    test_operator = "=="
     timestamp     = now()
     variable_type = "real"
     message       = message_in
@@ -172,18 +159,73 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
         
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real returned = ", returned_real
-            
-            if (checking_equality) then
-                write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real expected = ", compared_real
-            else
-                write(unit=ERROR_UNIT, fmt="(a, es15.8)") "      /= real = ", compared_real
-            end if
-            
+            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real expected = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, es15.8)") "    tolerance = ", tolerance
             if (is_close(abs(compared_real), 0.0_RP)) then
                 write(unit=ERROR_UNIT, fmt="(a, es15.8)") "   difference = ", difference
             else
-                write(unit=ERROR_UNIT, fmt="(a, es15.8, a, f6.3, a)") "   difference = ", difference, &
+                write(unit=ERROR_UNIT, fmt="(a, es15.8, a, f0.3, a)") "   difference = ", difference, &
+                                                            " (", 100.0_RP * difference / abs(compared_real), "%)"
+            end if
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
+        end if
+    end if
+    
+    call check(difference >= 0.0_RP, this%logger, "real_ne, difference < 0", this%n_failures)
+    
+    this%n_tests = this%n_tests + 1
+end subroutine real_eq
+
+subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
+    ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
+    
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    use checks, only: TOL_FACTOR, check, is_close
+    
+    class(test_results_type), intent(inout) :: this
+    
+    real(kind=RP), intent(in)    :: returned_real, compared_real
+    character(len=*), intent(in) :: message_in
+    
+    real(kind=RP), intent(in), optional :: abs_tol
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=4)              :: variable_type
+    character(len=2)              :: test_operator
+    logical                       :: test_passes
+    character(len=:), allocatable :: message
+    real(kind=RP)                 :: tolerance, difference
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
+                            returned_real, compared_real, tolerance, difference
+    
+    if (present(abs_tol)) then
+        tolerance = abs_tol
+    else
+        tolerance = TOL_FACTOR * epsilon(1.0_RP)
+    end if
+    
+    difference = abs(returned_real - compared_real)
+    test_passes = .not. is_close(returned_real, compared_real, abs_tol=tolerance)
+    
+    test_operator = "/="
+    timestamp     = now()
+    variable_type = "real"
+    message       = message_in
+    
+    write(unit=this%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real returned = ", returned_real
+            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "      /= real = ", compared_real
+            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "    tolerance = ", tolerance
+            if (is_close(abs(compared_real), 0.0_RP)) then
+                write(unit=ERROR_UNIT, fmt="(a, es15.8)") "   difference = ", difference
+            else
+                write(unit=ERROR_UNIT, fmt="(a, es15.8, a, f0.3, a)") "   difference = ", difference, &
                                                             " (", 100.0_RP * difference / abs(compared_real), "%)"
             end if
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -193,29 +235,6 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol, ne)
     call check(difference >= 0.0_RP, this%logger, "real_eq, difference < 0", this%n_failures)
     
     this%n_tests = this%n_tests + 1
-end subroutine real_eq
-
-subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
-    ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
-    
-    use checks, only: TOL_FACTOR
-    
-    class(test_results_type), intent(inout) :: this
-    
-    real(kind=RP), intent(in)    :: returned_real, compared_real
-    character(len=*), intent(in) :: message_in
-    
-    real(kind=RP), intent(in), optional :: abs_tol
-    
-    real(kind=RP) :: tolerance
-    
-    if (present(abs_tol)) then
-        tolerance = abs_tol
-    else
-        tolerance = TOL_FACTOR * epsilon(1.0_RP)
-    end if
-    
-    call real_eq(this, returned_real, compared_real, message_in, abs_tol=tolerance, ne=.true.)
 end subroutine real_ne
 
 subroutine integer_eq(this, returned_integer, compared_integer, message_in)
