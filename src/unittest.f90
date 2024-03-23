@@ -119,7 +119,7 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
-    use checks, only: TOL_FACTOR, check, is_close
+    use checks, only: TOL_FACTOR, assert, is_close
     
     class(test_results_type), intent(inout) :: this
     
@@ -145,12 +145,14 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     end if
     
     difference = abs(returned_real - compared_real)
-    test_passes = is_close(returned_real, compared_real, abs_tol=tolerance)
+    call assert(difference >= 0.0_RP)
     
     test_operator = "=="
     timestamp     = now()
     variable_type = "real"
     message       = message_in
+    
+    test_passes = is_close(returned_real, compared_real, abs_tol=tolerance)
     
     write(unit=this%logger%unit, nml=test_result)
     
@@ -171,8 +173,6 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
         end if
     end if
     
-    call check(difference >= 0.0_RP, this%logger, "real_ne, difference < 0", this%n_failures)
-    
     this%n_tests = this%n_tests + 1
 end subroutine real_eq
 
@@ -180,7 +180,7 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
-    use checks, only: TOL_FACTOR, check, is_close
+    use checks, only: TOL_FACTOR, assert, is_close
     
     class(test_results_type), intent(inout) :: this
     
@@ -206,12 +206,14 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     end if
     
     difference = abs(returned_real - compared_real)
-    test_passes = .not. is_close(returned_real, compared_real, abs_tol=tolerance)
+    call assert(difference >= 0.0_RP)
     
     test_operator = "/="
     timestamp     = now()
     variable_type = "real"
     message       = message_in
+    
+    test_passes = .not. is_close(returned_real, compared_real, abs_tol=tolerance)
     
     write(unit=this%logger%unit, nml=test_result)
     
@@ -231,8 +233,6 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
-    
-    call check(difference >= 0.0_RP, this%logger, "real_eq, difference < 0", this%n_failures)
     
     this%n_tests = this%n_tests + 1
 end subroutine real_ne

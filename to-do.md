@@ -17,7 +17,6 @@ Priorities:
             - FortranFan seems skeptical.
         - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
     - `%logical_true(.not.` to `%logical_false(`
-    - Change `call check(difference >= 0.0_RP` to an `assert`
 - timer.f90
     - Make `unittest` use this for the timing.
     - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
