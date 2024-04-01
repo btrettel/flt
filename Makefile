@@ -114,10 +114,13 @@ src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec
 # checks #
 ##########
 
+test_assert_false$(BINEXT): src/checks$(DBGOBJEXT) test/test_assert_false.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_assert_false.f90
+
 test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_checks.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_checks.f90
 
-checks.nml: test_checks$(BINEXT)
+checks.nml: test_checks$(BINEXT) test_assert_false$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
 	test ! -e fort.*
 

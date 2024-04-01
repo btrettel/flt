@@ -35,6 +35,7 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     real(kind=RP), intent(in), optional :: rel_tol, abs_tol
     
     real(kind=RP) :: rel_tol_set, abs_tol_set, tol
+    
     logical       :: is_close
     
     if (present(rel_tol)) then

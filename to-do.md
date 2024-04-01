@@ -2,15 +2,26 @@
 
 Priorities:
 
-- Search for `TODO` and finish those tasks.
+- `WP` for working previous (switch to this as you don't have regular use of integer precision now)
+- `nmllog.f90`: Check your notes for the following:
+    - /home/ben/notes/programming/file-formats-locations.txt section titled "logging"
+    - /home/ben/notes/programming/correctness/defensive-programming.txt section titled "error/exception handling and error messages"
 - Remove Python from .gitignore.
 - Make as much as possible `pure`.
-- test `assert` and other things in check.f90.
-- `random`
-    - rename `rngmod` to `random`
+- Make an assertion which takes an array to help avoid the problem of only the first failing assertion
+    - `check` helps with this too, but an `assert_all` would be convenient if I simply want to check a bunch of things at once.
+    - <https://blog.ploeh.dk/2022/11/07/applicative-assertions/>
+    - Can make `assert_all` use `do_concurrent` to have a faster assertion.
+- add names to deeply nested `if`s and `do`s in unittest
+- `purerng`
+    - rename `rngmod` to `purerng`
     - Make `pure` random number generator. Obtain random number generator from elsewhere as you're not qualified to program one.
     - Use standard tests for random number generators to make sure this one is good.
-    - Move `rand_int` and `rand_cauchy` to `random`.
+    - Move `rand_int` and `rand_cauchy` to `purerng`.
+    - Includes a deterministic random number generator for testing purposes.
+    - Base the interface on the standard Fortran random number generator, just as type-bound subroutines now.
+    - Alternatively, base the interface on NumPy.
+        - <https://numpy.org/doc/stable/reference/random/generator.html>
 - unittest.f90:
     - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
         - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
@@ -42,7 +53,6 @@ Priorities:
         - separate non-standard test code using `sleep(1)`
             - <https://gcc.gnu.org/onlinedocs/gcc-7.5.0/gfortran/SLEEP.html>
             - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>
-- A module containing errno codes, other internal return codes, and exit codes. Could make a derived type with the number and a message.
 - fmutate.f90:
     - TODO: Look at mutation testing literature for particular types of errors to introduce.
     - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.
@@ -52,7 +62,7 @@ Priorities:
     - Distinguish between compilation errors and test failures in the mutation score.
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
     - Make highly parallelizable. Run as many mutants as possible in parallel for speed. The compiler can't run on GPUs, but the code can. So run the compiler separately in a first pass. This will allow me to note if the compilation fails as well. Then queue the codes that compiled and run them on GPUs. I'm not sure the extent by which the GPU runs can be parallelized, however.
-    - List tests that never fail. Those tests may always pass, so they should be checked to make sure that they actually discriminate between working and non-working code.
+    - List tests that always pass. Check these tests to make sure that they actually discriminate between working and non-working code.
         - List percent of times a test fails with a mutation. Sort the list to see which tests are most and least sensitive/discriminating.
         - For tests that always pass, reduce tolerances so that the tests are more sensitive.
         - For faster testing, consider eliminating tests which always pass, particularly if they take a long time.
@@ -81,12 +91,20 @@ Priorities:
         - changing order of magnitude of numbers
         - moving parentheses (common mistake)
     - When complete, add here: <https://fortranwiki.org/fortran/show/Mutation+testing+frameworks>
+- nmlfuzz.f90: namelist fuzz tester
+    - Make depend on ga.f90
+    - Use metaprogramming to make work since Fortran can't really do that well at present?
+        - Have a computer-generated module that converts from genetic algorithm chromosome to namelist.
+    - Make similar to <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>.
+    - Use fuzzing primarily to find assertion violations with integration tests.
+    - I guess the objective function includes the code coverage and whether or not an assertion violation occurred.
 
 Later:
 
-- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
-- fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
-    - Modify your AD to be vectorized. See personal notes on automatic differentiation for other speed ideas too.
+- Search for `TODO` and finish those tasks.
+- compiler_tests.f90: Tests for intrinsics used in these libraries.
+    - How can I identify all the intrinsics used here?
+    - accuracy of important intrinsics
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
     - Make ga.f90 use rngmod.f90.
     - herrera_tackling_1998
@@ -94,26 +112,22 @@ Later:
         - `chromo%f`
         - `chromo%f_set`
         - `chromo%out(:)` (for non-objective function outputs that may be of interest)
+- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
+    - Test that I get a compilation error when incompatible dimensions are used.
 - debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
     - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
         - parker_monte_1997-1
     - FLOP counting.
     - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
+- fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
+    - Modify your AD to be vectorized. See personal notes on automatic differentiation for other speed ideas too.
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
     - Enforce some Power of 10 rules, particularly procedure lengths.
     - Start tracking comment density and adding more code comments. Density > 25%?
     - Require that all functions are pure.
     - Require construct names for nested `do` loops and `if` statements.
     - Check that assertions have unique messages. List relevant variable values in error message.
-- make_checker.py: Runs both GNU Make and BSD Make on all targets and identifies which fail.
-- rng.f90: Includes a deterministic random number generator for testing purposes.
-    - Base the interface on NumPy:
-        - <https://numpy.org/doc/stable/reference/random/generator.html>
-    - Start with non-`pure` RNGs and later switch to `pure` like NumPy's:
-        - <https://numpy.org/neps/nep-0019-rng-policy.html>
 - semgrep static analysis
-- compiler_tests.f90: Tests for intrinsics used in these libraries.
-    - How can I identify all the intrinsics used here?
 - Program to ensure that all error codes in errors and assertions are unique.
 - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
 - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
@@ -130,19 +144,11 @@ Later:
     - Calculated numbers in papers: Write procedure to output LaTeX code to a file (appending by default) with a particular number format. Could pass in a Fortran format string.
 - read and save CSV and Sqlite files:
     - regex validation field for CSV
-- fuzz.f90: property/fuzz tester
-    - Property and fuzz tests on procedures and input files (namelist files)
-    - Make depend on ga.f90
-    - Make clone of Hypothesis/etc.
-    - Fuzzers can *optimize*, but property testing can only look at binary outcomes?
 - convergence.f90: convergence testing framework
     - grid convergence
     - temporal convergence
     - MC convergence
 - Add validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
-- `test_compiler.f90`: Tests for different compilers.
-    - accuracy of important intrinsics
-    - `precision(1)` shows that the default integer has sufficient precision
 - Poisson solvers, using same or similar interface as FISHPACK
     - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>
         - Old: <https://people.math.sc.edu/Burkardt/f77_src/fishpack/fishpack.html>
@@ -153,12 +159,6 @@ Later:
     - <https://arc.ucar.edu/knowledge_base/71991310>
         - <https://github.com/NCAR/NCAR-Classic-Libraries-for-Geophysics>
 - Add a generic Makefile template for Fortran projects to FLT.
-- `nmllog.f90`: Switch to Fortran namelist-based logging so that everything is in Fortran.
-    - Option to not write at all, even to file?
-    - Check your notes for the following:
-        - /home/ben/notes/programming/file-formats-locations.txt section titled "logging"
-        - /home/ben/notes/programming/correctness/defensive-programming.txt section titled "error/exception handling and error messages"
-- f90lint: Start with procedure length enforcement.
 - `io.f90`:
     - convenience subroutines
         - `print_box` (other similar things for the most important messages that I don't want to miss)
@@ -183,8 +183,12 @@ Later:
     - <https://aoterodelaroza.github.io/devnotes/modern-fortran-makefiles/>
     - <https://fortran-lang.org/en/learn/building_programs/project_make/>
 - Add tests to compare speed of parallel vs. serial
-- unittest.f90 maybe: Instead of `integer_eq`, `real_eq`, use generic `eq`?
-
+- unittest.f90
+    - maybe: Instead of `integer_eq`, `real_eq`, use generic `eq`?
+    - Ensure that all test messages are unique.
+    - Keep track of test results so that you know whether a test has ever failed, and thus whether it is discriminating. (bowes_how_2017 p. 3L)
 - Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
+- A module containing errno codes, other internal return codes, and exit codes. Could make a derived type with the number and a message.
+- Detect if certain compilers are present and don't run those in `make all` if they are not present. This will allow your Makefile to work on all your different computers.

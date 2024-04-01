@@ -7,15 +7,19 @@
 
 program test_checks
 
-use checks, only: is_close, check
+use checks, only: is_close, check, assert
 use nmllog, only: log_type
 use prec, only: RP
 use unittest, only: test_results_type
 implicit none
 
+character(len=*), parameter :: ASSERT_FALSE_OUTPUT = "test_assert_false.txt"
+
 type(log_type)          :: logger
 type(test_results_type) :: tests
-integer                 :: rc_check
+integer                 :: rc_check, rc_assert_false, test_assert_false_unit
+logical                 :: test_assert_false_exists
+character(len=80)       :: assert_false_line
 
 call logger%open("checks.nml")
 call tests%start_tests(logger)
@@ -101,6 +105,29 @@ call tests%integer_eq(rc_check, 0, "check, .true.")
 rc_check = 0
 call check(.false., logger, "check, .false.", rc_check)
 call tests%integer_eq(rc_check, 1, "check, .false.")
+
+! `assert(.true.)` does not terminate the program (no direct test performed)
+call assert(.true.)
+! The test passed if execution reaches here, so manually increment the test counters.
+tests%n_tests = tests%n_tests + 1
+
+! Check that `assert(.false.)` terminates with a non-zero exit code.
+! TODO: This would need to be updated for Windows as I'd add .exe to the executable filename there.
+! TODO: This also assumes Bash.
+call execute_command_line("./test_assert_false 2> " // ASSERT_FALSE_OUTPUT, exitstat=rc_assert_false)
+call tests%integer_ne(rc_assert_false, 0, "assert, .false., exit code")
+
+inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
+call tests%logical_true(test_assert_false_exists, "assert, .false., output saved")
+
+! Test assertion failure message
+open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
+read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
+read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
+call tests%character_eq(assert_false_line, "Assertion failed.", "assert, .false., assertion message")
+
+! Delete saved file.
+close(unit=test_assert_false_unit, status="delete")
 
 call tests%end_tests()
 call logger%close()
