@@ -7,7 +7,7 @@
 
 program test_checks
 
-use checks, only: is_close, check, assert
+use checks, only: is_close, check, assert, same_shape_as
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
@@ -20,6 +20,10 @@ type(test_results_type) :: tests
 integer                 :: rc_check, rc_assert_false, test_assert_false_unit
 logical                 :: test_assert_false_exists
 character(len=80)       :: assert_false_line
+
+real(kind=WP) :: a1(5), b1(5), c1(4), &
+                    a2(5, 5), b2(5, 5), c2(4, 4), &
+                    a3(5, 5), b3(5, 5), c3(4, 4)
 
 call logger%open("checks.nml")
 call tests%start_tests(logger)
@@ -128,6 +132,17 @@ call tests%character_eq(assert_false_line, "Assertion failed.", "assert, .false.
 
 ! Delete saved file.
 close(unit=test_assert_false_unit, status="delete")
+
+! `same_shape_as`
+
+call tests%logical_true(same_shape_as(a1, b1), "same_shape_as, rank 1, .true.")
+call tests%logical_false(same_shape_as(a1, c1), "same_shape_as, rank 1, .false.")
+
+call tests%logical_true(same_shape_as(a2, b2), "same_shape_as, rank 2, .true.")
+call tests%logical_false(same_shape_as(a2, c2), "same_shape_as, rank 2, .false.")
+
+call tests%logical_true(same_shape_as(a3, b3), "same_shape_as, rank 3, .true.")
+call tests%logical_false(same_shape_as(a3, c3), "same_shape_as, rank 3, .false.")
 
 call tests%end_tests()
 call logger%close()

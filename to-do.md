@@ -2,12 +2,7 @@
 
 Priorities:
 
-- Tests for remainder of check.f90.
 - Add linters.
-- `nmllog.f90`: Check your notes for the following:
-    - /home/ben/notes/programming/file-formats-locations.txt section titled "logging"
-    - /home/ben/notes/programming/correctness/defensive-programming.txt section titled "error/exception handling and error messages"
-- Remove Python from .gitignore.
 - Make as much as possible `pure`.
 - Make an assertion which takes an array to help avoid the problem of only the first failing assertion
     - `check` helps with this too, but an `assert_all` would be convenient if I simply want to check a bunch of things at once.
@@ -15,7 +10,7 @@ Priorities:
     - Can make `assert_all` use `do_concurrent` to have a faster assertion.
 - add names to deeply nested `if`s and `do`s in unittest
 - `purerng`
-    - rename `rngmod` to `purerng`
+    - move good parts of `rngmod` to `purerng`
     - Make `pure` random number generator. Obtain random number generator from elsewhere as you're not qualified to program one.
     - Use standard tests for random number generators to make sure this one is good.
     - Move `rand_int` and `rand_cauchy` to `purerng`.

@@ -18,7 +18,7 @@ logical :: debug = .true.
 public :: is_close ! TODO: make rel_tol zero by default, abs_tol based on local spacing
 public :: assert
 public :: check
-public :: same_shape_as ! TODO: test
+public :: same_shape_as
 
 interface same_shape_as
     module procedure same_shape_as_real_rank_1
