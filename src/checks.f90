@@ -7,16 +7,16 @@
 
 module checks
 
-use prec, only: RP
+use prec, only: WP
 implicit none
 private
 
-real(kind=RP), public, parameter :: TOL_FACTOR = 10.0_RP
+real(kind=WP), public, parameter :: TOL_FACTOR = 10.0_WP
 
 logical :: debug = .true.
 
 public :: is_close ! TODO: make rel_tol zero by default, abs_tol based on local spacing
-public :: assert ! TODO: test
+public :: assert
 public :: check
 public :: same_shape_as ! TODO: test
 
@@ -31,23 +31,23 @@ contains
 pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     ! Determine whether two reals are close.
     
-    real(kind=RP), intent(in)           :: input_real_1, input_real_2
-    real(kind=RP), intent(in), optional :: rel_tol, abs_tol
+    real(kind=WP), intent(in)           :: input_real_1, input_real_2
+    real(kind=WP), intent(in), optional :: rel_tol, abs_tol
     
-    real(kind=RP) :: rel_tol_set, abs_tol_set, tol
+    real(kind=WP) :: rel_tol_set, abs_tol_set, tol
     
     logical       :: is_close
     
     if (present(rel_tol)) then
         rel_tol_set = rel_tol
     else
-        rel_tol_set = TOL_FACTOR * epsilon(1.0_RP)
+        rel_tol_set = TOL_FACTOR * epsilon(1.0_WP)
     end if
     
     if (present(abs_tol)) then
         abs_tol_set = abs_tol
     else
-        abs_tol_set = TOL_FACTOR * epsilon(1.0_RP)
+        abs_tol_set = TOL_FACTOR * epsilon(1.0_WP)
     end if
     
     tol = max(rel_tol_set * abs(input_real_1), rel_tol_set * abs(input_real_2), abs_tol_set)
@@ -107,7 +107,7 @@ subroutine check(condition, logger, message, rc)
 end subroutine check
 
 pure function same_shape_as_real_rank_1(a, b)
-    real(kind=RP), intent(in) :: a(:), b(:)
+    real(kind=WP), intent(in) :: a(:), b(:)
     
     logical :: same_shape_as_real_rank_1
     
@@ -119,7 +119,7 @@ pure function same_shape_as_real_rank_1(a, b)
 end function same_shape_as_real_rank_1
 
 pure function same_shape_as_real_rank_2(a, b)
-    real(kind=RP), intent(in) :: a(:, :), b(:, :)
+    real(kind=WP), intent(in) :: a(:, :), b(:, :)
     
     logical :: same_shape_as_real_rank_2
     
@@ -131,7 +131,7 @@ pure function same_shape_as_real_rank_2(a, b)
 end function same_shape_as_real_rank_2
 
 pure function same_shape_as_real_rank_3(a, b)
-    real(kind=RP), intent(in) :: a(:, :, :), b(:, :, :)
+    real(kind=WP), intent(in) :: a(:, :, :), b(:, :, :)
     
     logical :: same_shape_as_real_rank_3
     

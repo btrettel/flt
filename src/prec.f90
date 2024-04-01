@@ -20,11 +20,11 @@ integer, public, parameter :: I9 = selected_int_kind(9) ! This is the most ELF90
 ! --------------
 
 ! <https://fortranwiki.org/fortran/show/Real+precision>
-! `RP` stands for *real precision* in case I want to change the precision later.
+! `WP` stands for *working precision* in case I want to change the precision later.
 !integer, public, parameter :: SP = selected_real_kind(6, 37)    ! single
 integer, public, parameter :: DP = selected_real_kind(15, 307)  ! double
 !integer, public, parameter :: QP = selected_real_kind(33, 4931) ! quad
-integer, public, parameter :: RP = DP
+integer, public, parameter :: WP = DP
 
 ! String parameters
 ! -----------------
@@ -36,6 +36,6 @@ integer, public, parameter :: CL = 1024 ! `CL` stands for character length
 
 ! PI: 3.1415926535897932384626433...
 ! <https://stackoverflow.com/a/49416279/1124489>
-real(kind=RP), public, parameter :: PI = 4.0_RP * atan(1.0_RP)
+real(kind=WP), public, parameter :: PI = 4.0_WP * atan(1.0_WP)
 
 end module prec

@@ -7,14 +7,14 @@
 
 module rngmod
 
-use prec, only: RP
+use prec, only: WP
 implicit none
 private
 public :: set_determ
 public :: determ, pseudo
 
 type, private :: rng_type
-    real(kind=RP), allocatable :: seed(:)
+    real(kind=WP), allocatable :: seed(:)
     !procedure(rng_procedure) :: rng
 end type rng_type
 
@@ -23,7 +23,7 @@ type(rng_type), private :: determ_rng
 contains
 
 subroutine set_determ(values)
-    real(kind=RP), intent(in) :: values(:)
+    real(kind=WP), intent(in) :: values(:)
     
     if (allocated(determ_rng%seed)) then
         deallocate(determ_rng%seed)
@@ -31,7 +31,7 @@ subroutine set_determ(values)
     allocate(determ_rng%seed(1 + size(values)))
     
     ! The first index picks which part of the seed to pick as the next random number.
-    determ_rng%seed(1) = real(2, RP)
+    determ_rng%seed(1) = real(2, WP)
     
     ! The remainder of the seed is collection of the random numbers.
     determ_rng%seed(2:) = values(:)
@@ -40,17 +40,17 @@ end subroutine set_determ
 subroutine next_determ(rng)
     type(rng_type), intent(inout) :: rng
     
-    determ_rng%seed(1) = determ_rng%seed(1) + 1.0_RP
+    determ_rng%seed(1) = determ_rng%seed(1) + 1.0_WP
     
     if (nint(determ_rng%seed(1)) > size(rng%seed)) then
-        determ_rng%seed(1) = real(2, RP)
+        determ_rng%seed(1) = real(2, WP)
     end if
 end subroutine next_determ
 
 subroutine determ(r)
     ! deterministic "random" number
     
-    real(kind=RP), intent(out) :: r
+    real(kind=WP), intent(out) :: r
     
     r = determ_rng%seed(nint(determ_rng%seed(1)))
     call next_determ(determ_rng)
@@ -61,7 +61,7 @@ end subroutine determ
 subroutine pseudo(r)
     ! pseudo-random number
     
-    real(kind=RP), intent(out) :: r
+    real(kind=WP), intent(out) :: r
     
     call random_number(r)
 end subroutine pseudo

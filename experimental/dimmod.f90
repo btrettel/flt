@@ -7,7 +7,7 @@
 
 module dimmod
 
-use prec, only: RP
+use prec, only: WP
 implicit none
 private
 
@@ -82,9 +82,9 @@ end function type_name
 function rational_to_real(x)
     type(rational), intent(in) :: x
     
-    real(kind=RP) :: rational_to_real
+    real(kind=WP) :: rational_to_real
     
-    rational_to_real = real(x%n, RP) / real(x%d, RP)
+    rational_to_real = real(x%n, WP) / real(x%d, WP)
 end function rational_to_real
 
 subroutine generate_types(config, rc)

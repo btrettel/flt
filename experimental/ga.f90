@@ -9,18 +9,18 @@
 
 module ga
 
-use prec, only: RP
+use prec, only: WP
 use rngmod, only: determ, pseudo
 implicit none
 private
 
 type, public :: bounds_type
     ! lower and upper bounds
-    real(kind=RP) :: lower, upper
+    real(kind=WP) :: lower, upper
 end type bounds_type
 
 type, public :: ga_config
-    real(kind=RP) :: p_select, p_cross, p_mutate, stop_time
+    real(kind=WP) :: p_select, p_cross, p_mutate, stop_time
     integer       :: n_gener, n_stall
     
     ! number of individuals in population
@@ -36,13 +36,13 @@ type, public :: ga_config
 end type ga_config
 
 type, public :: individual_type
-    real(kind=RP), allocatable :: chromo(:)
+    real(kind=WP), allocatable :: chromo(:)
     
     ! whether the quality function(s) has/have been set
     logical :: set
     
     ! quality function values
-    real(kind=RP), allocatable :: fitness(:)
+    real(kind=WP), allocatable :: fitness(:)
 end type individual_type
 
 type, public :: pop_type
@@ -59,20 +59,20 @@ contains
 
 function rand_int(lower_bound, upper_bound, nu)
     integer, intent(in)       :: lower_bound, upper_bound
-    real(kind=RP), intent(in) :: nu
+    real(kind=WP), intent(in) :: nu
     
     integer :: rand_int
     
-    ! The `min` function makes this not return `upper_bound + 1` when `r = 1.0_RP`.
-    rand_int = min(lower_bound + floor(real(upper_bound + 1 - lower_bound, RP) * nu), upper_bound)
+    ! The `min` function makes this not return `upper_bound + 1` when `r = 1.0_WP`.
+    rand_int = min(lower_bound + floor(real(upper_bound + 1 - lower_bound, WP) * nu), upper_bound)
 end function rand_int
 
 function rand_uniform(lower_bound, upper_bound, nu)
     ! Returns a uniform random variable.
     
-    real(kind=RP), intent(in) :: lower_bound, upper_bound, nu
+    real(kind=WP), intent(in) :: lower_bound, upper_bound, nu
     
-    real(kind=RP) :: rand_uniform
+    real(kind=WP) :: rand_uniform
     
     rand_uniform = lower_bound + (upper_bound - lower_bound) * nu
 end function rand_uniform
@@ -83,20 +83,20 @@ function rand_cauchy(m, b, nu)
     
     use prec, only: PI
     
-    real(kind=RP), intent(in) :: m ! median
-    real(kind=RP), intent(in) :: b ! half width
-    real(kind=RP), intent(in) :: nu ! random CDF value for inverse sampling
+    real(kind=WP), intent(in) :: m ! median
+    real(kind=WP), intent(in) :: b ! half width
+    real(kind=WP), intent(in) :: nu ! random CDF value for inverse sampling
     
-    real(kind=RP) :: rand_cauchy
+    real(kind=WP) :: rand_cauchy
     
-    rand_cauchy = m + b * tan(PI * (nu - 0.5_RP))
+    rand_cauchy = m + b * tan(PI * (nu - 0.5_WP))
 end function rand_cauchy
 
 pure subroutine clip(bounds, x)
     ! Clip variable `x` within upper and lower bounds.
     
     type(bounds_type), intent(in) :: bounds
-    real(kind=RP), intent(inout) :: x
+    real(kind=WP), intent(inout) :: x
     
     x = min(x, bounds%upper)
     x = max(x, bounds%lower)
@@ -107,7 +107,7 @@ subroutine initialize(config, pop)
     type(pop_type), intent(out) :: pop
     
     integer       :: i_pop, i_gene
-    real(kind=RP) :: nu
+    real(kind=WP) :: nu
     
     pop_loop: do i_pop = 1, config%n_pop
         gene_loop: do i_gene = 1, config%n_genes
@@ -126,7 +126,7 @@ end subroutine initialize
 !        function f(x)
 !            ! TODO: Make ga_types.f90 as the `interface` block needs to use `individual_type`
 !            type(individual_type), intent(in) :: x
-!            real(kind=RP)                     :: f(:)
+!            real(kind=WP)                     :: f(:)
 !        end function fun
 !    end interface
 !end subroutine optimize

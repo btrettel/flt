@@ -8,7 +8,7 @@
 program test_unittest
 
 use nmllog, only: log_type, CRITICAL_LEVEL
-use prec, only: RP
+use prec, only: WP
 use unittest, only: test_results_type
 implicit none
 
@@ -31,49 +31,49 @@ call tests%logical_true(.true., "logical_true, .true.")
 
 call tests%logical_false(.false., "logical_true, .false.")
 
-call tests%real_eq(1.0_RP, 1.0_RP, "real_eq, identical numbers (1)")
+call tests%real_eq(1.0_WP, 1.0_WP, "real_eq, identical numbers (1)")
 
-call tests%real_eq(15.0_RP, 15.0_RP, "real_eq, identical numbers (2)")
+call tests%real_eq(15.0_WP, 15.0_WP, "real_eq, identical numbers (2)")
 
-call tests%real_eq(0.0001_RP, 0.0001_RP, "real_eq, identical numbers (3)")
+call tests%real_eq(0.0001_WP, 0.0001_WP, "real_eq, identical numbers (3)")
 
-call tests%real_ne(1.0_RP, 10.0_RP, "real_ne, different numbers (1)")
+call tests%real_ne(1.0_WP, 10.0_WP, "real_ne, different numbers (1)")
 
-call tests%real_ne(5.0_RP, 1000.0_RP, "real_ne, different numbers (2)")
+call tests%real_ne(5.0_WP, 1000.0_WP, "real_ne, different numbers (2)")
 
-call tests%real_ne(0.1_RP, 1000.0_RP, "real_ne, different numbers (3)")
+call tests%real_ne(0.1_WP, 1000.0_WP, "real_ne, different numbers (3)")
 
-call tests%real_eq(1.0_RP, 1.0_RP + 5.0_RP * epsilon(1.0_RP), &
+call tests%real_eq(1.0_WP, 1.0_WP + 5.0_WP * epsilon(1.0_WP), &
     "real_eq, different numbers within tolerance (1)")
 
-call tests%real_eq(100.0_RP, 100.0_RP + 5.0_RP * epsilon(1.0_RP), &
+call tests%real_eq(100.0_WP, 100.0_WP + 5.0_WP * epsilon(1.0_WP), &
     "real_eq, different numbers within tolerance (2)")
 
-call tests%real_eq(0.1_RP, 0.1_RP + 5.0_RP * epsilon(1.0_RP), &
+call tests%real_eq(0.1_WP, 0.1_WP + 5.0_WP * epsilon(1.0_WP), &
     "real_eq, different numbers within tolerance (3)")
 
-call tests%real_ne(1.0_RP, 1.0_RP + 20.0_RP * epsilon(1.0_RP), &
+call tests%real_ne(1.0_WP, 1.0_WP + 20.0_WP * epsilon(1.0_WP), &
     "real_ne, barely different numbers (1)")
 
-call tests%real_ne(100.0_RP, 100.0_RP + 1000.0_RP * epsilon(1.0_RP), &
+call tests%real_ne(100.0_WP, 100.0_WP + 1000.0_WP * epsilon(1.0_WP), &
     "real_ne, barely different numbers (2)")
 
-call tests%real_ne(0.1_RP, 0.1_RP + 11.0_RP * epsilon(1.0_RP), &
+call tests%real_ne(0.1_WP, 0.1_WP + 11.0_WP * epsilon(1.0_WP), &
     "real_ne, barely different numbers (3)")
 
-call tests%real_eq(0.0_RP, 0.0_RP, "real_eq, both zero")
+call tests%real_eq(0.0_WP, 0.0_WP, "real_eq, both zero")
 
-call tests%real_ne(0.0_RP, 100.0_RP * epsilon(1.0_RP), &
+call tests%real_ne(0.0_WP, 100.0_WP * epsilon(1.0_WP), &
     "real_ne, one zero, one different (1)")
 
-call tests%real_ne(100.0_RP * epsilon(1.0_RP), 0.0_RP, &
+call tests%real_ne(100.0_WP * epsilon(1.0_WP), 0.0_WP, &
     "real_ne, one zero, one different (2)")
 
 call tests%integer_eq(1, 1, "integer_eq")
 
 call tests%character_eq("a", "a", "character_eq")
 
-call tests%real_eq(10.0_RP, 5.0_RP, "real_eq, large abs_tol set", abs_tol=5.1_RP)
+call tests%real_eq(10.0_WP, 5.0_WP, "real_eq, large abs_tol set", abs_tol=5.1_WP)
 
 call tests%integer_ge(2, 1, "integer_ge, greater")
 
@@ -94,13 +94,13 @@ call failing_tests%logical_true(.false., "logical_true, failure")
 
 call failing_tests%logical_false(.true., "logical_false, failure")
 
-call failing_tests%real_eq(1.0_RP, 0.0_RP, "real_eq, failure (greater)")
+call failing_tests%real_eq(1.0_WP, 0.0_WP, "real_eq, failure (greater)")
 
-call failing_tests%real_eq(0.0_RP, 1.0_RP, "real_eq, failure (less)")
+call failing_tests%real_eq(0.0_WP, 1.0_WP, "real_eq, failure (less)")
 
-call failing_tests%real_ne(1.0_RP, 1.0_RP, "real_ne, failure")
+call failing_tests%real_ne(1.0_WP, 1.0_WP, "real_ne, failure")
 
-call failing_tests%real_eq(10.0_RP, 5.0_RP, "real_eq, failure, abs_tol set", abs_tol=4.1_RP)
+call failing_tests%real_eq(10.0_WP, 5.0_WP, "real_eq, failure, abs_tol set", abs_tol=4.1_WP)
 
 call failing_tests%integer_eq(1, 0, "integer_eq, failure (greater)")
 
@@ -304,7 +304,7 @@ subroutine test_validate_timestamp(tests)
 end subroutine test_validate_timestamp
 
 subroutine test_read_unittest_nml(tests)
-    use prec, only: RP, CL
+    use prec, only: WP, CL
     use unittest, only: validate_timestamp
     use nmllog, only: TIMESTAMP_LEN, NML_RECL
     
@@ -320,7 +320,7 @@ subroutine test_read_unittest_nml(tests)
     character(len=2)             :: test_operator
     logical                      :: test_passes, returned_logical, compared_logical
     character(len=CL)            :: message, returned_character, compared_character
-    real(kind=RP)                :: returned_real, compared_real, tolerance, difference
+    real(kind=WP)                :: returned_real, compared_real, tolerance, difference
     integer                      :: returned_integer, compared_integer
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
@@ -330,7 +330,7 @@ subroutine test_read_unittest_nml(tests)
                             returned_character, compared_character
     
     integer       :: n_tests, n_failures
-    real(kind=RP) :: duration ! in seconds
+    real(kind=WP) :: duration ! in seconds
     
     namelist /tests_summary/ n_tests, n_failures, duration
     
@@ -341,10 +341,10 @@ subroutine test_read_unittest_nml(tests)
     message            = ""
     returned_logical   = .false.
     compared_logical   = .false.
-    returned_real      = 0.0_RP
-    compared_real      = 0.0_RP
-    tolerance          = 0.0_RP
-    difference         = 0.0_RP
+    returned_real      = 0.0_WP
+    compared_real      = 0.0_WP
+    tolerance          = 0.0_WP
+    difference         = 0.0_WP
     returned_integer   = 0
     compared_integer   = 0
     returned_character = ""
@@ -415,7 +415,7 @@ subroutine test_read_unittest_nml(tests)
     ! real_eq (pass)
     call logger%open(TEST_FILENAME)
     call nml_tests%start_tests(logger)
-    call nml_tests%real_eq(1.0_RP, 1.0_RP, "real_eq (pass)")
+    call nml_tests%real_eq(1.0_WP, 1.0_WP, "real_eq (pass)")
     call logger%close()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
@@ -424,14 +424,14 @@ subroutine test_read_unittest_nml(tests)
     call tests%character_eq(variable_type, "real", "test_read_unittest_nml, real_eq (pass), variable_type")
     call tests%logical_true(test_passes, "test_read_unittest_nml, real_eq (pass), test_passes")
     call tests%character_eq(trim(message), "real_eq (pass)", "test_read_unittest_nml, real_eq (pass), message")
-    call tests%real_eq(returned_real, 1.0_RP, "test_read_unittest_nml, real_eq (pass), returned_real")
-    call tests%real_eq(compared_real, 1.0_RP, "test_read_unittest_nml, real_eq (pass), compared_real")
+    call tests%real_eq(returned_real, 1.0_WP, "test_read_unittest_nml, real_eq (pass), returned_real")
+    call tests%real_eq(compared_real, 1.0_WP, "test_read_unittest_nml, real_eq (pass), compared_real")
     
     ! real_eq (fail)
     call logger%open(TEST_FILENAME)
     call nml_tests%start_tests(logger)
     nml_tests%logger%stdout_level=CRITICAL_LEVEL
-    call nml_tests%real_eq(3.0_RP, 2.0_RP, "real_eq (fail)")
+    call nml_tests%real_eq(3.0_WP, 2.0_WP, "real_eq (fail)")
     call logger%close()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
@@ -440,13 +440,13 @@ subroutine test_read_unittest_nml(tests)
     call tests%character_eq(variable_type, "real", "test_read_unittest_nml, real_eq (fail), variable_type")
     call tests%logical_false(test_passes, "test_read_unittest_nml, real_eq (fail), test_passes")
     call tests%character_eq(trim(message), "real_eq (fail)", "test_read_unittest_nml, real_eq (fail), message")
-    call tests%real_eq(returned_real, 3.0_RP, "test_read_unittest_nml, real_eq (fail), returned_real")
-    call tests%real_eq(compared_real, 2.0_RP, "test_read_unittest_nml, real_eq (fail), compared_real")
+    call tests%real_eq(returned_real, 3.0_WP, "test_read_unittest_nml, real_eq (fail), returned_real")
+    call tests%real_eq(compared_real, 2.0_WP, "test_read_unittest_nml, real_eq (fail), compared_real")
     
     ! real_ne (pass)
     call logger%open(TEST_FILENAME)
     call nml_tests%start_tests(logger)
-    call nml_tests%real_ne(0.0_RP, 1.0_RP, "real_ne (pass)")
+    call nml_tests%real_ne(0.0_WP, 1.0_WP, "real_ne (pass)")
     call logger%close()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
@@ -455,14 +455,14 @@ subroutine test_read_unittest_nml(tests)
     call tests%character_eq(variable_type, "real", "test_read_unittest_nml, real_ne (pass), variable_type")
     call tests%logical_true(test_passes, "test_read_unittest_nml, real_ne (pass), test_passes")
     call tests%character_eq(trim(message), "real_ne (pass)", "test_read_unittest_nml, real_ne (pass), message")
-    call tests%real_eq(returned_real, 0.0_RP, "test_read_unittest_nml, real_ne (pass), returned_real")
-    call tests%real_eq(compared_real, 1.0_RP, "test_read_unittest_nml, real_ne (pass), compared_real")
+    call tests%real_eq(returned_real, 0.0_WP, "test_read_unittest_nml, real_ne (pass), returned_real")
+    call tests%real_eq(compared_real, 1.0_WP, "test_read_unittest_nml, real_ne (pass), compared_real")
     
     ! real_ne (fail)
     call logger%open(TEST_FILENAME)
     call nml_tests%start_tests(logger)
     nml_tests%logger%stdout_level=CRITICAL_LEVEL
-    call nml_tests%real_ne(3.0_RP, 3.0_RP, "real_ne (fail)")
+    call nml_tests%real_ne(3.0_WP, 3.0_WP, "real_ne (fail)")
     call logger%close()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
@@ -471,8 +471,8 @@ subroutine test_read_unittest_nml(tests)
     call tests%character_eq(variable_type, "real", "test_read_unittest_nml, real_ne (fail), variable_type")
     call tests%logical_false(test_passes, "test_read_unittest_nml, real_ne (fail), test_passes")
     call tests%character_eq(trim(message), "real_ne (fail)", "test_read_unittest_nml, real_ne (fail), message")
-    call tests%real_eq(returned_real, 3.0_RP, "test_read_unittest_nml, real_ne (fail), returned_real")
-    call tests%real_eq(compared_real, 3.0_RP, "test_read_unittest_nml, real_ne (fail), compared_real")
+    call tests%real_eq(returned_real, 3.0_WP, "test_read_unittest_nml, real_ne (fail), returned_real")
+    call tests%real_eq(compared_real, 3.0_WP, "test_read_unittest_nml, real_ne (fail), compared_real")
     
     ! integer_eq (pass)
     call logger%open(TEST_FILENAME)

@@ -2,7 +2,8 @@
 
 Priorities:
 
-- `WP` for working previous (switch to this as you don't have regular use of integer precision now)
+- Tests for remainder of check.f90.
+- Add linters.
 - `nmllog.f90`: Check your notes for the following:
     - /home/ben/notes/programming/file-formats-locations.txt section titled "logging"
     - /home/ben/notes/programming/correctness/defensive-programming.txt section titled "error/exception handling and error messages"

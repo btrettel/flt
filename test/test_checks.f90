@@ -9,7 +9,7 @@ program test_checks
 
 use checks, only: is_close, check, assert
 use nmllog, only: log_type
-use prec, only: RP
+use prec, only: WP
 use unittest, only: test_results_type
 implicit none
 
@@ -24,78 +24,78 @@ character(len=80)       :: assert_false_line
 call logger%open("checks.nml")
 call tests%start_tests(logger)
 
-call tests%logical_true(is_close(1.0_RP, 1.0_RP), "is_close, identical numbers (1)")
+call tests%logical_true(is_close(1.0_WP, 1.0_WP), "is_close, identical numbers (1)")
 
-call tests%logical_true(is_close(15.0_RP, 15.0_RP), "is_close, identical numbers (2)")
+call tests%logical_true(is_close(15.0_WP, 15.0_WP), "is_close, identical numbers (2)")
 
-call tests%logical_true(is_close(0.0001_RP, 0.0001_RP), "is_close, identical numbers (3)")
+call tests%logical_true(is_close(0.0001_WP, 0.0001_WP), "is_close, identical numbers (3)")
 
-call tests%logical_true(.not. is_close(1.0_RP, 10.0_RP), "is_close, different numbers (1)")
+call tests%logical_true(.not. is_close(1.0_WP, 10.0_WP), "is_close, different numbers (1)")
 
-call tests%logical_true(.not. is_close(5.0_RP, 1000.0_RP), "is_close, different numbers (2)")
+call tests%logical_true(.not. is_close(5.0_WP, 1000.0_WP), "is_close, different numbers (2)")
 
-call tests%logical_true(.not. is_close(0.1_RP, 1000.0_RP), "is_close, different numbers (3)")
+call tests%logical_true(.not. is_close(0.1_WP, 1000.0_WP), "is_close, different numbers (3)")
 
-call tests%logical_true(is_close(1.0_RP, 1.0_RP + 5.0_RP * epsilon(1.0_RP)), &
+call tests%logical_true(is_close(1.0_WP, 1.0_WP + 5.0_WP * epsilon(1.0_WP)), &
     "is_close, different numbers within tolerance (1)")
 
-call tests%logical_true(is_close(100.0_RP, 100.0_RP + 5.0_RP * epsilon(1.0_RP)), &
+call tests%logical_true(is_close(100.0_WP, 100.0_WP + 5.0_WP * epsilon(1.0_WP)), &
     "is_close, different numbers within tolerance (2)")
 
-call tests%logical_true(is_close(0.1_RP, 0.1_RP + 5.0_RP * epsilon(1.0_RP)), &
+call tests%logical_true(is_close(0.1_WP, 0.1_WP + 5.0_WP * epsilon(1.0_WP)), &
     "is_close, different numbers within tolerance (3)")
 
-call tests%logical_true(.not. is_close(1.0_RP, 1.0_RP + 20.0_RP * epsilon(1.0_RP)), &
+call tests%logical_true(.not. is_close(1.0_WP, 1.0_WP + 20.0_WP * epsilon(1.0_WP)), &
     "is_close, barely different numbers (1)")
 
-call tests%logical_true(.not. is_close(100.0_RP, 100.0_RP + 1000.0_RP * epsilon(1.0_RP)), &
+call tests%logical_true(.not. is_close(100.0_WP, 100.0_WP + 1000.0_WP * epsilon(1.0_WP)), &
     "is_close, barely different numbers (2)")
 
-call tests%logical_true(.not. is_close(0.1_RP, 0.1_RP + 11.0_RP * epsilon(1.0_RP)), &
+call tests%logical_true(.not. is_close(0.1_WP, 0.1_WP + 11.0_WP * epsilon(1.0_WP)), &
     "is_close, barely different numbers (3)")
 
-call tests%logical_true(is_close(0.0_RP, 0.0_RP), "is_close, both zero")
+call tests%logical_true(is_close(0.0_WP, 0.0_WP), "is_close, both zero")
 
-call tests%logical_true(.not. is_close(0.0_RP, 100.0_RP * epsilon(1.0_RP)), &
+call tests%logical_true(.not. is_close(0.0_WP, 100.0_WP * epsilon(1.0_WP)), &
     "is_close, one zero, one different (1)")
 
-call tests%logical_true(.not. is_close(100.0_RP * epsilon(1.0_RP), 0.0_RP), &
+call tests%logical_true(.not. is_close(100.0_WP * epsilon(1.0_WP), 0.0_WP), &
     "is_close, one zero, one different (2)")
 
-call tests%logical_true(is_close(1.0_RP, 1.05_RP, abs_tol=0.1_RP, rel_tol=0.0_RP), &
+call tests%logical_true(is_close(1.0_WP, 1.05_WP, abs_tol=0.1_WP, rel_tol=0.0_WP), &
         "is_close, close numbers with set abs_tol, inside abs_tol (1)")
 
-call tests%logical_true(is_close(10.0_RP, 10.1_RP, abs_tol=0.2_RP, rel_tol=0.0_RP), &
+call tests%logical_true(is_close(10.0_WP, 10.1_WP, abs_tol=0.2_WP, rel_tol=0.0_WP), &
         "is_close, close numbers with set abs_tol, inside abs_tol (2)")
 
-call tests%logical_true(is_close(0.1_RP, 0.11_RP, abs_tol=0.02_RP, rel_tol=0.0_RP), &
+call tests%logical_true(is_close(0.1_WP, 0.11_WP, abs_tol=0.02_WP, rel_tol=0.0_WP), &
         "is_close, close numbers with set abs_tol, inside abs_tol (3)")
 
-call tests%logical_true(.not. is_close(1.0_RP, 1.15_RP, abs_tol=0.1_RP, rel_tol=0.0_RP), &
+call tests%logical_true(.not. is_close(1.0_WP, 1.15_WP, abs_tol=0.1_WP, rel_tol=0.0_WP), &
         "is_close, close numbers with set abs_tol, outside abs_tol (1)")
 
-call tests%logical_true(.not. is_close(20.0_RP, 21.0_RP, abs_tol=0.5_RP, rel_tol=0.0_RP), &
+call tests%logical_true(.not. is_close(20.0_WP, 21.0_WP, abs_tol=0.5_WP, rel_tol=0.0_WP), &
         "is_close, close numbers with set abs_tol, outside abs_tol (2)")
 
-call tests%logical_true(.not. is_close(0.01_RP, 0.02_RP, abs_tol=0.005_RP, rel_tol=0.0_RP), &
+call tests%logical_true(.not. is_close(0.01_WP, 0.02_WP, abs_tol=0.005_WP, rel_tol=0.0_WP), &
         "is_close, close numbers with set abs_tol, outside abs_tol (3)")
 
-call tests%logical_true(is_close(1.0_RP, 1.05_RP, abs_tol=0.0_RP, rel_tol=0.1_RP), &
+call tests%logical_true(is_close(1.0_WP, 1.05_WP, abs_tol=0.0_WP, rel_tol=0.1_WP), &
         "is_close, close numbers with set rel_tol, inside rel_tol")
 
-call tests%logical_true(.not. is_close(1.0_RP, 1.15_RP, abs_tol=0.0_RP, rel_tol=0.1_RP), &
+call tests%logical_true(.not. is_close(1.0_WP, 1.15_WP, abs_tol=0.0_WP, rel_tol=0.1_WP), &
         "is_close, close numbers with set rel_tol, outside rel_tol (1)")
 
-call tests%logical_true(.not. is_close(20.0_RP, 19.7_RP, abs_tol=0.0_RP, rel_tol=0.01_RP), &
+call tests%logical_true(.not. is_close(20.0_WP, 19.7_WP, abs_tol=0.0_WP, rel_tol=0.01_WP), &
         "is_close, close numbers with set rel_tol, outside rel_tol (2)")
 
-call tests%logical_true(.not. is_close(0.0001_RP, 0.0003_RP, abs_tol=0.0_RP, rel_tol=0.1_RP), &
+call tests%logical_true(.not. is_close(0.0001_WP, 0.0003_WP, abs_tol=0.0_WP, rel_tol=0.1_WP), &
         "is_close, close numbers with set rel_tol, outside rel_tol (3)")
 
-call tests%logical_true(.not. is_close(1.0_RP, 0.0_RP, abs_tol=1.0_RP, rel_tol=0.0_RP), &
+call tests%logical_true(.not. is_close(1.0_WP, 0.0_WP, abs_tol=1.0_WP, rel_tol=0.0_WP), &
         "is_close, close numbers with set abs_tol, just outside")
 
-call tests%logical_true(.not. is_close(1.0_RP, 0.0_RP, abs_tol=0.0_RP, rel_tol=1.0_RP), &
+call tests%logical_true(.not. is_close(1.0_WP, 0.0_WP, abs_tol=0.0_WP, rel_tol=1.0_WP), &
         "is_close, close numbers with set rel_tol, just outside")
 
 rc_check = 0

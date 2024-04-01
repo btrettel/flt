@@ -7,7 +7,7 @@
 
 program test_rngmod
 
-use prec, only: RP
+use prec, only: WP
 use rngmod, only: set_determ, determ, pseudo
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -15,7 +15,7 @@ implicit none
 
 type(log_type)          :: logger
 type(test_results_type) :: tests
-real(kind=RP)           :: output
+real(kind=WP)           :: output
 
 call logger%open("rngmod.nml")
 call tests%start_tests(logger)
@@ -27,18 +27,18 @@ call tests%start_tests(logger)
 
 ! `determ`
 
-call set_determ([0.4_RP])
+call set_determ([0.4_WP])
 output = select_rng(rng=determ)
-call tests%real_eq(output, 0.4_RP, "set_determ (size=1, #1)")
-call tests%real_eq(output, 0.4_RP, "set_determ (size=1, #2)")
+call tests%real_eq(output, 0.4_WP, "set_determ (size=1, #1)")
+call tests%real_eq(output, 0.4_WP, "set_determ (size=1, #2)")
 
-call set_determ([0.1_RP, 0.7_RP])
+call set_determ([0.1_WP, 0.7_WP])
 output = select_rng(rng=determ)
-call tests%real_eq(output, 0.1_RP, "set_determ (size=2, #1)")
+call tests%real_eq(output, 0.1_WP, "set_determ (size=2, #1)")
 output = select_rng(rng=determ)
-call tests%real_eq(output, 0.7_RP, "set_determ (size=2, #2)")
+call tests%real_eq(output, 0.7_WP, "set_determ (size=2, #2)")
 output = select_rng(rng=determ)
-call tests%real_eq(output, 0.1_RP, "set_determ (size=2, #3)")
+call tests%real_eq(output, 0.1_WP, "set_determ (size=2, #3)")
 
 ! `pseudo`
 
@@ -54,12 +54,12 @@ function select_rng(rng)
     ! As an example of how to write a procedure that takes a RNG as an argument.
     ! Works in gfortran, Oracle, and FTN95.
     
-    real(kind=RP) :: select_rng
+    real(kind=WP) :: select_rng
     
     interface
         subroutine rng(x)
-            use prec, only: RP
-            real(kind=RP), intent(out) :: x
+            use prec, only: WP
+            real(kind=WP), intent(out) :: x
         end subroutine rng
     end interface
     

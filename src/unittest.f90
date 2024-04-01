@@ -7,7 +7,7 @@
 
 module unittest
 
-use prec, only: RP, CL
+use prec, only: WP, CL
 use nmllog, only: log_type, now, TIMESTAMP_LEN, DEBUG_LEVEL
 implicit none
 private
@@ -19,8 +19,8 @@ character(len=70), parameter :: LONG_LINE = "-----------------------------------
 type, public :: test_results_type
     integer        :: n_failures = 0
     integer        :: n_tests    = 0
-    real(kind=RP)  :: start_time
-    real(kind=RP)  :: end_time
+    real(kind=WP)  :: start_time
+    real(kind=WP)  :: end_time
     type(log_type) :: logger
 contains
     procedure :: logical_true => logical_true
@@ -123,17 +123,17 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     
     class(test_results_type), intent(inout) :: this
     
-    real(kind=RP), intent(in)    :: returned_real, compared_real
+    real(kind=WP), intent(in)    :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
     
-    real(kind=RP), intent(in), optional :: abs_tol
+    real(kind=WP), intent(in), optional :: abs_tol
     
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=4)              :: variable_type
     character(len=2)              :: test_operator
     logical                       :: test_passes
     character(len=:), allocatable :: message
-    real(kind=RP)                 :: tolerance, difference
+    real(kind=WP)                 :: tolerance, difference
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
                             returned_real, compared_real, tolerance, difference
@@ -141,11 +141,11 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     if (present(abs_tol)) then
         tolerance = abs_tol
     else
-        tolerance = TOL_FACTOR * epsilon(1.0_RP)
+        tolerance = TOL_FACTOR * epsilon(1.0_WP)
     end if
     
     difference = abs(returned_real - compared_real)
-    call assert(difference >= 0.0_RP)
+    call assert(difference >= 0.0_WP)
     
     test_operator = "=="
     timestamp     = now()
@@ -163,11 +163,11 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
             write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real expected = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, es15.8)") "    tolerance = ", tolerance
-            if (is_close(abs(compared_real), 0.0_RP)) then
+            if (is_close(abs(compared_real), 0.0_WP)) then
                 write(unit=ERROR_UNIT, fmt="(a, es15.8)") "   difference = ", difference
             else
                 write(unit=ERROR_UNIT, fmt="(a, es15.8, a, f0.3, a)") "   difference = ", difference, &
-                                                            " (", 100.0_RP * difference / abs(compared_real), "%)"
+                                                            " (", 100.0_WP * difference / abs(compared_real), "%)"
             end if
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
@@ -184,17 +184,17 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     
     class(test_results_type), intent(inout) :: this
     
-    real(kind=RP), intent(in)    :: returned_real, compared_real
+    real(kind=WP), intent(in)    :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
     
-    real(kind=RP), intent(in), optional :: abs_tol
+    real(kind=WP), intent(in), optional :: abs_tol
     
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=4)              :: variable_type
     character(len=2)              :: test_operator
     logical                       :: test_passes
     character(len=:), allocatable :: message
-    real(kind=RP)                 :: tolerance, difference
+    real(kind=WP)                 :: tolerance, difference
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
                             returned_real, compared_real, tolerance, difference
@@ -202,11 +202,11 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     if (present(abs_tol)) then
         tolerance = abs_tol
     else
-        tolerance = TOL_FACTOR * epsilon(1.0_RP)
+        tolerance = TOL_FACTOR * epsilon(1.0_WP)
     end if
     
     difference = abs(returned_real - compared_real)
-    call assert(difference >= 0.0_RP)
+    call assert(difference >= 0.0_WP)
     
     test_operator = "/="
     timestamp     = now()
@@ -224,11 +224,11 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
             write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, es15.8)") "      /= real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, es15.8)") "    tolerance = ", tolerance
-            if (is_close(abs(compared_real), 0.0_RP)) then
+            if (is_close(abs(compared_real), 0.0_WP)) then
                 write(unit=ERROR_UNIT, fmt="(a, es15.8)") "   difference = ", difference
             else
                 write(unit=ERROR_UNIT, fmt="(a, es15.8, a, f0.3, a)") "   difference = ", difference, &
-                                                            " (", 100.0_RP * difference / abs(compared_real), "%)"
+                                                            " (", 100.0_WP * difference / abs(compared_real), "%)"
             end if
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
@@ -443,12 +443,12 @@ subroutine character_eq(this, returned_character_in, compared_character_in, mess
 end subroutine character_eq
 
 function current_time()
-    real(kind=RP) :: current_time ! in seconds
+    real(kind=WP) :: current_time ! in seconds
     
     integer :: clock_count, count_rate
     
     call system_clock(clock_count, count_rate)
-    current_time = real(clock_count, RP) / real(count_rate, RP)
+    current_time = real(clock_count, WP) / real(count_rate, WP)
     
     return
 end function current_time
@@ -472,7 +472,7 @@ subroutine end_tests(this)
     class(test_results_type), intent(inout) :: this
     
     integer       :: n_tests, n_failures
-    real(kind=RP) :: duration ! in seconds
+    real(kind=WP) :: duration ! in seconds
     
     namelist /tests_summary/ n_tests, n_failures, duration
     

@@ -7,7 +7,7 @@
 
 program test_asserts
 
-use prec, only: I5, I9, RP, PI
+use prec, only: I5, I9, WP, PI
 use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
@@ -21,10 +21,10 @@ call tests%start_tests(logger)
 call tests%integer_ge(range(1), 5, "default integer exponent range")
 call tests%integer_ge(range(1_I5), 5, "integer kind I5 exponent range")
 call tests%integer_ge(range(1_I9), 9, "integer kind I9 exponent range")
-call tests%integer_ge(range(1.0_RP), 15, "real kind RP exponent range")
+call tests%integer_ge(range(1.0_WP), 15, "real kind WP exponent range")
 
 ! This needs to be modified when changing the precision.
-call tests%real_eq(3.141592653589793_RP, PI, "PI value")
+call tests%real_eq(3.141592653589793_WP, PI, "PI value")
 
 call tests%end_tests()
 call logger%close()

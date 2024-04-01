@@ -10,7 +10,7 @@
 
 module nmllog
 
-use prec, only: RP, CL
+use prec, only: WP, CL
 implicit none
 private
 
@@ -209,7 +209,7 @@ subroutine log_debug_info(this)
     use, intrinsic :: iso_fortran_env, only: compiler_opt => compiler_options, compiler_ver => compiler_version
     use, intrinsic :: ieee_arithmetic, only: ieee_support_datatype, ieee_support_denormal, ieee_support_divide, &
                                                 ieee_support_inf, ieee_support_nan, ieee_support_sqrt, ieee_support_standard
-    use prec, only: RP
+    use prec, only: WP
     
     ! Maybe:
     ! - `epsilon`
@@ -225,7 +225,7 @@ subroutine log_debug_info(this)
     character(len=:), allocatable :: compiler_options, compiler_version, level
     character(len=TIMESTAMP_LEN)  :: timestamp
     
-    !real(kind=RP) :: real_huge
+    !real(kind=WP) :: real_huge
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
                         real_min_exponent, real_max_exponent, &
                         integer_kind_code, integer_range, integer_huge
@@ -244,20 +244,20 @@ subroutine log_debug_info(this)
     compiler_options = compiler_opt()
     compiler_version = compiler_ver()
     
-    real_kind_code        = RP
-    real_precision        = precision(1.0_RP)
-    real_range            = range(1.0_RP)
-    real_radix            = radix(1.0_RP)
-    !real_huge             = huge(1.0_RP)
-    real_min_exponent     = minexponent(1.0_RP)
-    real_max_exponent     = maxexponent(1.0_RP)
-    real_support_datatype = ieee_support_datatype(1.0_RP)
-    real_support_denormal = ieee_support_denormal(1.0_RP)
-    real_support_divide   = ieee_support_divide(1.0_RP)
-    real_support_inf      = ieee_support_inf(1.0_RP)
-    real_support_nan      = ieee_support_nan(1.0_RP)
-    real_support_sqrt     = ieee_support_sqrt(1.0_RP)
-    real_support_standard = ieee_support_standard(1.0_RP)
+    real_kind_code        = WP
+    real_precision        = precision(1.0_WP)
+    real_range            = range(1.0_WP)
+    real_radix            = radix(1.0_WP)
+    !real_huge             = huge(1.0_WP)
+    real_min_exponent     = minexponent(1.0_WP)
+    real_max_exponent     = maxexponent(1.0_WP)
+    real_support_datatype = ieee_support_datatype(1.0_WP)
+    real_support_denormal = ieee_support_denormal(1.0_WP)
+    real_support_divide   = ieee_support_divide(1.0_WP)
+    real_support_inf      = ieee_support_inf(1.0_WP)
+    real_support_nan      = ieee_support_nan(1.0_WP)
+    real_support_sqrt     = ieee_support_sqrt(1.0_WP)
+    real_support_standard = ieee_support_standard(1.0_WP)
     
     integer_kind_code = kind(1)
     integer_range     = range(1)

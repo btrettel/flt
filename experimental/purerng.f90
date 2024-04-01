@@ -7,7 +7,7 @@
 
 module purerng
 
-use prec, only: RP
+use prec, only: WP
 implicit none
 private
 
@@ -24,7 +24,7 @@ elemental function l88f3(rng)
     
     type(rng_type), intent(in out) :: rng
     
-    real(kind=RP) :: l88f3
+    real(kind=WP) :: l88f3
     
     ! TODO: For speed, I might be able to reduce the precision of some of these `integer`s.
     
@@ -50,7 +50,7 @@ elemental function l88f3(rng)
         z = z + M(1) - 1
     end if
     
-    l88f3 = real(z, kind=RP) / real(M(1), kind=RP)
+    l88f3 = real(z, kind=WP) / real(M(1), kind=WP)
 end function l88f3
 
 end module purerng
