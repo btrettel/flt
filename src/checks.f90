@@ -67,7 +67,7 @@ pure subroutine assert(condition, message)
     character(len=:), allocatable :: message_, full_message
     
     if (present(message)) then
-        message_ = new_line("a") // message
+        message_ = " " // message
     else
         message_ = ""
     end if
@@ -76,7 +76,9 @@ pure subroutine assert(condition, message)
         if (.not. condition) then
             ! Why not concatenate the strings on the `error stop` line?
             ! That leads to ifx garbling the error message as of version `ifx (IFX) 2024.0.2 20231213`.
-            full_message = "***" // new_line("a") // "Assertion failed." // message_
+            full_message = "***" // new_line("a") // "ASSERTION FAILED." // message_
+            
+            ! Why is the message in all caps? To make it more noticeable.
             
             error stop full_message
         end if

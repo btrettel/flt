@@ -124,11 +124,29 @@ call tests%integer_ne(rc_assert_false, 0, "assert, .false., exit code")
 inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
 call tests%logical_true(test_assert_false_exists, "assert, .false., output saved")
 
-! Test assertion failure message
+! Test default assertion failure message.
 open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
 read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
 read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
-call tests%character_eq(assert_false_line, "Assertion failed.", "assert, .false., assertion message")
+call tests%character_eq(assert_false_line, "ASSERTION FAILED.", "assert, .false., default assertion message")
+
+! Delete saved file.
+close(unit=test_assert_false_unit, status="delete")
+
+! Check that `assert(.false., "Custom message.")` has the correct message.
+! TODO: This would need to be updated for Windows as I'd add .exe to the executable filename there.
+! TODO: This also assumes Bash.
+call execute_command_line("./test_assert_false_message 2> " // ASSERT_FALSE_OUTPUT, exitstat=rc_assert_false)
+call tests%integer_ne(rc_assert_false, 0, "assert, .false., message, exit code")
+
+inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
+call tests%logical_true(test_assert_false_exists, "assert, .false., message, output saved")
+
+! Test default assertion failure message.
+open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
+read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
+read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
+call tests%character_eq(assert_false_line, "ASSERTION FAILED. Custom message.", "assert, .false., message, assertion message")
 
 ! Delete saved file.
 close(unit=test_assert_false_unit, status="delete")

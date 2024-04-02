@@ -3,21 +3,6 @@
 Priorities:
 
 - Add linters.
-- add names to deeply nested `if`s and `do`s in unittest
-- `purerng`
-    - move good parts of `rngmod` to `purerng`
-    - Make `pure` random number generator. Obtain random number generator from elsewhere as you're not qualified to program one.
-    - Use standard tests for random number generators to make sure this one is good.
-    - Move `rand_int` and `rand_cauchy` to `purerng`.
-    - Includes a deterministic random number generator for testing purposes.
-    - Base the interface on the standard Fortran random number generator, just as type-bound subroutines now.
-    - Alternatively, base the interface on NumPy.
-        - <https://numpy.org/doc/stable/reference/random/generator.html>
-- unittest.f90:
-    - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
-        - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
-            - FortranFan seems skeptical.
-        - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
 - timer.f90
     - Make `unittest` use this for the timing.
     - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
@@ -43,6 +28,20 @@ Priorities:
         - separate non-standard test code using `sleep(1)`
             - <https://gcc.gnu.org/onlinedocs/gcc-7.5.0/gfortran/SLEEP.html>
             - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>
+- `purerng`
+    - move good parts of `rngmod` to `purerng`
+    - Make `pure` random number generator. Obtain random number generator from elsewhere as you're not qualified to program one.
+    - Use standard tests for random number generators to make sure this one is good.
+    - Move `rand_int` and `rand_cauchy` to `purerng`.
+    - Includes a deterministic random number generator for testing purposes.
+    - Base the interface on the standard Fortran random number generator, just as type-bound subroutines now.
+    - Alternatively, base the interface on NumPy.
+        - <https://numpy.org/doc/stable/reference/random/generator.html>
+- unittest.f90:
+    - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
+        - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
+            - FortranFan seems skeptical.
+        - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
 - fmutate.f90:
     - TODO: Look at mutation testing literature for particular types of errors to introduce.
     - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.
@@ -91,6 +90,7 @@ Priorities:
 
 Later:
 
+- add names to deeply nested `if`s and `do`s in unittest
 - Search for `TODO` and finish those tasks.
 - compiler_tests.f90: Tests for intrinsics used in these libraries.
     - How can I identify all the intrinsics used here?
