@@ -3,11 +3,6 @@
 Priorities:
 
 - Add linters.
-- Make as much as possible `pure`.
-- Make an assertion which takes an array to help avoid the problem of only the first failing assertion
-    - `check` helps with this too, but an `assert_all` would be convenient if I simply want to check a bunch of things at once.
-    - <https://blog.ploeh.dk/2022/11/07/applicative-assertions/>
-    - Can make `assert_all` use `do_concurrent` to have a faster assertion.
 - add names to deeply nested `if`s and `do`s in unittest
 - `purerng`
     - move good parts of `rngmod` to `purerng`
@@ -23,7 +18,6 @@ Priorities:
         - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
             - FortranFan seems skeptical.
         - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
-    - `%logical_true(.not.` to `%logical_false(`
 - timer.f90
     - Make `unittest` use this for the timing.
     - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
@@ -188,3 +182,7 @@ Later:
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
 - A module containing errno codes, other internal return codes, and exit codes. Could make a derived type with the number and a message.
 - Detect if certain compilers are present and don't run those in `make all` if they are not present. This will allow your Makefile to work on all your different computers.
+- Make an assertion which takes an array to help avoid the problem of only the first failing assertion
+    - `check` helps with this too, but an `assert_all` would be convenient if I simply want to check a bunch of things at once.
+    - <https://blog.ploeh.dk/2022/11/07/applicative-assertions/>
+    - Can make `assert_all` use `do_concurrent` to have a faster assertion.
