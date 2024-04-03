@@ -7,7 +7,7 @@
 
 program test_checks
 
-use checks, only: TOL_FACTOR, is_close, check, assert, same_shape_as
+use checks, only: TOL_FACTOR, abs_tolerance, is_close, check, assert, same_shape_as
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
@@ -27,6 +27,12 @@ real(kind=WP) :: a1(5), b1(5), c1(4), &
 
 call logger%open("checks.nml")
 call tests%start_tests(logger)
+
+call tests%real_gt(abs_tolerance(0.0_WP, 0.0_WP), 0.0_WP, "abs_tolerance is greater than zero at arguments of 0")
+
+call tests%real_eq(abs_tolerance(0.0_WP, 10.0_WP), TOL_FACTOR * spacing(10.0_WP), "abs_tolerance (1)")
+
+call tests%real_eq(abs_tolerance(100.0_WP, 0.0_WP), TOL_FACTOR * spacing(100.0_WP), "abs_tolerance (2)")
 
 call tests%logical_true(is_close(1.0_WP, 1.0_WP), "is_close, identical numbers (1)")
 

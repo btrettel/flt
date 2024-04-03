@@ -16,7 +16,7 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests, failing_tests
 
-integer, parameter :: N_FAILING = 13
+integer, parameter :: N_FAILING = 14
 
 call logger%open("unittest.nml")
 call tests%start_tests(logger)
@@ -62,6 +62,8 @@ call tests%real_ne(0.0_WP, 100.0_WP * spacing(0.0_WP), "real_ne, one zero, one d
 
 call tests%real_ne(100.0_WP * spacing(0.0_WP), 0.0_WP, "real_ne, one zero, one different (2)")
 
+call tests%real_gt(1.0_WP, 0.0_WP, "real_gt")
+
 call tests%integer_eq(1, 1, "integer_eq")
 
 call tests%character_eq("a", "a", "character_eq")
@@ -92,6 +94,8 @@ call failing_tests%real_eq(1.0_WP, 0.0_WP, "real_eq, failure (greater)")
 call failing_tests%real_eq(0.0_WP, 1.0_WP, "real_eq, failure (less)")
 
 call failing_tests%real_ne(1.0_WP, 1.0_WP, "real_ne, failure")
+
+call failing_tests%real_gt(-1.0_WP, 0.0_WP, "real_gt, failure")
 
 call failing_tests%real_eq(10.0_WP, 5.0_WP, "real_eq, failure, abs_tol set", abs_tol=4.1_WP)
 
