@@ -2,6 +2,8 @@
 
 Priorities:
 
+- Replace all instances of `epsilon(`.
+- Test `abs_tolerance`.
 - Add linters.
 - Add code coverage.
 - timer.f90

@@ -119,7 +119,7 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
-    use checks, only: TOL_FACTOR, assert, is_close
+    use checks, only: abs_tolerance, is_close, assert
     
     class(test_results_type), intent(inout) :: this
     
@@ -138,12 +138,6 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
                             returned_real, compared_real, tolerance, difference
     
-    if (present(abs_tol)) then
-        tolerance = abs_tol
-    else
-        tolerance = TOL_FACTOR * epsilon(1.0_WP)
-    end if
-    
     difference = abs(returned_real - compared_real)
     call assert(difference >= 0.0_WP)
     
@@ -152,7 +146,13 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     variable_type = "real"
     message       = message_in
     
-    test_passes = is_close(returned_real, compared_real, abs_tol=tolerance)
+    if (present(abs_tol)) then
+        test_passes = is_close(returned_real, compared_real, abs_tol=abs_tol)
+        tolerance = abs_tol
+    else
+        test_passes = is_close(returned_real, compared_real)
+        tolerance = abs_tolerance(returned_real, compared_real)
+    end if
     
     write(unit=this%logger%unit, nml=test_result)
     
@@ -180,7 +180,7 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
-    use checks, only: TOL_FACTOR, assert, is_close
+    use checks, only: abs_tolerance, is_close, assert
     
     class(test_results_type), intent(inout) :: this
     
@@ -199,12 +199,6 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
                             returned_real, compared_real, tolerance, difference
     
-    if (present(abs_tol)) then
-        tolerance = abs_tol
-    else
-        tolerance = TOL_FACTOR * epsilon(1.0_WP)
-    end if
-    
     difference = abs(returned_real - compared_real)
     call assert(difference >= 0.0_WP)
     
@@ -213,7 +207,13 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     variable_type = "real"
     message       = message_in
     
-    test_passes = .not. is_close(returned_real, compared_real, abs_tol=tolerance)
+    if (present(abs_tol)) then
+        test_passes = .not. is_close(returned_real, compared_real, abs_tol=abs_tol)
+        tolerance = abs_tol
+    else
+        test_passes = .not. is_close(returned_real, compared_real)
+        tolerance = abs_tolerance(returned_real, compared_real)
+    end if
     
     write(unit=this%logger%unit, nml=test_result)
     

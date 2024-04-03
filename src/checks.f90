@@ -11,11 +11,12 @@ use prec, only: WP
 implicit none
 private
 
-real(kind=WP), public, parameter :: TOL_FACTOR = 10.0_WP
+real(kind=WP), public, parameter :: TOL_FACTOR = 5.0_WP
 
 logical :: debug = .true.
 
-public :: is_close ! TODO: make rel_tol zero by default, abs_tol based on local spacing
+public :: abs_tolerance
+public :: is_close
 public :: assert
 public :: check
 public :: same_shape_as
@@ -27,6 +28,17 @@ interface same_shape_as
 end interface same_shape_as
 
 contains
+
+pure function abs_tolerance(input_real_1, input_real_2)
+    ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Real-number-tolerance-and-if/m-p/824459#M49399>
+    ! <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
+    
+    real(kind=WP), intent(in) :: input_real_1, input_real_2
+    
+    real(kind=WP) :: abs_tolerance
+    
+    abs_tolerance = TOL_FACTOR * spacing(max(abs(input_real_1), abs(input_real_2)))
+end function abs_tolerance
 
 pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     ! Determine whether two reals are close.
@@ -50,8 +62,7 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     if (present(abs_tol)) then
         abs_tol_ = abs_tol
     else
-        ! <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
-        abs_tol_ = TOL_FACTOR * spacing(max(abs(input_real_1), abs(input_real_2)))
+        abs_tol_ = abs_tolerance(input_real_1, input_real_2)
     end if
     
     tol = max(rel_tol_ * abs(input_real_1), rel_tol_ * abs(input_real_2), abs_tol_)

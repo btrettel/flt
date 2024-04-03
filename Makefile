@@ -153,7 +153,7 @@ prec.nml: test_prec$(BINEXT)
 # unittest #
 ############
 
-test_unittest$(BINEXT): src/unittest$(DBGOBJEXT) test/test_unittest.f90
+test_unittest$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unittest.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unittest.f90
 
 unittest.nml: test_unittest$(BINEXT) prec.nml

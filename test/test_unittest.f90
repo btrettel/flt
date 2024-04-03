@@ -7,6 +7,7 @@
 
 program test_unittest
 
+use checks, only: TOL_FACTOR
 use nmllog, only: log_type, CRITICAL_LEVEL
 use prec, only: WP
 use unittest, only: test_results_type
@@ -43,31 +44,23 @@ call tests%real_ne(5.0_WP, 1000.0_WP, "real_ne, different numbers (2)")
 
 call tests%real_ne(0.1_WP, 1000.0_WP, "real_ne, different numbers (3)")
 
-call tests%real_eq(1.0_WP, 1.0_WP + 5.0_WP * epsilon(1.0_WP), &
-    "real_eq, different numbers within tolerance (1)")
+call tests%real_eq(1.0_WP, 1.0_WP + 0.5_WP * TOL_FACTOR * spacing(1.0_WP), "real_eq, different numbers within tolerance (1)")
 
-call tests%real_eq(100.0_WP, 100.0_WP + 5.0_WP * epsilon(1.0_WP), &
-    "real_eq, different numbers within tolerance (2)")
+call tests%real_eq(100.0_WP, 100.0_WP + 0.5_WP * TOL_FACTOR * spacing(100.0_WP), "real_eq, different numbers within tolerance (2)")
 
-call tests%real_eq(0.1_WP, 0.1_WP + 5.0_WP * epsilon(1.0_WP), &
-    "real_eq, different numbers within tolerance (3)")
+call tests%real_eq(0.1_WP, 0.1_WP + 0.5_WP * TOL_FACTOR * spacing(0.1_WP), "real_eq, different numbers within tolerance (3)")
 
-call tests%real_ne(1.0_WP, 1.0_WP + 20.0_WP * epsilon(1.0_WP), &
-    "real_ne, barely different numbers (1)")
+call tests%real_ne(1.0_WP, 1.0_WP + 2.0_WP * TOL_FACTOR * spacing(1.0_WP), "real_ne, barely different numbers (1)")
 
-call tests%real_ne(100.0_WP, 100.0_WP + 1000.0_WP * epsilon(1.0_WP), &
-    "real_ne, barely different numbers (2)")
+call tests%real_ne(100.0_WP, 100.0_WP + 1000.0_WP * spacing(100.0_WP), "real_ne, barely different numbers (2)")
 
-call tests%real_ne(0.1_WP, 0.1_WP + 11.0_WP * epsilon(1.0_WP), &
-    "real_ne, barely different numbers (3)")
+call tests%real_ne(0.1_WP, 0.1_WP + (TOL_FACTOR + 1.0_WP) * spacing(0.1_WP), "real_ne, barely different numbers (3)")
 
 call tests%real_eq(0.0_WP, 0.0_WP, "real_eq, both zero")
 
-call tests%real_ne(0.0_WP, 100.0_WP * epsilon(1.0_WP), &
-    "real_ne, one zero, one different (1)")
+call tests%real_ne(0.0_WP, 100.0_WP * spacing(0.0_WP), "real_ne, one zero, one different (1)")
 
-call tests%real_ne(100.0_WP * epsilon(1.0_WP), 0.0_WP, &
-    "real_ne, one zero, one different (2)")
+call tests%real_ne(100.0_WP * spacing(0.0_WP), 0.0_WP, "real_ne, one zero, one different (2)")
 
 call tests%integer_eq(1, 1, "integer_eq")
 

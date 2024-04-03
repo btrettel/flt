@@ -7,7 +7,7 @@
 
 program test_checks
 
-use checks, only: is_close, check, assert, same_shape_as
+use checks, only: TOL_FACTOR, is_close, check, assert, same_shape_as
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
@@ -40,27 +40,27 @@ call tests%logical_false(is_close(5.0_WP, 1000.0_WP), "is_close, different numbe
 
 call tests%logical_false(is_close(0.1_WP, 1000.0_WP), "is_close, different numbers (3)")
 
-call tests%logical_true(is_close(1.0_WP, 1.0_WP + 5.0_WP * spacing(1.0_WP)), &
+call tests%logical_true(is_close(1.0_WP, 1.0_WP + 0.5_WP * TOL_FACTOR * spacing(1.0_WP)), &
     "is_close, different numbers within tolerance (1)")
 
-call tests%logical_true(is_close(100.0_WP, 100.0_WP + 5.0_WP * spacing(100.0_WP)), &
+call tests%logical_true(is_close(100.0_WP, 100.0_WP + 0.5_WP * TOL_FACTOR * spacing(100.0_WP)), &
     "is_close, different numbers within tolerance (2)")
 
-call tests%logical_true(is_close(0.1_WP, 0.1_WP + 5.0_WP * spacing(0.1_WP)), &
+call tests%logical_true(is_close(0.1_WP, 0.1_WP + 0.5_WP * TOL_FACTOR * spacing(0.1_WP)), &
     "is_close, different numbers within tolerance (3)")
 
-call tests%logical_false(is_close(1.0_WP, 1.0_WP + 20.0_WP * spacing(1.0_WP)), &
+call tests%logical_false(is_close(1.0_WP, 1.0_WP + 2.0_WP * TOL_FACTOR * spacing(1.0_WP)), &
     "is_close, barely different numbers (1)")
 
 call tests%logical_false(is_close(100.0_WP, 100.0_WP + 1000.0_WP * spacing(100.0_WP)), &
     "is_close, barely different numbers (2)")
 
-call tests%logical_false(is_close(0.1_WP, 0.1_WP + 11.0_WP * spacing(0.1_WP)), &
+call tests%logical_false(is_close(0.1_WP, 0.1_WP + (TOL_FACTOR + 1.0_WP) * spacing(0.1_WP)), &
     "is_close, barely different numbers (3)")
 
 call tests%logical_true(is_close(0.0_WP, 0.0_WP), "is_close, both zero")
 
-call tests%logical_false(is_close(0.0_WP, 100.0_WP * spacing(100.0_WP)), &
+call tests%logical_false(is_close(0.0_WP, 100.0_WP * spacing(0.0_WP)), &
     "is_close, one zero, one different (1)")
 
 call tests%logical_false(is_close(100.0_WP * spacing(0.0_WP), 0.0_WP), &
