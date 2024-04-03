@@ -31,26 +31,30 @@ contains
 pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     ! Determine whether two reals are close.
     
+    ! Interface based on stdlib, though implementation is different.
+    ! https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function
+    
     real(kind=WP), intent(in)           :: input_real_1, input_real_2
     real(kind=WP), intent(in), optional :: rel_tol, abs_tol
     
-    real(kind=WP) :: rel_tol_set, abs_tol_set, tol
+    real(kind=WP) :: rel_tol_, abs_tol_, tol
     
-    logical       :: is_close
+    logical :: is_close
     
     if (present(rel_tol)) then
-        rel_tol_set = rel_tol
+        rel_tol_ = rel_tol
     else
-        rel_tol_set = TOL_FACTOR * epsilon(1.0_WP)
+        rel_tol_ = 0.0_WP
     end if
     
     if (present(abs_tol)) then
-        abs_tol_set = abs_tol
+        abs_tol_ = abs_tol
     else
-        abs_tol_set = TOL_FACTOR * epsilon(1.0_WP)
+        ! <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
+        abs_tol_ = TOL_FACTOR * spacing(max(abs(input_real_1), abs(input_real_2)))
     end if
     
-    tol = max(rel_tol_set * abs(input_real_1), rel_tol_set * abs(input_real_2), abs_tol_set)
+    tol = max(rel_tol_ * abs(input_real_1), rel_tol_ * abs(input_real_2), abs_tol_)
     
     if (abs(input_real_1 - input_real_2) < tol) then
         is_close = .true.

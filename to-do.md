@@ -3,6 +3,7 @@
 Priorities:
 
 - Add linters.
+- Add code coverage.
 - timer.f90
     - Make `unittest` use this for the timing.
     - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
@@ -37,11 +38,10 @@ Priorities:
     - Base the interface on the standard Fortran random number generator, just as type-bound subroutines now.
     - Alternatively, base the interface on NumPy.
         - <https://numpy.org/doc/stable/reference/random/generator.html>
-- unittest.f90:
-    - Use better `is_close` not using `epsilon`. `spacing` might be better if the round-off error is within a certain amount of the local spacing?
-        - <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
-            - FortranFan seems skeptical.
-        - <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
+- regex.f90 (Needed for fmutate.f90.)
+    - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
+    - <https://github.com/perazz/fortran-regex>
+    - Fork, add asserts and tests? Or just use as-is to get started faster?
 - fmutate.f90:
     - TODO: Look at mutation testing literature for particular types of errors to introduce.
     - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.
@@ -49,7 +49,6 @@ Priorities:
     - Check /home/ben/notes/programming/correctness/code-testing.txt for more ideas.
     - Note: This will be brittle in the sense that it will only work for my own particular coding style.
     - Distinguish between compilation errors and test failures in the mutation score.
-    - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
     - Make highly parallelizable. Run as many mutants as possible in parallel for speed. The compiler can't run on GPUs, but the code can. So run the compiler separately in a first pass. This will allow me to note if the compilation fails as well. Then queue the codes that compiled and run them on GPUs. I'm not sure the extent by which the GPU runs can be parallelized, however.
     - List tests that always pass. Check these tests to make sure that they actually discriminate between working and non-working code.
         - List percent of times a test fails with a mutation. Sort the list to see which tests are most and least sensitive/discriminating.

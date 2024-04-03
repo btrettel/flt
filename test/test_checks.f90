@@ -40,30 +40,30 @@ call tests%logical_false(is_close(5.0_WP, 1000.0_WP), "is_close, different numbe
 
 call tests%logical_false(is_close(0.1_WP, 1000.0_WP), "is_close, different numbers (3)")
 
-call tests%logical_true(is_close(1.0_WP, 1.0_WP + 5.0_WP * epsilon(1.0_WP)), &
+call tests%logical_true(is_close(1.0_WP, 1.0_WP + 5.0_WP * spacing(1.0_WP)), &
     "is_close, different numbers within tolerance (1)")
 
-call tests%logical_true(is_close(100.0_WP, 100.0_WP + 5.0_WP * epsilon(1.0_WP)), &
+call tests%logical_true(is_close(100.0_WP, 100.0_WP + 5.0_WP * spacing(100.0_WP)), &
     "is_close, different numbers within tolerance (2)")
 
-call tests%logical_true(is_close(0.1_WP, 0.1_WP + 5.0_WP * epsilon(1.0_WP)), &
+call tests%logical_true(is_close(0.1_WP, 0.1_WP + 5.0_WP * spacing(0.1_WP)), &
     "is_close, different numbers within tolerance (3)")
 
-call tests%logical_false(is_close(1.0_WP, 1.0_WP + 20.0_WP * epsilon(1.0_WP)), &
+call tests%logical_false(is_close(1.0_WP, 1.0_WP + 20.0_WP * spacing(1.0_WP)), &
     "is_close, barely different numbers (1)")
 
-call tests%logical_false(is_close(100.0_WP, 100.0_WP + 1000.0_WP * epsilon(1.0_WP)), &
+call tests%logical_false(is_close(100.0_WP, 100.0_WP + 1000.0_WP * spacing(100.0_WP)), &
     "is_close, barely different numbers (2)")
 
-call tests%logical_false(is_close(0.1_WP, 0.1_WP + 11.0_WP * epsilon(1.0_WP)), &
+call tests%logical_false(is_close(0.1_WP, 0.1_WP + 11.0_WP * spacing(0.1_WP)), &
     "is_close, barely different numbers (3)")
 
 call tests%logical_true(is_close(0.0_WP, 0.0_WP), "is_close, both zero")
 
-call tests%logical_false(is_close(0.0_WP, 100.0_WP * epsilon(1.0_WP)), &
+call tests%logical_false(is_close(0.0_WP, 100.0_WP * spacing(100.0_WP)), &
     "is_close, one zero, one different (1)")
 
-call tests%logical_false(is_close(100.0_WP * epsilon(1.0_WP), 0.0_WP), &
+call tests%logical_false(is_close(100.0_WP * spacing(0.0_WP), 0.0_WP), &
     "is_close, one zero, one different (2)")
 
 call tests%logical_true(is_close(1.0_WP, 1.05_WP, abs_tol=0.1_WP, rel_tol=0.0_WP), &
