@@ -2,7 +2,16 @@
 
 Priorities:
 
+- Add Valgrind.
 - Add linters.
+    - <https://github.com/cnescatlab/i-CodeCNES/>
+        - And script you use to integrate with Makefile.
+    - Flinter
+        - Add directory for flinter in tests to make sure that Flinter actually flags bad code. Have one test for good code too which should not be flagged.
+    - Later:
+        - <http://simconglobal.com/fpt_summary.html>
+        - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
+        - <https://www.forcheck.nl/index.html>
 - Add code coverage.
 - timer.f90
     - Make `unittest` use this for the timing.

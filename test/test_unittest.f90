@@ -630,8 +630,9 @@ subroutine test_read_unittest_nml(tests)
     open(newunit=nml_unit, file="prec.nml", status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=tests_summary)
     close(unit=nml_unit)
-    call tests%integer_eq(n_tests, 5, "test_read_unittest_nml, tests_summary, n_tests")
+    call tests%integer_eq(n_tests, 6, "test_read_unittest_nml, tests_summary, n_tests")
     call tests%integer_eq(n_failures, 0, "test_read_unittest_nml, tests_summary, n_tests")
+    ! call tests%real_gt(duration, 0.0_WP, "test_read_unittest_nml, tests_summary, duration > 0")
     ! TODO: duration
     ! Unfortunately the duration for prec.nml is often zero due to the low precision of the clock.
     ! So I can't test whether it's greater than zero. And I don't have a `real_gt` test subroutine yet.

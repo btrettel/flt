@@ -32,6 +32,7 @@ contains
 pure function abs_tolerance(input_real_1, input_real_2)
     ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Real-number-tolerance-and-if/m-p/824459#M49399>
     ! <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
+    ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Floating-point-equivalence-check/m-p/1087149>
     
     real(kind=WP), intent(in) :: input_real_1, input_real_2
     

@@ -161,13 +161,13 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
         this%n_failures = this%n_failures + 1
         
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
-            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real returned = ", returned_real
-            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real expected = ", compared_real
-            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "    tolerance = ", tolerance
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real expected = ", compared_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "    tolerance = ", tolerance
             if (is_close(abs(compared_real), 0.0_WP)) then
-                write(unit=ERROR_UNIT, fmt="(a, es15.8)") "   difference = ", difference
+                write(unit=ERROR_UNIT, fmt="(a, g0.8)") "   difference = ", difference
             else
-                write(unit=ERROR_UNIT, fmt="(a, es15.8, a, f0.3, a)") "   difference = ", difference, &
+                write(unit=ERROR_UNIT, fmt="(a, g0.8, a, f0.3, a)") "   difference = ", difference, &
                                                             " (", 100.0_WP * difference / abs(compared_real), "%)"
             end if
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -222,13 +222,13 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
         this%n_failures = this%n_failures + 1
         
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
-            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real returned = ", returned_real
-            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "      /= real = ", compared_real
-            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "    tolerance = ", tolerance
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "      /= real = ", compared_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "    tolerance = ", tolerance
             if (is_close(abs(compared_real), 0.0_WP)) then
-                write(unit=ERROR_UNIT, fmt="(a, es15.8)") "   difference = ", difference
+                write(unit=ERROR_UNIT, fmt="(a, g0.8)") "   difference = ", difference
             else
-                write(unit=ERROR_UNIT, fmt="(a, es15.8, a, f0.3, a)") "   difference = ", difference, &
+                write(unit=ERROR_UNIT, fmt="(a, g0.8, a, f0.3, a)") "   difference = ", difference, &
                                                             " (", 100.0_WP * difference / abs(compared_real), "%)"
             end if
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -270,8 +270,8 @@ subroutine real_gt(this, returned_real, compared_real, message_in)
         this%n_failures = this%n_failures + 1
         
         if (DEBUG_LEVEL >= this%logger%stdout_level) then
-            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "real returned = ", returned_real
-            write(unit=ERROR_UNIT, fmt="(a, es15.8)") "       > real = ", compared_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "       > real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
