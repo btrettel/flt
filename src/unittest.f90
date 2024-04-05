@@ -491,8 +491,6 @@ function current_time()
     
     call system_clock(clock_count, count_rate)
     current_time = real(clock_count, WP) / real(count_rate, WP)
-    
-    return
 end function current_time
 
 subroutine start_tests(this, logger)

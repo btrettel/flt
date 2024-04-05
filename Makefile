@@ -7,10 +7,6 @@
 # Project: [flt](https://github.com/btrettel/flt)
 # License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-# TODO: Add code coverage.
-# TODO: Valgrind to detect uninitialized variables and more. <https://stackoverflow.com/a/52455413>, <https://stackoverflow.com/a/44989219>
-# TODO: Add linters before compilation. Lint each file before compiling it.
-# TODO: Camfort
 # TODO: Figure out how to automate parts like `test/test_ga.f90` in `test_ga$(BINEXT):`
 # TODO: Check other Makefiles to see which flags you use there.
 
@@ -22,7 +18,7 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # Add later: dimmod.nml ga.nml rngmod.nml
-NML = checks.nml nmllog.nml prec.nml unittest.nml
+NML = checks.nml nmllog.nml prec.nml timer.nml unittest.nml
 .PRECIOUS: $(NML)
 
 #############
@@ -108,6 +104,8 @@ src/nmllog$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
 
+src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 ##########
@@ -147,6 +145,17 @@ test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec
 
 prec.nml: test_prec$(BINEXT)
 	$(RUN)test_prec$(BINEXT)
+	test ! -e fort.*
+
+#########
+# timer #
+#########
+
+test_timer$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_timer.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_timer.f90
+
+timer.nml: test_timer$(BINEXT)
+	$(RUN)test_timer$(BINEXT)
 	test ! -e fort.*
 
 ############

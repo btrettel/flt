@@ -21,7 +21,7 @@ integer                 :: rc_check, rc_assert_false, test_assert_false_unit
 logical                 :: test_assert_false_exists
 character(len=80)       :: assert_false_line
 
-real(kind=WP) :: a1(5), b1(5), c1(4), &
+real(kind=WP) ::    a1(5), b1(5), c1(4), &
                     a2(5, 5), b2(5, 5), c2(4, 4), &
                     a3(5, 5), b3(5, 5), c3(4, 4)
 

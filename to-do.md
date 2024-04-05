@@ -2,12 +2,14 @@
 
 Priorities:
 
+- Test that default real is at least single precision.
 - Add Valgrind.
 - Add linters.
     - <https://github.com/cnescatlab/i-CodeCNES/>
         - And script you use to integrate with Makefile.
     - Flinter
         - Add directory for flinter in tests to make sure that Flinter actually flags bad code. Have one test for good code too which should not be flagged.
+    - Camfort
     - Later:
         - <http://simconglobal.com/fpt_summary.html>
         - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
@@ -15,17 +17,6 @@ Priorities:
 - Add code coverage.
 - timer.f90
     - Make `unittest` use this for the timing.
-    - `timer_type`: `started` (`logical` that says whether the timer is currently timing), `wall_sum` (time before current timer start), `wall_start`, `wall_stop`, `cpu_sum`, `cpu_start`, `cpu_stop`
-        - Maybe later: `wall_precision`, `cpu_precision`
-    - Base interface on <https://math.nist.gov/StopWatch/QUICKSTART>, for example: `timer%start()`, `timer%stop`, `timer%reset()`, etc.
-    - In test output, write how long test took to run so that you know how long each test takes?
-    - `timer%start()` before what you want to time
-    - `timer%end()` after
-    - Make the derived type have 0 time when initialized. Then you can start the timer again with start.
-    - `timer%seconds`
-    - <https://youtu.be/qUeud6DvOWI?t=322>
-        - `time.perf_counter()`
-        - <https://docs.python.org/3/library/time.html#time.perf_counter>
     - Data type contains both CPU time and wall clock time for comparison?
     - <https://docs.python.org/3/library/timeit.html>
         - `result = timeit(subroutine_with_no_arguments, number=10000)`
