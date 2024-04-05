@@ -9,6 +9,7 @@ module unittest
 
 use prec, only: WP, CL
 use nmllog, only: log_type, now, TIMESTAMP_LEN, DEBUG_LEVEL
+use timer, only: timer_type
 implicit none
 private
 
@@ -17,11 +18,10 @@ public :: validate_timestamp
 character(len=70), parameter :: LONG_LINE = "----------------------------------------------------------------------"
 
 type, public :: test_results_type
-    integer        :: n_failures = 0
-    integer        :: n_tests    = 0
-    real(kind=WP)  :: start_time
-    real(kind=WP)  :: end_time
-    type(log_type) :: logger
+    integer          :: n_failures = 0
+    integer          :: n_tests    = 0
+    type(timer_type) :: wtime
+    type(log_type)   :: logger
 contains
     procedure :: logical_true => logical_true
     procedure :: logical_false => logical_false
@@ -484,15 +484,6 @@ subroutine character_eq(this, returned_character_in, compared_character_in, mess
     this%n_tests = this%n_tests + 1
 end subroutine character_eq
 
-function current_time()
-    real(kind=WP) :: current_time ! in seconds
-    
-    integer :: clock_count, count_rate
-    
-    call system_clock(clock_count, count_rate)
-    current_time = real(clock_count, WP) / real(count_rate, WP)
-end function current_time
-
 subroutine start_tests(this, logger)
     use nmllog, only: DEBUG_LEVEL
     
@@ -500,7 +491,8 @@ subroutine start_tests(this, logger)
     
     type(log_type), intent(in) :: logger
     
-    this%start_time          = current_time()
+    call this%wtime%start()
+    
     this%logger              = logger
     this%logger%stdout_level = DEBUG_LEVEL
     this%logger%file_level   = DEBUG_LEVEL
@@ -516,8 +508,8 @@ subroutine end_tests(this)
     
     namelist /tests_summary/ n_tests, n_failures, duration
     
-    this%end_time = current_time()
-    duration      = this%end_time - this%start_time
+    call this%wtime%stop()
+    duration      = this%wtime%read()
     n_tests       = this%n_tests
     n_failures    = this%n_failures
     write(unit=this%logger%unit, nml=tests_summary)

@@ -106,7 +106,7 @@ src/prec$(DBGOBJEXT):
 
 src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
-src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
 
 ##########
 # checks #
@@ -162,7 +162,7 @@ timer.nml: test_timer$(BINEXT)
 # unittest #
 ############
 
-test_unittest$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unittest.f90
+test_unittest$(BINEXT): src/checks$(DBGOBJEXT) src/timer$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unittest.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unittest.f90
 
 unittest.nml: test_unittest$(BINEXT) prec.nml

@@ -15,20 +15,6 @@ Priorities:
         - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
         - <https://www.forcheck.nl/index.html>
 - Add code coverage.
-- timer.f90
-    - Make `unittest` use this for the timing.
-    - Data type contains both CPU time and wall clock time for comparison?
-    - <https://docs.python.org/3/library/timeit.html>
-        - `result = timeit(subroutine_with_no_arguments, number=10000)`
-        - <https://news.ycombinator.com/item?id=22085172>
-            - Return minimum time to account for OS jitter?
-            - Return multiple times I guess to get a better idea of the overall distribution.
-    - Tests
-        - serial case where CPU and wall time should be close.
-        - parallel case where CPU time should be a multiple of wall time
-        - separate non-standard test code using `sleep(1)`
-            - <https://gcc.gnu.org/onlinedocs/gcc-7.5.0/gfortran/SLEEP.html>
-            - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>
 - `purerng`
     - move good parts of `rngmod` to `purerng`
     - Make `pure` random number generator. Obtain random number generator from elsewhere as you're not qualified to program one.
@@ -185,3 +171,16 @@ Later:
     - `check` helps with this too, but an `assert_all` would be convenient if I simply want to check a bunch of things at once.
     - <https://blog.ploeh.dk/2022/11/07/applicative-assertions/>
     - Can make `assert_all` use `do_concurrent` to have a faster assertion.
+- timer.f90
+    - Data type contains both CPU time and wall clock time for comparison?
+    - <https://docs.python.org/3/library/timeit.html>
+        - `result = timeit(subroutine_with_no_arguments, number=10000)`
+        - <https://news.ycombinator.com/item?id=22085172>
+            - Return minimum time to account for OS jitter?
+            - Return multiple times I guess to get a better idea of the overall distribution.
+    - Tests
+        - serial case where CPU and wall time should be close.
+        - parallel case where CPU time should be a multiple of wall time
+        - separate non-standard test code using `sleep(1)`
+            - <https://gcc.gnu.org/onlinedocs/gcc-7.5.0/gfortran/SLEEP.html>
+            - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>

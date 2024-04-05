@@ -19,7 +19,7 @@ type(timer_type)        :: wtime
 real(kind=WP)           :: duration_seconds
 
 integer :: i, j
-integer, parameter :: N = 1000
+integer, parameter :: N = 2000
 real(kind=WP) :: a(N, N)
 
 call logger%open("timer.nml")
@@ -31,9 +31,8 @@ call tests%logical_false(wtime%active, "timer_type, active before start")
 call wtime%start()
 call random_number(a)
 do i = 1, N
-    do j = 1, N 
-        write(*, "(a,i0,a,i0)") "i=", i, " j=", j
-        a(i, j) = a(i, j)**2
+    do j = 1, N
+        a(i, j) = a(i, j)**2 + a(1, 1)
     end do
 end do
 call tests%logical_true(wtime%active, "timer_type, active after start")

@@ -22,6 +22,8 @@ call tests%integer_ge(range(1), 5, "default integer exponent range")
 call tests%integer_ge(range(1_I5), 5, "integer kind I5 exponent range")
 call tests%integer_ge(range(1_I9), 9, "integer kind I9 exponent range")
 
+call tests%integer_ge(precision(1.0), 6, "default real kind precision")
+call tests%integer_ge(range(1.0), 37, "default real kind exponent range")
 call tests%integer_ge(precision(1.0_WP), 15, "real kind WP precision")
 call tests%integer_ge(range(1.0_WP), 307, "real kind WP exponent range")
 
