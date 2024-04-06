@@ -20,7 +20,9 @@ real(kind=WP)           :: duration_seconds, timeit_duration_seconds
 
 integer :: i, j
 integer, parameter :: N = 2000
-real(kind=WP) :: a(N, N)
+real(kind=WP), allocatable :: a(:, :)
+
+! Why is `a` is allocatable? If it's not, then nvfortran fails with a segmentation fault.
 
 call logger%open("timer.nml")
 call tests%start_tests(logger)
@@ -29,12 +31,14 @@ call tests%integer_eq(int(wtime%sum_count, kind=kind(1)), 0, "timer_type, defaul
 call tests%logical_false(wtime%active, "timer_type, active before start")
 
 call wtime%start()
+allocate(a(N, N))
 call random_number(a)
 do i = 1, N
     do j = 1, N
         a(i, j) = a(i, j)**2 + a(1, 1)
     end do
 end do
+deallocate(a)
 call tests%logical_true(wtime%active, "timer_type, active after start")
 call wtime%stop()
 call tests%logical_false(wtime%active, "timer_type, active after stop")
