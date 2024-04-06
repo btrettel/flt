@@ -2,7 +2,6 @@
 
 Priorities:
 
-- Add Valgrind.
 - Add linters.
     - <https://github.com/cnescatlab/i-CodeCNES/>
         - And script you use to integrate with Makefile.

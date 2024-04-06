@@ -75,6 +75,10 @@ test: $(NML)
 	@echo "*********************"
 	@echo "Compiler: $(FC)"
 
+.PHONY: valgrind
+valgrind:
+	$(MAKE) test RUN='valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 --show-reachable=no ./'
+
 ###################
 # Other compilers #
 ###################
