@@ -20,6 +20,8 @@ private
 ! <https://fortran-lang.discourse.group/t/proper-usage-of-system-clock/3245/3>
 integer, public, parameter :: TIMER_KIND = selected_int_kind(18)
 
+public :: timeit
+
 type, public :: timer_type
     logical                  :: active = .false. ! whether the timer is currently timing
     integer(kind=TIMER_KIND) :: sum_count = 0_TIMER_KIND, & ! time before current timer start
@@ -38,6 +40,11 @@ contains
     procedure :: reset => reset_timer
     procedure :: read  => read_timer
 end type timer_type
+
+abstract interface
+    subroutine timeit_subroutine()
+    end subroutine
+end interface
 
 contains
 
@@ -119,5 +126,35 @@ pure function read_timer(timer)
     
     read_timer = real(timer%sum_count, WP) / timer%count_rate
 end function read_timer
+
+function timeit(f, number)
+    ! Simplified version of <https://docs.python.org/3/library/timeit.html>.
+    
+    use prec, only: I9
+    
+    procedure(timeit_subroutine) :: f
+    
+    integer(kind=I9), optional :: number
+    
+    real(kind=WP) :: timeit
+    
+    type(timer_type) :: wtime
+    integer(kind=I9) :: i, number_
+    
+    if (present(number)) then
+        number_ = number
+    else
+        number_ = 1000000_I9
+    end if
+    
+    call wtime%start()
+    do i = 1, number_
+        ! Since the subroutine doesn't return anything, won't it be optimized out?
+        call f()
+    end do
+    call wtime%stop()
+    
+    timeit = wtime%read()
+end function timeit
 
 end module timer

@@ -2,7 +2,6 @@
 
 Priorities:
 
-- Test that default real is at least single precision.
 - Add Valgrind.
 - Add linters.
     - <https://github.com/cnescatlab/i-CodeCNES/>
@@ -22,8 +21,6 @@ Priorities:
     - Move `rand_int` and `rand_cauchy` to `purerng`.
     - Includes a deterministic random number generator for testing purposes.
     - Base the interface on the standard Fortran random number generator, just as type-bound subroutines now.
-    - Alternatively, base the interface on NumPy.
-        - <https://numpy.org/doc/stable/reference/random/generator.html>
 - regex.f90 (Needed for fmutate.f90.)
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
     - <https://github.com/perazz/fortran-regex>
@@ -173,11 +170,6 @@ Later:
     - Can make `assert_all` use `do_concurrent` to have a faster assertion.
 - timer.f90
     - Data type contains both CPU time and wall clock time for comparison?
-    - <https://docs.python.org/3/library/timeit.html>
-        - `result = timeit(subroutine_with_no_arguments, number=10000)`
-        - <https://news.ycombinator.com/item?id=22085172>
-            - Return minimum time to account for OS jitter?
-            - Return multiple times I guess to get a better idea of the overall distribution.
     - Tests
         - serial case where CPU and wall time should be close.
         - parallel case where CPU time should be a multiple of wall time
