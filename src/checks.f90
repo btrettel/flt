@@ -21,6 +21,8 @@ public :: assert
 public :: check
 public :: same_shape_as
 
+! TODO: `all_close` like <https://numpy.org/doc/stable/reference/generated/numpy.allclose.html>
+
 interface same_shape_as
     module procedure same_shape_as_real_rank_1
     module procedure same_shape_as_real_rank_2
@@ -45,7 +47,13 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     ! Determine whether two reals are close.
     
     ! Interface based on stdlib, though implementation is different.
-    ! https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function
+    ! <https://stdlib.fortran-lang.org/page/specs/stdlib_math.html#is_close-function>
+    
+    ! Also see:
+    ! <https://numpy.org/doc/stable/reference/generated/numpy.isclose.html>
+    ! <https://docs.python.org/3/library/math.html#math.isclose>
+    
+    ! TODO: Make array versions like in numpy.
     
     real(kind=WP), intent(in)           :: input_real_1, input_real_2
     real(kind=WP), intent(in), optional :: rel_tol, abs_tol

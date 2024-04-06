@@ -29,7 +29,8 @@ contains
     procedure :: real_ne => real_ne
     procedure :: real_gt => real_gt
     ! TODO: real_ge, real_lt, real_le
-    procedure :: integer_eq => integer_eq
+    generic :: integer_eq => integer5_eq, integer10_eq
+    procedure, private :: integer5_eq, integer10_eq
     procedure :: integer_ne => integer_ne
     procedure :: integer_ge => integer_ge
     procedure :: integer_le => integer_le
@@ -279,7 +280,7 @@ subroutine real_gt(this, returned_real, compared_real, message_in)
     this%n_tests = this%n_tests + 1
 end subroutine real_gt
 
-subroutine integer_eq(this, returned_integer, compared_integer, message_in)
+subroutine integer5_eq(this, returned_integer, compared_integer, message_in)
     ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
@@ -317,7 +318,48 @@ subroutine integer_eq(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
-end subroutine integer_eq
+end subroutine integer5_eq
+
+subroutine integer10_eq(this, returned_integer, compared_integer, message_in)
+    ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.
+    
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    use prec, only: I10
+    
+    class(test_results_type), intent(inout) :: this
+    
+    integer(kind=I10), intent(in) :: returned_integer, compared_integer
+    character(len=*), intent(in)  :: message_in
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    character(len=2)              :: test_operator
+    logical                       :: test_passes
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    
+    timestamp     = now()
+    variable_type = "integer"
+    message       = message_in
+    test_operator = "=="
+    
+    test_passes = (returned_integer == compared_integer)
+    write(unit=this%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=ERROR_UNIT, fmt="(a, i11)") "integer returned = ", returned_integer
+            write(unit=ERROR_UNIT, fmt="(a, i11)") "integer expected = ", compared_integer
+            write(unit=ERROR_UNIT, fmt="(a, i11)") "      difference = ", abs(returned_integer - compared_integer)
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
+        end if
+    end if
+    
+    this%n_tests = this%n_tests + 1
+end subroutine integer10_eq
 
 subroutine integer_ne(this, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer` equal than `compared_integer`, increase `number_of_failures` if `.true.`.

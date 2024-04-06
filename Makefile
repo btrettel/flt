@@ -17,7 +17,7 @@
 .DELETE_ON_ERROR:
 MAKEFLAGS = --warn-undefined-variables
 
-# Add later: dimmod.nml ga.nml rngmod.nml
+# Add later: dimmod.nml ga.nml purerng.nml
 NML = checks.nml nmllog.nml prec.nml timer.nml unittest.nml
 .PRECIOUS: $(NML)
 
@@ -110,6 +110,8 @@ src/prec$(DBGOBJEXT):
 
 src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
+src/purerng$(DBGOBJEXT): src/prec$(DBGOBJEXT)
+
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
 
 ##########
@@ -144,11 +146,23 @@ nmllog.nml: test_nmllog$(BINEXT)
 # prec #
 ########
 
-test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
+test_prec$(BINEXT): src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_prec.f90
 
 prec.nml: test_prec$(BINEXT)
 	$(RUN)test_prec$(BINEXT)
+	test ! -e fort.*
+	test ! -e fort.*
+
+###########
+# purerng #
+###########
+
+test_purerng$(BINEXT): src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/purerng$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_purerng.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_purerng.f90
+
+purerng.nml: test_purerng$(BINEXT)
+	$(RUN)test_purerng$(BINEXT)
 	test ! -e fort.*
 
 #########

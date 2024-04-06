@@ -15,6 +15,7 @@ private
 
 integer, public, parameter :: I5 = selected_int_kind(5)
 integer, public, parameter :: I9 = selected_int_kind(9) ! This is the most ELF90 allows.
+integer, public, parameter :: I10 = selected_int_kind(10)
 
 ! Real precision
 ! --------------

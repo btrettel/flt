@@ -5,7 +5,7 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_asserts
+program test_prec
 
 use prec, only: I5, I9, WP, PI
 use nmllog, only: log_type
@@ -33,4 +33,4 @@ call tests%real_eq(3.141592653589793_WP, PI, "PI value")
 call tests%end_tests()
 call logger%close()
 
-end program test_asserts
+end program test_prec

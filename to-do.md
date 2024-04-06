@@ -2,6 +2,7 @@
 
 Priorities:
 
+- Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - Add linters.
     - <https://github.com/cnescatlab/i-CodeCNES/>
         - And script you use to integrate with Makefile.
