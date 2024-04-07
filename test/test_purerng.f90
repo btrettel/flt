@@ -37,7 +37,7 @@ call tests%real_eq(r, 3.920868039131165E-07_WP, "lecuyer rng matches ifx", abs_t
 call tests%integer_eq(rng%seed(1), 2147443549_I10, "lecuyer rng seed(1) after matches ifx")
 call tests%integer_eq(rng%seed(2), 2147442707_I10, "lecuyer rng seed(2) after matches ifx")
 
-! TODO: test array version too. How do elemental subroutines work? I guess the seed means it must be sequential.
+! TODO: test array `rng_types`, ranks 1 and 2
 
 call tests%end_tests()
 call logger%close()

@@ -12,7 +12,9 @@ use checks, only: assert
 implicit none
 private
 
-! TODO: `random_seed` sets based on current time.
+! For arrays: One `rng_type` per `harvest`.
+
+! TODO: `random_seed` sets based on current time. Uses spacing in lecuyer_efficient_1988 to set for arrays.
 
 public :: lecuyer
 
@@ -23,12 +25,11 @@ end type rng_type
 
 contains
 
-subroutine lecuyer(rng, harvest)
+elemental subroutine lecuyer(rng, harvest)
     ! Random number generator from lecuyer_efficient_1988, fig. 3.
     
     type(rng_type), intent(in out) :: rng
-    
-    real(kind=WP) :: harvest
+    real(kind=WP), intent(out)     :: harvest
     
     ! TODO: For speed, I might be able to reduce the precision of some of these `integer`s.
     
@@ -46,10 +47,10 @@ subroutine lecuyer(rng, harvest)
     call assert(size(rng%seed) == 2)
     
     ! lecuyer_efficient_1988 p. 747R
-    call assert(seed(1) >= 1_I_10)
-    call assert(seed(1) <= M(1) - 1_I_10)
-    call assert(seed(2) >= 1_I_10)
-    call assert(seed(2) <= M(2) - 1_I_10)
+    call assert(rng%seed(1) >= 1_I10)
+    call assert(rng%seed(1) <= M(1) - 1_I10)
+    call assert(rng%seed(2) >= 1_I10)
+    call assert(rng%seed(2) <= M(2) - 1_I10)
     
     k        = rng%seed / Q
     rng%seed = A * (rng%seed - k * Q) - k * R
@@ -74,10 +75,10 @@ subroutine lecuyer(rng, harvest)
     call assert(z < M(1))
     
     ! Same `seed` bounds as before.
-    call assert(seed(1) >= 1_I_10)
-    call assert(seed(1) <= M(1) - 1_I_10)
-    call assert(seed(2) >= 1_I_10)
-    call assert(seed(2) <= M(2) - 1_I_10)
+    call assert(rng%seed(1) >= 1_I10)
+    call assert(rng%seed(1) <= M(1) - 1_I10)
+    call assert(rng%seed(2) >= 1_I10)
+    call assert(rng%seed(2) <= M(2) - 1_I10)
 end subroutine lecuyer
 
 end module purerng
