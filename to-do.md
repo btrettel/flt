@@ -2,6 +2,7 @@
 
 Priorities:
 
+- Convenience function to convert `real` array to `RNG_DETERM` seed
 - Test `integer10_eq`, `integer10_ge`, `integer10_le`.
 - Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - Add linters.

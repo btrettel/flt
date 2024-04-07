@@ -15,10 +15,12 @@ private
 
 ! TODO: `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
 
-integer, public, parameter :: RNG_LECUYER       = 1
-integer, public, parameter :: RNG_DETERMINISTIC = 2
+integer, public, parameter :: RNG_LECUYER = 1
+integer, public, parameter :: RNG_DETERM  = 2
 
 integer, parameter :: SIZE_LECUYER = 2
+
+integer, parameter :: DETERM_DENOM = 1000
 
 ! from lecuyer_efficient_1988, table III
 integer, parameter :: L = 2
@@ -29,10 +31,12 @@ integer(kind=I10), parameter :: LECUYER_R(L) = [12211_I10, 3791_I10]
 
 type, public :: rng_type
     integer(kind=I10), allocatable, private :: seed(:)
-    integer, private :: rng = RNG_LECUYER
+    integer, private :: rng_num = RNG_LECUYER
 contains
     procedure :: random_number => purerng_random_number
     procedure :: random_seed   => purerng_random_seed
+    procedure :: set_rng_num   => set_rng_num
+    procedure :: get_rng_num   => get_rng_num
 end type rng_type
 
 contains
@@ -45,51 +49,55 @@ elemental subroutine purerng_random_number(rng, harvest)
     class(rng_type), intent(in out) :: rng
     real(kind=WP), intent(out)      :: harvest
     
-    select case (rng%rng)
+    select case (rng%rng_num)
         case (RNG_LECUYER)
             call lecuyer(rng, harvest)
-        ! case (RNG_DETERMINISTIC)
+        case (RNG_DETERM)
+            call determ(rng, harvest)
         case default
             error stop "purerng_random_number: type of random number generator not selected."
     end select
 end subroutine purerng_random_number
 
-subroutine purerng_random_seed(rng, size, put, get)
+subroutine purerng_random_seed(rng, seed_size, put, get)
     ! <https://fortranwiki.org/fortran/show/random_seed>
     
     use prec, only: WP
+    use checks, only: assert
     
     class(rng_type), intent(in out) :: rng
     
-    integer, intent(out), optional                        :: size
+    integer, intent(out), optional                        :: seed_size
     integer(kind=I10), intent(in), optional               :: put(:)
     integer(kind=I10), allocatable, intent(out), optional :: get(:)
     
-    integer :: values(8)
+    integer :: values(8), i
     
-    if ((.not. present(size)) .and. (.not. present(put)) .and. (.not. present(get))) then
+    if ((.not. present(seed_size)) .and. (.not. present(put)) .and. (.not. present(get))) then
         if (allocated(rng%seed)) then
             deallocate(rng%seed)
         end if
         
         call date_and_time(values=values)
         
-        select case (rng%rng)
+        select case (rng%rng_num)
             case (RNG_LECUYER)
                 allocate(rng%seed(SIZE_LECUYER))
                 rng%seed(1) = 1_I10 + floor(real(LECUYER_M(1) - 1_I10, WP) * real(values(7), WP) / 60.0_WP, I10)
                 rng%seed(2) = 1_I10 + floor(real(LECUYER_M(2) - 1_I10, WP) * real(values(8), WP) / 1000.0_WP, I10)
-            ! case (RNG_DETERMINISTIC)
+            case (RNG_DETERM)
+                error stop "purerng_random_seed(no args): does not apply to RNG_DETERM"
             case default
                 error stop "purerng_random_seed(no args): type of random number generator not selected."
         end select
     end if
     
-    if (present(size)) then
-        select case (rng%rng)
+    if (present(seed_size)) then
+        select case (rng%rng_num)
             case (RNG_LECUYER)
-                size = SIZE_LECUYER
-            ! case (RNG_DETERMINISTIC)
+                seed_size = SIZE_LECUYER
+            case (RNG_DETERM)
+                error stop "purerng_random_seed(size): does not apply to RNG_DETERM"
             case default
                 error stop "purerng_random_seed(size): type of random number generator not selected."
         end select
@@ -100,10 +108,16 @@ subroutine purerng_random_seed(rng, size, put, get)
             deallocate(rng%seed)
         end if
         
-        select case (rng%rng)
+        select case (rng%rng_num)
             case (RNG_LECUYER)
                 allocate(rng%seed(SIZE_LECUYER))
-            ! case (RNG_DETERMINISTIC)
+            case (RNG_DETERM)
+                call assert(put(1) >= 2_I10)
+                call assert(put(1) <= size(put, kind=I10))
+                do i = 2, size(put)
+                    call assert(put(i) >= 0_I10)
+                    call assert(put(i) <= DETERM_DENOM)
+                end do
             case default
                 error stop "purerng_random_seed(put): type of random number generator not selected."
         end select
@@ -119,6 +133,20 @@ subroutine purerng_random_seed(rng, size, put, get)
         get = rng%seed
     end if
 end subroutine purerng_random_seed
+
+elemental subroutine set_rng_num(rng, rng_num)
+    class(rng_type), intent(in out) :: rng
+    integer, intent(in)             :: rng_num
+    
+    rng%rng_num = rng_num
+end subroutine set_rng_num
+
+elemental subroutine get_rng_num(rng, rng_num)
+    class(rng_type), intent(in out) :: rng
+    integer, intent(out)            :: rng_num
+    
+    rng_num = rng%rng_num
+end subroutine get_rng_num
 
 elemental subroutine lecuyer(rng, harvest)
     ! Random number generator from lecuyer_efficient_1988, fig. 3.
@@ -168,5 +196,30 @@ elemental subroutine lecuyer(rng, harvest)
     call assert(rng%seed(2) >= 1_I10)
     call assert(rng%seed(2) <= LECUYER_M(2) - 1_I10)
 end subroutine lecuyer
+
+elemental subroutine determ(rng, harvest)
+    use prec, only: WP
+    use checks, only: assert
+    
+    ! deterministic "random" number
+    
+    type(rng_type), intent(in out) :: rng
+    real(kind=WP), intent(out)     :: harvest
+    
+    harvest = real(rng%seed(rng%seed(1)), WP) / real(DETERM_DENOM, WP)
+    
+    ! First index of seed is which value is read next.
+    rng%seed(1) = rng%seed(1) + 1_I10
+    if (rng%seed(1) > size(rng%seed, kind=I10)) then
+        rng%seed(1) = 2_I10
+    end if
+    
+    call assert(harvest >= 0.0_WP)
+    call assert(harvest <= 1.0_WP)
+    call assert(rng%seed(1) >= 2_I10)
+    call assert(rng%seed(1) <= size(rng%seed, kind=I10))
+end subroutine determ
+
+! TODO: Convenience function to convert `real` array to `RNG_DETERM` seed
 
 end module purerng
