@@ -2,6 +2,7 @@
 
 Priorities:
 
+- Test `integer10_eq`, `integer10_ge`, `integer10_le`.
 - Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - Add linters.
     - <https://github.com/cnescatlab/i-CodeCNES/>

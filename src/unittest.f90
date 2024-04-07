@@ -32,8 +32,10 @@ contains
     generic :: integer_eq => integer5_eq, integer10_eq
     procedure, private :: integer5_eq, integer10_eq
     procedure :: integer_ne => integer_ne
-    procedure :: integer_ge => integer_ge
-    procedure :: integer_le => integer_le
+    generic :: integer_ge => integer5_ge, integer10_ge
+    procedure, private :: integer5_ge, integer10_ge
+    generic :: integer_le => integer5_le, integer10_le
+    procedure, private :: integer5_le, integer10_le
     ! TODO: integer_gt, integer_lt
     procedure :: character_eq => character_eq
     ! TODO: character_ne
@@ -401,7 +403,7 @@ subroutine integer_ne(this, returned_integer, compared_integer, message_in)
     this%n_tests = this%n_tests + 1
 end subroutine integer_ne
 
-subroutine integer_ge(this, returned_integer, compared_integer, message_in)
+subroutine integer5_ge(this, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer >= compared_integer`, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
@@ -439,9 +441,50 @@ subroutine integer_ge(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
-end subroutine integer_ge
+end subroutine integer5_ge
 
-subroutine integer_le(this, returned_integer, compared_integer, message_in)
+subroutine integer10_ge(this, returned_integer, compared_integer, message_in)
+    ! Check whether `returned_integer >= compared_integer`, increase `number_of_failures` if `.false.`.
+    
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    use prec, only: I10
+    
+    class(test_results_type), intent(inout) :: this
+    
+    integer(kind=I10), intent(in) :: returned_integer, compared_integer
+    character(len=*), intent(in)  :: message_in
+    
+    logical :: test_passes
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    character(len=2)              :: test_operator
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    
+    timestamp     = now()
+    variable_type = "integer"
+    test_operator = ">="
+    message       = message_in
+    
+    test_passes = (returned_integer >= compared_integer)
+    write(unit=this%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=ERROR_UNIT, fmt="(a, i11)") "integer returned = ", returned_integer
+            write(unit=ERROR_UNIT, fmt="(a, i11)") "      >= integer = ", compared_integer
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
+        end if
+    end if
+    
+    this%n_tests = this%n_tests + 1
+end subroutine integer10_ge
+
+subroutine integer5_le(this, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer <= compared_integer`, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
@@ -479,7 +522,48 @@ subroutine integer_le(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
-end subroutine integer_le
+end subroutine integer5_le
+
+subroutine integer10_le(this, returned_integer, compared_integer, message_in)
+    ! Check whether `returned_integer <= compared_integer`, increase `number_of_failures` if `.false.`.
+    
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    use prec, only: I10
+    
+    class(test_results_type), intent(inout) :: this
+    
+    integer(kind=I10), intent(in) :: returned_integer, compared_integer
+    character(len=*), intent(in)  :: message_in
+    
+    logical :: test_passes
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=7)              :: variable_type
+    character(len=2)              :: test_operator
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, returned_integer, compared_integer
+    
+    timestamp     = now()
+    variable_type = "integer"
+    test_operator = "<="
+    message       = message_in
+    
+    test_passes = (returned_integer <= compared_integer)
+    write(unit=this%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        this%n_failures = this%n_failures + 1
+        
+        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+            write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
+            write(unit=ERROR_UNIT, fmt="(a, i7)") "      <= integer = ", compared_integer
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
+        end if
+    end if
+    
+    this%n_tests = this%n_tests + 1
+end subroutine integer10_le
 
 subroutine character_eq(this, returned_character_in, compared_character_in, message_in)
     ! Check whether two character variables are identical, increase `number_of_failures` if `.false.`.
