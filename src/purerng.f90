@@ -38,6 +38,8 @@ end type rng_type
 contains
 
 elemental subroutine purerng_random_number(rng, harvest)
+    ! <https://fortranwiki.org/fortran/show/random_number>
+    
     use prec, only: WP
     
     class(rng_type), intent(in out) :: rng
@@ -53,6 +55,8 @@ elemental subroutine purerng_random_number(rng, harvest)
 end subroutine purerng_random_number
 
 subroutine purerng_random_seed(rng, size, put, get)
+    ! <https://fortranwiki.org/fortran/show/random_seed>
+    
     use prec, only: WP
     
     class(rng_type), intent(in out) :: rng
