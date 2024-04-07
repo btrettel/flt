@@ -3,13 +3,19 @@
 Misc. Fortran libraries and tools (all at various stages of development), intended for my own personal use:
 
 - checks.f90: Module for procedures used for run-time checks.
-- logging.f90: Module for structured logging in a JSON lines file.
-- prec.f90: Module to set precisions, lengths, and mathematical constants.
-- unittest.f90: Module for unit testing procedures.
+- nmllog.f90: Module for structured logging in namelist files.
+- prec.f90: Module to set precisions, lengths, and mathematical constants. Uses common convention of `WP` for real precision.
+- purerng.f90: Module for pure random number generators. Interface similar to intrinsic `random_number` and `random_seed` (but not identical to avoid conflict with `size` intrinsic). Includes a deterministic "random" number generator to mock actual random number generators for testing.
+- timer.f90: Module for wall-clock timers. Interface is similar to [StopWatch](https://math.nist.gov/StopWatch/).
+- unittest.f90: Module for unit testing procedures. Interface is probably unique, but output has some similarities to Python's unittest module.
 
 ## Goals
 
 - Correctness: All libraries and tools are planned to be thoroughly tested. I will fall short of this goal, but intend to approach it asymptotically in time.
 - Portability: A subset of Fortran 2018 will be used to increase portability. Multiple compilers will be tested to ensure portability. Not all Fortran features have been implemented properly in some compilers (for example, parameterized derived types), so those features will be avoided.
+    - The following compilers are used at present:
+        - gfortran 9.4.0
+        - ifx 2024.0.2
+        - nvfortran 24.3-0
 - Simplicity: No convoluted or opaque build system or algorithms. The simplest approach that works is usually what I'll pick.
 - Familiarity: Interfaces to flt modules should be based on interfaces for other successful modules/packages, or standard Fortran if the module is intended to replace existing Fortran functionality.

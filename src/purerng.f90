@@ -11,10 +11,6 @@ use prec, only: I10
 implicit none
 private
 
-! For arrays: One `rng_type` per `harvest`.
-
-! TODO: `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
-
 integer, public, parameter :: RNG_LECUYER = 1
 integer, public, parameter :: RNG_DETERM  = 2
 

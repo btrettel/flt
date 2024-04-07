@@ -1,4 +1,4 @@
-! Module for structured logging in a namelist file.
+! Module for structured logging in namelist files.
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

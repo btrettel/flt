@@ -1,4 +1,4 @@
-! Module for wall-clock timer.
+! Module for wall-clock timers.
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

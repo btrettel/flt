@@ -80,6 +80,8 @@ subroutine test_lecuyer(tests)
 
     ! TODO: test array `rng_types`, ranks 1 and 2
     ! TODO: mean and standard deviation
+    ! TODO: fig. 5
+    ! TODO: Characterization tests from paper if there are any
 end subroutine test_lecuyer
 
 subroutine test_determ(tests)

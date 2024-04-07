@@ -2,7 +2,16 @@
 
 Priorities:
 
-- Convenience function to convert `real` array to `RNG_DETERM` seed
+- `purerng`:
+    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
+    - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
+    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
+        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
+        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
+        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
+    - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
+    - better `random_seed()`
+    - 
 - Test `integer10_eq`, `integer10_ge`, `integer10_le`.
 - Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - Add linters.
@@ -16,13 +25,6 @@ Priorities:
         - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
         - <https://www.forcheck.nl/index.html>
 - Add code coverage.
-- `purerng`
-    - move good parts of `rngmod` to `purerng`
-    - Make `pure` random number generator. Obtain random number generator from elsewhere as you're not qualified to program one.
-    - Use standard tests for random number generators to make sure this one is good.
-    - Move `rand_int` and `rand_cauchy` to `purerng`.
-    - Includes a deterministic random number generator for testing purposes.
-    - Base the interface on the standard Fortran random number generator, just as type-bound subroutines now.
 - regex.f90 (Needed for fmutate.f90.)
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
     - <https://github.com/perazz/fortran-regex>
@@ -178,3 +180,5 @@ Later:
         - separate non-standard test code using `sleep(1)`
             - <https://gcc.gnu.org/onlinedocs/gcc-7.5.0/gfortran/SLEEP.html>
             - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>
+- `purerng`
+    - Add more rigorous tests for random number generators. (Low priority as I just implemented a common random number generator, which should be good enough to get started.)
