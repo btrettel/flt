@@ -32,6 +32,7 @@ call lecuyer(rng, r)
 ! <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/random-number.html>
 ! TODO: Not clear why ifort and ifx differ from this calculation.
 ! But the two are within the uncertainty that I would expect from the integer ratio.
+! Using the 4.656613e-10 multiplier from the paper makes the two closer, but not the same.
 call tests%real_eq(r, 3.920868039131165E-07_WP, "lecuyer rng matches ifx", abs_tol=1.0_WP/real(2147483563_I10, WP))
 call tests%integer_eq(rng%seed(1), 2147443549_I10, "lecuyer rng seed(1) after matches ifx")
 call tests%integer_eq(rng%seed(2), 2147442707_I10, "lecuyer rng seed(2) after matches ifx")

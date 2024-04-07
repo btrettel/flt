@@ -45,6 +45,12 @@ subroutine lecuyer(rng, harvest)
     call assert(allocated(rng%seed))
     call assert(size(rng%seed) == 2)
     
+    ! lecuyer_efficient_1988 p. 747R
+    call assert(seed(1) >= 1_I_10)
+    call assert(seed(1) <= M(1) - 1_I_10)
+    call assert(seed(2) >= 1_I_10)
+    call assert(seed(2) <= M(2) - 1_I_10)
+    
     k        = rng%seed / Q
     rng%seed = A * (rng%seed - k * Q) - k * R
     where (rng%seed < 0)
@@ -59,8 +65,6 @@ subroutine lecuyer(rng, harvest)
     
     harvest = real(z, kind=WP) / real(M(1), kind=WP)
     
-    ! TODO: Assert something else. Are the seeds always positive?
-    
     ! lecuyer_efficient_1988 p. 747R:
     ! > Notice that the function will never return 0.0 or 1.0, as long as `REAL` variables have at least 23-bit mantissa (this is
     ! > the case for most 32-bit machines).
@@ -68,6 +72,12 @@ subroutine lecuyer(rng, harvest)
     call assert(harvest < 1.0_WP)
     call assert(z > 0_I10)
     call assert(z < M(1))
+    
+    ! Same `seed` bounds as before.
+    call assert(seed(1) >= 1_I_10)
+    call assert(seed(1) <= M(1) - 1_I_10)
+    call assert(seed(2) >= 1_I_10)
+    call assert(seed(2) <= M(2) - 1_I_10)
 end subroutine lecuyer
 
 end module purerng
