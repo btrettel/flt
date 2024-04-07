@@ -10,7 +10,7 @@ program test_purerng
 use prec, only: I10, WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
-use purerng, only: rng_type, lecuyer
+use purerng, only: rng_type
 implicit none
 
 type(log_type)          :: logger
@@ -26,7 +26,7 @@ allocate(rng%seed(2))
 
 rng%seed = [2147483562_I10, 2147483398_I10]
 
-call lecuyer(rng, r)
+call rng%random_number(r)
 
 ! Check that this random number generator is consistent with ifort and ifx.
 ! <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/random-number.html>

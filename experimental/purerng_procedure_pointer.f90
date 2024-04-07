@@ -16,15 +16,26 @@ private
 
 ! TODO: `random_seed` sets based on current time. Uses spacing in lecuyer_efficient_1988 to set for arrays.
 
-integer, public, parameter :: RNG_LECUYER       = 1
-integer, public, parameter :: RNG_DETERMINISTIC = 2
+public :: lecuyer
 
 type, public :: rng_type
-    integer(kind=I10), allocatable :: seed(:)
-    integer                        :: rng = RNG_LECUYER
+    integer(kind=I10), allocatable     :: seed(:)
+    procedure(rng_subroutine), pointer :: rng ! TODO: Does `rng = lecuyer` set the default?
 contains
     procedure :: random_number => pure_random_number
 end type rng_type
+
+abstract interface
+    ! Making this `elemental` makes nvfortran complain.
+    ! NVFORTRAN-S-1010-Illegal use of an elemental interface with procedure pointer rng (src/purerng.f90: 23)
+    elemental subroutine rng_subroutine(rng, harvest)
+        use prec, only: WP
+        import :: rng_type
+        
+        class(rng_type), intent(in out) :: rng
+        real(kind=WP), intent(out)      :: harvest
+    end subroutine
+end interface
 
 contains
 
@@ -34,13 +45,8 @@ elemental subroutine pure_random_number(rng, harvest)
     class(rng_type), intent(in out) :: rng
     real(kind=WP), intent(out)      :: harvest
     
-    select case (rng%rng)
-        case (RNG_LECUYER)
-            call lecuyer(rng, harvest)
-        ! case (RNG_DETERMINISTIC)
-        case default
-            error stop "purerng: type of random number generator not selected."
-    end select
+    ! TODO: Why do I not have to pass rng in the argument list?
+    call rng%rng(harvest)
 end subroutine pure_random_number
 
 elemental subroutine lecuyer(rng, harvest)
