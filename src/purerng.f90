@@ -8,8 +8,11 @@
 module purerng
 
 use prec, only: I10, WP
+use checks, only: assert
 implicit none
 private
+
+! TODO: `random_seed` sets based on current time.
 
 public :: lecuyer
 
@@ -39,6 +42,9 @@ subroutine lecuyer(rng, harvest)
     
     integer(kind=I10) :: k(L), z
     
+    call assert(allocated(rng%seed))
+    call assert(size(rng%seed) == 2)
+    
     k        = rng%seed / Q
     rng%seed = A * (rng%seed - k * Q) - k * R
     where (rng%seed < 0)
@@ -46,16 +52,22 @@ subroutine lecuyer(rng, harvest)
     end where
     
     z = rng%seed(1) - rng%seed(2)
-    ! TODO: Consider rewriting as a `min`? Though that would require computing both
+    ! TODO: Consider rewriting as a `min` to improve branch prediction? Though that would require computing both.
     if (z < 1) then
         z = z + M(1) - 1
     end if
     
     harvest = real(z, kind=WP) / real(M(1), kind=WP)
     
-    ! TODO: Assert something. Are the seeds always positive?
-    ! z and harvest should be greater than zero. (Quote paper where it says that.)
-    ! harvest should be less than 1 and there's a similar restriction on z.
+    ! TODO: Assert something else. Are the seeds always positive?
+    
+    ! lecuyer_efficient_1988 p. 747R:
+    ! > Notice that the function will never return 0.0 or 1.0, as long as `REAL` variables have at least 23-bit mantissa (this is
+    ! > the case for most 32-bit machines).
+    call assert(harvest > 0.0_WP)
+    call assert(harvest < 1.0_WP)
+    call assert(z > 0_I10)
+    call assert(z < M(1))
 end subroutine lecuyer
 
 end module purerng

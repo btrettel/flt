@@ -17,8 +17,8 @@
 .DELETE_ON_ERROR:
 MAKEFLAGS = --warn-undefined-variables
 
-# Add later: dimmod.nml ga.nml purerng.nml
-NML = checks.nml nmllog.nml prec.nml timer.nml unittest.nml
+# Add later: dimmod.nml ga.nml
+NML = checks.nml nmllog.nml prec.nml purerng.nml timer.nml unittest.nml
 .PRECIOUS: $(NML)
 
 #############
@@ -110,7 +110,7 @@ src/prec$(DBGOBJEXT):
 
 src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
-src/purerng$(DBGOBJEXT): src/prec$(DBGOBJEXT)
+src/purerng$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
 
