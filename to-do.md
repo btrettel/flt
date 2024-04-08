@@ -2,16 +2,18 @@
 
 Priorities:
 
+- Add ifort back to the Makefile due to possible performance benefits.
 - `purerng`:
     - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
     - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
+        - lecuyer_implementing_1991
     - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
         - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
         - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
         - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
     - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
     - better `random_seed()`
-    - 
+    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
 - Test `integer10_eq`, `integer10_ge`, `integer10_le`.
 - Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - Add linters.
@@ -90,13 +92,18 @@ Later:
         - `chromo%out(:)` (for non-objective function outputs that may be of interest)
 - dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
     - Test that I get a compilation error when incompatible dimensions are used.
+    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
 - debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
     - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
         - parker_monte_1997-1
     - FLOP counting.
     - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
+    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
 - fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
     - Modify your AD to be vectorized. See personal notes on automatic differentiation for other speed ideas too.
+    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
+        - <https://fortran-lang.discourse.group/t/what-is-a-pure-function/4654/36>:
+            - > you want to define such overloads as type bound operators (which is paramount from a software design perspective: you want the user to import the algebra with a `use, only: derived_type_name` statement alone, without the fear that he/she could forget about the operators)
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
     - Enforce some Power of 10 rules, particularly procedure lengths.
     - Start tracking comment density and adding more code comments. Density > 25%?
