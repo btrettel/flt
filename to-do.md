@@ -93,6 +93,7 @@ Later:
 - dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
     - Test that I get a compilation error when incompatible dimensions are used.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
+    - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
 - debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
     - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
         - parker_monte_1997-1
