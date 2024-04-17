@@ -1,6 +1,6 @@
 use, intrinsic :: iso_fortran_env, only: INT64, REAL64
 
-elemental subroutine xoshiro256ss(rng, harvest)
+elemental subroutine xoshiro256ss_next(rng, harvest)
     type(rng_type), intent(in out) :: rng
     real(kind=REAL64), intent(out) :: harvest
     
@@ -53,4 +53,60 @@ elemental subroutine xoshiro256ss(rng, harvest)
     
     ! Also see:
     ! <https://gcc.gnu.org/wiki/GFortranSource>: Check random.c. `random_r8` converts the integer to a real.
-end subroutine xoshiro256ss
+end subroutine xoshiro256ss_next
+
+pure subroutine xoshiro256ss_jump(rng)
+    type(rng_type), intent(in out) :: rng
+    
+    ! Similar to:
+    ! <https://github.com/DSCF-1224/xoshiro-fortran/blob/main/src/imp_jump_state_core.f90#L56>
+    ! <https://github.com/jannisteunissen/xoroshiro128plus_fortran/blob/master/m_xoroshiro128plus.f90#L110>
+    
+    integer :: i, b
+    
+    ! C: `static const uint64_t JUMP[] = { 0x180ec6d33cfd0aba, 0xd5a61266f0c9392c, 0xa9582618e03fc9aa, 0x39abdc4529b1661c };
+    integer(kind=INT64), parameter :: JUMP(4) = [1733541517147835066_INT64, &
+                                                    -3051731464161248980_INT64, &
+                                                    -6244198995065845334_INT64, &
+                                                    4155657270789760540_INT64]
+    
+    integer(kind=INT64) :: s(4)
+    real(kind=REAL64)   :: harvest
+    
+    ! C: `uint64_t s0 = 0;`
+    ! C: `uint64_t s1 = 0;`
+    ! C: `uint64_t s2 = 0;`
+    ! C: `uint64_t s3 = 0;`
+    s = 0_INT64
+    
+    ! C: `for(int i = 0; i < sizeof JUMP / sizeof *JUMP; i++)`
+    do i = 0, 4
+        ! C: `for(int b = 0; b < 64; b++) {`
+        do b = 0, 63
+            ! C: `if (JUMP[i] & UINT64_C(1) << b) {`
+            if (btest(JUMP(i), b)) then
+                ! C: `s0 ^= s[0];`
+                ! C: `s1 ^= s[1];`
+                ! C: `s2 ^= s[2];`
+                ! C: `s3 ^= s[3];`
+                s = ieor(s, rng%seed)
+            end if
+            ! C: `}`
+            
+            ! C: `next();`
+            call xoshiro256ss_next(rng, harvest)
+            
+            ! C: `}`
+        end do
+    end do
+    
+    ! C: `s[0] = s0;`
+    ! C: `s[1] = s1;`
+    ! C: `s[2] = s2;`
+    ! C: `s[3] = s3;`
+    rng%seed = s
+end subroutine xoshiro256ss_jump
+
+!pure subroutine splitmix64_next()
+    
+!end subroutine splitmix64_next

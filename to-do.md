@@ -108,6 +108,7 @@ Later:
 - fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
     - Modify your AD to be vectorized. See personal notes on automatic differentiation for other speed ideas too.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
+        - inside `type` `contains`: `procedure :: mycomplex_plus_mycomplex`, `generic, public :: operator(+) => mycomplex_plus_mycomplex`
         - <https://fortran-lang.discourse.group/t/what-is-a-pure-function/4654/36>:
             - > you want to define such overloads as type bound operators (which is paramount from a software design perspective: you want the user to import the algebra with a `use, only: derived_type_name` statement alone, without the fear that he/she could forget about the operators)
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
