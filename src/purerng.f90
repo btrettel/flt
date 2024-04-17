@@ -216,6 +216,4 @@ elemental subroutine determ(rng, harvest)
     call assert(rng%seed(1) <= size(rng%seed, kind=I10))
 end subroutine determ
 
-! TODO: Convenience function to convert `real` array to `RNG_DETERM` seed
-
 end module purerng

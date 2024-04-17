@@ -2,8 +2,12 @@
 
 Priorities:
 
+- Pure logging: saves to array of structures, written later.
 - Add ifort back to the Makefile due to possible performance benefits.
+- Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - `purerng`:
+    - Change `I10` to `INT64` to work with xoshiro256**.
+    - Test that `INT64` has enough precision for the `lecuyer` RNG.
     - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
     - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
         - lecuyer_implementing_1991
@@ -15,7 +19,6 @@ Priorities:
     - better `random_seed()`
     - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
 - Test `integer10_eq`, `integer10_ge`, `integer10_le`.
-- Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - Add linters.
     - <https://github.com/cnescatlab/i-CodeCNES/>
         - And script you use to integrate with Makefile.
@@ -27,24 +30,26 @@ Priorities:
         - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
         - <https://www.forcheck.nl/index.html>
 - Add code coverage.
-- regex.f90 (Needed for fmutate.f90.)
-    - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
-    - <https://github.com/perazz/fortran-regex>
-    - Fork, add asserts and tests? Or just use as-is to get started faster?
 - fmutate.f90:
-    - TODO: Look at mutation testing literature for particular types of errors to introduce.
-    - TODO: Get papers for FORTRAN 77 mutation tester to see what that did.
-        - <https://web.archive.org/web/20221016055309/http://cs.gmu.edu/~offutt/rsrch/mut.html#MOTHRA>
+    - Get papers for FORTRAN 77 mutation tester to see what that did.
+        - acree_mutation_1979
+        - budd_mutation_1979
+        - king_fortran_1991
+            - <https://web.archive.org/web/20221016055309/http://cs.gmu.edu/~offutt/rsrch/mut.html#MOTHRA>
+    - Avoid dependency on external regex library. Build in the minimum regex that you need.
+    - Make mutation rules in a human-readable file. This will allow you to easily add new rules. A namelist file would work.
     - Check /home/ben/notes/programming/correctness/code-testing.txt for more ideas.
     - Note: This will be brittle in the sense that it will only work for my own particular coding style.
     - Distinguish between compilation errors and test failures in the mutation score.
-    - Make highly parallelizable. Run as many mutants as possible in parallel for speed. The compiler can't run on GPUs, but the code can. So run the compiler separately in a first pass. This will allow me to note if the compilation fails as well. Then queue the codes that compiled and run them on GPUs. I'm not sure the extent by which the GPU runs can be parallelized, however.
+    - Make highly parallelizable.
+        - Apply the mutation operators in batches in parallel. This will require a pure random number generator.
+        - Run the compiler in the next stage in parallel. This will allow me to note if the compilation fails as well.
+        - In the next stage, queue the codes that compiled and run them in parallel.
     - List tests that always pass. Check these tests to make sure that they actually discriminate between working and non-working code.
         - List percent of times a test fails with a mutation. Sort the list to see which tests are most and least sensitive/discriminating.
         - For tests that always pass, reduce tolerances so that the tests are more sensitive.
         - For faster testing, consider eliminating tests which always pass, particularly if they take a long time.
     - Mutation operators:
-        - TODO: Check Mothra and other papers on DTIC for more.
         - `comment_line`: Comment out non-empty lines.
         - `switch_arithmetic_operator`: Switch arithmetic operators (`+`, `-`, `*`, `/`).
         - `switch_comparison_operator`: Switch comparison operators (`>`, `<`, `==`, `>=`, `<=`, `/=`).
@@ -190,3 +195,7 @@ Later:
             - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-0/sleep.html>
 - `purerng`
     - Add more rigorous tests for random number generators. (Low priority as I just implemented a common random number generator, which should be good enough to get started.)
+- regex.f90 (Could be useful for fmutate.f90.)
+    - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
+    - <https://github.com/perazz/fortran-regex>
+    - Fork, add asserts and tests? Or just use as-is to get started faster?
