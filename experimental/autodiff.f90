@@ -1,69 +1,34 @@
 module autodiff
 
-use general, only: RP, IP
+use prec, only: WP
 implicit none
 private
 
 public :: rd_var, rd_const
-public :: operator(+)
-public :: operator(-)
-public :: operator(*)
-public :: operator(/)
-public :: operator(**)
-
-private :: rd_rd_add, rd_real_add, real_rd_add
-private :: rd_rd_subtract, rd_real_subtract, real_rd_subtract, rd_unary_minus
-private :: rd_rd_multiply, rd_real_multiply, real_rd_multiply
-private :: rd_rd_divide, rd_real_divide, real_rd_divide
-private :: rd_real_exponentiate, rd_integer_exponentiate
-
-! Declare `rd` derived type
-! -------------------------
-
-! Number of design (differentiable) variables.
-! The easiest Fortran 90 compliant approach has a hard-coded number.
-! Making `dv` a `allocatable` is also possible, but not pursued here for simplicity.
-! Fortran 2003 offers allocatable arrays in derived types and parameterized derived types, which are more flexible.
-integer, public, parameter :: NDVARS = 5_IP
 
 ! Both the dependent and independent variables need to be of type `rd`.
 type, public :: rd
-    real(kind=RP)                    :: v  ! function value
-    real(kind=RP), dimension(NDVARS) :: dv ! function derivatives value
+    real(kind=RP)              :: v  ! function value
+    real(kind=RP), allocatable :: dv(:) ! function derivatives value
+contains
+    procedure, private :: rd_rd_add, rd_real_add, real_rd_add
+    generic, public :: operator(+) => rd_rd_add, rd_real_add, real_rd_add
+    procedure, private :: rd_rd_subtract, rd_real_subtract, real_rd_subtract, rd_unary_minus
+    generic, public :: operator(-) => rd_rd_subtract, rd_real_subtract, real_rd_subtract, rd_unary_minus
+    procedure, private :: rd_rd_multiply, rd_real_multiply, real_rd_multiply
+    generic, public :: operator(*) => rd_rd_multiply, rd_real_multiply, real_rd_multiply
+    procedure, private :: rd_rd_divide, rd_real_divide, real_rd_divide
+    generic, public :: operator(/) => rd_rd_divide, rd_real_divide, real_rd_divide
+    procedure, private :: rd_real_exponentiate, rd_integer_exponentiate
+    generic, public :: operator(**) => rd_real_exponentiate, rd_integer_exponentiate
 end type rd
-
-! Declare operator interfaces for `rd`
-! ------------------------------------
-
-interface operator(+)
-    ! Overload the `+` operator so that it works for `rd`s.
-    module procedure rd_rd_add, rd_real_add, real_rd_add
-end interface
-
-interface operator(-)
-    ! Overload the `-` operator so that it works for `rd`s.
-    module procedure rd_rd_subtract, rd_real_subtract, real_rd_subtract, rd_unary_minus
-end interface
-
-interface operator(*)
-    ! Overload the `*` operator so that it works for `rd`s.
-    module procedure rd_rd_multiply, rd_real_multiply, real_rd_multiply
-end interface
-
-interface operator(/)
-    ! Overload the `/` operator so that it works for `rd`s.
-    module procedure rd_rd_divide, rd_real_divide, real_rd_divide
-end interface
-
-interface operator(**)
-    ! Overload the `**` operator so that it works for `rd`s.
-    module procedure rd_real_exponentiate, rd_integer_exponentiate
-end interface
 
 contains
 
 ! Constructors for `rd`
 ! ---------------------
+
+! TODO: `allocate` `dv` in constructors.
 
 function rd_var(v, n)
     real(kind=RP), intent(in)    :: v ! value of variable to set
