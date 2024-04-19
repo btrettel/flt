@@ -6,6 +6,7 @@ Priorities:
 - Add ifort back to the Makefile due to possible performance benefits.
 - Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - `purerng`:
+    - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
     - Change `I10` to `INT64` to work with xoshiro256**.
     - Test that `INT64` has enough precision for the `lecuyer` RNG.
     - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed

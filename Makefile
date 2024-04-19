@@ -18,7 +18,7 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # Add later: dimmod.nml ga.nml
-NML = checks.nml nmllog.nml prec.nml purerng.nml timer.nml unittest.nml
+NML = autodiff.nml checks.nml nmllog.nml prec.nml purerng.nml timer.nml unittest.nml
 .PRECIOUS: $(NML)
 
 #############
@@ -102,6 +102,8 @@ nvfortran:
 # Dependencies #
 ################
 
+src/autodiff$(DBGOBJEXT): src/prec$(DBGOBJEXT)
+
 src/checks$(DBGOBJEXT): src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/nmllog$(DBGOBJEXT): src/prec$(DBGOBJEXT)
@@ -113,6 +115,17 @@ src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 src/purerng$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
+
+############
+# autodiff #
+############
+
+test_autodiff$(BINEXT): src/autodiff$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_autodiff.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_autodiff.f90
+
+autodiff.nml: test_autodiff$(BINEXT)
+	$(RUN)test_autodiff$(BINEXT)
+	test ! -e fort.*
 
 ##########
 # checks #
