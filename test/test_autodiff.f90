@@ -10,7 +10,7 @@ program test_autodiff
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
-use autodiff, only: ad, ad_var, ad_const, operator(+), operator(-), operator(*), operator(/), operator(**), NDVARS
+use autodiff, only: ad, ad_var, ad_const, operator(+), operator(-), operator(*), operator(/), operator(**)
 implicit none
 
 type(log_type)          :: logger
@@ -21,6 +21,8 @@ real(kind=WP) :: a, b
 type(ad)      :: x, y, z
 integer       :: c
 
+integer, parameter :: N_DV = 5
+
 call logger%open("autodiff.nml")
 call tests%start_tests(logger)
 
@@ -30,9 +32,9 @@ call tests%start_tests(logger)
 a = 7.0_WP
 b = 12.0_WP
 
-x = ad_var(5.0_WP, 1)
-y = ad_var(1.5_WP, 2)
-z = ad_const(-3.3_WP)
+x = ad_var(5.0_WP, 1, N_DV)
+y = ad_var(1.5_WP, 2, N_DV)
+z = ad_const(-3.3_WP, N_DV)
 
 call tests%real_eq(x%v, 5.0_WP, "rd_var, value")
 call tests%real_eq(x%dv(1), 1.0_WP, "rd_var, derivative (dvar 1)")
@@ -42,9 +44,12 @@ call tests%real_eq(z%v, -3.3_WP, "rd_const, value")
 call tests%real_eq(z%dv(1), 0.0_WP, "rd_const, derivative (dvar 1)")
 call tests%real_eq(z%dv(2), 0.0_WP, "rd_const, derivative (dvar 2)")
 
-call tests%integer_eq(size(x%dv), NDVARS, "size(x%dv) = NDVARS")
-call tests%integer_eq(size(y%dv), NDVARS, "size(y%dv) = NDVARS")
-call tests%integer_eq(size(z%dv), NDVARS, "size(z%dv) = NDVARS")
+call tests%integer_eq(size(x%dv), x%n_dv, "size(x%dv) = x%n_dv")
+call tests%integer_eq(x%n_dv, N_DV, "x%n_dv = N_DV")
+call tests%integer_eq(size(y%dv), y%n_dv, "size(y%dv) = y%n_dv")
+call tests%integer_eq(y%n_dv, N_DV, "y%n_dv = N_DV")
+call tests%integer_eq(size(z%dv), z%n_dv, "size(z%dv) = z%n_dv")
+call tests%integer_eq(z%n_dv, N_DV, "z%n_dv = N_DV")
 
 z = x + y
 
