@@ -59,8 +59,8 @@ contains
 ! Constructors for `rd`
 ! ---------------------
 
-subroutine init(x, v, n, n_dv)
-    class(ad), intent(out)    :: x
+elemental subroutine init(x, v, n, n_dv)
+    class(ad), intent(in out) :: x ! `class` can't be `intent(out)` and `pure`?!?
     real(kind=WP), intent(in) :: v    ! value of variable to set
     integer, intent(in)       :: n, & ! variable number represented (sets the appropriate derivative)
                                  n_dv ! total number of differentiable variables
@@ -82,8 +82,8 @@ subroutine init(x, v, n, n_dv)
     x%dv(n) = 1.0_WP
 end subroutine init
 
-subroutine init_const(x, v, n_dv)
-    class(ad), intent(out)    :: x
+elemental subroutine init_const(x, v, n_dv)
+    class(ad), intent(in out) :: x ! `class` can't be `intent(out)` and `pure`?!?
     real(kind=WP), intent(in) :: v    ! value of constant to set
     integer, intent(in)       :: n_dv ! total number of differentiable variables
     
@@ -97,7 +97,7 @@ end subroutine init_const
 ! Operator procedures
 ! -------------------
 
-function ad_ad_add(ad_1, ad_2)
+elemental function ad_ad_add(ad_1, ad_2)
     ! Adds two `rd`s.
 
     type(ad), intent(in) :: ad_1, ad_2
@@ -108,7 +108,7 @@ function ad_ad_add(ad_1, ad_2)
     ad_ad_add%dv = ad_1%dv + ad_2%dv
 end function ad_ad_add
 
-function ad_real_add(ad_in, real_in)
+elemental function ad_real_add(ad_in, real_in)
     ! Adds a `rd` and a `real`.
 
     type(ad), intent(in)      :: ad_in
@@ -120,7 +120,7 @@ function ad_real_add(ad_in, real_in)
     ad_real_add%dv = ad_in%dv
 end function ad_real_add
 
-function real_ad_add(real_in, ad_in)
+elemental function real_ad_add(real_in, ad_in)
     ! Adds a `real` and a `rd`.
 
     real(kind=WP), intent(in) :: real_in
@@ -132,7 +132,7 @@ function real_ad_add(real_in, ad_in)
     real_ad_add%dv = ad_in%dv
 end function real_ad_add
 
-function ad_ad_subtract(ad_1, ad_2)
+elemental function ad_ad_subtract(ad_1, ad_2)
     ! Subtracts two `rd`s.
 
     type(ad), intent(in) :: ad_1, ad_2
@@ -143,7 +143,7 @@ function ad_ad_subtract(ad_1, ad_2)
     ad_ad_subtract%dv = ad_1%dv - ad_2%dv
 end function ad_ad_subtract
 
-function ad_real_subtract(ad_in, real_in)
+elemental function ad_real_subtract(ad_in, real_in)
     ! Subtracts a `real` from a `rd`.
 
     type(ad), intent(in)      :: ad_in
@@ -155,7 +155,7 @@ function ad_real_subtract(ad_in, real_in)
     ad_real_subtract%dv = ad_in%dv
 end function ad_real_subtract
 
-function real_ad_subtract(real_in, ad_in)
+elemental function real_ad_subtract(real_in, ad_in)
     ! Subtracts a `real` from a `rd`.
 
     real(kind=WP), intent(in) :: real_in
@@ -167,7 +167,7 @@ function real_ad_subtract(real_in, ad_in)
     real_ad_subtract%dv = -ad_in%dv
 end function real_ad_subtract
 
-function ad_unary_minus(ad_in)
+elemental function ad_unary_minus(ad_in)
     ! Returns `-rd`.
 
     type(ad), intent(in) :: ad_in
@@ -178,7 +178,7 @@ function ad_unary_minus(ad_in)
     ad_unary_minus%dv = -ad_in%dv
 end function ad_unary_minus
 
-function ad_ad_multiply(ad_1, ad_2)
+elemental function ad_ad_multiply(ad_1, ad_2)
     ! Multiplies two `rd`s.
 
     type(ad), intent(in) :: ad_1, ad_2
@@ -189,7 +189,7 @@ function ad_ad_multiply(ad_1, ad_2)
     ad_ad_multiply%dv = ad_1%dv * ad_2%v + ad_1%v * ad_2%dv
 end function ad_ad_multiply
 
-function ad_real_multiply(ad_in, real_in)
+elemental function ad_real_multiply(ad_in, real_in)
     ! Multiplies a `rd` by a `real`.
 
     type(ad), intent(in)      :: ad_in
@@ -201,7 +201,7 @@ function ad_real_multiply(ad_in, real_in)
     ad_real_multiply%dv = ad_in%dv * real_in
 end function ad_real_multiply
 
-function real_ad_multiply(real_in, ad_in)
+elemental function real_ad_multiply(real_in, ad_in)
     ! Multiplies a `real` by a `rd`.
 
     type(ad), intent(in)      :: ad_in
@@ -213,7 +213,7 @@ function real_ad_multiply(real_in, ad_in)
     real_ad_multiply%dv = real_in * ad_in%dv
 end function real_ad_multiply
 
-function ad_ad_divide(ad_1, ad_2)
+elemental function ad_ad_divide(ad_1, ad_2)
     ! Divides two `rd`.
 
     type(ad), intent(in) :: ad_1, ad_2
@@ -224,7 +224,7 @@ function ad_ad_divide(ad_1, ad_2)
     ad_ad_divide%dv = (ad_1%dv * ad_2%v - ad_1%v * ad_2%dv) / (ad_2%v**2)
 end function ad_ad_divide
 
-function ad_real_divide(ad_in, real_in)
+elemental function ad_real_divide(ad_in, real_in)
     ! Divides a `rd` by a `real`.
 
     type(ad), intent(in)      :: ad_in
@@ -236,7 +236,7 @@ function ad_real_divide(ad_in, real_in)
     ad_real_divide%dv = ad_in%dv / real_in
 end function ad_real_divide
 
-function real_ad_divide(real_in, ad_in)
+elemental function real_ad_divide(real_in, ad_in)
     ! Divides a `real` by a `rd`.
 
     type(ad), intent(in)      :: ad_in
@@ -248,7 +248,7 @@ function real_ad_divide(real_in, ad_in)
     real_ad_divide%dv = -real_in * ad_in%dv / (ad_in%v**2)
 end function real_ad_divide
 
-function ad_real_exponentiate(ad_in, real_in)
+elemental function ad_real_exponentiate(ad_in, real_in)
     ! Exponentiates a `rd` by a `real`.
 
     type(ad), intent(in)      :: ad_in
@@ -260,7 +260,7 @@ function ad_real_exponentiate(ad_in, real_in)
     ad_real_exponentiate%dv = real_in*(ad_in%v**(real_in - 1.0_WP))*ad_in%dv
 end function ad_real_exponentiate
 
-function ad_integer_exponentiate(ad_in, integer_in)
+elemental function ad_integer_exponentiate(ad_in, integer_in)
     ! Exponentiates a `rd` by an `integer`.
 
     type(ad), intent(in) :: ad_in
