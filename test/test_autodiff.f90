@@ -10,7 +10,7 @@ program test_autodiff
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
-use autodiff, only: ad, ad_var, ad_const, operator(+), operator(-), operator(*), operator(/), operator(**)
+use autodiff, only: ad, operator(+), operator(-), operator(*), operator(/), operator(**)
 implicit none
 
 type(log_type)          :: logger
@@ -32,9 +32,9 @@ call tests%start_tests(logger)
 a = 7.0_WP
 b = 12.0_WP
 
-x = ad_var(5.0_WP, 1, N_DV)
-y = ad_var(1.5_WP, 2, N_DV)
-z = ad_const(-3.3_WP, N_DV)
+call x%init(5.0_WP, 1, N_DV)
+call y%init(1.5_WP, 2, N_DV)
+call z%init_const(-3.3_WP, N_DV)
 
 call tests%real_eq(x%v, 5.0_WP, "rd_var, value")
 call tests%real_eq(x%dv(1), 1.0_WP, "rd_var, derivative (dvar 1)")

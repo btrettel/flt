@@ -4,7 +4,6 @@ use prec, only: WP
 implicit none
 private
 
-public :: ad_var, ad_const
 public :: operator(+)
 public :: operator(-)
 public :: operator(*)
@@ -22,6 +21,9 @@ type, public :: ad
     integer                    :: n_dv  ! total number of differentiable variables
     real(kind=WP)              :: v     ! function value
     real(kind=WP), allocatable :: dv(:) ! function derivatives value
+contains
+    procedure :: init
+    procedure :: init_const
 end type ad
 
 ! Declare operator interfaces for `rd`
@@ -57,12 +59,11 @@ contains
 ! Constructors for `rd`
 ! ---------------------
 
-function ad_var(v, n, n_dv)
+subroutine init(x, v, n, n_dv)
+    class(ad), intent(out)    :: x
     real(kind=WP), intent(in) :: v    ! value of variable to set
     integer, intent(in)       :: n, & ! variable number represented (sets the appropriate derivative)
                                  n_dv ! total number of differentiable variables
-    
-    type(ad) :: ad_var
 
     !integer :: i_dv ! loop index
 
@@ -74,25 +75,24 @@ function ad_var(v, n, n_dv)
 !        end if
 !    end do
     
-    ad_var = ad_const(v, n_dv)
+    call init_const(x, v, n_dv)
 
     ! The following may be slower, though I should test that.
     ! But it will give a run-time error in debug mode if `n` is out of bounds.
-    ad_var%dv(n) = 1.0_WP
-end function ad_var
+    x%dv(n) = 1.0_WP
+end subroutine init
 
-function ad_const(v, n_dv)
+subroutine init_const(x, v, n_dv)
+    class(ad), intent(out)    :: x
     real(kind=WP), intent(in) :: v    ! value of constant to set
     integer, intent(in)       :: n_dv ! total number of differentiable variables
     
-    type(ad) :: ad_const
-    
-    allocate(ad_const%dv(n_dv))
+    allocate(x%dv(n_dv))
 
-    ad_const%n_dv = n_dv
-    ad_const%v    = v
-    ad_const%dv   = 0.0_WP
-end function ad_const
+    x%n_dv = n_dv
+    x%v    = v
+    x%dv   = 0.0_WP
+end subroutine init_const
 
 ! Operator procedures
 ! -------------------
