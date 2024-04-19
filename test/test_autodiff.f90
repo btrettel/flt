@@ -10,7 +10,7 @@ program test_autodiff
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
-use autodiff, only: rd, rd_var, rd_const, operator(+), operator(-), operator(*), operator(/), operator(**), NDVARS
+use autodiff, only: ad, ad_var, ad_const, operator(+), operator(-), operator(*), operator(/), operator(**), NDVARS
 implicit none
 
 type(log_type)          :: logger
@@ -18,7 +18,7 @@ type(test_results_type) :: tests
 
 ! new declarations for autodiff.f90
 real(kind=WP) :: a, b
-type(rd)      :: x, y, z
+type(ad)      :: x, y, z
 integer       :: c
 
 call logger%open("autodiff.nml")
@@ -30,9 +30,9 @@ call tests%start_tests(logger)
 a = 7.0_WP
 b = 12.0_WP
 
-x = rd_var(5.0_WP, 1)
-y = rd_var(1.5_WP, 2)
-z = rd_const(-3.3_WP)
+x = ad_var(5.0_WP, 1)
+y = ad_var(1.5_WP, 2)
+z = ad_const(-3.3_WP)
 
 call tests%real_eq(x%v, 5.0_WP, "rd_var, value")
 call tests%real_eq(x%dv(1), 1.0_WP, "rd_var, derivative (dvar 1)")
@@ -152,8 +152,8 @@ call logger%close()
 contains
 
 function f(x, y)
-    type(rd), intent(in) :: x, y
-    type(rd)             :: f
+    type(ad), intent(in) :: x, y
+    type(ad)             :: f
     
     f = (2.0_WP * x * y - x**2) / y + y
     
