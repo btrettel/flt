@@ -5,18 +5,19 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
+! TODO: Test array operations.
+
 program test_autodiff
 
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
-use autodiff, only: ad, operator(+), operator(-), operator(*), operator(/), operator(**)
+use autodiff, only: ad, f
 implicit none
 
 type(log_type)          :: logger
 type(test_results_type) :: tests
 
-! new declarations for autodiff.f90
 real(kind=WP) :: a, b
 type(ad)      :: x, y, z
 integer       :: c
@@ -153,16 +154,5 @@ call tests%real_eq(z%dv(2), -(2.0_WP * 5.0_WP * 1.5_WP - 5.0_WP**2) / (1.5_WP**2
 
 call tests%end_tests()
 call logger%close()
-
-contains
-
-function f(x, y)
-    type(ad), intent(in) :: x, y
-    type(ad)             :: f
-    
-    f = (2.0_WP * x * y - x**2) / y + y
-    
-    return
-end function f
 
 end program test_autodiff

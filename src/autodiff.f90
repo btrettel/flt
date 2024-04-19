@@ -4,17 +4,7 @@ use prec, only: WP
 implicit none
 private
 
-public :: operator(+)
-public :: operator(-)
-public :: operator(*)
-public :: operator(/)
-public :: operator(**)
-
-private :: ad_ad_add, ad_real_add, real_ad_add
-private :: ad_ad_subtract, ad_real_subtract, real_ad_subtract, ad_unary_minus
-private :: ad_ad_multiply, ad_real_multiply, real_ad_multiply
-private :: ad_ad_divide, ad_real_divide, real_ad_divide
-private :: ad_real_exponentiate, ad_integer_exponentiate
+public :: f
 
 ! Both the dependent and independent variables need to be of type `rd`.
 type, public :: ad
@@ -24,35 +14,21 @@ type, public :: ad
 contains
     procedure :: init
     procedure :: init_const
+    procedure, private :: ad_ad_add, ad_real_add
+    procedure, private, pass(ad_in) :: real_ad_add
+    generic, public :: operator(+) => ad_ad_add, ad_real_add, real_ad_add
+    procedure, private :: ad_ad_subtract, ad_real_subtract, ad_unary_minus
+    procedure, private, pass(ad_in) :: real_ad_subtract
+    generic, public :: operator(-) => ad_ad_subtract, ad_real_subtract, real_ad_subtract, ad_unary_minus
+    procedure, private :: ad_ad_multiply, ad_real_multiply
+    procedure, private, pass(ad_in) :: real_ad_multiply
+    generic, public :: operator(*) => ad_ad_multiply, ad_real_multiply, real_ad_multiply
+    procedure, private :: ad_ad_divide, ad_real_divide
+    procedure, private, pass(ad_in) :: real_ad_divide
+    generic, public :: operator(/) => ad_ad_divide, ad_real_divide, real_ad_divide
+    procedure, private :: ad_real_exponentiate, ad_integer_exponentiate
+    generic, public :: operator(**) => ad_real_exponentiate, ad_integer_exponentiate
 end type ad
-
-! Declare operator interfaces for `rd`
-! ------------------------------------
-
-interface operator(+)
-    ! Overload the `+` operator so that it works for `rd`s.
-    module procedure ad_ad_add, ad_real_add, real_ad_add
-end interface
-
-interface operator(-)
-    ! Overload the `-` operator so that it works for `rd`s.
-    module procedure ad_ad_subtract, ad_real_subtract, real_ad_subtract, ad_unary_minus
-end interface
-
-interface operator(*)
-    ! Overload the `*` operator so that it works for `rd`s.
-    module procedure ad_ad_multiply, ad_real_multiply, real_ad_multiply
-end interface
-
-interface operator(/)
-    ! Overload the `/` operator so that it works for `rd`s.
-    module procedure ad_ad_divide, ad_real_divide, real_ad_divide
-end interface
-
-interface operator(**)
-    ! Overload the `**` operator so that it works for `rd`s.
-    module procedure ad_real_exponentiate, ad_integer_exponentiate
-end interface
 
 contains
 
@@ -100,7 +76,7 @@ end subroutine init_const
 elemental function ad_ad_add(ad_1, ad_2)
     ! Adds two `rd`s.
 
-    type(ad), intent(in) :: ad_1, ad_2
+    class(ad), intent(in) :: ad_1, ad_2
     
     type(ad) :: ad_ad_add
 
@@ -111,7 +87,7 @@ end function ad_ad_add
 elemental function ad_real_add(ad_in, real_in)
     ! Adds a `rd` and a `real`.
 
-    type(ad), intent(in)      :: ad_in
+    class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
     
     type(ad) :: ad_real_add
@@ -124,7 +100,7 @@ elemental function real_ad_add(real_in, ad_in)
     ! Adds a `real` and a `rd`.
 
     real(kind=WP), intent(in) :: real_in
-    type(ad), intent(in)      :: ad_in
+    class(ad), intent(in)     :: ad_in
     
     type(ad) :: real_ad_add
 
@@ -135,7 +111,7 @@ end function real_ad_add
 elemental function ad_ad_subtract(ad_1, ad_2)
     ! Subtracts two `rd`s.
 
-    type(ad), intent(in) :: ad_1, ad_2
+    class(ad), intent(in) :: ad_1, ad_2
     
     type(ad) :: ad_ad_subtract
 
@@ -146,8 +122,8 @@ end function ad_ad_subtract
 elemental function ad_real_subtract(ad_in, real_in)
     ! Subtracts a `real` from a `rd`.
 
-    type(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in) :: real_in
+    class(ad), intent(in)      :: ad_in
+    real(kind=WP), intent(in)  :: real_in
     
     type(ad) :: ad_real_subtract
 
@@ -158,8 +134,8 @@ end function ad_real_subtract
 elemental function real_ad_subtract(real_in, ad_in)
     ! Subtracts a `real` from a `rd`.
 
-    real(kind=WP), intent(in) :: real_in
-    type(ad), intent(in)      :: ad_in
+    real(kind=WP), intent(in)  :: real_in
+    class(ad), intent(in)      :: ad_in
     
     type(ad) :: real_ad_subtract
 
@@ -170,7 +146,7 @@ end function real_ad_subtract
 elemental function ad_unary_minus(ad_in)
     ! Returns `-rd`.
 
-    type(ad), intent(in) :: ad_in
+    class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_unary_minus
 
@@ -181,7 +157,7 @@ end function ad_unary_minus
 elemental function ad_ad_multiply(ad_1, ad_2)
     ! Multiplies two `rd`s.
 
-    type(ad), intent(in) :: ad_1, ad_2
+    class(ad), intent(in) :: ad_1, ad_2
     
     type(ad) :: ad_ad_multiply
 
@@ -192,8 +168,8 @@ end function ad_ad_multiply
 elemental function ad_real_multiply(ad_in, real_in)
     ! Multiplies a `rd` by a `real`.
 
-    type(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in) :: real_in
+    class(ad), intent(in)      :: ad_in
+    real(kind=WP), intent(in)  :: real_in
     
     type(ad) :: ad_real_multiply
 
@@ -204,8 +180,8 @@ end function ad_real_multiply
 elemental function real_ad_multiply(real_in, ad_in)
     ! Multiplies a `real` by a `rd`.
 
-    type(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in) :: real_in
+    class(ad), intent(in)      :: ad_in
+    real(kind=WP), intent(in)  :: real_in
     
     type(ad) :: real_ad_multiply
 
@@ -216,7 +192,7 @@ end function real_ad_multiply
 elemental function ad_ad_divide(ad_1, ad_2)
     ! Divides two `rd`.
 
-    type(ad), intent(in) :: ad_1, ad_2
+    class(ad), intent(in) :: ad_1, ad_2
     
     type(ad) :: ad_ad_divide
 
@@ -227,8 +203,8 @@ end function ad_ad_divide
 elemental function ad_real_divide(ad_in, real_in)
     ! Divides a `rd` by a `real`.
 
-    type(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in) :: real_in
+    class(ad), intent(in)      :: ad_in
+    real(kind=WP), intent(in)  :: real_in
     
     type(ad) :: ad_real_divide
 
@@ -239,8 +215,8 @@ end function ad_real_divide
 elemental function real_ad_divide(real_in, ad_in)
     ! Divides a `real` by a `rd`.
 
-    type(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in) :: real_in
+    class(ad), intent(in)      :: ad_in
+    real(kind=WP), intent(in)  :: real_in
     
     type(ad) :: real_ad_divide
 
@@ -251,8 +227,8 @@ end function real_ad_divide
 elemental function ad_real_exponentiate(ad_in, real_in)
     ! Exponentiates a `rd` by a `real`.
 
-    type(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in) :: real_in
+    class(ad), intent(in)      :: ad_in
+    real(kind=WP), intent(in)  :: real_in
     
     type(ad) :: ad_real_exponentiate
 
@@ -263,8 +239,8 @@ end function ad_real_exponentiate
 elemental function ad_integer_exponentiate(ad_in, integer_in)
     ! Exponentiates a `rd` by an `integer`.
 
-    type(ad), intent(in) :: ad_in
-    integer, intent(in)  :: integer_in
+    class(ad), intent(in) :: ad_in
+    integer, intent(in)   :: integer_in
     
     type(ad) :: ad_integer_exponentiate
 
@@ -273,5 +249,13 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
 end function ad_integer_exponentiate
 
 ! No `rd**rd` as that's not likely to happen in CFD.
+
+function f(x, y)
+    type(ad), intent(in) :: x, y
+    
+    type(ad) :: f
+    
+    f = (2.0_WP * x * y - x**2) / y + y
+end function f
 
 end module autodiff
