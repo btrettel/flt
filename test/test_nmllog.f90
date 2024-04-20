@@ -246,13 +246,26 @@ subroutine test_log_debug_info(tests)
 end subroutine test_log_debug_info
 
 subroutine test_pure_log(tests)
-    use nmllog, only: pure_log_type, log_type, DEBUG_LEVEL
+    use, intrinsic :: iso_fortran_env, only: IOSTAT_END
+    use nmllog, only: pure_log_type, log_type, DEBUG_LEVEL, DEBUG_STRING, INFO_STRING, WARNING_STRING, ERROR_STRING, &
+                        CRITICAL_STRING, NML_RECL
+    use prec, only: CL
     use unittest, only: validate_timestamp
     
     type(test_results_type), intent(in out) :: tests
     
     type(log_type)      :: test_logger
     type(pure_log_type) :: pure_logger
+    
+    integer           :: nml_unit, rc_nml, num_nml_groups, n_debug, n_info, n_warning, n_error, n_critical, n_not_set
+    character(len=CL) :: nml_error_message
+    
+    character(len=TIMESTAMP_LEN) :: timestamp
+    character(len=8)             :: level
+    character(len=CL)            :: message
+    character(len=1)             :: nml_group_str
+    
+    namelist /log/ timestamp, level, message
     
     call test_logger%open(TEST_FILENAME)
     test_logger%file_level = DEBUG_LEVEL
@@ -264,8 +277,76 @@ subroutine test_pure_log(tests)
     call pure_logger%close()
     call test_logger%close()
     
-    ! TODO: remove this after adding actual tests
-    call tests%integer_eq(1, 1, "blah")
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
+    read(unit=nml_unit, nml=log, iostat=rc_nml, iomsg=nml_error_message)
+    num_nml_groups = 0
+    n_debug        = 1
+    n_info         = 0
+    n_warning      = 0
+    n_error        = 0
+    n_critical     = 0
+    n_not_set      = 0
+    do
+        read(unit=nml_unit, nml=log, iostat=rc_nml, iomsg=nml_error_message)
+        
+        if (rc_nml == IOSTAT_END) then
+            exit
+        else if (rc_nml /= 0) then
+            call tests%integer_eq(rc_nml, 0, "reading nmllog, error")
+            call tests%logger%error(trim(nml_error_message))
+            exit
+        end if
+        
+        num_nml_groups = num_nml_groups + 1
+        
+        write(unit=nml_group_str, fmt="(i1)") num_nml_groups
+        
+        call validate_timestamp(tests, timestamp, message)
+        
+        call tests%integer_ge(len(trim(message)), 1, "Namelist group number " // nml_group_str // " message absent")
+        call tests%integer_ge(len(trim(level)), 1, "Namelist group number " // nml_group_str // " level absent")
+        
+        select case (trim(level))
+            case (DEBUG_STRING)
+                n_debug = n_debug + 1
+                
+                if (n_debug == 2) then
+                    call tests%character_eq(message, DEBUG_MESSAGE // " [pure]", "nmllog, debug message")
+                end if
+            case (INFO_STRING)
+                n_info = n_info + 1
+                call tests%character_eq(message, INFO_MESSAGE // " [pure]", "nmllog, info message")
+            case (WARNING_STRING)
+                n_warning = n_warning + 1
+                call tests%character_eq(message, WARNING_MESSAGE // " [pure]", "nmllog, warning message")
+            case (ERROR_STRING)
+                n_error = n_error + 1
+                call tests%character_eq(message, ERROR_MESSAGE // " [pure]", "nmllog, error message")
+            case (CRITICAL_STRING)
+                n_critical = n_critical + 1
+                call tests%character_eq(message, CRITICAL_MESSAGE // " [pure]", "nmllog, critical message")
+            case default
+                n_not_set = n_not_set + 1
+        end select
+        
+        !write(unit=*, fmt=*) rc_nml, timestamp, trim(level), trim(message)
+    end do
+    
+    call tests%integer_eq(rc_nml, IOSTAT_END, "nmllog, iostat at end of file")
+    
+    if (rc_nml == IOSTAT_END) then
+        close(unit=nml_unit, status="delete")
+    else
+        ! Don't delete if there was an error.
+        close(unit=nml_unit)
+    end if
+    
+    call tests%integer_eq(n_debug, 3, "nmllog, number of debug levels")
+    call tests%integer_eq(n_info, 1, "nmllog, number of info levels")
+    call tests%integer_eq(n_warning, 1, "nmllog, number of warning levels")
+    call tests%integer_eq(n_error, 1, "nmllog, number of error levels")
+    call tests%integer_eq(n_critical, 1, "nmllog, number of critical levels")
+    call tests%integer_eq(n_not_set, 0, "nmllog, no unknown levels")
 end subroutine test_pure_log
 
 pure subroutine pure_logging_subroutine(pure_logger)
@@ -292,6 +373,8 @@ subroutine test_check(tests)
     
     call impure_logger%open(TEST_FILENAME)
     call pure_logger%open(impure_logger)
+    
+    ! TODO: Check the log itself for these messages too.
     
     rc_check = 0
     call impure_logger%check(.true., "impure check, .true.", rc_check)

@@ -9,7 +9,7 @@ program test_unittest
 
 use checks, only: TOL_FACTOR
 use nmllog, only: log_type, CRITICAL_LEVEL
-use prec, only: WP
+use prec, only: WP, I10
 use unittest, only: test_results_type
 implicit none
 
@@ -66,6 +66,8 @@ call tests%real_gt(1.0_WP, 0.0_WP, "real_gt")
 
 call tests%integer_eq(1, 1, "integer_eq")
 
+call tests%integer_eq(3_I10, 3_I10, "integer_eq, I10")
+
 call tests%character_eq("a", "a", "character_eq")
 
 call tests%real_eq(10.0_WP, 5.0_WP, "real_eq, large abs_tol set", abs_tol=5.1_WP)
@@ -77,6 +79,14 @@ call tests%integer_ge(2, 2, "integer_ge, equal")
 call tests%integer_le(1, 2, "integer_le, greater")
 
 call tests%integer_le(2, 2, "integer_le, equal")
+
+call tests%integer_ge(2_I10, 1_I10, "integer_ge, greater, I10")
+
+call tests%integer_ge(2_I10, 2_I10, "integer_ge, equal, I10")
+
+call tests%integer_le(1_I10, 2_I10, "integer_le, greater, I10")
+
+call tests%integer_le(2_I10, 2_I10, "integer_le, equal, I10")
 
 call tests%integer_le(1, 2, "integer_ne, equal")
 

@@ -18,7 +18,6 @@ Priorities:
     - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
     - better `random_seed()`
     - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
-- Test `integer10_eq`, `integer10_ge`, `integer10_le`.
 - Add linters.
     - <https://github.com/cnescatlab/i-CodeCNES/>
         - And script you use to integrate with Makefile.
