@@ -2,8 +2,6 @@
 
 Priorities:
 
-- Pure logging: saves to linked list with all the same data as a normal nmllog.
-    - `pure_check` as an alternative for `check` in `pure` procedures.
 - Add ifort back to the Makefile due to possible performance benefits.
 - Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - `purerng`:

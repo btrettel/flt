@@ -105,7 +105,7 @@ nvfortran:
 
 src/autodiff$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
-src/checks$(DBGOBJEXT): src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/checks$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/nmllog$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 

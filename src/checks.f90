@@ -18,7 +18,6 @@ logical :: debug = .true.
 public :: abs_tolerance
 public :: is_close
 public :: assert
-public :: check
 public :: same_shape_as
 
 ! TODO: `all_close` like <https://numpy.org/doc/stable/reference/generated/numpy.allclose.html>
@@ -108,29 +107,6 @@ pure subroutine assert(condition, message)
         end if
     end if
 end subroutine assert
-
-subroutine check(condition, logger, message, rc)
-    ! If `condition` is `.false.`, then print a message and increment `rc`.
-    ! If `(rc /= RC_SUCCESS)` later, computation will stop.
-    ! This is used for assertions and input validation.
-    ! Making `rc` increment is useful to string up multiple `check`s
-    ! without adding too much logic. The details of the `check` are
-    ! logged, so there's `rc` does not need to be meaningful beyond
-    ! pass/fail.
-    
-    use nmllog, only: log_type
-    
-    logical, intent(in)          :: condition ! condition to check
-    type(log_type), intent(in)   :: logger
-    character(len=*), intent(in) :: message   ! error message to print if `condition` is `.false.`
-    integer, intent(in out)      :: rc        ! number of errors encountered
-    
-    if (.not. condition) then
-        call logger%error(message)
-        
-        rc = rc + 1
-    end if
-end subroutine check
 
 pure function same_shape_as_real_rank_1(a, b)
     real(kind=WP), intent(in) :: a(:), b(:)

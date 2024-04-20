@@ -7,7 +7,7 @@
 
 program test_checks
 
-use checks, only: TOL_FACTOR, abs_tolerance, is_close, check, assert, same_shape_as
+use checks, only: TOL_FACTOR, abs_tolerance, is_close, assert, same_shape_as
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
@@ -17,7 +17,7 @@ character(len=*), parameter :: ASSERT_FALSE_OUTPUT = "test_assert_false.txt"
 
 type(log_type)          :: logger
 type(test_results_type) :: tests
-integer                 :: rc_check, rc_assert_false, test_assert_false_unit
+integer                 :: rc_assert_false, test_assert_false_unit
 logical                 :: test_assert_false_exists
 character(len=80)       :: assert_false_line
 
@@ -107,14 +107,6 @@ call tests%logical_false(is_close(1.0_WP, 0.0_WP, abs_tol=1.0_WP, rel_tol=0.0_WP
 
 call tests%logical_false(is_close(1.0_WP, 0.0_WP, abs_tol=0.0_WP, rel_tol=1.0_WP), &
         "is_close, close numbers with set rel_tol, just outside")
-
-rc_check = 0
-call check(.true., logger, "check, .true.", rc_check)
-call tests%integer_eq(rc_check, 0, "check, .true.")
-
-rc_check = 0
-call check(.false., logger, "check, .false.", rc_check)
-call tests%integer_eq(rc_check, 1, "check, .false.")
 
 ! `assert(.true.)` does not terminate the program (no direct test performed)
 call assert(.true.)

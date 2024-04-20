@@ -52,6 +52,7 @@ contains
     procedure :: error => log_error
     procedure :: critical => log_critical
     procedure :: debug_info => log_debug_info
+    procedure :: check => impure_check
 end type log_type
 
 type, public :: pure_log_type
@@ -66,6 +67,7 @@ contains
     procedure :: warning => pure_log_warning
     procedure :: error => pure_log_error
     procedure :: critical => pure_log_critical
+    procedure :: check => pure_check
 end type pure_log_type
 
 type, public :: pure_log_data_type
@@ -314,12 +316,15 @@ subroutine pure_log_close(pure_logger)
             exit
         end if
         
-        call log_writer(pure_logger%logger, pure_logger%head%message, pure_logger%head%level)
+        call log_writer(pure_logger%logger, pure_logger%head%message // " [pure]", pure_logger%head%level)
         
         current => pure_logger%head
         pure_logger%head => pure_logger%head%next
         deallocate(current)
     end do
+    
+    ! TODO: call assert(.not. associated(pure_logger%tail))
+    nullify(pure_logger%tail)
     
     call pure_logger%logger%debug("Pure logger ended.")
 end subroutine pure_log_close
@@ -335,6 +340,12 @@ pure subroutine pure_log_writer(pure_logger, message, level)
     allocate(pure_log_data)
     pure_log_data%message = message
     pure_log_data%level   = level
+    
+    if (.not. associated(pure_logger%head)) then
+        pure_logger%head => pure_log_data
+    else
+        pure_logger%tail%next => pure_log_data
+    end if
     
     pure_logger%tail => pure_log_data
 end subroutine pure_log_writer
@@ -378,5 +389,42 @@ pure subroutine pure_log_critical(this, message)
     
     call pure_log_writer(this, message, CRITICAL_LEVEL)
 end subroutine pure_log_critical
+
+! check
+! -----
+
+! If `condition` is `.false.`, then print a message and increment `rc`.
+! If `(rc /= RC_SUCCESS)` later, computation will stop.
+! This is used for input validation and other non-assertion checks.
+! Making `rc` increment is useful to string up multiple `check`s
+! without adding too much logic. The details of the `check` are
+! logged, so there's `rc` does not need to be meaningful beyond
+! pass/fail.
+
+subroutine impure_check(logger, condition, message, rc)
+    class(log_type), intent(in)  :: logger
+    logical, intent(in)          :: condition ! condition to check
+    character(len=*), intent(in) :: message   ! error message to print if `condition` is `.false.`
+    integer, intent(in out)      :: rc        ! number of errors encountered
+    
+    if (.not. condition) then
+        call logger%error(message)
+        
+        rc = rc + 1
+    end if
+end subroutine impure_check
+
+pure subroutine pure_check(logger, condition, message, rc)
+    class(pure_log_type), intent(in out) :: logger
+    logical, intent(in)                  :: condition ! condition to check
+    character(len=*), intent(in)         :: message   ! error message to print if `condition` is `.false.`
+    integer, intent(in out)              :: rc        ! number of errors encountered
+    
+    if (.not. condition) then
+        call logger%error(message)
+        
+        rc = rc + 1
+    end if
+end subroutine pure_check
 
 end module nmllog

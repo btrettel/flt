@@ -14,7 +14,12 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests
 
-character(len=*), parameter :: TEST_FILENAME = "test.nml"
+character(len=*), parameter :: TEST_FILENAME    = "test.nml"
+character(len=*), parameter :: DEBUG_MESSAGE    = "Debug level test"
+character(len=*), parameter :: INFO_MESSAGE     = "Info level test"
+character(len=*), parameter :: WARNING_MESSAGE  = "Warning level test"
+character(len=*), parameter :: ERROR_MESSAGE    = "Error level test"
+character(len=*), parameter :: CRITICAL_MESSAGE = "Critical level test"
 
 call logger%open("nmllog.nml")
 call tests%start_tests(logger)
@@ -22,7 +27,8 @@ call tests%start_tests(logger)
 call test_now(tests)
 call test_log_subroutines(tests)
 call test_log_debug_info(tests)
-!call test_pure_log(tests)
+call test_pure_log(tests)
+call test_check(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -52,12 +58,6 @@ subroutine test_log_subroutines(tests)
     
     type(log_type) :: test_logger
     integer        :: nml_unit, rc_nml, num_nml_groups, n_debug, n_info, n_warning, n_error, n_critical, n_not_set
-    
-    character(len=*), parameter :: DEBUG_MESSAGE    = "Debug level test"
-    character(len=*), parameter :: INFO_MESSAGE     = "Info level test"
-    character(len=*), parameter :: WARNING_MESSAGE  = "Warning level test"
-    character(len=*), parameter :: ERROR_MESSAGE    = "Error level test"
-    character(len=*), parameter :: CRITICAL_MESSAGE = "Critical level test"
     
     character(len=CL) :: nml_error_message
     
@@ -245,13 +245,72 @@ subroutine test_log_debug_info(tests)
     call tests%integer_eq(integer_huge, 2147483647, "test_log_debug_info, integer_huge")
 end subroutine test_log_debug_info
 
-!subroutine test_pure_log(tests)
-!    use nmllog, only: pure_log_type
-!    use unittest, only: validate_timestamp
+subroutine test_pure_log(tests)
+    use nmllog, only: pure_log_type, log_type, DEBUG_LEVEL
+    use unittest, only: validate_timestamp
     
-!    type(test_results_type), intent(in out) :: tests
+    type(test_results_type), intent(in out) :: tests
     
+    type(log_type)      :: test_logger
+    type(pure_log_type) :: pure_logger
     
-!end subroutine test_pure_log
+    call test_logger%open(TEST_FILENAME)
+    test_logger%file_level = DEBUG_LEVEL
+    
+    call pure_logger%open(test_logger)
+    
+    call pure_logging_subroutine(pure_logger)
+    
+    call pure_logger%close()
+    call test_logger%close()
+    
+    ! TODO: remove this after adding actual tests
+    call tests%integer_eq(1, 1, "blah")
+end subroutine test_pure_log
+
+pure subroutine pure_logging_subroutine(pure_logger)
+    use nmllog, only: pure_log_type
+    
+    type(pure_log_type), intent(in out) :: pure_logger
+    
+    call pure_logger%debug(DEBUG_MESSAGE)
+    call pure_logger%info(INFO_MESSAGE)
+    call pure_logger%warning(WARNING_MESSAGE)
+    call pure_logger%error(ERROR_MESSAGE)
+    call pure_logger%critical(CRITICAL_MESSAGE)
+end subroutine pure_logging_subroutine
+
+subroutine test_check(tests)
+    use nmllog, only: pure_log_type, log_type
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(log_type)      :: impure_logger
+    type(pure_log_type) :: pure_logger
+    
+    integer :: rc_check
+    
+    call impure_logger%open(TEST_FILENAME)
+    call pure_logger%open(impure_logger)
+    
+    rc_check = 0
+    call impure_logger%check(.true., "impure check, .true.", rc_check)
+    call tests%integer_eq(rc_check, 0, "impure check, .true.")
+
+    rc_check = 0
+    call impure_logger%check(.false., "impure check, .false.", rc_check)
+    call tests%integer_eq(rc_check, 1, "impure check, .false.")
+    
+    rc_check = 0
+    call pure_logger%check(.true., "pure check, .true.", rc_check)
+    call tests%integer_eq(rc_check, 0, "impure check, .true.")
+
+    rc_check = 0
+    call pure_logger%check(.false., "pure check, .false.", rc_check)
+    call tests%integer_eq(rc_check, 1, "impure check, .false.")
+    
+    call pure_logger%close()
+    call impure_logger%close()
+end subroutine test_check
 
 end program test_nmllog
