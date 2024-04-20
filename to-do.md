@@ -2,7 +2,8 @@
 
 Priorities:
 
-- Pure logging: saves to array of structures, written later.
+- Pure logging: saves to linked list with all the same data as a normal nmllog.
+    - `pure_check` as an alternative for `check` in `pure` procedures.
 - Add ifort back to the Makefile due to possible performance benefits.
 - Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - `purerng`:
@@ -195,5 +196,5 @@ Later:
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
     - <https://github.com/perazz/fortran-regex>
     - Fork, add asserts and tests? Or just use as-is to get started faster?
-- autodiff.f90: Forward-mode automatic differentiation.
+- autodiff.f90
     - Modify your AD to use SIMD vectorization. Use `do concurrent` with OpenMP or OpenACC directives? See personal notes on automatic differentiation for other speed ideas too.

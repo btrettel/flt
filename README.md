@@ -2,6 +2,7 @@
 
 Misc. Fortran libraries and tools (all at various stages of development), intended for my own personal use:
 
+- autodiff.f90: Module for forward-mode automatic differentiation.
 - checks.f90: Module for procedures used for run-time checks.
 - nmllog.f90: Module for structured logging in namelist files.
 - prec.f90: Module to set precisions, lengths, and mathematical constants. Uses common convention of `WP` for real precision.

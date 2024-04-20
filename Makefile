@@ -44,9 +44,10 @@ DBGOBJEXT = -dbg.$(OBJEXT)
 # Boilerplate #
 ###############
 
+# Why run `make valgrind` here? As it uses gfortran and is more strict.
 .PHONY: all
 all:
-	$(MAKE) test # gfortran
+	$(MAKE) valgrind # gfortran
 	$(MAKE) clean
 	$(MAKE) ifx
 	$(MAKE) clean
