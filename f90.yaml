@@ -1,0 +1,785 @@
+
+# Flinter configuration file.
+
+# Original: https://gitlab.com/cerfacs/flint/-/blob/master/src/flinter/default_rules/fortran_rc_default.yml
+# Originally under CeCILL license, which is GPL compatible.
+
+# These are all the regexp rules
+
+# Set active to false is you want to skip  rule
+# All are regexp rules, meaning you can add new rules simply by editing this file
+# test your rule on https://regex101.com/ if needed
+
+# TODO: Require labels after end\s(program|module|subroutine), etc.
+# TODO: Parameters must be upper case
+
+extension: f\d*
+
+regexp-rules:
+
+  intrinsics-should-be-lowercased:
+    message: Intrinsics keywords should be lowercased
+    regexp: \b({intrinsics_upper}|end(?:{blocks_upper}|{structs_upper}))\b
+    case-sensitive: true
+    active: true
+
+  # intrinsics-should-be-uppercased:
+  #   message: Intrinsics keywords should be uppercased
+  #   regexp: \b({intrinsics_lower}|end(?:{blocks_lower}|{structs_lower}))\b
+  #   case-sensitive: true
+  #   active: true
+
+  intrinsics-args-should-be-lowercased:
+    message: Intrinsics named argument should be lowercased
+    regexp: \b({named-args_upper})(?=\s*=)
+    case-sensitive: true
+    active: true
+  
+  # intrinsics-args-should-be-uppercased:
+  #   message: Intrinsics named argument should be uppercased
+  #   regexp: \b({named-args_lower})(?=\s*=)
+  #   case-sensitive: true
+  #   active: true
+
+  types-should-be-lowercased:
+    message: Types should be lowercased
+    regexp: \b({types_upper})\b
+    case-sensitive: true
+    active: true
+
+  # types-should-be-uppercased:
+  #   message: Types should be uppercased
+  #   regexp: \b({types_lower})\b
+  #   case-sensitive: true
+  #   active: true
+
+  real-avbp-working-precision:
+    message: Use AVBP working precision
+    regexp: (?<=real)(?!\(\s*pr\s*\))\([^\(]*\)
+    replacement: (pr)
+    active: false
+
+  character-string-length:
+    message: Use strl or shortstrl
+    regexp: (?<=character)(\s*\(\s*len\s*=\s*)(?!\s*strl\b|\s*shortstrl\b)[^\(]*?(\s*\))
+    active: false
+
+  missing-space-before-call-parameters:
+    message: Missing space between subroutine name and parenthesis
+    regexp: (?<=call\s)(\s*\w+)\(
+    replacement: \1 (
+    active: false
+
+  missing-space-after-call-parenthesis:
+    message: Missing space after first parenthesis
+    regexp: (?<=call\s)(\s*\w+\s*)\((\S)
+    replacement: ( \2
+    active: false
+
+  missing-space-before-call-parenthesis:
+    message: Missing space before last parenthesis
+    regexp: (?<=call\s)(\s*\w+\s*\([^)(]*(?:\([^)(]*(?:\([^)(]*\)[^)(]*)*\)[^)(]*)*(?<!\s))\)
+    replacement: \1 )
+    active: false
+
+  excessive-use-of-space:
+    message: Except for indentation, single spaces are sufficient
+    regexp: '(?<=\S)  +(?=[^\s!])'
+    replacement: ' '
+    active: false
+
+  missing-space-around-operator:
+    message: Missing space around operator
+    regexp: ([^\s=])({operators})([^\s=])
+    replacement: \1 \2 \3
+    active: false
+
+  missing-space-before-operator:
+    message: Missing space before operator
+    regexp: ([^\s=])({operators})(?=\s)
+    replacement: \1 \2
+    active: true
+
+  missing-space-after-operator:
+    message: Missing space after operator
+    regexp: (?<=\s)({operators})([^\s=])
+    replacement: \1 \2
+    active: true
+
+  missing-space-around-separator:
+    message: Missing space around separator
+    regexp: (\S)::(\S)
+    replacement: '\1 :: \2'
+    active: true
+
+  missing-space-before-separator:
+    message: Missing space before separator
+    regexp: (\S)::(?=\s)
+    replacement: '\1 ::'
+    active: true
+
+  missing-space-after-separator:
+    message: Missing space after separator
+    regexp: (?<=\s)::(\S)
+    replacement: ':: \1'
+    active: true
+
+  missing-space-after-punctuation:
+    message: Missing space after punctuation
+    regexp: ({punctuations})(\S)
+    replacement: \1 \2
+    active: true
+
+  missing-space-before-parenthesis:
+    message: Missing space before parenthesis
+    regexp: ({structs})\(
+    replacement: \1 (
+    active: false
+
+  prepend-with-!$:
+    message: Should prepend with "!$ " as otherwise this won't work without OpenMP
+    regexp: ^(\s*)(use\s+omp_lib)
+    replacement: '\1!$ \2'
+
+  tabulation-insteadof-twospaces:
+    message: Should use 4 spaces instead of tabulation
+    regexp: \t
+    replacement: '    '
+
+  use-new-syntax-type:
+    message: Use new syntax TYPE(kind)
+    regexp: ({types})\*(\w+)
+    replacement: \1(\2)
+
+  one-space-before-comment:
+    message: At least one space before comment
+    regexp: (\S)\!
+    replacement: \1 !
+
+  one-space-after-comment:
+    message: Exactly one space after comment
+    regexp: \!(\S)
+    replacement: '! \1'
+    include-comments: true
+    active: false
+
+  useless-eol-dotcomma:
+    message: Useless ";" at end of line
+    regexp: ;\s*$
+    replacement: ''
+
+  # Disable when using preprocessor if using file before preprocessing, because it conflicts with the preprocessor directive #endif.
+  nospace-endif:
+    message: Missing space after "end"
+    regexp: \bendif\b
+    replacement: null
+    active: true
+
+  # Disable when using preprocessor if using file before preprocessing, because it conflicts with the preprocessor directive #endif.
+  nospace-end:
+    message: Missing space after "end"
+    regexp: \bend({blocks}|{structs})\b
+    replacement: end \1
+    active: true
+
+  missing-space-around-=:
+    message: Missing space around "="
+    regexp: ([^\s=])(?<!kind|.len)=([^\s=])
+    replacement: \1 = \2
+    active: false
+
+  missing-space-after-=:
+    message: Missing space after "="
+    regexp: (?<!kind|.len|...\s)\s+=([^\s=])
+    replacement: = \1
+    active: false
+
+  missing-space-before-=:
+    message: Missing space before "="
+    regexp: ([^\s=])(?<!kind|.len)=(?=\s)
+    replacement: \1 =
+    active: false
+
+  trailing-whitespaces:
+    message: Trailing whitespaces
+    regexp: \b([ \t])+$
+    replacement: ''
+    include-comments: true
+
+  recommended-use-of-sp-dp:
+    message: You should use "sp" or "dp" instead
+    regexp: \(kind\s*=\s*\d\s*\)
+
+  recommended-use-of-brackets:
+    message: You should use "[]" instead
+    regexp: \(\\([^\)]*)\\\)
+    replacement: '[\1]'
+
+  recommended-use-mpi_f08:
+    message: Should use "use mpi_f08" instead (or "use mpi" if not available)
+    regexp: include\s+["\']mpif.h[\'"]
+
+  not-recommended-bare-end:
+    message: Bare end statement not recommended
+    regexp: ^\s*end\s*$
+
+  not-recommended-bare-stop:
+    message: Bare stop statement not recommended
+    regexp: ^\s*stop\s*$
+    active: false # ELF90 expects bare stops to be present.
+
+  not-recommended-use-exit:
+    message: exit is an extension and should be avoided
+    regexp: ^\s*exit\b
+    active: false # `exit` is not an extension!
+
+  not-recommended-use-goto:
+    message: goto is hard to maintain, prone to spaghetti code.
+    regexp: ^\s*(goto|go\sto)\b
+
+  not-recommended-use-double-precision:
+    message: double precision is discouraged; use real with a kind code instead.
+    regexp: \bdouble\s+precision\b
+
+  not-recommended-use-pause:
+    message: pause is discouraged.
+    regexp: ^\s*pause\b
+
+  not-recommended-use-include:
+    message: include is discouraged, prefer use.
+    regexp: ^\s*include\b
+
+  # Some rules from <https://pypi.org/project/flinter/>:
+
+  do-spaces:
+    message: Missing spaces in "do i = start, end"
+    regexp: \bdo\s(\w+)=(\S+),(\S+)
+    replacement: do \1 = \2, \3
+
+  ## Corrected from flinter? Doesn't seem to work.
+  #:
+    #message: Add spaces after print*, write* statements
+    #regexp: print\*\s*,\s*
+    #replacement: print *, 
+    #active: true
+
+  # Some personal rules:
+
+  # <https://github.com/j3-fortran/fortran_proposals/issues/40#issuecomment-545583596>
+  # matches: implicit none
+  # does not match: implicit none (type, external)
+  # Fortran 2018 and later
+  # Doesn't matter much for me as I don't think I've ever used external procedures.
+  implicit-none-type-external:
+    message: implicit none by itself could be more explicit with implicit none (type, external).
+    regexp: \bimplicit\snone(?!\s\()
+    replacement: \1 (type, external)
+    active: false
+
+  # <https://www.cs.rpi.edu/~szymansk/OOF90/bugs.html#4>
+  # <https://www.fortran90.org/src/gotchas.html#variable-initialization-using-initialization-expression>
+  # <https://github.com/j3-fortran/fortran_proposals/issues/40>
+  # matches: real(qp) :: y = 5._qp
+  # does not match: real(qp) :: y
+  # The solution below is not ideal. This can have a false positive on parameters, which must be initialized. If there is one space between the parameter attribute and "::", then this won't match, but other forms could match. This is due to a limitation of Python's regex matching: "re.error: look-behind requires fixed-width pattern". So I can't use .* to match anything between "parameter" and "::". I added the `\s` at the end to not match `=>`, which is used for pointers and type-bound procedures and does not imply an implicit save. However, 
+  implicit-save:
+    message: local variable initialization leads to an implicit save attribute; do not initialize (that is, do not add the equals and value) and instead assign a value in a separate line after declaring the variable.
+    #regexp: ::.*=
+    #regexp: (?!,\sparameter.*)::.*=
+    #regexp: \b(?!,\sparameter.*)::.*=
+    regexp: (?<!parameter)\s+::.*=
+    active: false
+
+  # matches: integer, save :: a
+  # does not match: integer :: a
+  # The .*$ is needed because YAML thinks that : is some sort of separator, I think.
+  save-attribute:
+    message: local variables preferred; avoid the save attribute.
+    regexp: \bsave.*::.*$
+  
+  # The doubled curly braces is necessary to get the Python format statement to treat curly braces literally. The actual regex is "^.{132,}".
+  # The maximum under the standard is 132 characters. MS Fortran PowerStation 4.0 seems to expect 72 for Fortran 90 compliance, however, as it won't compile unless 72 is selected.
+  long-line:
+    message: limit lines to 132 characters
+    regexp: ^.{{132,}}
+  
+  # Seems to have many false positives
+  one-public-per-line:
+    message: have only one public variable, etc., per line for readability
+    regexp: ^\s*public\s[^,]*$
+    active: false
+  
+  all-private:
+    message: private statement should be by itself, making everything private by default
+    regexp: ^\s*private\s
+    active: false # Disabled because F requires all private things to be explicitly made private.
+  
+  #private-public-remove-optional-colons:
+    #message: remove optional colons for consistency
+    #regexp: ^\s*(public|private)\s::\s\b
+  
+  # <http://www.lahey.com/elf90.htm>
+  # > Type declaration statements all use double colon syntax.
+  elf90-private-public-colons-required:
+    message: ELF90 requires double colons in public and private statements
+    regexp: ^\s*(public|private)\s(?<!::\s)\b
+  
+  elf90-type-declaration-colons-required:
+    message: ELF90 requires double colons in type declaration statements
+    regexp: ^\s*({types}|type)[^:]*$
+    active: false # Too many false positives. ELF90 provides this check anyway.
+  
+  use-construct-names-loops:
+    message: use construct names for loops for additional error checking
+    regexp: \bend\sdo(?!\s\w*)$
+    active: false
+  
+  use-construct-names-ifs:
+    message: use construct names for ifs for additional error checking
+    regexp: \bend\sif(?!\s\w*)$
+    active: false
+  
+  elf90-use-write-not-print:
+    message: use write instead of print (required by ELF90 and recommended by Chapman, p. 561)
+    regexp: ^\s*print\b
+    active: true
+  
+  elf90-put-in-type-declaration:
+    message: ELF90 and/or F prohibit(s) these as standalone statements as they are redundant
+    regexp: ^\s*({elf90-f-type-declaration-only})\b
+    active: true
+  
+  elf90-f-prohibited-statement:
+    message: ELF90 and/or F prohibit(s) these statements
+    regexp: ^\s*({elf90-f-prohibited-statements})\b
+    active: true
+  
+  elf90-f-prohibited-procedure:
+    message: ELF90 and/or F prohibit(s) these procedures
+    regexp: \b({elf90-f-prohibited-procedures})\s*\(
+    active: true
+  
+  redundant-procedure:
+    message: This procedure is for a specific type. Instead use the generic form of the procedure. See Metcalf pp. 472-474.
+    regexp: \b({redundant-procedures})\s*\(
+    active: true
+  
+  f-read-write-unit-fmt-keywords-required:
+    message: F requires the unit and format keywords in read and write statements
+    regexp: ^\s*(read|write)\s*\((?!unit=)
+    active: false
+  
+  elf90-f-no-statement-separator:
+    message: ELF90 and F prohibit multiple statements per line
+    regexp: ;
+    active: true
+  
+  elf90-no-typing-on-function-statement:
+    message: ELF90 prohibits typing on function statements; set the type in the variable declaration
+    regexp: ^\s*({types})\sfunction\b
+    active: true
+  
+  # FPT doesn't like this one:
+  # > !!! WARNING !!!  Number 2185  Severity 1 (Worst 0)   Count    1
+  # > White space removed from identifier names or keywords.
+  # > See Listing File or FORTRAN output for occurrences.
+  add-optional-space:
+    message: ELF90 and Clerman \#14 require all optional spaces.
+    #regexp: \(inout\)
+    regexp: \b({missing-optional-space})\b
+    active: true
+  
+  # <https://flibs.sourceforge.net/fortran_aspects.html>
+  non-standard-true-false:
+    message: use .true. and .false. rather than .t. and .f. for portability
+    regexp: (\.t\.|\.f\.)
+    active: true
+  
+  lowercase-fmt:
+    message: format descriptors should be lowercase for consistency
+    regexp: \bfmt="[A-Z0-9\(\)]+"
+    case-sensitive: true
+    active: true
+  
+  statement-label:
+    message: Don't use statement labels
+    regexp: ^\s*\d+\s
+    active: true
+  
+  nonstandard-extension:
+    message: Replace this nonstandard extension with standard compliant code
+    regexp: ^\s*({nonstandard-extensions})\b
+    active: true
+
+  digits-after-decimal-point:
+    message: F and Clerman \#24 require digits on each side of a decimal point
+    regexp: \b\d+\.(?!\d+)\b
+    active: true
+
+  missing-kind-code:
+    message: All numbers require a kind code
+    regexp: \b\d+\.\d+(?!_)
+    active: false
+    # False positives for any number with e, for example: 8.314e3_wp
+
+  no-list-directed-output:
+    message: Don't use list-directed output as it seems to vary between compilers. Use something more specific.
+    regexp: \bfmt=\*
+    active: false
+    # Using `fmt="(a)"` on ELF90 seems to result in the first letter being cut off for strings, but `fmt=*` does not.
+
+  integer-kind-on-real:
+    message: Don't use integer kind on real.
+    regexp: \breal\(kind=IP\)
+
+  real-kind-on-integer:
+    message: Don't use real kind on integer.
+    regexp: \binteger\(kind=RP\)
+
+  use-only:
+    message: Always use the only option to get extra checks in gfortran.
+    regexp: \buse\s\w*$
+
+  allocate-stat:
+    message: Always check whether an allocate statement succeeded.
+    #regexp: \ballocate.*(?!stat=).*\) # Doesn't work.
+    regexp: \ballocate\(\w*\)$
+    active: false
+
+  use-iostat-read-fmt:
+    message: Always check iostat for I/O statements per Clerman \#104
+    #regexp: \b({has-iostat}).*(?!iostat)
+    #regexp: (?!{has-iostat}).*iostat
+    #regexp: ^\s*read\s(?!iostat)$
+    #regexp: \b({has-iostat})\((?!iostat) # `read(iostat=ios, unit=x)` works
+    #regexp: \b({has-iostat})\(unit=.*,\sfmt=".*"(?!,\siostat)
+    regexp: \bread\(unit=.*,\sfmt=".*"(?!,\siostat)
+    active: false # TODO: Re-enable later.
+
+  use-iostat-read-nml:
+    message: Always check iostat for I/O statements per Clerman \#104
+    #regexp: \bread\(unit=.*,\snml=\w*(?!,\siostat)
+    regexp: \bread\(unit=.*,\snml=\w*\)
+    active: false # TODO: Re-enable later.
+
+# These are rules that span over multiple lines, not accessible by regexp
+# If you want to edit these rules or add your own, two options:
+# - ask us.
+# - fork the code.
+structure-rules:
+  max-statements-in-context: 50
+  max-declared-locals: 12
+  min-varlen: 3
+  max-varlen: 20
+  max-arguments: 5
+  min-arglen: 3
+  max-arglen: 20
+  max-nesting-levels: 5
+  var-declaration: '(?:{types})\s*(?:\(.*\))?\s*(?:::| )\s*([A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*)'
+
+
+######################################################################################
+# These are the fortran syntax we use to parse the source
+# A priori there is no need to edit, but Fortran is so vast in time...
+######################################################################################
+
+syntax:
+  types: 
+    - real
+    - character
+    - logical
+    - integer
+    - complex
+    - double precision
+
+  operators:
+    - '\.eq\.'
+    - '=='
+    - '\.neq\.'
+    - '/='
+    - '\.gt\.'
+    - '>'
+    - '\.lt\.'
+    - '<'
+    - '\.geq\.'
+    - '>='
+    - '\.leq\.'
+    - '<='
+    - '\.le\.'
+    - '\.ge\.'
+    - '\.and\.'
+    - '\.or\.'
+
+  structs:
+    - if
+    - select
+    - case
+    - while
+
+  punctuations:
+    - ','
+    #- '\)'
+    - ';'
+
+  namespace_blocks:
+    - program
+    - module
+
+  context_blocks:
+    - function
+    - subroutine
+
+  intrinsics:
+    - ALLOCATABLE
+    - ALLOCATE
+    - ASSIGN
+    - ASSIGNMENT
+    - BACKSPACE
+    - BLOCK
+    - CALL
+    - CASE
+    - CLOSE
+    - COMMON
+    - CONTAINS
+    - CONTINUE
+    - CYCLE
+    - DATA
+    - DEALLOCATE
+    - DEFAULT
+    - DIMENSION
+    - DO
+    - ELSE
+    - ELSEWHERE
+    - END
+    - ENDFILE
+    - ENTRY
+    - EQUIVALENCE
+    - EXIT
+    - EXTERNAL
+    - FUNCTION
+    - GO
+    - GOTO
+    - IF
+    - IMPLICIT
+    - IN
+    - INOUT
+    - IN\sOUT
+    - INQUIRE
+    - INTENT
+    - INTERFACE
+    - INTRINSIC
+    - MODULE
+    - NAMELIST
+    - NONE
+    - NULLIFY
+    - ONLY
+    - OPEN
+    - OPERATOR
+    - OPTIONAL
+    - OUT
+    - PARAMETER
+    - PAUSE
+    - POINTER
+    - PRINT
+    - PRIVATE
+    - PROCEDURE
+    - PROGRAM
+    - PUBLIC
+    - READ
+    - RECURSIVE
+    - RESULT
+    - RETURN
+    - REWIND
+    - SAVE
+    - SELECT
+    - SEQUENCE
+    - STOP
+    - SUBROUTINE
+    - TARGET
+    - THEN
+    - TO
+    - TYPE
+    - USE
+    - WHERE
+    - WHILE
+    - WRITE
+    # should we or not?
+    #- IFDEF
+    #- IFNDEF
+    
+
+  named-args:
+    - ACCESS
+    - ACTION
+    - ADVANCE
+    - BLANK
+    - DELIM
+    - DIRECT
+    - EOR
+    - ERR
+    - EXIST
+    - FILE
+    - FMT
+    - FORM
+    - FORMAT
+    - FORMATTED
+    - IOLENGTH
+    - IOSTAT
+    - KIND
+    - LEN
+    - NAME
+    - NAMED
+    - NEXTREC
+    - NML
+    - NUMBER
+    - OPENED
+    - PAD
+    - POSITION
+    - READWRITE
+    - REC
+    - RECL
+    - SEQUENTIAL
+    - SIZE
+    - STAT
+    - STATUS
+    - UNFORMATTED
+    - UNIT
+
+  elf90-f-type-declaration-only:
+    - allocatable
+    - dimension
+    - intent
+    - optional
+    - parameter
+    - pointer
+    - save
+    - target
+
+  elf90-f-prohibited-statements:
+    - assign
+    - block\sdata
+    - common
+    - continue
+    - intrinsic
+    - data
+    - double\sprecision
+    - do\swhile
+    - entry
+    - equivalence
+    - external
+    - format
+    - go\sto
+    - goto
+    - include
+    #- nullify
+    - pause
+    - sequence
+
+# From Metcalf pp. 472-474
+  redundant-procedures:
+    - ifix
+    - idint
+    - float
+    - sng1
+    - max0
+    - amax1
+    - dmax1
+    - amax0
+    - max1
+    - min0
+    - amin1
+    - dmin1
+    - amin0
+    - min1
+    - isign
+    - dsign
+    - idim
+    - ddim
+    - dint
+    - dnint
+    - idnint
+    - iabs
+    - dabs
+    - cabs
+    - amod
+    - dmod
+    - dsqrt
+    - csqrt
+    - dexp
+    - cexp
+    - alog
+    - dlog
+    - clog
+    - alog10
+    - dlog10
+    - dsin
+    - csin
+    - dcos
+    - ccos
+    - dtan
+    - dasin
+    - dacos
+    - datan
+    - datan2
+    - dsinh
+    - dcosh
+    - dtanh
+
+# <https://web.archive.org/web/20140424064256/https://www.cisl.ucar.edu/zine/96/fall/articles/2.F.language.html>
+# > The following redundant intrinsic procedures are omitted from F: achar, iachar, lge, lgt, lge, llt, transfer, dble, dim, dprod, and mod. The transfer function is not really redundant, but it is not portable.
+# Here I'm not listing procedures in the redundant-procedures list.
+  elf90-f-prohibited-procedures:
+    - achar
+    - dble
+    - dim
+    - dprod
+    - iachar
+    - lge
+    - lgt
+    - lle
+    - llt
+    - mod
+    - transfer
+
+# <https://community.intel.com/t5/Intel-Fortran-Compiler/CALL-EXIT-vs-STOP/m-p/1083147?profile.language=en>
+  nonstandard-extensions:
+    - call\sexit
+    - iargc
+    - get_argument
+
+# Clerman table 3.1, p. 17
+  missing-optional-space:
+    - blockdata
+    - elseif
+    - endassociate
+    - enddo
+    - endfile
+    - endfunction
+    - endinterface
+    - endprocedure
+    - endselect
+    - endtype
+    - goto
+    - selectcase
+    - doubleprecision
+    - elsewhere
+    - endblockdata
+    - endenum
+    - endforall
+    - endif
+    - endmodule
+    - endprogram
+    - endsubroutine
+    - endwhere
+    - inout
+    - selectype
+
+  has-iostat:
+    - read
+    #- write # Commented out as unit=* doesn't really need to check iostat.
+    - open
+    - close
+    - backspace
+    - endfile
+    - rewind
+    - inquire

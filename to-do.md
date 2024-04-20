@@ -18,16 +18,6 @@ Priorities:
     - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
     - better `random_seed()`
     - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
-- Add linters.
-    - <https://github.com/cnescatlab/i-CodeCNES/>
-        - And script you use to integrate with Makefile.
-    - Flinter
-        - Add directory for flinter in tests to make sure that Flinter actually flags bad code. Have one test for good code too which should not be flagged.
-    - Camfort
-    - Later:
-        - <http://simconglobal.com/fpt_summary.html>
-        - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
-        - <https://www.forcheck.nl/index.html>
 - Add code coverage.
 - fmutate.f90:
     - Start with deleting lines and one other mutation operator. The reason to have two is to have the infrastructure for multiple mutation operators from the start.
@@ -200,3 +190,10 @@ Later:
 - To-do routine in code to cause compilation to fail.
 - `nmllog`
     - When nvfortran supports writing namelists to internal variables, support adding a custom namelist to the output. Then you can have custom variables in `nmllog` output.
+- Add linters.
+    - Flinter
+        - Add directory for flinter in tests to make sure that Flinter actually flags bad code. Have one test for good code too which should not be flagged.
+    - Camfort
+    - <http://simconglobal.com/fpt_summary.html>
+    - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
+    - <https://www.forcheck.nl/index.html>

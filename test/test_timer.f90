@@ -61,7 +61,7 @@ call logger%close()
 contains
 
 subroutine timeit_test()
-    print *, 5
+    write(unit=*, fmt=*) 5
 end subroutine timeit_test
 
 end program test_timer

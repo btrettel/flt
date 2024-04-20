@@ -47,6 +47,7 @@ DBGOBJEXT = -dbg.$(OBJEXT)
 # Why run `make valgrind` here? As it uses gfortran and is more strict.
 .PHONY: all
 all:
+	$(MAKE) lint
 	$(MAKE) valgrind # gfortran
 	$(MAKE) clean
 	$(MAKE) ifx
@@ -79,6 +80,10 @@ test: $(NML)
 .PHONY: valgrind
 valgrind:
 	$(MAKE) test RUN='valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 --show-reachable=no ./'
+
+# TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
+lint:
+	$(RUN)lint-wrapper.py src/*.f90 test/*.f90
 
 ###################
 # Other compilers #

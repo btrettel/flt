@@ -87,7 +87,7 @@ subroutine logical_false(this, condition, message_in)
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     logical, intent(in)          :: condition
     character(len=*), intent(in) :: message_in
@@ -125,7 +125,7 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use checks, only: abs_tolerance, is_close, assert
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     real(kind=WP), intent(in)    :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
@@ -186,7 +186,7 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use checks, only: abs_tolerance, is_close, assert
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     real(kind=WP), intent(in)    :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
@@ -246,7 +246,7 @@ subroutine real_gt(this, returned_real, compared_real, message_in)
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     real(kind=WP), intent(in)    :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
@@ -287,7 +287,7 @@ subroutine integer5_eq(this, returned_integer, compared_integer, message_in)
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     integer, intent(in)          :: returned_integer, compared_integer
     character(len=*), intent(in) :: message_in
@@ -328,7 +328,7 @@ subroutine integer10_eq(this, returned_integer, compared_integer, message_in)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use prec, only: I10
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     integer(kind=I10), intent(in) :: returned_integer, compared_integer
     character(len=*), intent(in)  :: message_in
@@ -368,7 +368,7 @@ subroutine integer_ne(this, returned_integer, compared_integer, message_in)
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     integer, intent(in)          :: returned_integer, compared_integer
     character(len=*), intent(in) :: message_in
@@ -408,7 +408,7 @@ subroutine integer5_ge(this, returned_integer, compared_integer, message_in)
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     integer, intent(in)          :: returned_integer, compared_integer
     character(len=*), intent(in) :: message_in
@@ -449,7 +449,7 @@ subroutine integer10_ge(this, returned_integer, compared_integer, message_in)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use prec, only: I10
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     integer(kind=I10), intent(in) :: returned_integer, compared_integer
     character(len=*), intent(in)  :: message_in
@@ -489,7 +489,7 @@ subroutine integer5_le(this, returned_integer, compared_integer, message_in)
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     integer, intent(in)          :: returned_integer, compared_integer
     character(len=*), intent(in) :: message_in
@@ -530,7 +530,7 @@ subroutine integer10_le(this, returned_integer, compared_integer, message_in)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use prec, only: I10
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     integer(kind=I10), intent(in) :: returned_integer, compared_integer
     character(len=*), intent(in)  :: message_in
@@ -570,7 +570,7 @@ subroutine character_eq(this, returned_character_in, compared_character_in, mess
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     character(len=*), intent(in) :: returned_character_in, compared_character_in
     character(len=*), intent(in) :: message_in
@@ -627,7 +627,7 @@ end subroutine start_tests
 subroutine end_tests(this)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     integer       :: n_tests, n_failures
     real(kind=WP) :: duration ! in seconds
@@ -655,7 +655,7 @@ subroutine end_tests(this)
 end subroutine end_tests
 
 subroutine validate_timestamp(tests, timestamp, message)
-    type(test_results_type), intent(inout) :: tests
+    type(test_results_type), intent(in out) :: tests
     
     character(len=*), intent(in) :: timestamp, message
     integer :: year, month, day, hour, minutes, seconds, milliseconds, timezone_hour, timezone_minutes, rc_read

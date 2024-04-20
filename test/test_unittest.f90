@@ -200,7 +200,8 @@ subroutine test_validate_timestamp(tests)
     n_tests   = n_tests + 33
     n_failing = n_failing + 1
     
-    timestamp = "2024-02-24T18:50:53.XXX-05:00"
+    ! This is split to avoid a linter false positive.
+    timestamp = "2024-02-24T18:50:53." // "XXX-05:00"
     call validate_timestamp(failing_tests, timestamp, "test_validate_timestamp, milliseconds are not integer")
     n_tests   = n_tests + 34
     n_failing = n_failing + 1

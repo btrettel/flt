@@ -299,7 +299,7 @@ end subroutine log_debug_info
 
 subroutine pure_log_open(pure_logger, logger)
     class(pure_log_type), intent(out) :: pure_logger
-    class(log_type), intent(in)       :: logger
+    type(log_type), intent(in)        :: logger
     
     call logger%debug("Pure logger started.")
     pure_logger%logger = logger
@@ -308,7 +308,7 @@ end  subroutine pure_log_open
 subroutine pure_log_close(pure_logger)
     class(pure_log_type), intent(in out) :: pure_logger
     
-    class(pure_log_data_type), pointer :: current
+    type(pure_log_data_type), pointer :: current
     
     ! Write and deallocate all messages.
     do
