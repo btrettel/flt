@@ -4,11 +4,13 @@ use prec, only: WP
 implicit none
 private
 
+! No assertions are here for the size of the `dv` member variable as normal bounds checks will catch inconsistencies in that.
+! Adding these assertions might be necessary if I switch to using `do` loops for speed.
+
 public :: f
 
 ! Both the dependent and independent variables need to be of type `rd`.
 type, public :: ad
-    integer                    :: n_dv  ! total number of differentiable variables
     real(kind=WP)              :: v     ! function value
     real(kind=WP), allocatable :: dv(:) ! function derivatives value
 contains
@@ -65,7 +67,6 @@ elemental subroutine init_const(x, v, n_dv)
     
     allocate(x%dv(n_dv))
 
-    x%n_dv = n_dv
     x%v    = v
     x%dv   = 0.0_WP
 end subroutine init_const
@@ -75,7 +76,7 @@ end subroutine init_const
 
 elemental function ad_ad_add(ad_1, ad_2)
     ! Adds two `rd`s.
-
+    
     class(ad), intent(in) :: ad_1, ad_2
     
     type(ad) :: ad_ad_add
@@ -250,7 +251,9 @@ end function ad_integer_exponentiate
 
 ! No `rd**rd` as that's not likely to happen in CFD.
 
-function f(x, y)
+pure function f(x, y)
+    ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.
+    
     type(ad), intent(in) :: x, y
     
     type(ad) :: f

@@ -106,12 +106,6 @@ Later:
     - FLOP counting.
     - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
-- fad.f90: Forward-mode automatic differentiation. (complete but not yet added)
-    - Modify your AD to be vectorized. See personal notes on automatic differentiation for other speed ideas too.
-    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
-        - inside `type` `contains`: `procedure :: mycomplex_plus_mycomplex`, `generic, public :: operator(+) => mycomplex_plus_mycomplex`
-        - <https://fortran-lang.discourse.group/t/what-is-a-pure-function/4654/36>:
-            - > you want to define such overloads as type bound operators (which is paramount from a software design perspective: you want the user to import the algebra with a `use, only: derived_type_name` statement alone, without the fear that he/she could forget about the operators)
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
     - Enforce some Power of 10 rules, particularly procedure lengths.
     - Start tracking comment density and adding more code comments. Density > 25%?
@@ -201,3 +195,5 @@ Later:
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
     - <https://github.com/perazz/fortran-regex>
     - Fork, add asserts and tests? Or just use as-is to get started faster?
+- autodiff.f90: Forward-mode automatic differentiation.
+    - Modify your AD to use SIMD vectorization. Use `do concurrent` with OpenMP or OpenACC directives? See personal notes on automatic differentiation for other speed ideas too.

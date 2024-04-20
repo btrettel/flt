@@ -27,9 +27,6 @@ integer, parameter :: N_DV = 5
 call logger%open("autodiff.nml")
 call tests%start_tests(logger)
 
-! tests for autodiff.f90
-! ----------------------
-
 a = 7.0_WP
 b = 12.0_WP
 
@@ -45,12 +42,9 @@ call tests%real_eq(z%v, -3.3_WP, "rd_const, value")
 call tests%real_eq(z%dv(1), 0.0_WP, "rd_const, derivative (dvar 1)")
 call tests%real_eq(z%dv(2), 0.0_WP, "rd_const, derivative (dvar 2)")
 
-call tests%integer_eq(size(x%dv), x%n_dv, "size(x%dv) = x%n_dv")
-call tests%integer_eq(x%n_dv, N_DV, "x%n_dv = N_DV")
-call tests%integer_eq(size(y%dv), y%n_dv, "size(y%dv) = y%n_dv")
-call tests%integer_eq(y%n_dv, N_DV, "y%n_dv = N_DV")
-call tests%integer_eq(size(z%dv), z%n_dv, "size(z%dv) = z%n_dv")
-call tests%integer_eq(z%n_dv, N_DV, "z%n_dv = N_DV")
+call tests%integer_eq(size(x%dv), N_DV, "size(x%dv) = N_DV")
+call tests%integer_eq(size(y%dv), N_DV, "size(y%dv) = N_DV")
+call tests%integer_eq(size(z%dv), N_DV, "size(z%dv) = N_DV")
 
 z = x + y
 
