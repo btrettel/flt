@@ -50,7 +50,7 @@ subroutine logical_true(this, condition, message_in)
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(inout) :: this
+    class(test_results_type), intent(in out) :: this
     
     logical, intent(in)          :: condition
     character(len=*), intent(in) :: message_in

@@ -33,6 +33,7 @@ Priorities:
         - <https://www.forcheck.nl/index.html>
 - Add code coverage.
 - fmutate.f90:
+    - Start with deleting lines and one other mutation operator. The reason to have two is to have the infrastructure for multiple mutation operators from the start.
     - Get papers for FORTRAN 77 mutation tester to see what that did.
         - acree_mutation_1979
         - budd_mutation_1979
@@ -198,3 +199,7 @@ Later:
     - Fork, add asserts and tests? Or just use as-is to get started faster?
 - autodiff.f90
     - Modify your AD to use SIMD vectorization. Use `do concurrent` with OpenMP or OpenACC directives? See personal notes on automatic differentiation for other speed ideas too.
+    - Can declare certain derivatives as "active" or "inactive to easily enable or disable (respectively) differentiation with respect to particular variables at compile or run time for speed. Not yet sure how to pick `dv` indices in this case. With allocatable `dv`, this can be done at run time.
+- To-do routine in code to cause compilation to fail.
+- `nmllog`
+    - When nvfortran supports writing namelists to internal variables, support adding a custom namelist to the output. Then you can have custom variables in `nmllog` output.

@@ -123,7 +123,7 @@ subroutine check(condition, logger, message, rc)
     logical, intent(in)          :: condition ! condition to check
     type(log_type), intent(in)   :: logger
     character(len=*), intent(in) :: message   ! error message to print if `condition` is `.false.`
-    integer, intent(inout)       :: rc        ! number of errors encountered
+    integer, intent(in out)      :: rc        ! number of errors encountered
     
     if (.not. condition) then
         call logger%error(message)

@@ -54,6 +54,27 @@ contains
     procedure :: debug_info => log_debug_info
 end type log_type
 
+type, public :: pure_log_type
+    type(pure_log_data_type), pointer :: head => null()
+    type(pure_log_data_type), pointer :: tail => null()
+    type(log_type)                    :: logger
+contains
+    procedure :: open => pure_log_open
+    procedure :: close => pure_log_close
+    procedure :: debug => pure_log_debug
+    procedure :: info => pure_log_info
+    procedure :: warning => pure_log_warning
+    procedure :: error => pure_log_error
+    procedure :: critical => pure_log_critical
+end type pure_log_type
+
+type, public :: pure_log_data_type
+    type(pure_log_data_type), pointer :: next => null()
+    integer                           :: level
+    character(len=:), allocatable     :: message
+    ! `timestamp` not included as no time procedures can be `pure`
+end type pure_log_data_type
+
 contains
 
 function now()
@@ -111,7 +132,7 @@ subroutine log_open(this, filename, level, file_level, stdout_level)
 end subroutine log_open
 
 subroutine log_close(this)
-    class(log_type), intent(inout) :: this
+    class(log_type), intent(in out) :: this
     
     close(unit=this%unit)
     this%unit = UNIT_CLOSED
@@ -270,5 +291,92 @@ subroutine log_debug_info(this)
     ! test_nmllog.f90.
     write(unit=this%unit, nml=debug_info) !, round="down")
 end subroutine log_debug_info
+
+! Pure logging
+! ------------
+
+subroutine pure_log_open(pure_logger, logger)
+    class(pure_log_type), intent(out) :: pure_logger
+    class(log_type), intent(in)       :: logger
+    
+    call logger%debug("Pure logger started.")
+    pure_logger%logger = logger
+end  subroutine pure_log_open
+
+subroutine pure_log_close(pure_logger)
+    class(pure_log_type), intent(in out) :: pure_logger
+    
+    class(pure_log_data_type), pointer :: current
+    
+    ! Write and deallocate all messages.
+    do
+        if (.not. associated(pure_logger%head)) then
+            exit
+        end if
+        
+        call log_writer(pure_logger%logger, pure_logger%head%message, pure_logger%head%level)
+        
+        current => pure_logger%head
+        pure_logger%head => pure_logger%head%next
+        deallocate(current)
+    end do
+    
+    call pure_logger%logger%debug("Pure logger ended.")
+end subroutine pure_log_close
+
+pure subroutine pure_log_writer(pure_logger, message, level)
+    type(pure_log_type), intent(in out) :: pure_logger
+    
+    character(len=*), intent(in) :: message
+    integer, intent(in)          :: level
+    
+    type(pure_log_data_type), pointer :: pure_log_data
+    
+    allocate(pure_log_data)
+    pure_log_data%message = message
+    pure_log_data%level   = level
+    
+    pure_logger%tail => pure_log_data
+end subroutine pure_log_writer
+
+pure subroutine pure_log_debug(this, message)
+    class(pure_log_type), intent(in out) :: this
+    
+    character(len=*), intent(in) :: message
+    
+    call pure_log_writer(this, message, DEBUG_LEVEL)
+end subroutine pure_log_debug
+
+pure subroutine pure_log_info(this, message)
+    class(pure_log_type), intent(in out) :: this
+    
+    character(len=*), intent(in) :: message
+    
+    call pure_log_writer(this, message, INFO_LEVEL)
+end subroutine pure_log_info
+
+pure subroutine pure_log_warning(this, message)
+    class(pure_log_type), intent(in out) :: this
+    
+    character(len=*), intent(in) :: message
+    
+    call pure_log_writer(this, message, WARNING_LEVEL)
+end subroutine pure_log_warning
+
+pure subroutine pure_log_error(this, message)
+    class(pure_log_type), intent(in out) :: this
+    
+    character(len=*), intent(in) :: message
+    
+    call pure_log_writer(this, message, ERROR_LEVEL)
+end subroutine pure_log_error
+
+pure subroutine pure_log_critical(this, message)
+    class(pure_log_type), intent(in out) :: this
+    
+    character(len=*), intent(in) :: message
+    
+    call pure_log_writer(this, message, CRITICAL_LEVEL)
+end subroutine pure_log_critical
 
 end module nmllog

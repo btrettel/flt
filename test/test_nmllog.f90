@@ -22,6 +22,7 @@ call tests%start_tests(logger)
 call test_now(tests)
 call test_log_subroutines(tests)
 call test_log_debug_info(tests)
+!call test_pure_log(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -32,7 +33,7 @@ subroutine test_now(tests)
     use nmllog, only: now
     use unittest, only: validate_timestamp
     
-    type(test_results_type), intent(inout) :: tests
+    type(test_results_type), intent(in out) :: tests
     
     character(len=TIMESTAMP_LEN) :: timestamp
     
@@ -47,7 +48,7 @@ subroutine test_log_subroutines(tests)
     use nmllog, only: DEBUG_LEVEL, DEBUG_STRING, INFO_STRING, WARNING_STRING, ERROR_STRING, CRITICAL_STRING, NML_RECL
     use unittest, only: validate_timestamp
     
-    type(test_results_type), intent(inout) :: tests
+    type(test_results_type), intent(in out) :: tests
     
     type(log_type) :: test_logger
     integer        :: nml_unit, rc_nml, num_nml_groups, n_debug, n_info, n_warning, n_error, n_critical, n_not_set
@@ -164,7 +165,7 @@ subroutine test_log_debug_info(tests)
     use nmllog, only: DEBUG_STRING, NML_RECL
     use unittest, only: validate_timestamp
     
-    type(test_results_type), intent(inout) :: tests
+    type(test_results_type), intent(in out) :: tests
     
     type(log_type) :: test_logger
     integer        :: nml_unit
@@ -243,5 +244,14 @@ subroutine test_log_debug_info(tests)
     call tests%integer_eq(integer_range, 9, "test_log_debug_info, integer_range")
     call tests%integer_eq(integer_huge, 2147483647, "test_log_debug_info, integer_huge")
 end subroutine test_log_debug_info
+
+!subroutine test_pure_log(tests)
+!    use nmllog, only: pure_log_type
+!    use unittest, only: validate_timestamp
+    
+!    type(test_results_type), intent(in out) :: tests
+    
+    
+!end subroutine test_pure_log
 
 end program test_nmllog

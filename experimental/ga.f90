@@ -96,7 +96,7 @@ pure subroutine clip(bounds, x)
     ! Clip variable `x` within upper and lower bounds.
     
     type(bounds_type), intent(in) :: bounds
-    real(kind=WP), intent(inout) :: x
+    real(kind=WP), intent(in out) :: x
     
     x = min(x, bounds%upper)
     x = max(x, bounds%lower)

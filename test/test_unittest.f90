@@ -135,7 +135,7 @@ subroutine test_validate_timestamp(tests)
     use unittest, only: validate_timestamp
     use nmllog, only: CRITICAL_LEVEL
     
-    type(test_results_type), intent(inout) :: tests
+    type(test_results_type), intent(in out) :: tests
     
     character(len=:), allocatable :: timestamp
     type(test_results_type)       :: failing_tests
@@ -305,7 +305,7 @@ subroutine test_read_unittest_nml(tests)
     use unittest, only: validate_timestamp
     use nmllog, only: TIMESTAMP_LEN, NML_RECL
     
-    type(test_results_type), intent(inout) :: tests
+    type(test_results_type), intent(in out) :: tests
     
     character(len=*), parameter :: TEST_FILENAME = "test.nml"
     type(test_results_type)     :: nml_tests
