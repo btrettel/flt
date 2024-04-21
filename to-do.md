@@ -46,8 +46,6 @@ Priorities:
         - changing order of magnitude of numbers
         - moving parentheses (common mistake)
     - When complete, add here: <https://fortranwiki.org/fortran/show/Mutation+testing+frameworks>
-- Add ifort back to the Makefile due to possible performance benefits.
-- Upgrade ifx and change `-check all,nouninit` to `-check all`.
 - `purerng`:
     - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
     - Change `I10` to `INT64` to work with xoshiro256**.

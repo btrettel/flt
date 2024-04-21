@@ -53,6 +53,8 @@ all:
 	$(MAKE) clean
 	$(MAKE) ifx
 	$(MAKE) clean
+	$(MAKE) ifort
+	$(MAKE) clean
 	$(MAKE) nvfortran
 	$(MAKE) clean
 	@echo "***************************************"
@@ -97,11 +99,17 @@ coverage: html-cov/index.html
 # Other compilers #
 ###################
 
-# `-check uninit` has false positives on Linux for the moment.
+# `-check uninit` has false positives with namelists for the moment.
 # <https://community.intel.com/t5/Intel-Fortran-Compiler/Known-bug-with-check-all-or-check-uninit-in-ifx-2024-0-0-for/m-p/1545825>
 .PHONY: ifx
 ifx:
 	$(MAKE) test FC=ifx FFLAGS='-warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -diag-error-limit=1 -init=snan,arrays' DBGFLAGS='-O0 -g -traceback -debug full -check all,nouninit -fpe0'
+
+# ifort is here due to possible performance benefits on x86.
+# `-init=snan,arrays` seems to lead to false positives with ifort.
+.PHONY: ifort
+ifort:
+	$(MAKE) test FC=ifort FFLAGS='-diag-disable=10448 -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand f18 -diag-error-limit=1' DBGFLAGS='-O0 -g -traceback -debug full -check all -fpe0'
 
 .PHONY: nvfortran
 nvfortran:
