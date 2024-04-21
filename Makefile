@@ -29,7 +29,7 @@ NML = autodiff.nml checks.nml nmllog.nml prec.nml purerng.nml timer.nml unittest
 
 FC        = gfortran
 FFLAGS    = -Wall -Wextra -Werror -pedantic-errors -Wno-maybe-uninitialized -std=f2018 -Wconversion -Wconversion-extra -fimplicit-none -fmax-errors=1 -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=-2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -ffree-line-length-132
-DBGFLAGS  = -Og -g -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow,underflow,denormal
+DBGFLAGS  = -Og -g -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow,underflow,denormal --coverage
 # --coverage
 # -fsanitize=leak doesn't work on trident for some reason. It does work on bison.
 BINEXT    = 
@@ -39,6 +39,7 @@ OFLAG     = -o
 OBJEXT    = o
 OBJFLAGS  = -c -o
 DBGOBJEXT = -dbg.$(OBJEXT)
+COV       = lcov_tests.info
 
 ###############
 # Boilerplate #
@@ -63,7 +64,7 @@ all:
 
 .PHONY: clean
 clean:
-	$(RM) *.nml *.mod test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg
+	$(RM) *.nml *.mod *.gcda *.gcno test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg src/*.gcda src/*.gcno $(COV) html-cov/
 
 # TODO: `.f90$(OBJEXT):`
 
@@ -84,6 +85,13 @@ valgrind:
 # TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
 lint:
 	$(RUN)lint-wrapper.py src/*.f90 test/*.f90
+
+# TODO: Make depend on *.gcda files?
+html-cov/index.html: $(NML)
+	lcov --directory . --directory src/ --capture --output-file $(COV)
+	genhtml -t "flt" -o html-cov $(COV)
+
+coverage: html-cov/index.html
 
 ###################
 # Other compilers #

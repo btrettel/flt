@@ -2,23 +2,6 @@
 
 Priorities:
 
-- Add ifort back to the Makefile due to possible performance benefits.
-- Upgrade ifx and change `-check all,nouninit` to `-check all`.
-- `purerng`:
-    - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
-    - Change `I10` to `INT64` to work with xoshiro256**.
-    - Test that `INT64` has enough precision for the `lecuyer` RNG.
-    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
-    - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
-        - lecuyer_implementing_1991
-    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
-        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
-        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
-        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
-    - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
-    - better `random_seed()`
-    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
-- Add code coverage.
 - fmutate.f90:
     - Start with deleting lines and one other mutation operator. The reason to have two is to have the infrastructure for multiple mutation operators from the start.
     - Get papers for FORTRAN 77 mutation tester to see what that did.
@@ -63,6 +46,22 @@ Priorities:
         - changing order of magnitude of numbers
         - moving parentheses (common mistake)
     - When complete, add here: <https://fortranwiki.org/fortran/show/Mutation+testing+frameworks>
+- Add ifort back to the Makefile due to possible performance benefits.
+- Upgrade ifx and change `-check all,nouninit` to `-check all`.
+- `purerng`:
+    - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
+    - Change `I10` to `INT64` to work with xoshiro256**.
+    - Test that `INT64` has enough precision for the `lecuyer` RNG.
+    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
+    - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
+        - lecuyer_implementing_1991
+    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
+        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
+        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
+        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
+    - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
+    - better `random_seed()`
+    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
 - nmlfuzz.f90: namelist fuzz tester
     - Make depend on ga.f90
     - Use metaprogramming to make work since Fortran can't really do that well at present?
