@@ -2,6 +2,15 @@
 
 Priorities:
 
+- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
+    - Test that I get a compilation error when incompatible dimensions are used.
+    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
+    - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
+
+Later:
+
+- add names to deeply nested `if`s and `do`s in unittest
+- Search for `TODO` and finish those tasks.
 - fmutate.f90:
     - Start with deleting lines and one other mutation operator. The reason to have two is to have the infrastructure for multiple mutation operators from the start.
     - Get papers for FORTRAN 77 mutation tester to see what that did.
@@ -60,18 +69,6 @@ Priorities:
     - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
     - better `random_seed()`
     - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
-- nmlfuzz.f90: namelist fuzz tester
-    - Make depend on ga.f90
-    - Use metaprogramming to make work since Fortran can't really do that well at present?
-        - Have a computer-generated module that converts from genetic algorithm chromosome to namelist.
-    - Make similar to <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>.
-    - Use fuzzing primarily to find assertion violations with integration tests.
-    - I guess the objective function includes the code coverage and whether or not an assertion violation occurred.
-
-Later:
-
-- add names to deeply nested `if`s and `do`s in unittest
-- Search for `TODO` and finish those tasks.
 - compiler_tests.f90: Tests for intrinsics used in these libraries.
     - How can I identify all the intrinsics used here?
     - accuracy of important intrinsics
@@ -82,16 +79,20 @@ Later:
         - `chromo%f`
         - `chromo%f_set`
         - `chromo%out(:)` (for non-objective function outputs that may be of interest)
-- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
-    - Test that I get a compilation error when incompatible dimensions are used.
-    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
-    - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
 - debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
     - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
         - parker_monte_1997-1
     - FLOP counting.
     - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
+    - Use `pure` logging for this?
+- nmlfuzz.f90: namelist fuzz tester
+    - Make depend on ga.f90
+    - Use metaprogramming to make work since Fortran can't really do that well at present?
+        - Have a computer-generated module that converts from genetic algorithm chromosome to namelist.
+    - Make similar to <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>.
+    - Use fuzzing primarily to find assertion violations with integration tests.
+    - I guess the objective function includes the code coverage and whether or not an assertion violation occurred.
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
     - Enforce some Power of 10 rules, particularly procedure lengths.
     - Start tracking comment density and adding more code comments. Density > 25%?

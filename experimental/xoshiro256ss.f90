@@ -46,7 +46,7 @@ elemental subroutine xoshiro256ss_next(rng, harvest)
     ! <https://github.com/DSCF-1224/xoshiro-fortran/blob/main/src/imp_transform_to_unit_interval.f90>
     ! <https://github.com/jannisteunissen/xoroshiro128plus_fortran/blob/master/m_xoroshiro128plus.f90> (`function U01(self)`)
     ! Some explanations of how this works for other languages:
-    ! <https://dotat.at/@/2023-06-23-random-double.html>
+    ! <https://dotat.at/@/2023-06-23-random-double.html#bithacking-solution>
     ! <https://stackoverflow.com/a/75991248/1124489>
     iharvest = ior(shiftl(1023_INT64, 52), shiftr(iharvest, 12))
     harvest  = transfer(iharvest, harvest) - 1.0_REAL64
@@ -107,6 +107,13 @@ pure subroutine xoshiro256ss_jump(rng)
     rng%seed = s
 end subroutine xoshiro256ss_jump
 
+! TODO
+! <https://prng.di.unimi.it/>
+! <https://prng.di.unimi.it/splitmix64.c>
+! <https://github.com/fortran-lang/stdlib/blob/master/src/stdlib_random.fypp#L91>
+! <https://fortranwiki.org/fortran/show/ieor>
+! <https://www.geeksforgeeks.org/bitwise-operators-in-c-cpp/>
+! <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_XOR_assignment>
 !pure subroutine splitmix64_next()
     
 !end subroutine splitmix64_next
