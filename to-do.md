@@ -2,10 +2,20 @@
 
 Priorities:
 
-- dimmod.f90, dimgen.f90: Generates a module named `dimcheck` which provides compile-time checking of dimensions. (started, paused for now)
+- pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
     - Test that I get a compilation error when incompatible dimensions are used.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
-    - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
+    - Namelist function to define setup.
+        - `config` namelist to define physical dimensions (like `L`, `M`, `T`)
+        - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`
+    - Output `use` statement with shortcut dimensions.
+    - No exponentiation operator, instead use `sqrt`, `cbrt`, and `square` similar to Numpy.
+    - Unary negation.
+    - How to handle physical dimensions with AD?
+        - `diff(f, x)`: Different return types depending on `x` and `y`.
+        - But how can I link `x` to the index of the `dv` member variable? I could try something like `diff(f, x, 1)` where `1` is the index.
+        - Alternatively, for `diff(f, x)`, since `x` doesn't actually correspond to the *numerical value* of `x`, `x` could be a variable with the same type and a value `x%v` which corresponds to the index to differentiate with respect to.
+        - I could make `x` a different type than whatever its physical dimensions would imply. This different type would be a differential version which could contain the index instead of the value.
 
 Later:
 
@@ -195,3 +205,5 @@ Later:
     - <http://simconglobal.com/fpt_summary.html>
     - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
     - <https://www.forcheck.nl/index.html>
+- pdim_mod.f90:
+    - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.

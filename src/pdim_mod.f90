@@ -5,20 +5,27 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-! TODO: No exponentiation operator, instead use `sqrt`, `cbrt`, and `square` similar to Numpy.
-
 module pdim_mod
 
 use prec, only: SP
 implicit none
 
 public :: pdim_label
-public :: write_type
+public :: write_type, write_as_operators, write_md_operators, write_binary_operator
+public :: linspace
 
-integer, parameter     :: N_PDIMS        = 3, &
-                          PDIM_LABEL_LEN = 1 + N_PDIMS * 9, &
-                          PDIM_HUMAN_LEN = 126
-character(len=N_PDIMS) :: PDIM_CHARS = "LMT"
+integer, parameter :: N_PDIMS        = 3, &
+                      PDIM_LABEL_LEN = 1 + N_PDIMS * 9, &
+                      PDIM_HUMAN_LEN = 126
+
+real(kind=SP) :: min_exponents(N_PDIMS)   = [-2.0_SP, -2.0_SP, -2.0_SP], &
+                 max_exponents(N_PDIMS)   = [2.0_SP, 2.0_SP, 2.0_SP], &
+                 !exponent_deltas(N_PDIMS) = [1.0_SP/6.0_SP, 1.0_SP/6.0_SP, 1.0_SP/6.0_SP]
+                 exponent_deltas(N_PDIMS) = [1.0_SP, 1.0_SP, 1.0_SP]
+
+character(len=N_PDIMS), parameter :: PDIM_CHARS     = "LMT"
+character(len=*), parameter       :: PDIM_TYPE_DEFN = "real(kind=WP)"
+!character(len=*), parameter       :: PDIM_TYPE_DEFN = "type(ad)"
 
 type, public :: pdim_type
     real(kind=SP) :: e(N_PDIMS)
@@ -61,6 +68,7 @@ subroutine write_type(file_unit, i_pdim, pdims)
     
     write(unit=file_unit, fmt="(2a)") "type, public :: ", pdim_label(pdims(i_pdim))
     write(unit=file_unit, fmt="(2a)") "    ! ", trim(pdim_human_readable(pdims(i_pdim)))
+    write(unit=file_unit, fmt="(3a)") "    ", PDIM_TYPE_DEFN, " :: v"
     write(unit=file_unit, fmt="(a)") "contains"
     
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: a_", &
@@ -92,23 +100,31 @@ subroutine write_type(file_unit, i_pdim, pdims)
     ! TODO: exponentiate
 end subroutine write_type
 
-subroutine write_operators(file_unit, pdim_left, pdim_right)
+subroutine write_as_operators(file_unit, pdim)
+    integer, intent(in)         :: file_unit
+    type(pdim_type), intent(in) :: pdim
+    
+    ! add
+    call write_binary_operator(file_unit, pdim, pdim, pdim, "+")
+    
+    ! subtract
+    call write_binary_operator(file_unit, pdim, pdim, pdim, "-")
+end subroutine write_as_operators
+
+subroutine write_md_operators(file_unit, pdim_left, pdim_right)
     integer, intent(in)         :: file_unit
     type(pdim_type), intent(in) :: pdim_left, pdim_right
     
     type(pdim_type) :: pdim_m, pdim_d
     
-    ! TODO: add
-    ! TODO: subtract
-    
-    ! TODO: multiply
+    ! multiply
     pdim_m%e = pdim_left%e + pdim_right%e
+    call write_binary_operator(file_unit, pdim_left, pdim_right, pdim_d, "*")
     
-    ! TODO: divide
+    ! divide
     pdim_d%e = pdim_left%e - pdim_right%e
-    
-    write(unit=file_unit, fmt=*) pdim_d%e
-end subroutine write_operators
+    call write_binary_operator(file_unit, pdim_left, pdim_right, pdim_d, "/")
+end subroutine write_md_operators
 
 subroutine write_binary_operator(file_unit, pdim_left, pdim_right, pdim_out, op)
     use checks, only: assert
@@ -129,8 +145,8 @@ subroutine write_binary_operator(file_unit, pdim_left, pdim_right, pdim_out, op)
             op_label = "m"
         case ("/")
             op_label = "d"
-        case ("**")
-            op_label = "e"
+!        case ("**")
+!            op_label = "e"
         case default
             error stop "write_binary_operator: invalid op"
     end select
@@ -147,7 +163,7 @@ subroutine write_binary_operator(file_unit, pdim_left, pdim_right, pdim_out, op)
     
     write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%e = pdim_left%e ", op, " pdim_right%e"
     
-    write(unit=file_unit, fmt="(2a)") "end function ", binary_operator_procedure
+    write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
 end subroutine write_binary_operator
 
 pure function linspace(lower, upper, n)

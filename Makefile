@@ -183,7 +183,7 @@ nmllog.nml: test_nmllog$(BINEXT)
 # pdim_mod #
 ############
 
-test_pdim_mod$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
+test_pdim_mod$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_mod.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_mod.f90
 
 pdim_mod.nml: test_pdim_mod$(BINEXT)
