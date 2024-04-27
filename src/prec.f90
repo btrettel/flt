@@ -22,7 +22,7 @@ integer, public, parameter :: I10 = selected_int_kind(10)
 
 ! <https://fortranwiki.org/fortran/show/Real+precision>
 ! `WP` stands for *working precision* in case I want to change the precision later.
-!integer, public, parameter :: SP = selected_real_kind(6, 37)    ! single
+integer, public, parameter :: SP = selected_real_kind(6, 37)    ! single
 integer, public, parameter :: DP = selected_real_kind(15, 307)  ! double
 !integer, public, parameter :: QP = selected_real_kind(33, 4931) ! quad
 integer, public, parameter :: WP = DP

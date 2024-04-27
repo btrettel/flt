@@ -132,9 +132,11 @@ src/nmllog$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
 
-src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/pdim_mod$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/purerng$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+
+src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
 
@@ -175,6 +177,18 @@ test_nmllog$(BINEXT): src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_
 
 nmllog.nml: test_nmllog$(BINEXT)
 	$(RUN)test_nmllog$(BINEXT)
+	test ! -e fort.*
+
+############
+# pdim_mod #
+############
+
+test_pdim_mod$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_prec.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_mod.f90
+
+pdim_mod.nml: test_pdim_mod$(BINEXT)
+	$(RUN)test_pdim_mod$(BINEXT)
+	test ! -e fort.*
 	test ! -e fort.*
 
 ########
