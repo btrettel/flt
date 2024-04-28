@@ -7,7 +7,7 @@
 
 program test_pdim_mod
 
-use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT
+!use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT
 use pdim_mod, only: pdim_config_type, pdim_type, write_module, pdim_within_bounds
 ! write_type, write_as_operators, write_md_operators, linspace
 use prec, only: SP
@@ -19,6 +19,7 @@ type(log_type)          :: logger
 type(test_results_type) :: tests
 type(pdim_config_type)  :: config
 type(pdim_type)         :: pdim
+integer                 :: out_unit
 
 call logger%open("pdim_mod.nml")
 call tests%start_tests(logger)
@@ -58,7 +59,15 @@ config%min_exponents   = [-1.0_SP, -1.0_SP, -1.0_SP]
 config%max_exponents   = [1.0_SP, 1.0_SP, 1.0_SP]
 config%exponent_deltas = [1.0_SP, 1.0_SP, 1.0_SP]
 
-call write_module(config, OUTPUT_UNIT)
+!call write_module(config, OUTPUT_UNIT)
+
+open(newunit=out_unit, &
+        action="write", &
+        status="replace", &
+        position="rewind", &
+        file="pdim_types.f90")
+call write_module(config, out_unit)
+close(unit=out_unit)
 
 allocate(pdim%e(config%n_pdims))
 

@@ -35,30 +35,33 @@ end type pdim_config_type
 contains
 
 pure function pdim_label(config, pdim)
+    use checks, only: assert
+    
     type(pdim_config_type), intent(in) :: config
     type(pdim_type), intent(in)        :: pdim
     
-    character(len=:), allocatable :: pdim_label
+    !character(len=config%pdim_label_len) :: pdim_label
+    character(len=64) :: pdim_label
     
     integer :: i_pdim
-    
-    allocate(character(len=config%pdim_label_len) :: pdim_label)
     
     pdim_label = "t"
     do i_pdim = 1, config%n_pdims
         write(unit=pdim_label, fmt="(a, a, z0.8)") trim(pdim_label), "_", pdim%e(i_pdim)
     end do
+    
+    ! Ensure that the `pdim_label` won't be too long to be valid in Fortran 2003.
+    call assert(len(trim(pdim_label)) <= 63)
 end function pdim_label
 
 pure function pdim_human_readable(config, pdim)
     type(pdim_config_type), intent(in) :: config
     type(pdim_type), intent(in)        :: pdim
     
-    character(len=:), allocatable :: pdim_human_readable
+    !character(len=config%pdim_human_len) :: pdim_human_readable
+    character(len=126) :: pdim_human_readable
     
     integer :: i_pdim
-    
-    allocate(character(len=config%pdim_human_len) :: pdim_human_readable)
     
     pdim_human_readable = "physical dimension: "
     do i_pdim = 1, config%n_pdims
@@ -75,44 +78,48 @@ subroutine write_type(config, file_unit, i_pdim, pdims)
     integer         :: j_pdim
     type(pdim_type) :: pdim_m, pdim_d
     
-    write(unit=file_unit, fmt="(2a)") "type, public :: ", pdim_label(config, pdims(i_pdim))
+    write(unit=file_unit, fmt="(2a)") "type, public :: ", trim(pdim_label(config, pdims(i_pdim)))
     write(unit=file_unit, fmt="(2a)") "    ! ", trim(pdim_human_readable(config, pdims(i_pdim)))
     write(unit=file_unit, fmt="(3a)") "    ", config%pdim_type_defn, " :: v"
     write(unit=file_unit, fmt="(a)") "contains"
     
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: a_", &
-        pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(i_pdim))
+        trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(i_pdim)))
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(+) => a_", &
-        pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(i_pdim))
+        trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(i_pdim)))
     
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: s_", &
-        pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(i_pdim))
+        trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(i_pdim)))
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
-        pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(i_pdim))
+        trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(i_pdim)))
     
     do j_pdim = 1, size(pdims)
-        if (i_pdim /= j_pdim) then
-            ! multiply
-            pdim_m%e = pdims(i_pdim)%e + pdims(j_pdim)%e
-            if (pdim_within_bounds(config, pdim_m)) then
-                write(unit=file_unit, fmt="(5a)") "    procedure, private :: m_", &
-                    pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(j_pdim))
-                write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(*) => m_", &
-                    pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(j_pdim))
-            end if
-            
-            ! divide
-            pdim_d%e = pdims(i_pdim)%e - pdims(j_pdim)%e
-            if (pdim_within_bounds(config, pdim_d)) then
-                write(unit=file_unit, fmt="(5a)") "    procedure, private :: d_", &
-                    pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(j_pdim))
-                write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(/) => d_", &
-                    pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(j_pdim))
-            end if
+        ! multiply
+        pdim_m%e = pdims(i_pdim)%e + pdims(j_pdim)%e
+        if (pdim_within_bounds(config, pdim_m)) then
+            write(unit=file_unit, fmt="(5a)") "    procedure, private :: m_", &
+                trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
+            write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(*) => m_", &
+                trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
+        else
+            write(unit=file_unit, fmt="(5a)") "    ! excluded due to exponent bounds: m_", &
+                trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
+        end if
+        
+        ! divide
+        pdim_d%e = pdims(i_pdim)%e - pdims(j_pdim)%e
+        if (pdim_within_bounds(config, pdim_d)) then
+            write(unit=file_unit, fmt="(5a)") "    procedure, private :: d_", &
+                trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
+            write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(/) => d_", &
+                trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
+        else
+            write(unit=file_unit, fmt="(5a)") "    ! excluded due to exponent bounds: d_", &
+                trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
         end if
     end do
     
-    write(unit=file_unit, fmt="(3a)") "end type ", pdim_label(config, pdims(i_pdim)), new_line("a")
+    write(unit=file_unit, fmt="(3a)") "end type ", trim(pdim_label(config, pdims(i_pdim))), new_line("a")
 end subroutine write_type
 
 subroutine write_as_operators(config, file_unit, pdim)
@@ -137,7 +144,7 @@ subroutine write_md_operators(config, file_unit, pdim_left, pdim_right)
     ! multiply
     pdim_m%e = pdim_left%e + pdim_right%e
     if (pdim_within_bounds(config, pdim_m)) then
-        call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_d, "*")
+        call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_m, "*")
     end if
     
     ! divide
@@ -173,17 +180,22 @@ subroutine write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_
             error stop "write_binary_operator: invalid op"
     end select
     
-    binary_operator_procedure = op_label // "_" // pdim_label(config, pdim_left) // "_" // pdim_label(config, pdim_right)
+    binary_operator_procedure = op_label // "_" // trim(pdim_label(config, pdim_left)) // "_" &
+                                    // trim(pdim_label(config, pdim_right))
     
     call assert(len(binary_operator_procedure) <= 63)
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(pdim_left, pdim_right)"
     
-    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(config, pdim_left), "), intent(in) :: pdim_left"
-    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(config, pdim_right), "), intent(in) :: pdim_right"
-    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(config, pdim_out), ") :: ", binary_operator_procedure
+    write(unit=file_unit, fmt="(2a)") "    ! left: ", trim(pdim_human_readable(config, pdim_left))
+    write(unit=file_unit, fmt="(2a)") "    ! right: ", trim(pdim_human_readable(config, pdim_right))
+    write(unit=file_unit, fmt="(2a)") "    ! out: ", trim(pdim_human_readable(config, pdim_out))
     
-    write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%e = pdim_left%e ", op, " pdim_right%e"
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(pdim_label(config, pdim_left)), "), intent(in) :: pdim_left"
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(pdim_label(config, pdim_right)), "), intent(in) :: pdim_right"
+    write(unit=file_unit, fmt="(4a)") "    type(", trim(pdim_label(config, pdim_out)), ") :: ", binary_operator_procedure
+    
+    write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = pdim_left%v ", op, " pdim_right%v"
     
     write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
 end subroutine write_binary_operator
@@ -249,7 +261,31 @@ subroutine write_module(config, file_unit)
         end do
     end do
     
-    write(unit=file_unit, fmt=*) pdims(1)%e, size(pdims)
+    !write(unit=file_unit, fmt=*) pdims(1)%e, size(pdims)
+    
+    ! Now actually write the module.
+    
+    write(unit=file_unit, fmt="(2a)") "module pdim_types", new_line("a")
+    write(unit=file_unit, fmt="(2a)") "implicit none", new_line("a")
+    write(unit=file_unit, fmt="(2a)") "integer, public, parameter :: WP = selected_real_kind(15, 307)", new_line("a")
+    
+    do i_pdim = 1, size(pdims)
+        call write_type(config, file_unit, i_pdim, pdims)
+    end do
+    
+    write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
+    
+    do i_pdim = 1, size(pdims)
+        call write_as_operators(config, file_unit, pdims(i_pdim))
+    end do
+    
+    do i_pdim = 1, size(pdims)
+        do j_pdim = 1, size(pdims)
+            call write_md_operators(config, file_unit, pdims(i_pdim), pdims(j_pdim))
+        end do
+    end do
+    
+    write(unit=file_unit, fmt="(a)") "end module pdim_types"
 end subroutine write_module
 
 pure function pdim_within_bounds(config, pdim)

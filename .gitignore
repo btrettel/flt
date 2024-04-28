@@ -205,6 +205,7 @@ cython_debug/
 ########
 
 *.gcda
+*.gcno
 modtable.txt
 *.nml
 test_*
