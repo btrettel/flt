@@ -3,14 +3,14 @@
 Priorities:
 
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
-    - Test that I get a compilation error when incompatible dimensions are used.
+    - `pdim_gen.f90`: Read namelist file, generate `pdim_types.f90`.
+        - Test that I get a compilation error when incompatible dimensions are used.
     - Better type names:
         - Right now the type names are unwieldy and too long.
         - Round-off errors could lead to a type mismatch. The type name should encode the physical dimension in lower precision than full single precision to avoid these mismatch problems and make the type name less long.
         - Type names which lead to good error messages are best. Example error messages:
             - gfortran: `Error: Cannot convert TYPE(t_3f800000_00000000_bf800000) to TYPE(t_3f800000_00000000_00000000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
             - ifx: `error #6197: An assignment of different structure types is invalid.` (So ifx doesn't say what the types are.)
-    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
     - Namelist function to define setup.
         - `config` namelist to define physical dimensions (like `L`, `M`, `T`)
         - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`
@@ -22,6 +22,7 @@ Priorities:
         - But how can I link `x` to the index of the `dv` member variable? I could try something like `diff(f, x, 1)` where `1` is the index.
         - Alternatively, for `diff(f, x)`, since `x` doesn't actually correspond to the *numerical value* of `x`, `x` could be a variable with the same type and a value `x%v` which corresponds to the index to differentiate with respect to.
         - I could make `x` a different type than whatever its physical dimensions would imply. This different type would be a differential version which could contain the index instead of the value.
+    - Figure out a way to write the dimension of a type as a string without adding additional information to the derived type. (Adding additional information would change memory alignment and perhaps slow the program down.) Perhaps a big auto-generated function that takes `class(*)`?
 
 Later:
 

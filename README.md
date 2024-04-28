@@ -5,6 +5,7 @@ Misc. Fortran libraries and tools (all at various stages of development), intend
 - autodiff.f90: Module for forward-mode automatic differentiation.
 - checks.f90: Module for procedures used for run-time checks.
 - nmllog.f90: Module for structured logging in namelist files. Also includes logger which can be used in `pure` procedures where the actual writing is done outside of the pure procedure.
+- pdim_gen.f90: Program to generate a module `pdim_types` which allows for compile-time physical dimension consistency checking. (Under active development.)
 - prec.f90: Module to set precisions, lengths, and mathematical constants. Uses common convention of `WP` for real precision.
 - purerng.f90: Module for pure random number generators. Interface similar to intrinsic `random_number` and `random_seed` (but not identical to avoid conflict with `size` intrinsic). Includes a deterministic "random" number generator to mock actual random number generators for testing.
 - timer.f90: Module for wall-clock timers. Interface is similar to [StopWatch](https://math.nist.gov/StopWatch/).

@@ -263,7 +263,7 @@ subroutine write_module(config, file_unit)
         end do
     end do
     
-    !write(unit=file_unit, fmt=*) pdims(1)%e, size(pdims)
+    write(unit=*, fmt="(a, i0, a)") "Generated ", size(pdims), " physical dimensions. Writing pdim_types.f90..."
     
     ! Now actually write the module.
     
@@ -297,7 +297,7 @@ pure function pdim_within_bounds(config, pdim)
     logical :: pdim_within_bounds
     
     pdim_within_bounds = all(pdim%e <= (config%max_exponents + SPACING_FACTOR * spacing(config%max_exponents))) &
-                                .and. all(pdim%e >= (config%min_exponents - SPACING_FACTOR * spacing(config%max_exponents)))
+                                .and. all(pdim%e >= (config%min_exponents - SPACING_FACTOR * spacing(config%min_exponents)))
 end function pdim_within_bounds
 
 end module pdim_mod

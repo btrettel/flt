@@ -18,7 +18,7 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # Add later: dimmod.nml ga.nml
-NML = autodiff.nml checks.nml nmllog.nml prec.nml purerng.nml timer.nml unittest.nml
+NML = autodiff.nml checks.nml nmllog.nml pdim_mod.nml prec.nml purerng.nml timer.nml unittest.nml
 .PRECIOUS: $(NML)
 
 #############
@@ -66,7 +66,7 @@ all:
 
 .PHONY: clean
 clean:
-	$(RM) *.nml *.mod *.gcda *.gcno test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg src/*.gcda src/*.gcno $(COV) html-cov/
+	$(RM) *.nml *.mod *.gcda *.gcno test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg src/*.gcda src/*.gcno $(COV) html-cov/ src/pdim_types.f90 pdim_gen
 
 # TODO: `.f90$(OBJEXT):`
 
@@ -186,8 +186,20 @@ nmllog.nml: test_nmllog$(BINEXT)
 test_pdim_mod$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_mod.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_mod.f90
 
-pdim_mod.nml: test_pdim_mod$(BINEXT)
+pdim_mod.nml: test_pdim_mod$(BINEXT) src/pdim_types.f90
 	$(RUN)test_pdim_mod$(BINEXT)
+	test ! -e fort.*
+	test ! -e fort.*
+
+############
+# pdim_gen #
+############
+
+pdim_gen$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) app/pdim_gen.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) app/pdim_gen.f90
+
+src/pdim_types.f90: pdim_gen$(BINEXT)
+	$(RUN)pdim_gen$(BINEXT)
 	test ! -e fort.*
 	test ! -e fort.*
 
