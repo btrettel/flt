@@ -8,16 +8,16 @@
 program test_pdim_mod
 
 use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT
-use pdim_mod, only: pdim_type, write_module
+use pdim_mod, only: pdim_type, write_module, pdim_within_bounds
 ! write_type, write_as_operators, write_md_operators, linspace
-!use prec, only: SP
+use prec, only: SP
 use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
 type(log_type)          :: logger
 type(test_results_type) :: tests
-! type(pdim_type)         :: pdims(2), pdim_out
+type(pdim_type)         :: pdim
 
 call logger%open("pdim_mod.nml")
 call tests%start_tests(logger)
@@ -45,8 +45,20 @@ call tests%start_tests(logger)
 
 call write_module(OUTPUT_UNIT)
 
-! TODO: eliminate this test
-call tests%integer_eq(1, 1, "blah")
+pdim%e(1) = 0.5_SP
+pdim%e(2) = 0.0_SP
+pdim%e(3) = 0.0_SP
+call tests%logical_true(pdim_within_bounds(pdim), "pdim_within_bounds, .true.")
+
+pdim%e(1) = 1.5_SP
+pdim%e(2) = 0.0_SP
+pdim%e(3) = 0.0_SP
+call tests%logical_false(pdim_within_bounds(pdim), "pdim_within_bounds, .false., above")
+
+pdim%e(1) = -1.5_SP
+pdim%e(2) = 0.0_SP
+pdim%e(3) = 0.0_SP
+call tests%logical_false(pdim_within_bounds(pdim), "pdim_within_bounds, .false., below")
 
 call tests%end_tests()
 call logger%close()
