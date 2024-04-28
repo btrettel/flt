@@ -14,18 +14,18 @@ public :: pdim_label
 public :: write_type, write_as_operators, write_md_operators, write_binary_operator
 public :: linspace
 
-integer, parameter :: N_PDIMS        = 3, &
+character(len=*), parameter :: PDIM_CHARS     = "LMT"
+character(len=*), parameter :: PDIM_TYPE_DEFN = "real(kind=WP)"
+!character(len=*), parameter :: PDIM_TYPE_DEFN = "type(ad)"
+
+integer, parameter :: N_PDIMS        = len(PDIM_CHARS), &
                       PDIM_LABEL_LEN = 1 + N_PDIMS * 9, &
                       PDIM_HUMAN_LEN = 126
 
-real(kind=SP) :: min_exponents(N_PDIMS)   = [-2.0_SP, -2.0_SP, -2.0_SP], &
-                 max_exponents(N_PDIMS)   = [2.0_SP, 2.0_SP, 2.0_SP], &
-                 !exponent_deltas(N_PDIMS) = [1.0_SP/6.0_SP, 1.0_SP/6.0_SP, 1.0_SP/6.0_SP]
-                 exponent_deltas(N_PDIMS) = [1.0_SP, 1.0_SP, 1.0_SP]
-
-character(len=N_PDIMS), parameter :: PDIM_CHARS     = "LMT"
-character(len=*), parameter       :: PDIM_TYPE_DEFN = "real(kind=WP)"
-!character(len=*), parameter       :: PDIM_TYPE_DEFN = "type(ad)"
+real(kind=SP), parameter :: min_exponents(N_PDIMS)   = [-1.0_SP, -1.0_SP, -1.0_SP], &
+                            max_exponents(N_PDIMS)   = [1.0_SP, 1.0_SP, 1.0_SP], &
+                            !exponent_deltas(N_PDIMS) = [1.0_SP/6.0_SP, 1.0_SP/6.0_SP, 1.0_SP/6.0_SP]
+                            exponent_deltas(N_PDIMS) = [1.0_SP, 1.0_SP, 1.0_SP]
 
 type, public :: pdim_type
     real(kind=SP) :: e(N_PDIMS)
@@ -191,5 +191,41 @@ pure function linspace(lower, upper, n)
         linspace(i) = lower + delta * real(i - 1, SP)
     end do
 end function linspace
+
+subroutine write_module(file_unit)
+    ! TODO: Generalize this so that it works for an arbitrary number of physical dimensions. This only works with 3.
+    
+    integer, intent(in) :: file_unit
+    
+    type(pdim_type), allocatable :: pdims(:)
+    integer :: n_exponents(N_PDIMS), i_pdim, j_pdim, k_pdim, l_pdim
+    real(kind=SP), allocatable :: exponents_1(:), exponents_2(:), exponents_3(:)
+    
+    do i_pdim = 1, N_PDIMS
+        n_exponents(i_pdim) = nint((max_exponents(i_pdim) - min_exponents(i_pdim)) / exponent_deltas(i_pdim)) + 1
+    end do
+    
+    exponents_1 = linspace(min_exponents(1), max_exponents(1), n_exponents(1))
+    exponents_2 = linspace(min_exponents(2), max_exponents(2), n_exponents(2))
+    exponents_3 = linspace(min_exponents(3), max_exponents(3), n_exponents(3))
+    allocate(pdims(n_exponents(1) * n_exponents(2) * n_exponents(3)))
+    l_pdim = 0
+    do i_pdim = 1, n_exponents(1)
+        do j_pdim = 1, n_exponents(2)
+            do k_pdim = 1, n_exponents(3)
+                l_pdim = l_pdim + 1
+                pdims(l_pdim)%e(1) = exponents_1(i_pdim)
+                pdims(l_pdim)%e(2) = exponents_2(j_pdim)
+                pdims(l_pdim)%e(3) = exponents_3(k_pdim)
+            end do
+        end do
+    end do
+    
+    write(unit=file_unit, fmt=*) pdims(1)%e, size(pdims)
+end subroutine write_module
+
+!pure function pdim_within_bounds(pdim)
+!    type(pdim_type), intent(in) :: pdim
+!end function pdim_within_bounds
 
 end module pdim_mod
