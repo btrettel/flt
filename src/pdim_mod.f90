@@ -15,137 +15,145 @@ public :: write_type, write_as_operators, write_md_operators, write_binary_opera
 public :: linspace
 public :: pdim_within_bounds
 
-character(len=*), parameter :: PDIM_CHARS     = "LMT"
-character(len=*), parameter :: PDIM_TYPE_DEFN = "real(kind=WP)"
-!character(len=*), parameter :: PDIM_TYPE_DEFN = "type(ad)"
-
-integer, parameter :: N_PDIMS        = len(PDIM_CHARS), &
-                      PDIM_LABEL_LEN = 1 + N_PDIMS * 9, &
-                      PDIM_HUMAN_LEN = 126
-
-real(kind=SP), parameter :: min_exponents(N_PDIMS)   = [-1.0_SP, -1.0_SP, -1.0_SP], &
-                            max_exponents(N_PDIMS)   = [1.0_SP, 1.0_SP, 1.0_SP], &
-                            !exponent_deltas(N_PDIMS) = [1.0_SP/6.0_SP, 1.0_SP/6.0_SP, 1.0_SP/6.0_SP]
-                            exponent_deltas(N_PDIMS) = [1.0_SP, 1.0_SP, 1.0_SP]
-
 type, public :: pdim_type
-    real(kind=SP) :: e(N_PDIMS)
+    real(kind=SP), allocatable :: e(:)
 end type pdim_type
+
+type, public :: pdim_config_type
+    character(len=:), allocatable :: pdim_chars, &
+                                     pdim_type_defn
+
+    integer :: n_pdims, &
+               pdim_label_len, &
+               pdim_human_len
+
+    real(kind=SP), allocatable :: min_exponents(:), &
+                                  max_exponents(:), &
+                                  exponent_deltas(:)
+end type pdim_config_type
 
 contains
 
-pure function pdim_label(pdim)
-    type(pdim_type), intent(in) :: pdim
+pure function pdim_label(config, pdim)
+    type(pdim_config_type), intent(in) :: config
+    type(pdim_type), intent(in)        :: pdim
     
-    character(len=PDIM_LABEL_LEN) :: pdim_label
+    character(len=:), allocatable :: pdim_label
     
     integer :: i_pdim
     
+    allocate(character(len=config%pdim_label_len) :: pdim_label)
+    
     pdim_label = "t"
-    do i_pdim = 1, N_PDIMS
+    do i_pdim = 1, config%n_pdims
         write(unit=pdim_label, fmt="(a, a, z0.8)") trim(pdim_label), "_", pdim%e(i_pdim)
     end do
 end function pdim_label
 
-pure function pdim_human_readable(pdim)
-    type(pdim_type), intent(in) :: pdim
+pure function pdim_human_readable(config, pdim)
+    type(pdim_config_type), intent(in) :: config
+    type(pdim_type), intent(in)        :: pdim
     
-    character(len=PDIM_HUMAN_LEN) :: pdim_human_readable
+    character(len=:), allocatable :: pdim_human_readable
     
     integer :: i_pdim
     
+    allocate(character(len=config%pdim_human_len) :: pdim_human_readable)
+    
     pdim_human_readable = "physical dimension: "
-    do i_pdim = 1, N_PDIMS
+    do i_pdim = 1, config%n_pdims
         write(unit=pdim_human_readable, fmt="(a, a, a, a, f0.0)") trim(pdim_human_readable), &
-                                                                    " [", PDIM_CHARS(i_pdim:i_pdim), "]^", pdim%e(i_pdim)
+                                                                    " [", config%pdim_chars(i_pdim:i_pdim), "]^", pdim%e(i_pdim)
     end do
 end function pdim_human_readable
 
-subroutine write_type(file_unit, i_pdim, pdims)
-    integer, intent(in)         :: file_unit, i_pdim
-    type(pdim_type), intent(in) :: pdims(:)
+subroutine write_type(config, file_unit, i_pdim, pdims)
+    type(pdim_config_type), intent(in) :: config
+    integer, intent(in)                :: file_unit, i_pdim
+    type(pdim_type), intent(in)        :: pdims(:)
     
     integer         :: j_pdim
     type(pdim_type) :: pdim_m, pdim_d
     
-    write(unit=file_unit, fmt="(2a)") "type, public :: ", pdim_label(pdims(i_pdim))
-    write(unit=file_unit, fmt="(2a)") "    ! ", trim(pdim_human_readable(pdims(i_pdim)))
-    write(unit=file_unit, fmt="(3a)") "    ", PDIM_TYPE_DEFN, " :: v"
+    write(unit=file_unit, fmt="(2a)") "type, public :: ", pdim_label(config, pdims(i_pdim))
+    write(unit=file_unit, fmt="(2a)") "    ! ", trim(pdim_human_readable(config, pdims(i_pdim)))
+    write(unit=file_unit, fmt="(3a)") "    ", config%pdim_type_defn, " :: v"
     write(unit=file_unit, fmt="(a)") "contains"
     
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: a_", &
-        pdim_label(pdims(i_pdim)), "_", pdim_label(pdims(i_pdim))
+        pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(i_pdim))
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(+) => a_", &
-        pdim_label(pdims(i_pdim)), "_", pdim_label(pdims(i_pdim))
+        pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(i_pdim))
     
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: s_", &
-        pdim_label(pdims(i_pdim)), "_", pdim_label(pdims(i_pdim))
+        pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(i_pdim))
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
-        pdim_label(pdims(i_pdim)), "_", pdim_label(pdims(i_pdim))
+        pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(i_pdim))
     
     do j_pdim = 1, size(pdims)
         if (i_pdim /= j_pdim) then
             ! multiply
             pdim_m%e = pdims(i_pdim)%e + pdims(j_pdim)%e
-            if (pdim_within_bounds(pdim_m)) then
+            if (pdim_within_bounds(config, pdim_m)) then
                 write(unit=file_unit, fmt="(5a)") "    procedure, private :: m_", &
-                    pdim_label(pdims(i_pdim)), "_", pdim_label(pdims(j_pdim))
+                    pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(j_pdim))
                 write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(*) => m_", &
-                    pdim_label(pdims(i_pdim)), "_", pdim_label(pdims(j_pdim))
+                    pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(j_pdim))
             end if
             
             ! divide
             pdim_d%e = pdims(i_pdim)%e - pdims(j_pdim)%e
-            if (pdim_within_bounds(pdim_d)) then
+            if (pdim_within_bounds(config, pdim_d)) then
                 write(unit=file_unit, fmt="(5a)") "    procedure, private :: d_", &
-                    pdim_label(pdims(i_pdim)), "_", pdim_label(pdims(j_pdim))
+                    pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(j_pdim))
                 write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(/) => d_", &
-                    pdim_label(pdims(i_pdim)), "_", pdim_label(pdims(j_pdim))
+                    pdim_label(config, pdims(i_pdim)), "_", pdim_label(config, pdims(j_pdim))
             end if
         end if
     end do
     
-    write(unit=file_unit, fmt="(3a)") "end type ", pdim_label(pdims(i_pdim)), new_line("a")
-    
-    ! TODO: exponentiate
+    write(unit=file_unit, fmt="(3a)") "end type ", pdim_label(config, pdims(i_pdim)), new_line("a")
 end subroutine write_type
 
-subroutine write_as_operators(file_unit, pdim)
-    integer, intent(in)         :: file_unit
-    type(pdim_type), intent(in) :: pdim
+subroutine write_as_operators(config, file_unit, pdim)
+    type(pdim_config_type), intent(in) :: config
+    integer, intent(in)                :: file_unit
+    type(pdim_type), intent(in)        :: pdim
     
     ! add
-    call write_binary_operator(file_unit, pdim, pdim, pdim, "+")
+    call write_binary_operator(config, file_unit, pdim, pdim, pdim, "+")
     
     ! subtract
-    call write_binary_operator(file_unit, pdim, pdim, pdim, "-")
+    call write_binary_operator(config, file_unit, pdim, pdim, pdim, "-")
 end subroutine write_as_operators
 
-subroutine write_md_operators(file_unit, pdim_left, pdim_right)
-    integer, intent(in)         :: file_unit
-    type(pdim_type), intent(in) :: pdim_left, pdim_right
+subroutine write_md_operators(config, file_unit, pdim_left, pdim_right)
+    type(pdim_config_type), intent(in) :: config
+    integer, intent(in)                :: file_unit
+    type(pdim_type), intent(in)        :: pdim_left, pdim_right
     
     type(pdim_type) :: pdim_m, pdim_d
     
     ! multiply
     pdim_m%e = pdim_left%e + pdim_right%e
-    if (pdim_within_bounds(pdim_m)) then
-        call write_binary_operator(file_unit, pdim_left, pdim_right, pdim_d, "*")
+    if (pdim_within_bounds(config, pdim_m)) then
+        call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_d, "*")
     end if
     
     ! divide
     pdim_d%e = pdim_left%e - pdim_right%e
-    if (pdim_within_bounds(pdim_d)) then
-        call write_binary_operator(file_unit, pdim_left, pdim_right, pdim_d, "/")
+    if (pdim_within_bounds(config, pdim_d)) then
+        call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_d, "/")
     end if
 end subroutine write_md_operators
 
-subroutine write_binary_operator(file_unit, pdim_left, pdim_right, pdim_out, op)
+subroutine write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_out, op)
     use checks, only: assert
     
-    integer, intent(in)          :: file_unit
-    type(pdim_type), intent(in)  :: pdim_left, pdim_right, pdim_out
-    character(len=*), intent(in) :: op
+    type(pdim_config_type), intent(in) :: config
+    integer, intent(in)                :: file_unit
+    type(pdim_type), intent(in)        :: pdim_left, pdim_right, pdim_out
+    character(len=*), intent(in)       :: op
     
     character(len=1)              :: op_label
     character(len=:), allocatable :: binary_operator_procedure
@@ -165,15 +173,15 @@ subroutine write_binary_operator(file_unit, pdim_left, pdim_right, pdim_out, op)
             error stop "write_binary_operator: invalid op"
     end select
     
-    binary_operator_procedure = op_label // "_" // pdim_label(pdim_left) // "_" // pdim_label(pdim_right)
+    binary_operator_procedure = op_label // "_" // pdim_label(config, pdim_left) // "_" // pdim_label(config, pdim_right)
     
     call assert(len(binary_operator_procedure) <= 63)
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(pdim_left, pdim_right)"
     
-    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(pdim_left), "), intent(in) :: pdim_left"
-    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(pdim_right), "), intent(in) :: pdim_right"
-    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(pdim_out), ") :: ", binary_operator_procedure
+    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(config, pdim_left), "), intent(in) :: pdim_left"
+    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(config, pdim_right), "), intent(in) :: pdim_right"
+    write(unit=file_unit, fmt="(4a)") "    type(", pdim_label(config, pdim_out), ") :: ", binary_operator_procedure
     
     write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%e = pdim_left%e ", op, " pdim_right%e"
     
@@ -206,28 +214,34 @@ pure function linspace(lower, upper, n)
     end do
 end function linspace
 
-subroutine write_module(file_unit)
-    ! TODO: Generalize this so that it works for an arbitrary number of physical dimensions. This only works with 3.
+subroutine write_module(config, file_unit)
+    use checks, only: assert
     
-    integer, intent(in) :: file_unit
+    type(pdim_config_type), intent(in) :: config
+    integer, intent(in)                :: file_unit
     
     type(pdim_type), allocatable :: pdims(:)
-    integer :: n_exponents(N_PDIMS), i_pdim, j_pdim, k_pdim, l_pdim
+    integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim
     real(kind=SP), allocatable :: exponents_1(:), exponents_2(:), exponents_3(:)
     
-    do i_pdim = 1, N_PDIMS
-        n_exponents(i_pdim) = nint((max_exponents(i_pdim) - min_exponents(i_pdim)) / exponent_deltas(i_pdim)) + 1
+    ! TODO: Generalize this so that it works for an arbitrary number of physical dimensions. This only works with 3.
+    call assert(config%n_pdims == 3)
+    
+    do i_pdim = 1, config%n_pdims
+        n_exponents(i_pdim) = nint((config%max_exponents(i_pdim) - config%min_exponents(i_pdim)) &
+                                    / config%exponent_deltas(i_pdim)) + 1
     end do
     
-    exponents_1 = linspace(min_exponents(1), max_exponents(1), n_exponents(1))
-    exponents_2 = linspace(min_exponents(2), max_exponents(2), n_exponents(2))
-    exponents_3 = linspace(min_exponents(3), max_exponents(3), n_exponents(3))
+    exponents_1 = linspace(config%min_exponents(1), config%max_exponents(1), n_exponents(1))
+    exponents_2 = linspace(config%min_exponents(2), config%max_exponents(2), n_exponents(2))
+    exponents_3 = linspace(config%min_exponents(3), config%max_exponents(3), n_exponents(3))
     allocate(pdims(n_exponents(1) * n_exponents(2) * n_exponents(3)))
     l_pdim = 0
     do i_pdim = 1, n_exponents(1)
         do j_pdim = 1, n_exponents(2)
             do k_pdim = 1, n_exponents(3)
                 l_pdim = l_pdim + 1
+                allocate(pdims(l_pdim)%e(config%n_pdims))
                 pdims(l_pdim)%e(1) = exponents_1(i_pdim)
                 pdims(l_pdim)%e(2) = exponents_2(j_pdim)
                 pdims(l_pdim)%e(3) = exponents_3(k_pdim)
@@ -238,12 +252,13 @@ subroutine write_module(file_unit)
     write(unit=file_unit, fmt=*) pdims(1)%e, size(pdims)
 end subroutine write_module
 
-pure function pdim_within_bounds(pdim)
-    type(pdim_type), intent(in) :: pdim
+pure function pdim_within_bounds(config, pdim)
+    type(pdim_config_type), intent(in) :: config
+    type(pdim_type), intent(in)        :: pdim
     
     logical :: pdim_within_bounds
     
-    pdim_within_bounds = all(pdim%e < max_exponents) .and. all(pdim%e > min_exponents)
+    pdim_within_bounds = all(pdim%e < config%max_exponents) .and. all(pdim%e > config%min_exponents)
 end function pdim_within_bounds
 
 end module pdim_mod

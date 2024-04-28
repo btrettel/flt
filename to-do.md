@@ -3,7 +3,6 @@
 Priorities:
 
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
-    - Make `config` derived type to use instead of the global variables.
     - Test that I get a compilation error when incompatible dimensions are used.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
     - Namelist function to define setup.
