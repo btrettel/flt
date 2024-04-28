@@ -4,7 +4,7 @@ Priorities:
 
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
     - `pdim_gen.f90`: Read namelist file, generate `pdim_types.f90`.
-        - Test that I get a compilation error when incompatible dimensions are used.
+        - Header for `pdim_gen.f90`.
     - Better type names:
         - Right now the type names are unwieldy and too long.
         - Round-off errors could lead to a type mismatch. The type name should encode the physical dimension in lower precision than full single precision to avoid these mismatch problems and make the type name less long.

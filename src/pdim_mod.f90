@@ -268,8 +268,8 @@ subroutine write_module(config, file_unit)
     ! Now actually write the module.
     
     write(unit=file_unit, fmt="(2a)") "module pdim_types", new_line("a")
+    write(unit=file_unit, fmt="(2a)") "use prec, only: WP", new_line("a")
     write(unit=file_unit, fmt="(2a)") "implicit none", new_line("a")
-    write(unit=file_unit, fmt="(2a)") "integer, public, parameter :: WP = selected_real_kind(15, 307)", new_line("a")
     
     do i_pdim = 1, size(pdims)
         call write_type(config, file_unit, i_pdim, pdims)
