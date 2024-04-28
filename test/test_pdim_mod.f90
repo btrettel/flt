@@ -76,6 +76,16 @@ pdim%e(2) = 0.0_SP
 pdim%e(3) = 0.0_SP
 call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, .true.")
 
+pdim%e(1) = 1.0_SP
+pdim%e(2) = 0.0_SP
+pdim%e(3) = 0.0_SP
+call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, upper boundary, .true.")
+
+pdim%e(1) = -1.0_SP
+pdim%e(2) = 0.0_SP
+pdim%e(3) = 0.0_SP
+call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, lower boundary, .true.")
+
 pdim%e(1) = 1.5_SP
 pdim%e(2) = 0.0_SP
 pdim%e(3) = 0.0_SP

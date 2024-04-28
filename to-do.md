@@ -4,6 +4,12 @@ Priorities:
 
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
     - Test that I get a compilation error when incompatible dimensions are used.
+    - Better type names:
+        - Right now the type names are unwieldy and too long.
+        - Round-off errors could lead to a type mismatch. The type name should encode the physical dimension in lower precision than full single precision to avoid these mismatch problems and make the type name less long.
+        - Type names which lead to good error messages are best. Example error messages:
+            - gfortran: `Error: Cannot convert TYPE(t_3f800000_00000000_bf800000) to TYPE(t_3f800000_00000000_00000000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
+            - ifx: `error #6197: An assignment of different structure types is invalid.` (So ifx doesn't say what the types are.)
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
     - Namelist function to define setup.
         - `config` namelist to define physical dimensions (like `L`, `M`, `T`)

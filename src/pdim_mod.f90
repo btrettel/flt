@@ -15,6 +15,8 @@ public :: write_type, write_as_operators, write_md_operators, write_binary_opera
 public :: linspace
 public :: pdim_within_bounds
 
+real(kind=SP), parameter :: SPACING_FACTOR = 10.0_SP
+
 type, public :: pdim_type
     real(kind=SP), allocatable :: e(:)
 end type pdim_type
@@ -294,7 +296,8 @@ pure function pdim_within_bounds(config, pdim)
     
     logical :: pdim_within_bounds
     
-    pdim_within_bounds = all(pdim%e < config%max_exponents) .and. all(pdim%e > config%min_exponents)
+    pdim_within_bounds = all(pdim%e <= (config%max_exponents + SPACING_FACTOR * spacing(config%max_exponents))) &
+                                .and. all(pdim%e >= (config%min_exponents - SPACING_FACTOR * spacing(config%max_exponents)))
 end function pdim_within_bounds
 
 end module pdim_mod
