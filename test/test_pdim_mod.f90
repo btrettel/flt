@@ -12,7 +12,7 @@ use pdim_mod, only: pdim_config_type, pdim_type, write_module, pdim_within_bound
 use pdim_types, only: length   => pdim_p10000_p00000_p00000, &
                       time     => pdim_p00000_p00000_p10000, &
                       velocity => pdim_p10000_p00000_m10000
-use prec, only: SP, WP
+use prec, only: WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
@@ -39,37 +39,37 @@ config%n_pdims        = len(config%pdim_chars)
 allocate(config%min_exponents(config%n_pdims))
 allocate(config%max_exponents(config%n_pdims))
 allocate(config%exponent_deltas(config%n_pdims))
-config%min_exponents   = [-1.0_SP, -1.0_SP, -1.0_SP]
-config%max_exponents   = [1.0_SP, 1.0_SP, 1.0_SP]
-config%exponent_deltas = [1.0_SP, 1.0_SP, 1.0_SP]
+config%min_exponents   = [-1.0_WP, -1.0_WP, -1.0_WP]
+config%max_exponents   = [1.0_WP, 1.0_WP, 1.0_WP]
+config%exponent_deltas = [1.0_WP, 1.0_WP, 1.0_WP]
 
 ! `pdim_within_bounds`
 
 allocate(pdim%e(config%n_pdims))
 
-pdim%e(1) = 0.5_SP
-pdim%e(2) = 0.0_SP
-pdim%e(3) = 0.0_SP
+pdim%e(1) = 0.5_WP
+pdim%e(2) = 0.0_WP
+pdim%e(3) = 0.0_WP
 call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, .true.")
 
-pdim%e(1) = 1.0_SP
-pdim%e(2) = 0.0_SP
-pdim%e(3) = 0.0_SP
+pdim%e(1) = 1.0_WP
+pdim%e(2) = 0.0_WP
+pdim%e(3) = 0.0_WP
 call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, upper boundary, .true.")
 
-pdim%e(1) = -1.0_SP
-pdim%e(2) = 0.0_SP
-pdim%e(3) = 0.0_SP
+pdim%e(1) = -1.0_WP
+pdim%e(2) = 0.0_WP
+pdim%e(3) = 0.0_WP
 call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, lower boundary, .true.")
 
-pdim%e(1) = 1.5_SP
-pdim%e(2) = 0.0_SP
-pdim%e(3) = 0.0_SP
+pdim%e(1) = 1.5_WP
+pdim%e(2) = 0.0_WP
+pdim%e(3) = 0.0_WP
 call tests%logical_false(pdim_within_bounds(config, pdim), "pdim_within_bounds, .false., above")
 
-pdim%e(1) = -1.5_SP
-pdim%e(2) = 0.0_SP
-pdim%e(3) = 0.0_SP
+pdim%e(1) = -1.5_WP
+pdim%e(2) = 0.0_WP
+pdim%e(3) = 0.0_WP
 call tests%logical_false(pdim_within_bounds(config, pdim), "pdim_within_bounds, .false., below")
 
 ! TODO: `write_type`

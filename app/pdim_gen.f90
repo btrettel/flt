@@ -1,7 +1,7 @@
 program pdim_gen
 
 use pdim_mod, only: pdim_config_type, pdim_type, write_module, pdim_within_bounds
-use prec, only: SP
+use prec, only: WP
 implicit none
 
 type(pdim_config_type) :: config
@@ -15,9 +15,9 @@ config%n_pdims        = len(config%pdim_chars)
 allocate(config%min_exponents(config%n_pdims))
 allocate(config%max_exponents(config%n_pdims))
 allocate(config%exponent_deltas(config%n_pdims))
-config%min_exponents   = [-1.0_SP, -1.0_SP, -1.0_SP]
-config%max_exponents   = [1.0_SP, 1.0_SP, 1.0_SP]
-config%exponent_deltas = [1.0_SP, 1.0_SP, 1.0_SP]
+config%min_exponents   = [-1.0_WP, -1.0_WP, -1.0_WP]
+config%max_exponents   = [1.0_WP, 1.0_WP, 1.0_WP]
+config%exponent_deltas = [1.0_WP, 1.0_WP, 1.0_WP]
 
 open(newunit=out_unit, &
         action="write", &

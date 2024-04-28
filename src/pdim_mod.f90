@@ -7,7 +7,7 @@
 
 module pdim_mod
 
-use prec, only: SP
+use prec, only: WP
 implicit none
 
 public :: pdim_label
@@ -15,17 +15,17 @@ public :: write_type, write_as_operators, write_md_operators, write_binary_opera
 public :: linspace
 public :: pdim_within_bounds
 
-real(kind=SP), parameter :: SPACING_FACTOR  = 10.0_SP
+real(kind=WP), parameter :: SPACING_FACTOR  = 10.0_WP
 
 type, public :: pdim_type
-    real(kind=SP), allocatable :: e(:)
+    real(kind=WP), allocatable :: e(:)
 end type pdim_type
 
 type, public :: pdim_config_type
     character(len=:), allocatable :: pdim_chars, &
                                      pdim_type_defn
     integer                       :: n_pdims
-    real(kind=SP), allocatable    :: min_exponents(:), &
+    real(kind=WP), allocatable    :: min_exponents(:), &
                                      max_exponents(:), &
                                      exponent_deltas(:)
 end type pdim_config_type
@@ -46,12 +46,12 @@ pure function pdim_label(config, pdim)
     
     pdim_label = "pdim"
     do i_pdim = 1, config%n_pdims
-        if (pdim%e(i_pdim) < 0.0_SP) then
+        if (pdim%e(i_pdim) < 0.0_WP) then
             exponent_sign = "m"
         else
             exponent_sign = "p"
         end if
-        write(unit=pdim_label, fmt="(a, a, a, i0.5)") trim(pdim_label), "_", exponent_sign, nint(10000.0 * abs(pdim%e(i_pdim)))
+        write(unit=pdim_label, fmt="(a, a, a, i0.5)") trim(pdim_label), "_", exponent_sign, nint(10000.0_WP * abs(pdim%e(i_pdim)))
     end do
     
     ! Ensure that the `pdim_label` won't be too long to be valid in Fortran 2003.
@@ -207,13 +207,13 @@ end subroutine write_binary_operator
 pure function linspace(lower, upper, n)
     use checks, only: assert
     
-    real(kind=SP), intent(in)     :: lower, upper
+    real(kind=WP), intent(in)     :: lower, upper
     integer, intent(in), optional :: n
     
-    real(kind=SP), allocatable :: linspace(:)
+    real(kind=WP), allocatable :: linspace(:)
     
     integer :: i, n_
-    real(kind=SP) :: delta
+    real(kind=WP) :: delta
     
     if (present(n)) then
         n_ = n
@@ -224,9 +224,9 @@ pure function linspace(lower, upper, n)
     call assert(lower < upper)
     
     allocate(linspace(n_))
-    delta = (upper - lower) / real(n_ - 1, SP)
+    delta = (upper - lower) / real(n_ - 1, WP)
     do i = 1, n_
-        linspace(i) = lower + delta * real(i - 1, SP)
+        linspace(i) = lower + delta * real(i - 1, WP)
     end do
 end function linspace
 
@@ -238,7 +238,7 @@ subroutine write_module(config, file_unit)
     
     type(pdim_type), allocatable :: pdims(:)
     integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim
-    real(kind=SP), allocatable :: exponents_1(:), exponents_2(:), exponents_3(:)
+    real(kind=WP), allocatable :: exponents_1(:), exponents_2(:), exponents_3(:)
     
     ! TODO: Generalize this so that it works for an arbitrary number of physical dimensions. This only works with 3.
     call assert(config%n_pdims == 3)
