@@ -11,8 +11,6 @@ config%pdim_chars     = "LMT"
 config%pdim_type_defn = "real(kind=WP)"
 !config%pdim_type_defn = "type(ad)"
 config%n_pdims        = len(config%pdim_chars)
-config%pdim_label_len = 1 + config%n_pdims * 9
-config%pdim_human_len = 126
 
 allocate(config%min_exponents(config%n_pdims))
 allocate(config%max_exponents(config%n_pdims))

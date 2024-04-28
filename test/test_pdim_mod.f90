@@ -9,9 +9,9 @@ program test_pdim_mod
 
 use pdim_mod, only: pdim_config_type, pdim_type, write_module, pdim_within_bounds
 ! write_type, write_as_operators, write_md_operators, linspace
-use pdim_types, only: length   => t_3F800000_00000000_00000000, &
-                      time     => t_00000000_00000000_3F800000, &
-                      velocity => t_3F800000_00000000_BF800000
+use pdim_types, only: length   => pdim_p10000_p00000_p00000, &
+                      time     => pdim_p00000_p00000_p10000, &
+                      velocity => pdim_p10000_p00000_m10000
 use prec, only: SP, WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -35,8 +35,6 @@ call tests%start_tests(logger)
 config%pdim_chars     = "LMT"
 config%pdim_type_defn = "real(kind=WP)"
 config%n_pdims        = len(config%pdim_chars)
-config%pdim_label_len = 1 + config%n_pdims * 9
-config%pdim_human_len = 126
 
 allocate(config%min_exponents(config%n_pdims))
 allocate(config%max_exponents(config%n_pdims))
@@ -44,6 +42,8 @@ allocate(config%exponent_deltas(config%n_pdims))
 config%min_exponents   = [-1.0_SP, -1.0_SP, -1.0_SP]
 config%max_exponents   = [1.0_SP, 1.0_SP, 1.0_SP]
 config%exponent_deltas = [1.0_SP, 1.0_SP, 1.0_SP]
+
+! `pdim_within_bounds`
 
 allocate(pdim%e(config%n_pdims))
 
@@ -71,6 +71,8 @@ pdim%e(1) = -1.5_SP
 pdim%e(2) = 0.0_SP
 pdim%e(3) = 0.0_SP
 call tests%logical_false(pdim_within_bounds(config, pdim), "pdim_within_bounds, .false., below")
+
+! TODO: `write_type`
 
 ! Generated pdim_types.f90.
 

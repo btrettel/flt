@@ -15,7 +15,7 @@ public :: write_type, write_as_operators, write_md_operators, write_binary_opera
 public :: linspace
 public :: pdim_within_bounds
 
-real(kind=SP), parameter :: SPACING_FACTOR = 10.0_SP
+real(kind=SP), parameter :: SPACING_FACTOR  = 10.0_SP
 
 type, public :: pdim_type
     real(kind=SP), allocatable :: e(:)
@@ -24,14 +24,10 @@ end type pdim_type
 type, public :: pdim_config_type
     character(len=:), allocatable :: pdim_chars, &
                                      pdim_type_defn
-
-    integer :: n_pdims, &
-               pdim_label_len, &
-               pdim_human_len
-
-    real(kind=SP), allocatable :: min_exponents(:), &
-                                  max_exponents(:), &
-                                  exponent_deltas(:)
+    integer                       :: n_pdims
+    real(kind=SP), allocatable    :: min_exponents(:), &
+                                     max_exponents(:), &
+                                     exponent_deltas(:)
 end type pdim_config_type
 
 contains
@@ -44,12 +40,18 @@ pure function pdim_label(config, pdim)
     
     !character(len=config%pdim_label_len) :: pdim_label
     character(len=64) :: pdim_label
+    character(len=1)  :: exponent_sign
     
     integer :: i_pdim
     
-    pdim_label = "t"
+    pdim_label = "pdim"
     do i_pdim = 1, config%n_pdims
-        write(unit=pdim_label, fmt="(a, a, z0.8)") trim(pdim_label), "_", pdim%e(i_pdim)
+        if (pdim%e(i_pdim) < 0.0_SP) then
+            exponent_sign = "m"
+        else
+            exponent_sign = "p"
+        end if
+        write(unit=pdim_label, fmt="(a, a, a, i0.5)") trim(pdim_label), "_", exponent_sign, nint(10000.0 * abs(pdim%e(i_pdim)))
     end do
     
     ! Ensure that the `pdim_label` won't be too long to be valid in Fortran 2003.
@@ -259,6 +261,8 @@ subroutine write_module(config, file_unit)
                 pdims(l_pdim)%e(1) = exponents_1(i_pdim)
                 pdims(l_pdim)%e(2) = exponents_2(j_pdim)
                 pdims(l_pdim)%e(3) = exponents_3(k_pdim)
+                
+                !write(unit=*, fmt=*) pdims(l_pdim)%e, pdim_label(config, pdims(l_pdim))
             end do
         end do
     end do
