@@ -1,26 +1,21 @@
 program pdim_gen
 
-use pdim_mod, only: pdim_config_type, pdim_type, write_module, pdim_within_bounds
-use prec, only: WP
+use pdim_mod, only: pdim_config_type, write_module, read_config
 implicit none
 
 type(pdim_config_type) :: config
-integer                :: out_unit
+integer                :: out_unit, rc
 
-config%pdim_chars     = "LMT"
-config%pdim_type_defn = "real(kind=WP)"
-!config%pdim_type_defn = "type(ad)"
-config%n_pdims        = len(config%pdim_chars)
+call read_config("test/pdim_test.nml", config, rc)
 
-allocate(config%min_exponents(config%n_pdims))
-allocate(config%max_exponents(config%n_pdims))
-allocate(config%exponent_deltas(config%n_pdims))
-config%min_exponents   = [-1.0_WP, -1.0_WP, -1.0_WP]
-config%max_exponents   = [1.0_WP, 1.0_WP, 1.0_WP]
-config%exponent_deltas = [1.0_WP, 1.0_WP, 1.0_WP]
+if (rc /= 0) then
+    error stop
+end if
 
-open(newunit=out_unit, action="write", status="replace", position="rewind", file="src/pdim_types.f90")
+open(newunit=out_unit, action="write", status="replace", position="rewind", file=config%output_file)
 call write_module(config, out_unit)
 close(unit=out_unit)
+
+call config%logger%close()
 
 end program pdim_gen

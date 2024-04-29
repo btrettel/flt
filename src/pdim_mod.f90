@@ -243,6 +243,7 @@ subroutine write_module(config, file_unit)
     type(pdim_type), allocatable :: pdims(:)
     integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim
     real(kind=WP), allocatable :: exponents_1(:), exponents_2(:), exponents_3(:)
+    character(len=10) :: n_pdims_char
     
     ! TODO: Generalize this so that it works for an arbitrary number of physical dimensions. This only works with 3.
     call assert(config%n_pdims == 3)
@@ -271,7 +272,8 @@ subroutine write_module(config, file_unit)
         end do
     end do
     
-    write(unit=*, fmt="(a, i0, a)") "Generated ", size(pdims), " physical dimensions. Writing pdim_types.f90..."
+    write(unit=n_pdims_char, fmt="(i0)") size(pdims)
+    call config%logger%info("Generated " // trim(n_pdims_char) // " physical dimensions. Writing " // config%output_file // "...")
     
     ! Now actually write the module.
     
@@ -308,14 +310,19 @@ pure function pdim_within_bounds(config, pdim)
                                 .and. all(pdim%e >= (config%min_exponents - SPACING_FACTOR * spacing(config%min_exponents)))
 end function pdim_within_bounds
 
-subroutine read_config(filename, config_out)
+subroutine read_config(filename, config_out, rc)
+    use, intrinsic :: iso_fortran_env, only: IOSTAT_END
+    
     use prec, only: CL
     use checks, only: is_close
+    use nmllog, only: INFO_LEVEL
     
     character(len=*), intent(in)        :: filename
     type(pdim_config_type), intent(out) :: config_out
+    integer, intent(out)                :: rc
     
-    integer :: nml_unit, n_failures, i_pdim, n_pdims(3)
+    integer           :: nml_unit, rc_nml, n_failures, i_pdim, n_pdims(3)
+    character(len=CL) :: nml_error_message
     
     character(len=CL)        :: output_file, pdim_type_defn
     character(len=MAX_PDIMS) :: pdim_chars
@@ -323,7 +330,7 @@ subroutine read_config(filename, config_out)
     
     namelist /config/ output_file, pdim_chars, pdim_type_defn, min_exponents, max_exponents, exponent_deltas
     
-    call config_out%logger%open("pdim.nml")
+    call config_out%logger%open("pdim.nml", level=INFO_LEVEL)
     
     pdim_chars      = ""
     pdim_type_defn  = "real(kind=WP)"
@@ -332,54 +339,60 @@ subroutine read_config(filename, config_out)
     exponent_deltas = 0.0_WP
     
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
-    read(unit=nml_unit, nml=config)
+    read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
     close(unit=nml_unit)
+    
+    if ((rc_nml /= 0) .and. (rc_nml /= IOSTAT_END)) then
+        call config_out%logger%error(trim(nml_error_message))
+        return
+    end if
     
     n_failures = 0
     
     call config_out%logger%check(len(pdim_chars) > 0, "pdim_chars must have 1 or more characters", n_failures)
     call config_out%logger%check(len(pdim_type_defn) > 0, "pdim_type_defn must have 1 or more characters", n_failures)
-    call config_out%logger%check(all(min_exponents < max_exponents), &
-        "at least one min_exponents is equal or higher than the corresponding min_exponents", n_failures)
     
     n_pdims = huge(1)
     do i_pdim = 1, MAX_PDIMS
         if (is_close(min_exponents(i_pdim), 0.0_WP)) then
-            n_pdims(1) = min(n_pdims(1), i_pdim)
+            n_pdims(1) = min(n_pdims(1), i_pdim - 1)
         end if
         
         if (is_close(max_exponents(i_pdim), 0.0_WP)) then
-            n_pdims(2) = min(n_pdims(2), i_pdim)
+            n_pdims(2) = min(n_pdims(2), i_pdim - 1)
         end if
         
         if (is_close(exponent_deltas(i_pdim), 0.0_WP)) then
-            n_pdims(3) = min(n_pdims(3), i_pdim)
+            n_pdims(3) = min(n_pdims(3), i_pdim - 1)
         end if
     end do
     
-    call config_out%logger%check(n_pdims(1) == len(pdim_chars), "size(min_exponents) /= len(pdim_chars).", n_failures)
-    call config_out%logger%check(n_pdims(2) == len(pdim_chars), "size(max_exponents) /= len(pdim_chars).", n_failures)
-    call config_out%logger%check(n_pdims(3) == len(pdim_chars), "size(exponent_deltas) /= len(pdim_chars).", n_failures)
+    call config_out%logger%check(all(min_exponents(1:len(trim(pdim_chars))) < max_exponents(1:len(trim(pdim_chars)))), &
+        "at least one min_exponents is equal or higher than the corresponding min_exponents", n_failures)
+    
+    call config_out%logger%check(n_pdims(1) == len(trim(pdim_chars)), "size(min_exponents) /= len(pdim_chars).", n_failures)
+    call config_out%logger%check(n_pdims(2) == len(trim(pdim_chars)), "size(max_exponents) /= len(pdim_chars).", n_failures)
+    call config_out%logger%check(n_pdims(3) == len(trim(pdim_chars)), "size(exponent_deltas) /= len(pdim_chars).", n_failures)
     
     ! TODO: Check that `pdim_chars` has unique characters
     
     if (n_failures > 0) then
-        error stop "input validation error(s)"
+        call config_out%logger%error("input validation error(s)")
+        rc = n_failures
+        return
     end if
     
-    config_out%output_file    = output_file
-    config_out%pdim_chars     = pdim_chars
-    config_out%pdim_type_defn = pdim_type_defn
-    config_out%n_pdims        = len(config_out%pdim_chars)
-
-    allocate(config_out%min_exponents(config_out%n_pdims))
-    allocate(config_out%max_exponents(config_out%n_pdims))
-    allocate(config_out%exponent_deltas(config_out%n_pdims))
-    config_out%min_exponents   = min_exponents
-    config_out%max_exponents   = max_exponents
-    config_out%exponent_deltas = exponent_deltas
+    config_out%output_file     = trim(output_file)
+    config_out%pdim_chars      = trim(pdim_chars)
+    config_out%pdim_type_defn  = trim(pdim_type_defn)
+    config_out%n_pdims         = len(config_out%pdim_chars)
+    config_out%min_exponents   = min_exponents(1:config_out%n_pdims)
+    config_out%max_exponents   = max_exponents(1:config_out%n_pdims)
+    config_out%exponent_deltas = exponent_deltas(1:config_out%n_pdims)
     
-    ! TODO: call config_out%logger%close()
+    call config_out%logger%info(config_out%output_file // " successfully read.")
+    
+    rc = 0
 end subroutine read_config
 
 end module pdim_mod

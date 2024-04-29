@@ -2,9 +2,13 @@
 
 Priorities:
 
+- Make nmllog.f90 optionally not print the time and/or level to stdout.
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
-    - `pdim_gen.f90`: Read namelist file, generate `pdim_types.f90`.
+    - Compare compile and run times with and without `pdim_types`. Look at compile time for `pdim_types.mod` and also something calling the module separately.
+    - `pdim_gen.f90`: Read namelist file specified as command line argument, generate `pdim_types.f90`.
+        - Take command line argument to get namelist file.
         - Header for `pdim_gen.f90`.
+        - Print number of operators created.
     - `pdim_label`: Eliminate "magic number" of 5 (used in 10000 as well) and make it part of `config`
     - Better type names:
         - Type names which lead to good error messages are best. Example error messages:
@@ -13,6 +17,7 @@ Priorities:
     - Namelist function to define setup.
         - `config` namelist to define physical dimensions (like `L`, `M`, `T`)
         - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`
+            - Also use this to generate the required dimensions. Only generate dimensions created by combinations of the specified dimensions. This would reduce comilation time. This would also eliminate the need for the nested loops that restrict the number of physical dimensions to a predetermined number, and eliminate the need for `exponent_deltas`.
     - Output `use` statement with shortcut dimensions.
     - No exponentiation operator, instead use `sqrt`, `cbrt`, and `square` similar to Numpy.
     - Unary negation.
@@ -22,6 +27,8 @@ Priorities:
         - Alternatively, for `diff(f, x)`, since `x` doesn't actually correspond to the *numerical value* of `x`, `x` could be a variable with the same type and a value `x%v` which corresponds to the index to differentiate with respect to.
         - I could make `x` a different type than whatever its physical dimensions would imply. This different type would be a differential version which could contain the index instead of the value.
     - Figure out a way to write the dimension of a type as a string without adding additional information to the derived type. (Adding additional information would change memory alignment and perhaps slow the program down.) Perhaps a big auto-generated function that takes `class(*)`?
+    - Test with AD.
+    - Test with arrays instead of scalars.
 
 Later:
 
