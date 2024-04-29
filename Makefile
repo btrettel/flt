@@ -132,7 +132,7 @@ src/nmllog$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
 
-src/pdim_mod$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/pdim_mod$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/pdim_types$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 

@@ -19,11 +19,7 @@ config%min_exponents   = [-1.0_WP, -1.0_WP, -1.0_WP]
 config%max_exponents   = [1.0_WP, 1.0_WP, 1.0_WP]
 config%exponent_deltas = [1.0_WP, 1.0_WP, 1.0_WP]
 
-open(newunit=out_unit, &
-        action="write", &
-        status="replace", &
-        position="rewind", &
-        file="src/pdim_types.f90")
+open(newunit=out_unit, action="write", status="replace", position="rewind", file="src/pdim_types.f90")
 call write_module(config, out_unit)
 close(unit=out_unit)
 
