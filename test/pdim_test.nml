@@ -1,0 +1,24 @@
+&config
+output_file    = "src/pdim_types.f90"
+pdim_chars     = "LMT"
+pdim_type_defn = "real(kind=WP)"
+!pdim_type_defn = "type(ad)"
+
+min_exponents   = -1.0, -1.0, -1.0
+max_exponents   = 1.0, 1.0, 1.0
+/
+
+&pdim
+label = "length"
+e = 1.0, 0.0, 0.0
+/
+
+&pdim
+label = "time"
+e = 0.0, 0.0, 1.0
+/
+
+&pdim
+label = "velocity"
+e = 1.0, 0.0, -1.0
+/
