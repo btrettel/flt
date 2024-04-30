@@ -6,6 +6,7 @@ pdim_type_defn = "real(kind=WP)"
 
 min_exponents   = -1.0, -1.0, -1.0
 max_exponents   = 1.0, 1.0, 1.0
+exponent_deltas = 1.0, 1.0, 1.0
 /
 
 &pdim

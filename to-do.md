@@ -29,6 +29,7 @@ Priorities:
     - Figure out a way to write the dimension of a type as a string without adding additional information to the derived type. (Adding additional information would change memory alignment and perhaps slow the program down.) Perhaps a big auto-generated function that takes `class(*)`?
     - Test with AD.
     - Test with arrays instead of scalars.
+    - Elementary functions like `sin`, `cos`, `log`, etc.
 
 Later:
 

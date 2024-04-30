@@ -203,7 +203,7 @@ pdim_mod.nml: test_pdim_mod$(BINEXT) test/test_pdim_types_fail.f90
 pdim_gen$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) app/pdim_gen.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) app/pdim_gen.f90
 
-src/pdim_types.f90: pdim_gen$(BINEXT)
+src/pdim_types.f90: pdim_gen$(BINEXT) test/pdim_test.nml
 	$(RUN)pdim_gen$(BINEXT) test/pdim_test.nml
 	test ! -e fort.*
 	test ! -e fort.*
