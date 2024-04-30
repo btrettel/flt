@@ -78,13 +78,32 @@ pure function pdim_human_readable(config, pdim)
     end do
 end function pdim_human_readable
 
+pure function m_pdim(pdim_left, pdim_right)
+    ! multiply
+    
+    type(pdim_type), intent(in) :: pdim_left, pdim_right
+    
+    type(pdim_type) :: m_pdim
+    
+    m_pdim%e = pdim_left%e + pdim_right%e
+end function m_pdim
+
+pure function d_pdim(pdim_left, pdim_right)
+    ! multiply
+    
+    type(pdim_type), intent(in) :: pdim_left, pdim_right
+    
+    type(pdim_type) :: d_pdim
+    
+    d_pdim%e = pdim_left%e - pdim_right%e
+end function d_pdim
+
 subroutine write_type(config, file_unit, i_pdim, pdims)
     type(pdim_config_type), intent(in) :: config
     integer, intent(in)                :: file_unit, i_pdim
     type(pdim_type), intent(in)        :: pdims(:)
     
-    integer         :: j_pdim
-    type(pdim_type) :: pdim_m, pdim_d
+    integer :: j_pdim
     
     write(unit=file_unit, fmt="(2a)") "type, public :: ", trim(pdim_label(config, pdims(i_pdim)))
     write(unit=file_unit, fmt="(2a)") "    ! ", trim(pdim_human_readable(config, pdims(i_pdim)))
@@ -103,8 +122,7 @@ subroutine write_type(config, file_unit, i_pdim, pdims)
     
     do j_pdim = 1, size(pdims)
         ! multiply
-        pdim_m%e = pdims(i_pdim)%e + pdims(j_pdim)%e
-        if (pdim_within_bounds(config, pdim_m)) then
+        if (pdim_within_bounds(config, m_pdim(pdims(i_pdim), pdims(j_pdim)))) then
             write(unit=file_unit, fmt="(5a)") "    procedure, private :: m_", &
                 trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
             write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(*) => m_", &
@@ -115,8 +133,7 @@ subroutine write_type(config, file_unit, i_pdim, pdims)
         end if
         
         ! divide
-        pdim_d%e = pdims(i_pdim)%e - pdims(j_pdim)%e
-        if (pdim_within_bounds(config, pdim_d)) then
+        if (pdim_within_bounds(config, d_pdim(pdims(i_pdim), pdims(j_pdim)))) then
             write(unit=file_unit, fmt="(5a)") "    procedure, private :: d_", &
                 trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
             write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(/) => d_", &
@@ -150,13 +167,13 @@ subroutine write_md_operators(config, file_unit, pdim_left, pdim_right)
     type(pdim_type) :: pdim_m, pdim_d
     
     ! multiply
-    pdim_m%e = pdim_left%e + pdim_right%e
+    pdim_m = m_pdim(pdim_left, pdim_right)
     if (pdim_within_bounds(config, pdim_m)) then
         call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_m, "*")
     end if
     
     ! divide
-    pdim_d%e = pdim_left%e - pdim_right%e
+    pdim_d = d_pdim(pdim_left, pdim_right)
     if (pdim_within_bounds(config, pdim_d)) then
         call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_d, "/")
     end if

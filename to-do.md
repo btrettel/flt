@@ -15,10 +15,11 @@ Priorities:
             - gfortran: `Error: Cannot convert TYPE(t_3f800000_00000000_bf800000) to TYPE(t_3f800000_00000000_00000000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
             - ifx: `error #6197: An assignment of different structure types is invalid.` (So ifx doesn't say what the types are.)
     - Namelist function to define setup.
-        - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`. Put the shortcuts in a code comment in `pdim_types.f90`.
+        - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`.
+            - Output `use` statement with shortcut dimensions. Put the shortcuts in a code comment in `pdim_types.f90`.
             - Also use this to generate the required dimensions. Only generate dimensions created by combinations of the specified dimensions. This would reduce comilation time. This would also eliminate the need for the nested loops that restrict the number of physical dimensions to a predetermined number, and eliminate the need for `exponent_deltas`.
-    - Output `use` statement with shortcut dimensions.
     - No exponentiation operator, instead use `sqrt`, `cbrt`, and `square` similar to Numpy.
+        - I need to determine not only whether the return type is within the bounds, but also whether it's one of the existing types. Might be better to just check against existing types.
     - Unary negation.
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
