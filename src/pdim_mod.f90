@@ -336,14 +336,18 @@ subroutine read_config(filename, config_out, rc)
     type(pdim_config_type), intent(out) :: config_out
     integer, intent(out)                :: rc
     
-    integer           :: nml_unit, rc_nml, n_failures, i_pdim, n_pdims_bounds(2)
+    integer           :: nml_unit, rc_nml, n_failures, i_pdim, n_pdims_bounds(2), n_pdims
     character(len=CL) :: nml_error_message
     
     character(len=CL)        :: output_file, pdim_type_defn
     character(len=MAX_PDIMS) :: pdim_chars
     real(kind=WP)            :: min_exponents(MAX_PDIMS), max_exponents(MAX_PDIMS)
     
+    character(len=CL) :: label
+    real(kind=WP)     :: e(MAX_PDIMS)
+    
     namelist /config/ output_file, pdim_chars, pdim_type_defn, min_exponents, max_exponents
+    namelist /pdim/ label, e
     
     call config_out%logger%open("pdim.nml", level=INFO_LEVEL)
     
@@ -397,6 +401,28 @@ subroutine read_config(filename, config_out, rc)
     config_out%n_pdims         = len(config_out%pdim_chars)
     config_out%min_exponents   = min_exponents(1:config_out%n_pdims)
     config_out%max_exponents   = max_exponents(1:config_out%n_pdims)
+    
+    ! `pdim` namelist groups
+    
+    open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
+    label = ""
+    e = 0.0_WP
+    n_pdims = 0
+    do
+        read(unit=nml_unit, nml=pdim, iostat=rc_nml, iomsg=nml_error_message)
+        
+        if (rc_nml == IOSTAT_END) then
+            exit
+        else if (rc_nml /= 0) then
+            call config_out%logger%error(trim(nml_error_message))
+            exit
+        end if
+        
+        n_pdims = n_pdims + 1
+        
+        write(unit=*, fmt=*) trim(label), e(1:config_out%n_pdims)
+    end do
+    close(unit=nml_unit)
     
     call config_out%logger%info(config_out%output_file // " successfully read.")
     
