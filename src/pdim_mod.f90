@@ -32,7 +32,11 @@ type, public :: pdim_config_type
     integer                       :: n_pdims
     real(kind=WP), allocatable    :: min_exponents(:), &
                                      max_exponents(:)
-    type(log_type)                :: logger
+    
+    type(log_type) :: logger
+    
+    character(len=MAX_LABEL_LEN), allocatable :: labels(:)
+    type(pdim_type), allocatable  :: pdims(:)
 end type pdim_config_type
 
 contains
@@ -426,6 +430,8 @@ subroutine read_config(filename, config_out, rc)
     end do
     
     rewind nml_unit
+    allocate(config_out%labels(n_pdims))
+    allocate(config_out%pdims(n_pdims))
     i_pdim = 0
     do
         read(unit=nml_unit, nml=pdim, iostat=rc_nml, iomsg=nml_error_message)
@@ -439,7 +445,9 @@ subroutine read_config(filename, config_out, rc)
         
         i_pdim = i_pdim + 1
         
-        write(unit=*, fmt=*) i_pdim, trim(label), e(1:config_out%n_pdims)
+        !write(unit=*, fmt=*) i_pdim, trim(label), e(1:config_out%n_pdims)
+        config_out%labels(i_pdim) = trim(label)
+        config_out%pdims(i_pdim)%e = e(1:config_out%n_pdims)
     end do
     
     close(unit=nml_unit)
