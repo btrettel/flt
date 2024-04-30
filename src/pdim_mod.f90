@@ -17,7 +17,9 @@ public :: linspace
 public :: pdim_within_bounds
 
 real(kind=WP), parameter :: SPACING_FACTOR  = 10.0_WP
-integer, parameter       :: MAX_PDIMS       = 10
+integer, parameter       :: MAX_PDIMS       = 10, &
+                            MAX_LABEL_LEN   = 63, &
+                            LABEL_LEN       = MAX_LABEL_LEN + 1
 
 type, public :: pdim_type
     real(kind=WP), allocatable :: e(:)
@@ -42,8 +44,8 @@ pure function pdim_label(config, pdim)
     type(pdim_type), intent(in)        :: pdim
     
     !character(len=config%pdim_label_len) :: pdim_label
-    character(len=64) :: pdim_label
-    character(len=1)  :: exponent_sign
+    character(len=LABEL_LEN) :: pdim_label
+    character(len=1)         :: exponent_sign
     
     integer :: i_pdim
     
@@ -58,7 +60,7 @@ pure function pdim_label(config, pdim)
     end do
     
     ! Ensure that the `pdim_label` won't be too long to be valid in Fortran 2003.
-    call assert(len(trim(pdim_label)) <= 63)
+    call assert(len(trim(pdim_label)) <= MAX_LABEL_LEN)
 end function pdim_label
 
 pure function pdim_human_readable(config, pdim)
@@ -207,7 +209,7 @@ subroutine write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_
     binary_operator_procedure = op_label // "_" // trim(pdim_label(config, pdim_left)) // "_" &
                                     // trim(pdim_label(config, pdim_right))
     
-    call assert(len(binary_operator_procedure) <= 63)
+    call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN)
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(pdim_left, pdim_right)"
     
@@ -343,8 +345,8 @@ subroutine read_config(filename, config_out, rc)
     character(len=MAX_PDIMS) :: pdim_chars
     real(kind=WP)            :: min_exponents(MAX_PDIMS), max_exponents(MAX_PDIMS)
     
-    character(len=CL) :: label
-    real(kind=WP)     :: e(MAX_PDIMS)
+    character(len=MAX_LABEL_LEN) :: label
+    real(kind=WP)                :: e(MAX_PDIMS)
     
     namelist /config/ output_file, pdim_chars, pdim_type_defn, min_exponents, max_exponents
     namelist /pdim/ label, e
@@ -407,6 +409,8 @@ subroutine read_config(filename, config_out, rc)
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
     label = ""
     e = 0.0_WP
+    
+    ! First get `n_pdims`, allocate `config`, and read everything in.
     n_pdims = 0
     do
         read(unit=nml_unit, nml=pdim, iostat=rc_nml, iomsg=nml_error_message)
@@ -419,9 +423,25 @@ subroutine read_config(filename, config_out, rc)
         end if
         
         n_pdims = n_pdims + 1
-        
-        write(unit=*, fmt=*) trim(label), e(1:config_out%n_pdims)
     end do
+    
+    rewind nml_unit
+    i_pdim = 0
+    do
+        read(unit=nml_unit, nml=pdim, iostat=rc_nml, iomsg=nml_error_message)
+        
+        if (rc_nml == IOSTAT_END) then
+            exit
+        else if (rc_nml /= 0) then
+            call config_out%logger%error(trim(nml_error_message))
+            exit
+        end if
+        
+        i_pdim = i_pdim + 1
+        
+        write(unit=*, fmt=*) i_pdim, trim(label), e(1:config_out%n_pdims)
+    end do
+    
     close(unit=nml_unit)
     
     call config_out%logger%info(config_out%output_file // " successfully read.")
