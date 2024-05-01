@@ -603,12 +603,12 @@ subroutine read_config(filename, config_out, rc)
     ! `pdim` namelist groups
     
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
-    label = ""
-    e = 0.0_WP
     
     ! First get `n_pdims`, allocate `config`, and read everything in.
     n_pdims = 0
     do
+        label = ""
+        e = 0.0_WP
         read(unit=nml_unit, nml=pdim, iostat=rc_nml, iomsg=nml_error_message)
         
         if (rc_nml == IOSTAT_END) then
@@ -628,6 +628,8 @@ subroutine read_config(filename, config_out, rc)
     allocate(config_out%pdims(n_pdims))
     i_pdim = 0
     do
+        label = ""
+        e = 0.0_WP
         read(unit=nml_unit, nml=pdim, iostat=rc_nml, iomsg=nml_error_message)
         
         if (rc_nml == IOSTAT_END) then
