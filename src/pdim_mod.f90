@@ -31,8 +31,8 @@ type, public :: pdim_config_type
                                      pdim_type_defn
     integer                       :: n_pdims
     real(kind=WP), allocatable    :: min_exponents(:), &
-                                     max_exponents(:), &
-                                     exponent_deltas(:)
+                                     max_exponents(:)
+    integer, allocatable          :: denominators(:)
     
     type(log_type) :: logger
     
@@ -350,12 +350,13 @@ subroutine read_config(filename, config_out, rc)
     
     character(len=CL)        :: output_file, pdim_type_defn
     character(len=MAX_PDIMS) :: pdim_chars
-    real(kind=WP)            :: min_exponents(MAX_PDIMS), max_exponents(MAX_PDIMS), exponent_deltas(MAX_PDIMS)
+    real(kind=WP)            :: min_exponents(MAX_PDIMS), max_exponents(MAX_PDIMS)
+    integer                  :: denominators(MAX_PDIMS)
     
     character(len=MAX_LABEL_LEN) :: label
     real(kind=WP)                :: e(MAX_PDIMS)
     
-    namelist /config/ output_file, pdim_chars, pdim_type_defn, min_exponents, max_exponents, exponent_deltas
+    namelist /config/ output_file, pdim_chars, pdim_type_defn, min_exponents, max_exponents, denominators
     namelist /pdim/ label, e
     
     call config_out%logger%open("pdim.nml", level=INFO_LEVEL)
@@ -364,7 +365,7 @@ subroutine read_config(filename, config_out, rc)
     pdim_type_defn  = "real(kind=WP)"
     min_exponents   = 0.0_WP
     max_exponents   = 0.0_WP
-    exponent_deltas = 0.0_WP
+    denominators    = 0
     
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
@@ -392,7 +393,7 @@ subroutine read_config(filename, config_out, rc)
             n_pdims_bounds(2) = min(n_pdims_bounds(2), i_pdim - 1)
         end if
         
-        if (is_close(exponent_deltas(i_pdim), 0.0_WP)) then
+        if (denominators(i_pdim) == 0) then
             n_pdims_bounds(3) = min(n_pdims_bounds(3), i_pdim - 1)
         end if
     end do
@@ -405,9 +406,9 @@ subroutine read_config(filename, config_out, rc)
     call config_out%logger%check(n_pdims_bounds(2) == len(trim(pdim_chars)), &
                                     "size(max_exponents) /= len(pdim_chars).", n_failures)
     call config_out%logger%check(n_pdims_bounds(3) == len(trim(pdim_chars)), &
-                                    "size(exponent_deltas) /= len(pdim_chars).", n_failures)
-    call config_out%logger%check(all(exponent_deltas(1:config_out%n_pdims) > 0.0_WP), &
-                                    "exponent_deltas must be greater than zero.", n_failures)
+                                    "size(denominators) /= len(pdim_chars).", n_failures)
+    call config_out%logger%check(all(denominators(1:config_out%n_pdims) > 0), &
+                                    "denominators is either undefined or less than zero.", n_failures)
     
     ! TODO: Check that `pdim_chars` has unique characters
     
@@ -417,13 +418,13 @@ subroutine read_config(filename, config_out, rc)
         return
     end if
     
-    config_out%output_file     = trim(output_file)
-    config_out%pdim_chars      = trim(pdim_chars)
-    config_out%pdim_type_defn  = trim(pdim_type_defn)
-    config_out%n_pdims         = len(config_out%pdim_chars)
-    config_out%min_exponents   = min_exponents(1:config_out%n_pdims)
-    config_out%max_exponents   = max_exponents(1:config_out%n_pdims)
-    config_out%exponent_deltas = exponent_deltas(1:config_out%n_pdims)
+    config_out%output_file    = trim(output_file)
+    config_out%pdim_chars     = trim(pdim_chars)
+    config_out%pdim_type_defn = trim(pdim_type_defn)
+    config_out%n_pdims        = len(config_out%pdim_chars)
+    config_out%min_exponents  = min_exponents(1:config_out%n_pdims)
+    config_out%max_exponents  = max_exponents(1:config_out%n_pdims)
+    config_out%denominators   = denominators(1:config_out%n_pdims)
     
     ! `pdim` namelist groups
     

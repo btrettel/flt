@@ -38,10 +38,10 @@ config%n_pdims        = len(config%pdim_chars)
 
 allocate(config%min_exponents(config%n_pdims))
 allocate(config%max_exponents(config%n_pdims))
-allocate(config%exponent_deltas(config%n_pdims))
-config%min_exponents   = [-1.0_WP, -1.0_WP, -1.0_WP]
-config%max_exponents   = [1.0_WP, 1.0_WP, 1.0_WP]
-config%exponent_deltas = [1.0_WP, 1.0_WP, 1.0_WP]
+allocate(config%denominators(config%n_pdims))
+config%min_exponents = [-1.0_WP, -1.0_WP, -1.0_WP]
+config%max_exponents = [1.0_WP, 1.0_WP, 1.0_WP]
+config%denominators  = [1, 1, 1]
 
 ! `pdim_within_bounds`
 
