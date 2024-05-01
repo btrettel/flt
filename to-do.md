@@ -7,6 +7,16 @@ Priorities:
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
     - Break up `write_module` to make testing parts easier.
         - Subroutine to generate `pdims`.
+    - Check if pdim namelist groups are outside bounds or inconsistent with exponent delta. Return error if so.
+    - `pdim_types.f90`
+        - Unary negation.
+        - Elementary functions like `sin`, `cos`, `log`, etc.
+        - `pdim` function to return array of exponents of corresponding `pdim` (implement with an `interface` with many `module procedures` listed, one for each `pdim`)
+        - `parameter` listing fundamental dimensions (copy from namelist file)
+        - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each `pdim`)
+        - function to format type to string with units or dimensions
+            - Can specify SI units for printing?
+        - derived type I/O for printing?
     - Unit tests for all procedures.
     - Characterization test comparing against known valid `pdim_types.f90`.
     - Test exponentiation operators.
@@ -23,16 +33,13 @@ Priorities:
         - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`.
             - Output `use` statement with shortcut dimensions. Put the shortcuts in a code comment in `pdim_types.f90`.
             - Also use this to generate the required dimensions. Only generate dimensions created by combinations of the specified dimensions. This would reduce comilation time. This would also eliminate the need for the nested loops that restrict the number of physical dimensions to a predetermined number, and eliminate the need for `exponent_deltas`.
-    - Unary negation.
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
         - But how can I link `x` to the index of the `dv` member variable? I could try something like `diff(f, x, 1)` where `1` is the index.
         - Alternatively, for `diff(f, x)`, since `x` doesn't actually correspond to the *numerical value* of `x`, `x` could be a variable with the same type and a value `x%v` which corresponds to the index to differentiate with respect to.
         - I could make `x` a different type than whatever its physical dimensions would imply. This different type would be a differential version which could contain the index instead of the value.
-    - Figure out a way to write the dimension of a type as a string without adding additional information to the derived type. (Adding additional information would change memory alignment and perhaps slow the program down.) Perhaps a big auto-generated function that takes `class(*)`?
     - Test with AD.
     - Test with arrays instead of scalars.
-    - Elementary functions like `sin`, `cos`, `log`, etc.
 
 Later:
 
