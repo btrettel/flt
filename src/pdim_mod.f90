@@ -420,7 +420,25 @@ subroutine write_module(config, file_unit)
     write(unit=file_unit, fmt="(2a)") "use prec, only: WP", new_line("a")
     write(unit=file_unit, fmt="(2a)") "implicit none", new_line("a")
     
-    ! TODO: Write `use` lines as comments.
+    ! Write `use` lines as comments.
+    if (size(config%labels) > 0) then
+        write(unit=file_unit, fmt="(a)", advance="no") "! use pdim_types, only: "
+        
+        do i_pdim = 1, size(config%labels)
+            if (i_pdim /= 1) then
+                write(unit=file_unit, fmt="(a)", advance="no") "!                       "
+            end if
+            
+            write(unit=file_unit, fmt="(3a)", advance="no") trim(config%labels(i_pdim)), &
+                                                                " => ", trim(pdim_label(config, config%pdims(i_pdim)))
+            if (i_pdim /= size(config%labels)) then
+                write(unit=file_unit, fmt="(a)") ", &"
+            else
+                write(unit=file_unit, fmt="(a)") ""
+            end if
+        end do
+        write(unit=file_unit, fmt="(a)") ""
+    end if
     
     do i_pdim = 1, size(pdims)
         call write_type(config, file_unit, i_pdim, pdims)

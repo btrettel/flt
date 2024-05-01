@@ -31,7 +31,6 @@ Priorities:
             - ifx: `error #6197: An assignment of different structure types is invalid.` (So ifx doesn't say what the types are.)
     - Namelist function to define setup.
         - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`.
-            - Output `use` statement with shortcut dimensions. Put the shortcuts in a code comment in `pdim_types.f90`.
             - Also use this to generate the required dimensions. Only generate dimensions created by combinations of the specified dimensions. This would reduce comilation time. This would also eliminate the need for the nested loops that restrict the number of physical dimensions to a predetermined number, and eliminate the need for `exponent_deltas`.
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
