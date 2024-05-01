@@ -5,6 +5,7 @@ Priorities:
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
 - `make install` to install pdim_gen.
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
+    - Unit tests for all procedures.
     - Compare compile and run times with and without `pdim_types`. Look at compile time for `pdim_types.mod` and also something calling the module separately.
         - `make benchmark`
     - `pdim_gen.f90`: Read namelist file specified as command line argument, generate `pdim_types.f90`.

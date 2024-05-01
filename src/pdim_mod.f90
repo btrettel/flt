@@ -134,7 +134,7 @@ subroutine write_type(config, file_unit, i_pdim, pdims)
             write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(*) => m_", &
                 trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
         else
-            write(unit=file_unit, fmt="(5a)") "    ! excluded due to exponent bounds: m_", &
+            write(unit=file_unit, fmt="(5a)") "    ! excluded: m_", &
                 trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
         end if
         
@@ -145,7 +145,7 @@ subroutine write_type(config, file_unit, i_pdim, pdims)
             write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(/) => d_", &
                 trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
         else
-            write(unit=file_unit, fmt="(5a)") "    ! excluded due to exponent bounds: d_", &
+            write(unit=file_unit, fmt="(5a)") "    ! excluded: d_", &
                 trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
         end if
     end do
@@ -230,6 +230,96 @@ subroutine write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_
     
     write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
 end subroutine write_binary_operator
+
+pure function sqrt_pdim(pdim)
+    type(pdim_type), intent(in) :: pdim
+    
+    type(pdim_type) :: sqrt_pdim
+    
+    sqrt_pdim%e = 0.5_WP * pdim%e
+end function sqrt_pdim
+
+pure function cbrt_pdim(pdim)
+    type(pdim_type), intent(in) :: pdim
+    
+    type(pdim_type) :: cbrt_pdim
+    
+    cbrt_pdim%e = pdim%e / 3.0_WP
+end function cbrt_pdim
+
+pure function square_pdim(pdim)
+    type(pdim_type), intent(in) :: pdim
+    
+    type(pdim_type) :: square_pdim
+    
+    square_pdim%e = 2.0_WP * pdim%e
+end function square_pdim
+
+subroutine write_exponentiation_interfaces(config, file_unit, pdims)
+    type(pdim_config_type), intent(in) :: config
+    integer, intent(in)                :: file_unit
+    type(pdim_type), intent(in)        :: pdims(:)
+    
+    integer :: i_pdim
+    
+    write(unit=file_unit, fmt="(a)") "interface sqrt"
+    do i_pdim = 1, size(pdims)
+        if (pdim_in_set(config, sqrt_pdim(pdims(i_pdim)), pdims)) then
+        
+            write(unit=file_unit, fmt="(2a)") "    module procedure sqrt_", trim(pdim_label(config, pdims(i_pdim)))
+        else
+            write(unit=file_unit, fmt="(2a)") "    ! excluded: sqrt_", trim(pdim_label(config, pdims(i_pdim)))
+        end if
+    end do
+    write(unit=file_unit, fmt="(2a)") "end interface sqrt", new_line("a")
+end subroutine write_exponentiation_interfaces
+
+subroutine write_exponentiation_function(config, file_unit, pdim, op)
+    type(pdim_config_type), intent(in) :: config
+    integer, intent(in)                :: file_unit
+    type(pdim_type), intent(in)        :: pdim
+    character(len=*), intent(in)       :: op
+    
+    type(pdim_type)               :: pdim_out
+    character(len=:), allocatable :: op_pre, op_post, exponentiation_function
+    
+    select case (op)
+        case ("sqrt")
+            op_pre = "sqrt("
+            op_post = ")"
+            
+            pdim_out = sqrt_pdim(pdim)
+        case ("cbrt")
+            ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Fast-cube-root/m-p/1171728>
+            ! <https://www.reddit.com/r/fortran/comments/t9qkqd/cuberoot_and_my_dissent_into_madness/>
+            ! <https://github.com/fortran-lang/stdlib/issues/214>
+            op_pre = "("
+            op_post = ")**(1.0_WP/3.0_WP)"
+            
+            pdim_out = cbrt_pdim(pdim)
+        case ("square")
+            op_pre = "("
+            op_post = ")**2"
+            
+            pdim_out = square_pdim(pdim)
+        case default
+            error stop "write_exponentiation_function: invalid op"
+    end select
+    
+    exponentiation_function = op // "_" // trim(pdim_label(config, pdim))
+    
+    write(unit=file_unit, fmt="(3a)") "elemental function ", exponentiation_function, "(pdim)"
+    
+    write(unit=file_unit, fmt="(2a)") "    ! arg: ", trim(pdim_human_readable(config, pdim))
+    write(unit=file_unit, fmt="(2a)") "    ! out: ", trim(pdim_human_readable(config, pdim_out))
+    
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(pdim_label(config, pdim)), "), intent(in) :: pdim"
+    write(unit=file_unit, fmt="(4a)") "    type(", trim(pdim_label(config, pdim_out)), ") :: ", exponentiation_function
+    
+    write(unit=file_unit, fmt="(6a)") "    ", exponentiation_function, "%v = ", op_pre, "pdim%v", op_post
+    
+    write(unit=file_unit, fmt="(3a)") "end function ", exponentiation_function, new_line("a")
+end subroutine write_exponentiation_function
 
 pure function linspace(lower, upper, n)
     use checks, only: assert
