@@ -8,7 +8,7 @@ min_exponents = -1.0, -1.0, -1.0
 max_exponents = 1.0, 1.0, 1.0
 denominators  = 1, 1, 1
 
-! TODO: exponentiation = .true.
+exponentiation = .true.
 /
 
 &pdim

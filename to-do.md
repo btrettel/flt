@@ -5,7 +5,11 @@ Priorities:
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
 - `make install` to install pdim_gen.
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
+    - Break up `write_module` to make testing parts easier.
+        - Subroutine to generate `pdims`.
     - Unit tests for all procedures.
+    - Characterization test comparing against known valid `pdim_types.f90`.
+    - Test exponentiation operators.
     - Compare compile and run times with and without `pdim_types`. Look at compile time for `pdim_types.mod` and also something calling the module separately.
         - `make benchmark`
     - `pdim_gen.f90`: Read namelist file specified as command line argument, generate `pdim_types.f90`.
@@ -19,8 +23,6 @@ Priorities:
         - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`.
             - Output `use` statement with shortcut dimensions. Put the shortcuts in a code comment in `pdim_types.f90`.
             - Also use this to generate the required dimensions. Only generate dimensions created by combinations of the specified dimensions. This would reduce comilation time. This would also eliminate the need for the nested loops that restrict the number of physical dimensions to a predetermined number, and eliminate the need for `exponent_deltas`.
-    - No exponentiation operator, instead use `sqrt`, `cbrt`, and `square` similar to Numpy.
-        - I need to determine not only whether the return type is within the bounds, but also whether it's one of the existing types. Might be better to just check against existing types.
     - Unary negation.
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.

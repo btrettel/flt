@@ -34,6 +34,8 @@ type, public :: pdim_config_type
                                      max_exponents(:)
     integer, allocatable          :: denominators(:)
     
+    logical :: exponentiation
+    
     type(log_type) :: logger
     
     character(len=MAX_LABEL_LEN), allocatable :: labels(:)
@@ -272,6 +274,28 @@ subroutine write_exponentiation_interfaces(config, file_unit, pdims)
         end if
     end do
     write(unit=file_unit, fmt="(2a)") "end interface sqrt", new_line("a")
+    
+    write(unit=file_unit, fmt="(a)") "interface cbrt"
+    do i_pdim = 1, size(pdims)
+        if (pdim_in_set(config, cbrt_pdim(pdims(i_pdim)), pdims)) then
+        
+            write(unit=file_unit, fmt="(2a)") "    module procedure cbrt_", trim(pdim_label(config, pdims(i_pdim)))
+        else
+            write(unit=file_unit, fmt="(2a)") "    ! excluded: cbrt_", trim(pdim_label(config, pdims(i_pdim)))
+        end if
+    end do
+    write(unit=file_unit, fmt="(2a)") "end interface cbrt", new_line("a")
+    
+    write(unit=file_unit, fmt="(a)") "interface square"
+    do i_pdim = 1, size(pdims)
+        if (pdim_in_set(config, square_pdim(pdims(i_pdim)), pdims)) then
+        
+            write(unit=file_unit, fmt="(2a)") "    module procedure square_", trim(pdim_label(config, pdims(i_pdim)))
+        else
+            write(unit=file_unit, fmt="(2a)") "    ! excluded: square_", trim(pdim_label(config, pdims(i_pdim)))
+        end if
+    end do
+    write(unit=file_unit, fmt="(2a)") "end interface square", new_line("a")
 end subroutine write_exponentiation_interfaces
 
 subroutine write_exponentiation_function(config, file_unit, pdim, op)
@@ -362,7 +386,8 @@ subroutine write_module(config, file_unit)
     call assert(config%n_pdims == 3)
     
     do i_pdim = 1, config%n_pdims
-        n_exponents(i_pdim) = nint((config%max_exponents(i_pdim) - config%min_exponents(i_pdim))) + 1
+        n_exponents(i_pdim) = nint(config%max_exponents(i_pdim) - config%min_exponents(i_pdim)) &
+                                    * config%denominators(i_pdim) + 1
     end do
     
     exponents_1 = linspace(config%min_exponents(1), config%max_exponents(1), n_exponents(1))
@@ -384,6 +409,8 @@ subroutine write_module(config, file_unit)
         end do
     end do
     
+    call assert(l_pdim == size(pdims))
+    
     write(unit=n_pdims_char, fmt="(i0)") size(pdims)
     call config%logger%info("Generated " // trim(n_pdims_char) // " physical dimensions. Writing " // config%output_file // "...")
     
@@ -399,6 +426,10 @@ subroutine write_module(config, file_unit)
         call write_type(config, file_unit, i_pdim, pdims)
     end do
     
+    if (config%exponentiation) then
+        call write_exponentiation_interfaces(config, file_unit, pdims)
+    end if
+    
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
     
     do i_pdim = 1, size(pdims)
@@ -410,6 +441,22 @@ subroutine write_module(config, file_unit)
             call write_md_operators(config, file_unit, pdims(i_pdim), pdims(j_pdim), pdims)
         end do
     end do
+    
+    if (config%exponentiation) then
+        do i_pdim = 1, size(pdims)
+            if (pdim_in_set(config, sqrt_pdim(pdims(i_pdim)), pdims)) then
+                call write_exponentiation_function(config, file_unit, pdims(i_pdim), "sqrt")
+            end if
+            
+            if (pdim_in_set(config, cbrt_pdim(pdims(i_pdim)), pdims)) then
+                call write_exponentiation_function(config, file_unit, pdims(i_pdim), "cbrt")
+            end if
+            
+            if (pdim_in_set(config, square_pdim(pdims(i_pdim)), pdims)) then
+                call write_exponentiation_function(config, file_unit, pdims(i_pdim), "square")
+            end if
+        end do
+    end if
     
     write(unit=file_unit, fmt="(a)") "end module pdim_types"
 end subroutine write_module
@@ -458,11 +505,12 @@ subroutine read_config(filename, config_out, rc)
     character(len=MAX_PDIMS) :: pdim_chars
     real(kind=WP)            :: min_exponents(MAX_PDIMS), max_exponents(MAX_PDIMS)
     integer                  :: denominators(MAX_PDIMS)
+    logical                  :: exponentiation
     
     character(len=MAX_LABEL_LEN) :: label
     real(kind=WP)                :: e(MAX_PDIMS)
     
-    namelist /config/ output_file, pdim_chars, pdim_type_defn, min_exponents, max_exponents, denominators
+    namelist /config/ output_file, pdim_chars, pdim_type_defn, min_exponents, max_exponents, denominators, exponentiation
     namelist /pdim/ label, e
     
     call config_out%logger%open("pdim.nml", level=INFO_LEVEL)
@@ -472,6 +520,7 @@ subroutine read_config(filename, config_out, rc)
     min_exponents   = 0.0_WP
     max_exponents   = 0.0_WP
     denominators    = 0
+    exponentiation  = .true.
     
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
@@ -531,6 +580,7 @@ subroutine read_config(filename, config_out, rc)
     config_out%min_exponents  = min_exponents(1:config_out%n_pdims)
     config_out%max_exponents  = max_exponents(1:config_out%n_pdims)
     config_out%denominators   = denominators(1:config_out%n_pdims)
+    config_out%exponentiation = exponentiation
     
     ! `pdim` namelist groups
     
