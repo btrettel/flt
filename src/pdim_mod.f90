@@ -14,7 +14,7 @@ implicit none
 public :: pdim_label
 public :: write_type, write_as_operators, write_md_operators, write_binary_operator
 public :: linspace
-public :: pdim_within_bounds
+public :: pdim_in_set
 
 real(kind=WP), parameter :: SPACING_FACTOR  = 10.0_WP
 integer, parameter       :: MAX_PDIMS       = 10, &
@@ -128,7 +128,7 @@ subroutine write_type(config, file_unit, i_pdim, pdims)
     
     do j_pdim = 1, size(pdims)
         ! multiply
-        if (pdim_within_bounds(config, m_pdim(pdims(i_pdim), pdims(j_pdim)))) then
+        if (pdim_in_set(config, m_pdim(pdims(i_pdim), pdims(j_pdim)), pdims)) then
             write(unit=file_unit, fmt="(5a)") "    procedure, private :: m_", &
                 trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
             write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(*) => m_", &
@@ -139,7 +139,7 @@ subroutine write_type(config, file_unit, i_pdim, pdims)
         end if
         
         ! divide
-        if (pdim_within_bounds(config, d_pdim(pdims(i_pdim), pdims(j_pdim)))) then
+        if (pdim_in_set(config, d_pdim(pdims(i_pdim), pdims(j_pdim)), pdims)) then
             write(unit=file_unit, fmt="(5a)") "    procedure, private :: d_", &
                 trim(pdim_label(config, pdims(i_pdim))), "_", trim(pdim_label(config, pdims(j_pdim)))
             write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(/) => d_", &
@@ -165,22 +165,22 @@ subroutine write_as_operators(config, file_unit, pdim)
     call write_binary_operator(config, file_unit, pdim, pdim, pdim, "-")
 end subroutine write_as_operators
 
-subroutine write_md_operators(config, file_unit, pdim_left, pdim_right)
+subroutine write_md_operators(config, file_unit, pdim_left, pdim_right, pdims)
     type(pdim_config_type), intent(in) :: config
     integer, intent(in)                :: file_unit
-    type(pdim_type), intent(in)        :: pdim_left, pdim_right
+    type(pdim_type), intent(in)        :: pdim_left, pdim_right, pdims(:)
     
     type(pdim_type) :: pdim_m, pdim_d
     
     ! multiply
     pdim_m = m_pdim(pdim_left, pdim_right)
-    if (pdim_within_bounds(config, pdim_m)) then
+    if (pdim_in_set(config, pdim_m, pdims)) then
         call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_m, "*")
     end if
     
     ! divide
     pdim_d = d_pdim(pdim_left, pdim_right)
-    if (pdim_within_bounds(config, pdim_d)) then
+    if (pdim_in_set(config, pdim_d, pdims)) then
         call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_d, "/")
     end if
 end subroutine write_md_operators
@@ -317,22 +317,38 @@ subroutine write_module(config, file_unit)
     
     do i_pdim = 1, size(pdims)
         do j_pdim = 1, size(pdims)
-            call write_md_operators(config, file_unit, pdims(i_pdim), pdims(j_pdim))
+            call write_md_operators(config, file_unit, pdims(i_pdim), pdims(j_pdim), pdims)
         end do
     end do
     
     write(unit=file_unit, fmt="(a)") "end module pdim_types"
 end subroutine write_module
 
-pure function pdim_within_bounds(config, pdim)
+pure function pdim_in_set(config, pdim, pdims)
+    use checks, only: is_close
+    
     type(pdim_config_type), intent(in) :: config
-    type(pdim_type), intent(in)        :: pdim
+    type(pdim_type), intent(in)        :: pdim, pdims(:)
     
-    logical :: pdim_within_bounds
+    logical :: pdim_in_set
     
-    pdim_within_bounds = all(pdim%e <= (config%max_exponents + SPACING_FACTOR * spacing(config%max_exponents))) &
-                                .and. all(pdim%e >= (config%min_exponents - SPACING_FACTOR * spacing(config%min_exponents)))
-end function pdim_within_bounds
+    integer :: i_pdim, j_pdim, n_match
+    
+    pdim_in_set = .false.
+    do i_pdim = 1, size(pdims)
+        n_match = 0
+        do j_pdim = 1, config%n_pdims
+            if (is_close(pdim%e(j_pdim), pdims(i_pdim)%e(j_pdim))) then
+             n_match = n_match + 1
+            end if
+        end do
+        
+        if (n_match == config%n_pdims) then
+            pdim_in_set = .true.
+            exit
+        end if
+    end do
+end function pdim_in_set
 
 subroutine read_config(filename, config_out, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END

@@ -7,7 +7,7 @@
 
 program test_pdim_mod
 
-use pdim_mod, only: pdim_config_type, pdim_type, write_module, pdim_within_bounds
+use pdim_mod, only: pdim_config_type, pdim_type, write_module, pdim_in_set
 ! write_type, write_as_operators, write_md_operators, linspace
 use pdim_types, only: length   => pdim_p10000_p00000_p00000, &
                       time     => pdim_p00000_p00000_p10000, &
@@ -20,7 +20,7 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests
 type(pdim_config_type)  :: config
-type(pdim_type)         :: pdim
+type(pdim_type)         :: pdim, pdims(2)
 
 type(length)   :: x, y, z
 type(time)     :: t
@@ -46,31 +46,24 @@ config%denominators  = [1, 1, 1]
 ! `pdim_within_bounds`
 
 allocate(pdim%e(config%n_pdims))
+allocate(pdims(1)%e(config%n_pdims))
+allocate(pdims(2)%e(config%n_pdims))
 
-pdim%e(1) = 0.5_WP
-pdim%e(2) = 0.0_WP
-pdim%e(3) = 0.0_WP
-call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, .true.")
+pdims(1)%e(1) = 0.5_WP
+pdims(1)%e(2) = 0.0_WP
+pdims(1)%e(3) = 0.0_WP
 
-pdim%e(1) = 1.0_WP
-pdim%e(2) = 0.0_WP
-pdim%e(3) = 0.0_WP
-call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, upper boundary, .true.")
+pdims(2)%e(1) = 0.0_WP
+pdims(2)%e(2) = -0.25_WP
+pdims(2)%e(3) = 0.0_WP
 
-pdim%e(1) = -1.0_WP
-pdim%e(2) = 0.0_WP
-pdim%e(3) = 0.0_WP
-call tests%logical_true(pdim_within_bounds(config, pdim), "pdim_within_bounds, lower boundary, .true.")
+pdim = pdims(1)
+call tests%logical_true(pdim_in_set(config, pdim, pdims), "pdim_in_set, .true.")
 
 pdim%e(1) = 1.5_WP
 pdim%e(2) = 0.0_WP
 pdim%e(3) = 0.0_WP
-call tests%logical_false(pdim_within_bounds(config, pdim), "pdim_within_bounds, .false., above")
-
-pdim%e(1) = -1.5_WP
-pdim%e(2) = 0.0_WP
-pdim%e(3) = 0.0_WP
-call tests%logical_false(pdim_within_bounds(config, pdim), "pdim_within_bounds, .false., below")
+call tests%logical_false(pdim_in_set(config, pdim, pdims), "pdim_in_set, .false.")
 
 ! TODO: `write_type`
 
