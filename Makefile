@@ -203,7 +203,10 @@ test_pdim_types$(BINEXT): src/pdim_types$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nm
 test_pdim_types_fail_1$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
 
-pdim_types.nml: test_pdim_types$(BINEXT) test/test_pdim_types_fail_1.f90
+test_pdim_types_fail_2$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_2.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_2.f90
+
+pdim_types.nml: test_pdim_types$(BINEXT) test/test_pdim_types_fail_1.f90 test/test_pdim_types_fail_2.f90
 	$(RUN)test_pdim_types$(BINEXT)
 	test ! -e fort.*
 	test ! -e fort.*

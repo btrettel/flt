@@ -67,6 +67,11 @@ call test_exit_code(tests, &
                     "compile-time error for physical dimension mismatch, 1", &
                     "test_pdim_types_fail_1.txt")
 
+call test_exit_code(tests, &
+                    "make test_pdim_types_fail_2", &
+                    "compile-time error for physical dimension mismatch, 2", &
+                    "test_pdim_types_fail_2.txt")
+
 call tests%end_tests()
 call logger%close()
 
@@ -83,7 +88,7 @@ subroutine test_exit_code(tests, command, message, output_file)
     call tests%integer_ne(rc_fail, 0, message)
 
     ! Delete output file if test succeeded, otherwise keep it for examination.
-    if (rc_fail == 0) then
+    if (rc_fail /= 0) then
         open(newunit=failure_unit, file=output_file, status="old", action="read")
         close(unit=failure_unit, status="delete")
     end if
