@@ -5,7 +5,7 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_pdim_types_fail
+program test_pdim_types_fail_1
 
 use prec, only: WP
 use pdim_types, only: length => pdim_p10000_p00000_p00000, &
@@ -21,4 +21,4 @@ t%v = 1.0_WP
 ! This will fail to compile.
 z = x / t
 
-end program test_pdim_types_fail
+end program test_pdim_types_fail_1

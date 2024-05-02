@@ -5,7 +5,7 @@ pdim_type_defn = "real(kind=WP)"
 !pdim_type_defn = "type(ad)"
 
 min_exponents = -1.0, -1.0, -1.0
-max_exponents = 1.0, 1.0, 1.0
+max_exponents = 3.0, 1.0, 1.0
 denominators  = 1, 1, 1
 
 exponentiation = .true.
@@ -24,4 +24,14 @@ e = 0.0, 0.0, 1.0
 &pdim
 label = "velocity"
 e = 1.0, 0.0, -1.0
+/
+
+&pdim
+label = "area"
+e = 2.0, 0.0, 0.0
+/
+
+&pdim
+label = "volume"
+e = 3.0, 0.0, 0.0
 /

@@ -378,9 +378,10 @@ subroutine write_module(config, file_unit)
     integer, intent(in)                :: file_unit
     
     type(pdim_type), allocatable :: pdims(:)
-    integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim
+    integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim, max_label_len
     real(kind=WP), allocatable :: exponents_1(:), exponents_2(:), exponents_3(:)
     character(len=10) :: n_pdims_char
+    character(len=20) :: use_format
     
     ! TODO: Generalize this so that it works for an arbitrary number of physical dimensions. This only works with 3.
     call assert(config%n_pdims == 3)
@@ -422,21 +423,37 @@ subroutine write_module(config, file_unit)
     
     ! Write `use` lines as comments.
     if (size(config%labels) > 0) then
-        write(unit=file_unit, fmt="(a)", advance="no") "! use pdim_types, only: "
+        write(unit=file_unit, fmt="(a)", advance="no") "!use pdim_types, only: "
+        
+        max_label_len = 0
+        do i_pdim = 1, size(config%labels)
+            max_label_len = max(max_label_len, len(trim(config%labels(i_pdim))))
+        end do
         
         do i_pdim = 1, size(config%labels)
             if (i_pdim /= 1) then
-                write(unit=file_unit, fmt="(a)", advance="no") "!                       "
+                write(unit=file_unit, fmt="(a)", advance="no") "!                      "
             end if
             
-            write(unit=file_unit, fmt="(3a)", advance="no") trim(config%labels(i_pdim)), &
-                                                                " => ", trim(pdim_label(config, config%pdims(i_pdim)))
-            if (i_pdim /= size(config%labels)) then
+            ! Align the `=>` and left-justify the labels.
+            ! <https://fortran-lang.discourse.group/t/left-justification-of-strings/345>
+            write(unit=use_format, fmt="(a, i0, a)") "(a, tr", max_label_len - len(trim(config%labels(i_pdim))) + 1, ", 2a)"
+            write(unit=file_unit, fmt=trim(use_format), advance="no") trim(config%labels(i_pdim)), &
+                                                                        "=> ", &
+                                                                        trim(pdim_label(config, config%pdims(i_pdim)))
+            if (config%exponentiation) then
                 write(unit=file_unit, fmt="(a)") ", &"
             else
-                write(unit=file_unit, fmt="(a)") ""
+                if (i_pdim /= size(config%labels)) then
+                    write(unit=file_unit, fmt="(a)") ", &"
+                else
+                    write(unit=file_unit, fmt="(a)") ""
+                end if
             end if
         end do
+        if (config%exponentiation) then
+            write(unit=file_unit, fmt="(a)") "!                      sqrt, cbrt, square"
+        end if
         write(unit=file_unit, fmt="(a)") ""
     end if
     
