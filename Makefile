@@ -185,14 +185,26 @@ nmllog.nml: test_nmllog$(BINEXT)
 # pdim_mod #
 ############
 
-test_pdim_mod$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_mod.f90
+test_pdim_mod$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_mod.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_mod.f90
 
-test_pdim_types_fail$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail.f90
-
-pdim_mod.nml: test_pdim_mod$(BINEXT) test/test_pdim_types_fail.f90
+pdim_mod.nml: test_pdim_mod$(BINEXT)
 	$(RUN)test_pdim_mod$(BINEXT)
+	test ! -e fort.*
+	test ! -e fort.*
+
+##############
+# pdim_types #
+##############
+
+test_pdim_types$(BINEXT): src/pdim_types$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_mod.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_mod.f90
+
+test_pdim_types_fail_1$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
+
+pdim_test.nml: test_pdim_types$(BINEXT) test/test_pdim_types_fail_1.f90
+	$(RUN)test_pdim_types$(BINEXT)
 	test ! -e fort.*
 	test ! -e fort.*
 

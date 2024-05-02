@@ -8,6 +8,7 @@ Priorities:
     - Break up `write_module` to make testing parts easier.
         - Subroutine to generate `pdims`.
     - Check if pdim namelist groups are outside bounds or inconsistent with exponent delta. Return error if so.
+    - When reading in `pdim` namelists, check if `label` or `e` are empty and don't add if they are.
     - `pdim_types.f90`
         - Unary negation.
         - Elementary functions like `sin`, `cos`, `log`, etc.
