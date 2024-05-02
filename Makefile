@@ -18,7 +18,7 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # Add later: dimmod.nml ga.nml
-NML = autodiff.nml checks.nml nmllog.nml pdim_mod.nml prec.nml purerng.nml timer.nml unittest.nml
+NML = autodiff.nml checks.nml nmllog.nml pdim_mod.nml pdim_types.nml prec.nml purerng.nml timer.nml unittest.nml
 .PRECIOUS: $(NML)
 
 #############
@@ -197,13 +197,13 @@ pdim_mod.nml: test_pdim_mod$(BINEXT)
 # pdim_types #
 ##############
 
-test_pdim_types$(BINEXT): src/pdim_types$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_mod.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_mod.f90
+test_pdim_types$(BINEXT): src/pdim_types$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_types.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types.f90
 
 test_pdim_types_fail_1$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
 
-pdim_test.nml: test_pdim_types$(BINEXT) test/test_pdim_types_fail_1.f90
+pdim_types.nml: test_pdim_types$(BINEXT) test/test_pdim_types_fail_1.f90
 	$(RUN)test_pdim_types$(BINEXT)
 	test ! -e fort.*
 	test ! -e fort.*

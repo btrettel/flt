@@ -155,6 +155,7 @@ regexp-rules:
     message: At least one space before comment
     regexp: (\S)\!
     replacement: \1 !
+    active: false
 
   one-space-after-comment:
     message: Exactly one space after comment
