@@ -167,10 +167,11 @@ subroutine write_as_operators(config, file_unit, pdim)
     call write_binary_operator(config, file_unit, pdim, pdim, pdim, "-")
 end subroutine write_as_operators
 
-subroutine write_md_operators(config, file_unit, pdim_left, pdim_right, pdims)
+subroutine write_md_operators(config, file_unit, pdim_left, pdim_right, pdims, n_interfaces)
     type(pdim_config_type), intent(in) :: config
     integer, intent(in)                :: file_unit
     type(pdim_type), intent(in)        :: pdim_left, pdim_right, pdims(:)
+    integer, intent(in out)            :: n_interfaces
     
     type(pdim_type) :: pdim_m, pdim_d
     
@@ -178,12 +179,14 @@ subroutine write_md_operators(config, file_unit, pdim_left, pdim_right, pdims)
     pdim_m = m_pdim(pdim_left, pdim_right)
     if (pdim_in_set(config, pdim_m, pdims)) then
         call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_m, "*")
+        n_interfaces = n_interfaces + 1
     end if
     
     ! divide
     pdim_d = d_pdim(pdim_left, pdim_right)
     if (pdim_in_set(config, pdim_d, pdims)) then
         call write_binary_operator(config, file_unit, pdim_left, pdim_right, pdim_d, "/")
+        n_interfaces = n_interfaces + 1
     end if
 end subroutine write_md_operators
 
@@ -385,9 +388,9 @@ subroutine write_module(config, file_unit)
     integer, intent(in)                :: file_unit
     
     type(pdim_type), allocatable :: pdims(:)
-    integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim, max_label_len
+    integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim, max_label_len, n_interfaces
     real(kind=WP), allocatable :: exponents_1(:), exponents_2(:), exponents_3(:)
-    character(len=10) :: n_pdims_char
+    character(len=10) :: n_char
     character(len=20) :: use_format
     
     ! TODO: Generalize this so that it works for an arbitrary number of physical dimensions. This only works with 3.
@@ -419,8 +422,8 @@ subroutine write_module(config, file_unit)
     
     call assert(l_pdim == size(pdims))
     
-    write(unit=n_pdims_char, fmt="(i0)") size(pdims)
-    call config%logger%info("Generated " // trim(n_pdims_char) // " physical dimensions. Writing " // config%output_file // "...")
+    write(unit=n_char, fmt="(i0)") size(pdims)
+    call config%logger%info("Generated " // trim(n_char) // " physical dimensions. Writing " // config%output_file // "...")
     
     ! Now actually write the module.
     
@@ -474,13 +477,16 @@ subroutine write_module(config, file_unit)
     
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
     
+    n_interfaces = 0
+    
     do i_pdim = 1, size(pdims)
         call write_as_operators(config, file_unit, pdims(i_pdim))
+        n_interfaces = n_interfaces + 2
     end do
     
     do i_pdim = 1, size(pdims)
         do j_pdim = 1, size(pdims)
-            call write_md_operators(config, file_unit, pdims(i_pdim), pdims(j_pdim), pdims)
+            call write_md_operators(config, file_unit, pdims(i_pdim), pdims(j_pdim), pdims, n_interfaces)
         end do
     end do
     
@@ -488,19 +494,25 @@ subroutine write_module(config, file_unit)
         do i_pdim = 1, size(pdims)
             if (pdim_in_set(config, sqrt_pdim(pdims(i_pdim)), pdims)) then
                 call write_exponentiation_function(config, file_unit, pdims(i_pdim), "sqrt")
+                n_interfaces = n_interfaces + 1
             end if
             
             if (pdim_in_set(config, cbrt_pdim(pdims(i_pdim)), pdims)) then
                 call write_exponentiation_function(config, file_unit, pdims(i_pdim), "cbrt")
+                n_interfaces = n_interfaces + 1
             end if
             
             if (pdim_in_set(config, square_pdim(pdims(i_pdim)), pdims)) then
                 call write_exponentiation_function(config, file_unit, pdims(i_pdim), "square")
+                n_interfaces = n_interfaces + 1
             end if
         end do
     end if
     
     write(unit=file_unit, fmt="(a)") "end module pdim_types"
+    
+    write(unit=n_char, fmt="(i0)") n_interfaces
+    call config%logger%info("Generated " // trim(n_char) // " interfaces.")
 end subroutine write_module
 
 pure function pdim_in_set(config, pdim, pdims)
