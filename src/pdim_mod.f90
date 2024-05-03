@@ -570,15 +570,18 @@ subroutine read_config(filename, config_out, rc)
     type(pdim_config_type), intent(out) :: config_out
     integer, intent(out)                :: rc
     
-    integer           :: nml_unit, rc_nml, n_failures, i_pdim, n_pdims_bounds(3), n_pdims
+    integer           :: nml_unit, rc_nml, n_failures, i_pdim, j_pdim, n_pdims_bounds(3), n_pdims
     character(len=CL) :: nml_error_message
+    character(len=2)  :: i_pdim_string, j_pdim_string
     
+    ! `config` namelist group
     character(len=CL)        :: output_file, pdim_type_defn
     character(len=MAX_PDIMS) :: pdim_chars
     real(kind=WP)            :: min_exponents(MAX_PDIMS), max_exponents(MAX_PDIMS)
     integer                  :: denominators(MAX_PDIMS)
     logical                  :: exponentiation
     
+    ! `pdim` namelist group
     character(len=MAX_LABEL_LEN) :: label
     real(kind=WP)                :: e(MAX_PDIMS)
     
@@ -700,10 +703,27 @@ subroutine read_config(filename, config_out, rc)
         !write(unit=*, fmt=*) i_pdim, trim(label), e(1:config_out%n_pdims)
         config_out%labels(i_pdim) = trim(label)
         config_out%pdims(i_pdim)%e = e(1:config_out%n_pdims)
+        
+        write(unit=i_pdim_string, fmt="(i0)") i_pdim
+        do j_pdim = 1, i_pdim - 1
+            write(unit=j_pdim_string, fmt="(i0)") j_pdim
+            call config_out%logger%check(trim(label) /= config_out%labels(j_pdim), &
+                                            "pdim #" // trim(i_pdim_string) // ' labeled "' // trim(config_out%labels(i_pdim)) &
+                                                // '" has the same label as pdim #' // trim(j_pdim_string) // ".", n_failures)
+            call config_out%logger%check(.not. pdim_in_set(config_out, config_out%pdims(i_pdim), &
+                                                config_out%pdims(j_pdim:j_pdim)), &
+                                            "pdim #" // trim(i_pdim_string) // ' labeled "' // trim(config_out%labels(i_pdim)) &
+                                                // '" has the same exponents as pdim #' // trim(j_pdim_string) &
+                                                // ' labeled "' // trim(config_out%labels(j_pdim)) // '".', n_failures)
+        end do
     end do
     close(unit=nml_unit)
     
-    ! TODO: Check that pdim `label`s and `e`s are unique.
+    if (n_failures > 0) then
+        call config_out%logger%error("input validation error(s)")
+        rc = n_failures
+        return
+    end if
     
     call config_out%logger%info(filename // " successfully read.")
     
