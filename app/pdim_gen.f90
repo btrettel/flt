@@ -30,8 +30,12 @@ if (rc /= 0) then
 end if
 
 open(newunit=out_unit, action="write", status="replace", position="rewind", file=config%output_file)
-call write_module(config, out_unit)
+call write_module(config, out_unit, rc)
 close(unit=out_unit)
+
+if (rc /= 0) then
+    error stop
+end if
 
 call config%logger%close()
 

@@ -381,17 +381,19 @@ pure function linspace(lower, upper, n)
     end if
 end function linspace
 
-subroutine write_module(config, file_unit)
+subroutine write_module(config, file_unit, rc)
     use checks, only: assert
     
     type(pdim_config_type), intent(in) :: config
     integer, intent(in)                :: file_unit
+    integer, intent(out)               :: rc
     
     type(pdim_type), allocatable :: pdims(:)
-    integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim, max_label_len, n_interfaces
+    integer :: n_exponents(config%n_pdims), i_pdim, j_pdim, k_pdim, l_pdim, max_label_len, n_interfaces, n_failures
     real(kind=WP), allocatable :: exponents_1(:), exponents_2(:), exponents_3(:)
     character(len=10) :: n_char
     character(len=20) :: use_format
+    character(len=2)  :: i_pdim_string
     
     ! TODO: Generalize this so that it works for an arbitrary number of physical dimensions. This only works with 3.
     call assert(config%n_pdims == 3)
@@ -421,6 +423,20 @@ subroutine write_module(config, file_unit)
     end do
     
     call assert(l_pdim == size(pdims))
+    
+    n_failures = 0
+    do i_pdim = 1, size(config%labels)
+        write(unit=i_pdim_string, fmt="(i0)") i_pdim
+        call config%logger%check(pdim_in_set(config, config%pdims(i_pdim), pdims), &
+                                    "pdim #" // trim(i_pdim_string) // ' labeled "' // trim(config%labels(i_pdim)) &
+                                        // '" is not in the set defined by the config namelist.', n_failures)
+    end do
+    
+    if (n_failures > 0) then
+        call config%logger%error("input validation error(s)")
+        rc = n_failures
+        return
+    end if
     
     write(unit=n_char, fmt="(i0)") size(pdims)
     call config%logger%info("Generated " // trim(n_char) // " physical dimensions. Writing " // config%output_file // "...")
@@ -513,6 +529,8 @@ subroutine write_module(config, file_unit)
     
     write(unit=n_char, fmt="(i0)") n_interfaces
     call config%logger%info("Generated " // trim(n_char) // " interfaces.")
+    
+    rc = 0
 end subroutine write_module
 
 pure function pdim_in_set(config, pdim, pdims)
@@ -683,10 +701,11 @@ subroutine read_config(filename, config_out, rc)
         config_out%labels(i_pdim) = trim(label)
         config_out%pdims(i_pdim)%e = e(1:config_out%n_pdims)
     end do
-    
     close(unit=nml_unit)
     
-    call config_out%logger%info(config_out%output_file // " successfully read.")
+    ! TODO: Check that pdim `label`s and `e`s are unique.
+    
+    call config_out%logger%info(filename // " successfully read.")
     
     rc = 0
 end subroutine read_config
