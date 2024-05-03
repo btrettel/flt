@@ -4,8 +4,8 @@ pdim_chars     = "LMT"
 pdim_type_defn = "real(kind=WP)"
 !pdim_type_defn = "type(ad)"
 
-min_exponents = -1.0, -1.0, -1.0
-max_exponents = 3.0, 1.0, 1.0
+min_exponents = 0.0, 0.0, -1.0
+max_exponents = 3.0, 0.0, 1.0
 denominators  = 1, 1, 1
 
 exponentiation = .true.

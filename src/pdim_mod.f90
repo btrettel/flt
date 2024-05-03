@@ -346,7 +346,7 @@ subroutine write_exponentiation_function(config, file_unit, pdim, op)
 end subroutine write_exponentiation_function
 
 pure function linspace(lower, upper, n)
-    use checks, only: assert
+    use checks, only: assert, is_close
     
     real(kind=WP), intent(in)     :: lower, upper
     integer, intent(in), optional :: n
@@ -362,13 +362,20 @@ pure function linspace(lower, upper, n)
         n_ = 50
     end if
     
-    call assert(lower < upper)
-    
     allocate(linspace(n_))
-    delta = (upper - lower) / real(n_ - 1, WP)
-    do i = 1, n_
-        linspace(i) = lower + delta * real(i - 1, WP)
-    end do
+    
+    if (n_ == 1) then
+        call assert(is_close(lower, upper))
+        
+        linspace(1) = lower
+    else
+        call assert(lower < upper)
+        
+        delta = (upper - lower) / real(n_ - 1, WP)
+        do i = 1, n_
+            linspace(i) = lower + delta * real(i - 1, WP)
+        end do
+    end if
 end function linspace
 
 subroutine write_module(config, file_unit)
@@ -548,12 +555,12 @@ subroutine read_config(filename, config_out, rc)
     namelist /config/ output_file, pdim_chars, pdim_type_defn, min_exponents, max_exponents, denominators, exponentiation
     namelist /pdim/ label, e
     
-    call config_out%logger%open("pdim.nml", level=INFO_LEVEL)
+    call config_out%logger%open("pdim_gen.nml", level=INFO_LEVEL)
     
     pdim_chars      = ""
     pdim_type_defn  = "real(kind=WP)"
-    min_exponents   = 0.0_WP
-    max_exponents   = 0.0_WP
+    min_exponents   = -huge(1.0_WP)
+    max_exponents   = huge(1.0_WP)
     denominators    = 0
     exponentiation  = .true.
     
@@ -575,11 +582,11 @@ subroutine read_config(filename, config_out, rc)
     
     n_pdims_bounds = huge(1)
     do i_pdim = 1, MAX_PDIMS
-        if (is_close(min_exponents(i_pdim), 0.0_WP)) then
+        if (is_close(min_exponents(i_pdim), -huge(1.0_WP))) then
             n_pdims_bounds(1) = min(n_pdims_bounds(1), i_pdim - 1)
         end if
         
-        if (is_close(max_exponents(i_pdim), 0.0_WP)) then
+        if (is_close(max_exponents(i_pdim), huge(1.0_WP))) then
             n_pdims_bounds(2) = min(n_pdims_bounds(2), i_pdim - 1)
         end if
         
@@ -588,8 +595,8 @@ subroutine read_config(filename, config_out, rc)
         end if
     end do
     
-    call config_out%logger%check(all(min_exponents(1:len(trim(pdim_chars))) < max_exponents(1:len(trim(pdim_chars)))), &
-        "at least one min_exponents is equal or higher than the corresponding min_exponents", n_failures)
+!    call config_out%logger%check(all(min_exponents(1:len(trim(pdim_chars))) < max_exponents(1:len(trim(pdim_chars)))), &
+!        "at least one min_exponents is equal or higher than the corresponding min_exponents", n_failures)
     
     call config_out%logger%check(n_pdims_bounds(1) == len(trim(pdim_chars)), &
                                     "size(min_exponents) /= len(pdim_chars).", n_failures)
