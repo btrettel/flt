@@ -5,10 +5,9 @@ Priorities:
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
 - `make install` to install pdim_gen.
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
+    - Distinguish between `i_pdim`/`n_pdims` and `i_exponent`/`n_exponents` (`n_exponents` may not be the best terminology)
     - Break up `write_module` to make testing parts easier.
         - Subroutine to generate `pdims`.
-    - Check if pdim namelist groups are outside bounds or inconsistent with exponent delta. Return error if so.
-    - When reading in `pdim` namelists, check if `label` or `e` are empty and don't add if they are.
     - `pdim_types.f90`
         - Unary negation.
         - Elementary functions like `sin`, `cos`, `log`, etc.

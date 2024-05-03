@@ -570,9 +570,9 @@ subroutine read_config(filename, config_out, rc)
     type(pdim_config_type), intent(out) :: config_out
     integer, intent(out)                :: rc
     
-    integer           :: nml_unit, rc_nml, n_failures, i_pdim, j_pdim, n_pdims_bounds(3), n_pdims
+    integer           :: nml_unit, rc_nml, n_failures, i_pdim, j_pdim, i_exponent, n_pdims_bounds(3), n_pdims
     character(len=CL) :: nml_error_message
-    character(len=2)  :: i_pdim_string, j_pdim_string
+    character(len=2)  :: i_pdim_string, j_pdim_string, i_exponent_string
     
     ! `config` namelist group
     character(len=CL)        :: output_file, pdim_type_defn
@@ -686,7 +686,7 @@ subroutine read_config(filename, config_out, rc)
     i_pdim = 0
     do
         label = ""
-        e = 0.0_WP
+        e = huge(1.0_WP)
         read(unit=nml_unit, nml=pdim, iostat=rc_nml, iomsg=nml_error_message)
         
         if (rc_nml == IOSTAT_END) then
@@ -705,6 +705,10 @@ subroutine read_config(filename, config_out, rc)
         config_out%pdims(i_pdim)%e = e(1:config_out%n_pdims)
         
         write(unit=i_pdim_string, fmt="(i0)") i_pdim
+        
+        call config_out%logger%check(len(trim(label)) /= 0, &
+                                        "pdim #" // trim(i_pdim_string) // " has an empty label.", n_failures)
+
         do j_pdim = 1, i_pdim - 1
             write(unit=j_pdim_string, fmt="(i0)") j_pdim
             call config_out%logger%check(trim(label) /= config_out%labels(j_pdim), &
@@ -715,6 +719,13 @@ subroutine read_config(filename, config_out, rc)
                                             "pdim #" // trim(i_pdim_string) // ' labeled "' // trim(config_out%labels(i_pdim)) &
                                                 // '" has the same exponents as pdim #' // trim(j_pdim_string) &
                                                 // ' labeled "' // trim(config_out%labels(j_pdim)) // '".', n_failures)
+        end do
+        
+        do i_exponent = 1, config_out%n_pdims
+            write(unit=i_exponent_string, fmt="(i0)") i_exponent
+            call config_out%logger%check(.not. is_close(config_out%pdims(i_pdim)%e(i_exponent), huge(1.0_WP)), &
+                                            "In pdim #" // trim(i_pdim_string) // ' labeled "' // trim(config_out%labels(i_pdim)) &
+                                            // '", exponent #' // trim(i_exponent_string) // " has not been set.", n_failures)
         end do
     end do
     close(unit=nml_unit)
