@@ -22,14 +22,14 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
 - app/gen_units.f90
 - src/units_types.f90
     - `type`s
-        - `dunit_type` type for a derived unit with exponents
-            - type-bound operators to generate new `dunit` types for operations
+        - `unit_type` type for a derived unit with exponents
+            - type-bound operators to generate new `unit` types for operations
         - `unit_system_type` type for part of `config`
             - `base_units`
             - `dunits`
                 - contains all `dunits` instead of a range and denominator
         - `operation_type`: Have array of operations to write. This array can be fed to the module writer, and also to a test writer to write a complete set of tests for the module.
-            - `op`: `+`, `-`, `*`, `/`, unary `-`, `sqrt`, `cbrt`, `square`,
+            - `op`: `+`, `-`, `*`, `/`, unary `-`, `<`, `<=`, `>`, `>=`, `==`, `/=`, `sqrt`, `cbrt`, `square`, other intrinsic functions
             - `left_unit` (empty for binary operators and functions)
             - `right_unit`
             - `result_unit`
@@ -44,18 +44,23 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
             - `output_file`
             - `min_exponents`
             - `max_exponents`
+            - `comparison`: Enable or disable generation of comparison operators. `.true.` by default.
             - `sqrt`
             - `cbrt`
             - `square`
+            - `intrinsics`: Enable or disable generation of equivalents for many intrinsic operators. `.true.` by default.
             - `max_n_units`
             - `max_n_interfaces`
-            - `type_definition`
-            - `use_line`
+            - `type_definition`: Characters of type definition to use in derived time 
+            - `use_lines`: Character array of custom use lines to put in the header of the generated module. Empty by default.
             - `tests`
+            - `custom`: Character array of additional custom elemental functions to create equivalents of. Empty by default.
     - procedures (mostly subroutines to write Fortran code)
         - module writers
             - `write_module`: Calls all the other subroutines.
             - `write_header`
+            - `write_intrinsics`
+                - <https://gitlab.com/everythingfunctional/quaff/-/issues/17>
             - `print_interface_stats`
                 - Print number of operators per type, exponentiation functions.
         - namelist readers (One subroutine per namelist group.)

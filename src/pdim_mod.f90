@@ -10,13 +10,13 @@ module pdim_mod
 use prec, only: WP
 use nmllog, only: log_type
 implicit none
+private
 
 public :: pdim_label
 public :: write_type, write_as_operators, write_md_operators, write_binary_operator
 public :: linspace
 public :: pdim_in_set
 
-real(kind=WP), parameter :: SPACING_FACTOR  = 10.0_WP
 integer, parameter       :: MAX_PDIMS       = 10, &
                             MAX_LABEL_LEN   = 63, &
                             LABEL_LEN       = MAX_LABEL_LEN + 1
