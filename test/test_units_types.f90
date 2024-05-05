@@ -24,17 +24,14 @@ call tests%start_tests(logger)
 unit_system%base_units   = ["kg", "m ", "s "]
 unit_system%n_base_units = size(unit_system%base_units)
 
-print *, unit_system%base_units
-print *, unit_system%n_base_units
-
 call tests%integer_eq(unit_system%n_base_units, 3, "unit_system%n_base_units == 3")
 
 allocate(unit%e(unit_system%n_base_units))
 unit%e(1) = 1.0_WP
-unit%e(2) = 0.0_WP
-unit%e(3) = 0.0_WP
+unit%e(2) = 1.5_WP
+unit%e(3) = -2.0_WP
 
-print *, trim(unit%label())
+call tests%character_eq(unit%label(), "unit_p10000_p15000_m20000", "unit%label")
 
 call tests%end_tests()
 call logger%close()
