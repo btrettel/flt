@@ -445,7 +445,13 @@ subroutine write_module(config, file_unit, rc)
     
     write(unit=file_unit, fmt="(2a)") "module pdim_types", new_line("a")
     write(unit=file_unit, fmt="(2a)") "use prec, only: WP", new_line("a")
-    write(unit=file_unit, fmt="(2a)") "implicit none", new_line("a")
+    write(unit=file_unit, fmt="(2a)") "implicit none"
+    write(unit=file_unit, fmt="(2a)") "private", new_line("a")
+    
+    if (config%exponentiation) then
+        write(unit=file_unit, fmt="(2a)") "public :: sqrt, cbrt, square"
+    end if
+    write(unit=file_unit, fmt="(a)") ""
     
     ! Write `use` lines as comments.
     if (size(config%labels) > 0) then

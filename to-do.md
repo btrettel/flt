@@ -5,21 +5,25 @@ Priorities:
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
 - `make install` to install pdim_gen.
 - pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
-    - Distinguish between `i_pdim`/`n_pdims` and `i_exponent`/`n_exponents` (`n_exponents` may not be the best terminology)
+    - refactor
+        - Break pdim_mod into multiple modules to help organization.
+        - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
+        - `MAX_LABEL_LEN` vs. `LABEL_LEN` is confusing.
+        - Make better notation.
+            - Distinguish between `i_pdim`/`n_pdims` and `i_exponent`/`n_exponents` (`n_exponents` may not be the best terminology)
     - Break up `write_module` to make testing parts easier.
         - Subroutine to generate `pdims`.
     - `pdim_types.f90`
         - Unary negation.
         - Elementary functions like `sin`, `cos`, `log`, etc.
-        - `pdim` function to return array of exponents of corresponding `pdim` (implement with an `interface` with many `module procedures` listed, one for each `pdim`)
-        - `parameter` listing fundamental dimensions (copy from namelist file)
-        - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each `pdim`)
+        - `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
+        - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each unit)
         - function to format type to string with units or dimensions
             - Can specify SI units for printing?
         - derived type I/O for printing?
     - Unit tests for all procedures.
-    - Characterization test comparing against known valid `pdim_types.f90`.
-    - Test exponentiation operators.
+    - Characterization test comparing against known valid `units.f90`.
+    - Test exponentiation functions.
     - Compare compile and run times with and without `pdim_types`. Look at compile time for `pdim_types.mod` and also something calling the module separately.
         - `make benchmark`
     - `pdim_gen.f90`: Read namelist file specified as command line argument, generate `pdim_types.f90`.
@@ -39,6 +43,15 @@ Priorities:
         - I could make `x` a different type than whatever its physical dimensions would imply. This different type would be a differential version which could contain the index instead of the value.
     - Test with AD.
     - Test with arrays instead of scalars.
+    - Recursion to handle arbitrary numbers of exponents.
+    - `real(...)` to convert `dimless` to `real(kind=WP)` for when an intrinsic or something else that expects a `real(kind=WP)` isn't available. Also: `int`.
+    - Table with times for various compilers on the same computer, as a function of number of pdims generated:
+        - Running pdim_gen
+        - Compiling pdim_types.f90
+        - Compiling test.f90 with pdim_types
+        - Compiling test_real.f90 without pdim_types (otherwise identical)
+        - Running test.f90 with pdim_types
+        - Running test_real.f90 without pdim_types (otherwise identical, to show effect on run-time performance)
 
 Later:
 
