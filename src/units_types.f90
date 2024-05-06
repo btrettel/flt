@@ -13,10 +13,11 @@ private
 
 public :: m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
 
-integer, parameter :: MAX_BASE_UNITS = 10, &
-                      MAX_LABEL_LEN  = 63, &
-                      BASE_UNIT_LEN  = 10, &
-                      EXPONENT_LEN   = 5
+character(len=*), parameter :: UNIT_PREFIX = "unit"
+integer, public, parameter  :: MAX_BASE_UNITS = 10, &
+                               MAX_LABEL_LEN  = 63, &
+                               BASE_UNIT_LEN  = 10, &
+                               EXPONENT_LEN   = 5
 
 type, public :: unit_type
     real(kind=WP), allocatable :: e(:)
@@ -45,7 +46,7 @@ pure function label(unit)
     
     integer :: i_base_unit
     
-    label = "unit"
+    label = UNIT_PREFIX
     write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN
     do i_base_unit = 1, size(unit%e)
         if (unit%e(i_base_unit) < 0.0_WP) then

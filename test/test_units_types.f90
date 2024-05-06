@@ -1,4 +1,4 @@
-! tests for the test_units_types module
+! tests for the units_types module
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

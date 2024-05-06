@@ -21,6 +21,8 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
 
 - app/gen_units.f90
 - src/units_types.f90
+    - `parameter`s
+        - `UNIT_PREFIX = "unit_"`
     - `type`s
         - `unit_type` type for a derived unit with exponents
             - type-bound operators to generate new `unit` types for operations
@@ -37,23 +39,20 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
         - `generate_unit_system`
         - `generate_interfaces`
 - src/gen_units_mod.f90
-    - `parameter`s
-        - `UNIT_PREFIX = "unit_"`
     - `type`s
         - `config_type`
             - `output_file`
-            - `min_exponents`
-            - `max_exponents`
+            - `base_units`
+            - `type_definition`: Characters of type definition to use in derived time 
+            - `use_line`: Characters of custom use line(s) to put in the header of the generated module. Empty by default.
+            - `max_n_units`
+            - `max_n_interfaces`
+            - `tests`
             - `comparison`: Enable or disable generation of comparison operators. `.true.` by default.
             - `sqrt`
             - `cbrt`
             - `square`
             - `intrinsics`: Enable or disable generation of equivalents for many intrinsic operators. `.true.` by default.
-            - `max_n_units`
-            - `max_n_interfaces`
-            - `type_definition`: Characters of type definition to use in derived time 
-            - `use_lines`: Character array of custom use lines to put in the header of the generated module. Empty by default.
-            - `tests`
             - `custom`: Character array of additional custom elemental functions to create equivalents of. Empty by default.
     - procedures (mostly subroutines to write Fortran code)
         - module writers
