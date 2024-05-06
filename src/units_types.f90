@@ -11,6 +11,8 @@ use prec, only: WP
 implicit none
 private
 
+public :: m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
+
 integer, parameter :: MAX_BASE_UNITS = 10, &
                       MAX_LABEL_LEN  = 63, &
                       BASE_UNIT_LEN  = 10, &
@@ -77,5 +79,51 @@ pure function readable(unit, unit_system)
     end do
     readable = adjustl(readable)
 end function readable
+
+! unit calculus
+
+pure function m_unit(unit_left, unit_right)
+    ! multiply
+    
+    type(unit_type), intent(in) :: unit_left, unit_right
+    
+    type(unit_type) :: m_unit
+    
+    m_unit%e = unit_left%e + unit_right%e
+end function m_unit
+
+pure function d_unit(unit_left, unit_right)
+    ! divide
+    
+    type(unit_type), intent(in) :: unit_left, unit_right
+    
+    type(unit_type) :: d_unit
+    
+    d_unit%e = unit_left%e - unit_right%e
+end function d_unit
+
+pure function sqrt_unit(unit)
+    type(unit_type), intent(in) :: unit
+    
+    type(unit_type) :: sqrt_unit
+    
+    sqrt_unit%e = 0.5_WP * unit%e
+end function sqrt_unit
+
+pure function cbrt_unit(unit)
+    type(unit_type), intent(in) :: unit
+    
+    type(unit_type) :: cbrt_unit
+    
+    cbrt_unit%e = unit%e / 3.0_WP
+end function cbrt_unit
+
+pure function square_unit(unit)
+    type(unit_type), intent(in) :: unit
+    
+    type(unit_type) :: square_unit
+    
+    square_unit%e = 2.0_WP * unit%e
+end function square_unit
 
 end module units_types

@@ -7,7 +7,7 @@
 
 program test_units_types
 
-use units_types, only: unit_type, unit_system_type
+use units_types, only: unit_type, unit_system_type, m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
 use prec, only: WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -15,7 +15,7 @@ implicit none
 
 type(log_type)          :: logger
 type(test_results_type) :: tests
-type(unit_type)         :: unit
+type(unit_type)         :: unit1, unit2, unit_out
 type(unit_system_type)  :: unit_system
 
 call logger%open("units_types.nml")
@@ -26,13 +26,45 @@ unit_system%n_base_units = size(unit_system%base_units)
 
 call tests%integer_eq(unit_system%n_base_units, 3, "unit_system%n_base_units == 3")
 
-allocate(unit%e(unit_system%n_base_units))
-unit%e(1) = 1.0_WP
-unit%e(2) = 1.5_WP
-unit%e(3) = -2.0_WP
+allocate(unit1%e(unit_system%n_base_units))
+unit1%e(1) = 1.0_WP
+unit1%e(2) = 1.5_WP
+unit1%e(3) = -2.0_WP
 
-call tests%character_eq(unit%label(), "unit_p10000_p15000_m20000", "unit%label")
-call tests%character_eq(unit%readable(unit_system), "kg^1.0000 m^1.5000 s^-2.0000", "unit%readable")
+call tests%character_eq(unit1%label(), "unit_p10000_p15000_m20000", "unit%label")
+call tests%character_eq(unit1%readable(unit_system), "kg^1.0000 m^1.5000 s^-2.0000", "unit%readable")
+
+! unit calculus
+
+allocate(unit2%e(unit_system%n_base_units))
+unit2%e(1) = 2.0_WP
+unit2%e(2) = -4.0_WP
+unit2%e(3) = 1.25_WP
+
+unit_out = m_unit(unit1, unit2)
+call tests%real_eq(unit_out%e(1), 3.0_WP, "m_unit, index 1")
+call tests%real_eq(unit_out%e(2), -2.5_WP, "m_unit, index 2")
+call tests%real_eq(unit_out%e(3), -0.75_WP, "m_unit, index 3")
+
+unit_out = d_unit(unit1, unit2)
+call tests%real_eq(unit_out%e(1), -1.0_WP, "d_unit, index 1")
+call tests%real_eq(unit_out%e(2), 5.5_WP, "d_unit, index 2")
+call tests%real_eq(unit_out%e(3), -3.25_WP, "d_unit, index 3")
+
+unit_out = sqrt_unit(unit1)
+call tests%real_eq(unit_out%e(1), 0.5_WP, "sqrt_unit, index 1")
+call tests%real_eq(unit_out%e(2), 0.75_WP, "sqrt_unit, index 2")
+call tests%real_eq(unit_out%e(3), -1.0_WP, "sqrt_unit, index 3")
+
+unit_out = cbrt_unit(unit1)
+call tests%real_eq(unit_out%e(1), 1.0_WP/3.0_WP, "cbrt_unit, index 1")
+call tests%real_eq(unit_out%e(2), 0.5_WP, "cbrt_unit, index 2")
+call tests%real_eq(unit_out%e(3), -2.0_WP/3.0_WP, "cbrt_unit, index 3")
+
+unit_out = square_unit(unit1)
+call tests%real_eq(unit_out%e(1), 2.0_WP, "square_unit, index 1")
+call tests%real_eq(unit_out%e(2), 3.0_WP, "square_unit, index 2")
+call tests%real_eq(unit_out%e(3), -4.0_WP, "square_unit, index 3")
 
 call tests%end_tests()
 call logger%close()

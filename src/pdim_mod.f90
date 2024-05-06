@@ -97,7 +97,7 @@ pure function m_pdim(pdim_left, pdim_right)
 end function m_pdim
 
 pure function d_pdim(pdim_left, pdim_right)
-    ! multiply
+    ! divide
     
     type(pdim_type), intent(in) :: pdim_left, pdim_right
     
