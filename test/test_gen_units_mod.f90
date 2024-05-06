@@ -28,6 +28,8 @@ call read_config_namelist("test/units.nml", config, rc)
 
 ! TODO: Test what the defaults are to make mutation testing happy.
 
+! TODO: Test making `rc /= 0`.
+
 call tests%character_eq(config%output_file, "src/pdim_types.f90", "read_config_namelist, config%output_file")
 call tests%character_eq(config%type_definition, "real(kind=WP)", "read_config_namelist, config%type_definition")
 call tests%character_eq(config%use_line, "use prec, only: WP", "read_config_namelist, config%use_line")

@@ -21,16 +21,12 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
 
 - app/gen_units.f90
 - src/units_types.f90
-    - `parameter`s
+    - DONE: `parameter`s
         - `UNIT_PREFIX = "unit_"`
     - `type`s
-        - `unit_type` type for a derived unit with exponents
-            - type-bound operators to generate new `unit` types for operations
-        - `unit_system_type` type for part of `config`
-            - `base_units`
-            - `units`
-                - contains all `units` instead of a range and denominator
-        - `operation_type`: Have array of operations to write. This array can be fed to the module writer, and also to a test writer to write a complete set of tests for the module.
+        - DONE: `unit_type` type for a derived unit with exponents
+        - DONE: `unit_system_type` type for part of `config`
+        - MAYBE: `operation_type`: Have array of operations to write. This array can be fed to the module writer, and also to a test writer to write a complete set of tests for the module.
             - `op`: `+`, `-`, `*`, `/`, unary `-`, `<`, `<=`, `>`, `>=`, `==`, `/=`, `sqrt`, `cbrt`, `square`, other intrinsic functions
             - `left_unit` (empty for binary operators and functions)
             - `right_unit`
@@ -41,19 +37,19 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
 - src/gen_units_mod.f90
     - `type`s
         - `config_type`
-            - `output_file`
-            - `base_units`
-            - `type_definition`: Characters of type definition to use in derived time 
-            - `use_line`: Characters of custom use line(s) to put in the header of the generated module. Empty by default.
-            - `max_n_units`
-            - `max_n_interfaces`
-            - `tests`
-            - `comparison`: Enable or disable generation of comparison operators. `.true.` by default.
-            - `sqrt`
-            - `cbrt`
-            - `square`
-            - `intrinsics`: Enable or disable generation of equivalents for many intrinsic operators. `.true.` by default.
-            - `custom`: Character array of additional custom elemental functions to create equivalents of. Empty by default.
+            - DONE: `output_file`
+            - DONE: `base_units`
+            - DONE: `type_definition`: Characters of type definition to use in derived time 
+            - DONE: `use_line`: Characters of custom use line(s) to put in the header of the generated module. Empty by default.
+            - TODO: `max_n_units`
+            - TODO: `max_n_interfaces`
+            - TODO: `tests`
+            - TODO: `comparison`: Enable or disable generation of comparison operators. `.true.` by default.
+            - TODO: `sqrt`
+            - TODO: `cbrt`
+            - TODO: `square`
+            - TODO: `intrinsics`: Enable or disable generation of equivalents for many intrinsic operators. `.true.` by default.
+            - TODO: `custom`: Character array of additional custom elemental functions to create equivalents of. Empty by default.
     - procedures (mostly subroutines to write Fortran code)
         - module writers
             - `write_module`: Calls all the other subroutines.
@@ -63,9 +59,9 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
             - `print_interface_stats`
                 - Print number of operators per type, exponentiation functions.
         - namelist readers (One subroutine per namelist group.)
-            - `read_config_namelist`
-            - `read_unit_namelists`
-            - `read_reject_namelists`
+            - DONE: `read_config_namelist`
+            - TODO: `read_unit_namelists`
+            - TODO: `read_reject_namelists`
         - test writers
             - Include tests for all combinations of operators, including those which should fail.
 - src/units.f90 (computer generated)
@@ -88,14 +84,14 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
 - `use_line`
 - `tests`: Generates a file to test all interfaces. `.false.` by default
 
-### `unit`
+### `seed_unit`
 
 Units to seed the unit system and print `use` statements for.
 
 - `label`: The label to give the unit in the `use` statement.
 - `e`: An array for the exponents of the unit.
 
-### `reject`
+### `reject_unit`
 
 Units to be rejected, that is, not included in the unit system.
 
