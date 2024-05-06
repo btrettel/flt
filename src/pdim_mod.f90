@@ -554,7 +554,7 @@ pure function pdim_in_set(config, pdim, pdims)
         n_match = 0
         do j_pdim = 1, config%n_pdims
             if (is_close(pdim%e(j_pdim), pdims(i_pdim)%e(j_pdim))) then
-             n_match = n_match + 1
+                n_match = n_match + 1
             end if
         end do
         

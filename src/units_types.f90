@@ -23,10 +23,11 @@ type, public :: unit_type
 contains
     procedure :: label
     procedure :: readable
+    procedure :: in_system
 end type unit_type
 
 type, public :: unit_system_type
-    integer                                   :: n_base_units
+    !integer                                   :: n_base_units
     character(len=BASE_UNIT_LEN), allocatable :: base_units(:)
     type(unit_type), allocatable              :: units(:)
 end type unit_system_type
@@ -79,6 +80,32 @@ pure function readable(unit, unit_system)
     end do
     readable = adjustl(readable)
 end function readable
+
+pure function in_system(unit, unit_system)
+    use checks, only: is_close
+    
+    class(unit_type), intent(in)       :: unit
+    type(unit_system_type), intent(in) :: unit_system
+    
+    logical :: in_system
+    
+    integer :: i_unit, i_base_unit, n_match
+    
+    in_system = .false.
+    do i_unit = 1, size(unit_system%units)
+        n_match = 0
+        do i_base_unit = 1, size(unit%e)
+            if (is_close(unit%e(i_base_unit), unit_system%units(i_unit)%e(i_base_unit))) then
+                n_match = n_match + 1
+            end if
+        end do
+        
+        if (n_match == size(unit%e)) then
+            in_system = .true.
+            exit
+        end if
+    end do
+end function in_system
 
 ! unit calculus
 

@@ -26,8 +26,8 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
             - type-bound operators to generate new `unit` types for operations
         - `unit_system_type` type for part of `config`
             - `base_units`
-            - `dunits`
-                - contains all `dunits` instead of a range and denominator
+            - `units`
+                - contains all `units` instead of a range and denominator
         - `operation_type`: Have array of operations to write. This array can be fed to the module writer, and also to a test writer to write a complete set of tests for the module.
             - `op`: `+`, `-`, `*`, `/`, unary `-`, `<`, `<=`, `>`, `>=`, `==`, `/=`, `sqrt`, `cbrt`, `square`, other intrinsic functions
             - `left_unit` (empty for binary operators and functions)

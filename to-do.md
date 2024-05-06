@@ -9,8 +9,6 @@ Priorities:
         - Break pdim_mod into multiple modules to help organization.
         - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
         - `MAX_LABEL_LEN` vs. `LABEL_LEN` is confusing.
-        - Make better notation.
-            - Distinguish between `i_pdim`/`n_pdims` and `i_exponent`/`n_exponents` (`n_exponents` may not be the best terminology)
     - Break up `write_module` to make testing parts easier.
         - Subroutine to generate `pdims`.
     - `pdim_types.f90`

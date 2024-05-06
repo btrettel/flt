@@ -33,7 +33,7 @@ config%min_exponents = [-1.0_WP, -1.0_WP, -1.0_WP]
 config%max_exponents = [1.0_WP, 1.0_WP, 1.0_WP]
 config%denominators  = [1, 1, 1]
 
-! `pdim_within_bounds`
+! `pdim_in_set`
 
 allocate(pdim%e(config%n_pdims))
 allocate(pdims(1)%e(config%n_pdims))
