@@ -32,6 +32,7 @@ unit%e(2) = 1.5_WP
 unit%e(3) = -2.0_WP
 
 call tests%character_eq(unit%label(), "unit_p10000_p15000_m20000", "unit%label")
+call tests%character_eq(unit%readable(unit_system), "kg^1.0000 m^1.5000 s^-2.0000", "unit%readable")
 
 call tests%end_tests()
 call logger%close()
