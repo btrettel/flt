@@ -22,11 +22,11 @@ call logger%open("units_types.nml")
 call tests%start_tests(logger)
 
 unit_system%base_units   = ["kg", "m ", "s "]
-!unit_system%n_base_units = size(unit_system%base_units)
+unit_system%n_base_units = n_base_units
 
 allocate(unit_system%units(2))
-allocate(unit_system%units(1)%e(size(unit_system%base_units)))
-allocate(unit_system%units(2)%e(size(unit_system%base_units)))
+allocate(unit_system%units(1)%e(n_base_units))
+allocate(unit_system%units(2)%e(n_base_units))
 
 unit_system%units(1)%e(1) = 0.5_WP
 unit_system%units(1)%e(2) = 0.0_WP
@@ -36,9 +36,9 @@ unit_system%units(2)%e(1) = 0.0_WP
 unit_system%units(2)%e(2) = -0.25_WP
 unit_system%units(2)%e(3) = 0.0_WP
 
-!call tests%integer_eq(unit_system%n_base_units, 3, "unit_system%n_base_units == 3")
+call tests%integer_eq(unit_system%n_base_units, 3, "unit_system%n_base_units == 3")
 
-allocate(unit1%e(size(unit_system%base_units)))
+allocate(unit1%e(n_base_units))
 unit1%e(1) = 1.0_WP
 unit1%e(2) = 1.5_WP
 unit1%e(3) = -2.0_WP
@@ -62,7 +62,7 @@ unit1%e(1) = 1.0_WP
 unit1%e(2) = 1.5_WP
 unit1%e(3) = -2.0_WP
 
-allocate(unit2%e(size(unit_system%base_units)))
+allocate(unit2%e(n_base_units))
 unit2%e(1) = 2.0_WP
 unit2%e(2) = -4.0_WP
 unit2%e(3) = 1.25_WP

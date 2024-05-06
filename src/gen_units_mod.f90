@@ -7,6 +7,7 @@
 
 module gen_units_mod
 
+use prec, only: WP
 use nmllog, only: log_type
 use units_types, only: MAX_LABEL_LEN, unit_type
 implicit none
@@ -18,6 +19,8 @@ character(len=*), parameter :: GEN_UNITS_LOG = "gen_units.nml"
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line
+    real(kind=WP), allocatable    :: min_exponents(:), &
+                                     max_exponents(:)
     !integer :: max_n_units, max_n_interfaces
     !logical :: tests, comparison, sqrt, cbrt, square, instrinsics
     
@@ -31,7 +34,6 @@ contains
 
 subroutine read_config_namelist(filename, config_out, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
-    use prec, only: WP
     use units_types, only: MAX_BASE_UNITS, BASE_UNIT_LEN
     
     use prec, only: CL
@@ -42,7 +44,7 @@ subroutine read_config_namelist(filename, config_out, rc)
     type(config_type), intent(out) :: config_out
     integer, intent(out)           :: rc
     
-    integer           :: i_base_unit, nml_unit, rc_nml
+    integer           :: i_base_unit, nml_unit, rc_nml, n_base_units
     character(len=CL) :: nml_error_message
     
     ! `config` namelist group
@@ -81,6 +83,25 @@ subroutine read_config_namelist(filename, config_out, rc)
         close(unit=nml_unit)
         return
     end if
+    
+    n_base_units = 0
+    do i_base_unit = 1, MAX_BASE_UNITS
+        if (trim(base_units(i_base_unit)) /= "") then
+            n_base_units = n_base_units + 1
+        end if
+    end do
+    
+    config_out%output_file     = trim(output_file)
+    config_out%type_definition = trim(type_definition)
+    config_out%use_line        = trim(use_line)
+    config_out%min_exponents   = min_exponents(1:n_base_units)
+    config_out%max_exponents   = max_exponents(1:n_base_units)
+!    config_out%tests           = tests
+!    config_out%comparison      = comparison
+!    config_out%sqrt            = sqrt
+!    config_out%cbrt            = cbrt
+!    config_out%square          = square
+!    config_out%instrinsics     = instrinsics
     
     rc = 0
 end subroutine read_config_namelist

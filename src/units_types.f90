@@ -28,7 +28,7 @@ contains
 end type unit_type
 
 type, public :: unit_system_type
-    !integer                                   :: n_base_units
+    integer                                   :: n_base_units
     character(len=BASE_UNIT_LEN), allocatable :: base_units(:)
     type(unit_type), allocatable              :: units(:)
 end type unit_system_type
@@ -63,6 +63,7 @@ pure function label(unit)
 end function label
 
 pure function readable(unit, unit_system)
+    use checks, only: assert
     use prec, only: CL
     
     class(unit_type), intent(in)        :: unit
@@ -73,9 +74,11 @@ pure function readable(unit, unit_system)
     integer          :: i_base_unit
     character(len=1) :: exponent_len_string
     
+    call assert(size(unit%e) == unit_system%n_base_units)
+    
     readable = ""
     write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN - 1
-    do i_base_unit = 1, size(unit%e)
+    do i_base_unit = 1, unit_system%n_base_units
         write(unit=readable, fmt="(4a, f0." // exponent_len_string // ")") trim(readable), " ", &
                                                     trim(unit_system%base_units(i_base_unit)), "^", unit%e(i_base_unit)
     end do
@@ -83,7 +86,7 @@ pure function readable(unit, unit_system)
 end function readable
 
 pure function in_system(unit, unit_system)
-    use checks, only: is_close
+    use checks, only: assert, is_close
     
     class(unit_type), intent(in)       :: unit
     type(unit_system_type), intent(in) :: unit_system
@@ -92,16 +95,18 @@ pure function in_system(unit, unit_system)
     
     integer :: i_unit, i_base_unit, n_match
     
+    call assert(size(unit%e) == unit_system%n_base_units)
+    
     in_system = .false.
     do i_unit = 1, size(unit_system%units)
         n_match = 0
-        do i_base_unit = 1, size(unit%e)
+        do i_base_unit = 1, unit_system%n_base_units
             if (is_close(unit%e(i_base_unit), unit_system%units(i_unit)%e(i_base_unit))) then
                 n_match = n_match + 1
             end if
         end do
         
-        if (n_match == size(unit%e)) then
+        if (n_match == unit_system%n_base_units) then
             in_system = .true.
             exit
         end if
