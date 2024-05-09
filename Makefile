@@ -18,7 +18,7 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # Add later: dimmod.nml ga.nml
-NML = autodiff.nml checks.nml gen_units_mod.nml nmllog.nml units_types.nml prec.nml purerng.nml timer.nml unittest.nml
+NML = autodiff.nml checks.nml genunitsio.nml nmllog.nml unitdata.nml prec.nml purerng.nml timer.nml unittest.nml
 .PRECIOUS: $(NML)
 
 #############
@@ -134,7 +134,7 @@ src/prec$(DBGOBJEXT):
 
 src/pdim_mod$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
-src/gen_units_mod$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/units_types$(DBGOBJEXT)
+src/genunitsio$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/unitdata$(DBGOBJEXT)
 
 src/pdim_types$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
@@ -144,7 +144,7 @@ src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
 
-src/units_types$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/unitdata$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 ############
 # autodiff #
@@ -172,6 +172,17 @@ test_checks$(BINEXT): src/checks$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_
 
 checks.nml: test_checks$(BINEXT) test_assert_false$(BINEXT) test_assert_false_message$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
+	test ! -e fort.*
+
+##############
+# genunitsio #
+##############
+
+test_genunitsio$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/unitdata$(DBGOBJEXT) src/genunitsio$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_genunitsio.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_genunitsio.f90
+
+genunitsio.nml: test_genunitsio$(BINEXT)
+	$(RUN)test_genunitsio$(BINEXT)
 	test ! -e fort.*
 
 ##########
@@ -261,27 +272,16 @@ timer.nml: test_timer$(BINEXT)
 	$(RUN)test_timer$(BINEXT)
 	test ! -e fort.*
 
-##############
-# unit_types #
-##############
+############
+# unitdata #
+############
 
-test_units_types$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/units_types$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_units_types.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_units_types.f90
+test_unitdata$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/unitdata$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unitdata.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unitdata.f90
 
-units_types.nml: test_units_types$(BINEXT)
-	$(RUN)test_units_types$(BINEXT)
+unitdata.nml: test_unitdata$(BINEXT)
+	$(RUN)test_unitdata$(BINEXT)
 	test ! -e fort.*
-	test ! -e fort.*
-
-#################
-# gen_units_mod #
-#################
-
-test_gen_units_mod$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/units_types$(DBGOBJEXT) src/gen_units_mod$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_gen_units_mod.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_gen_units_mod.f90
-
-gen_units_mod.nml: test_gen_units_mod$(BINEXT)
-	$(RUN)test_gen_units_mod$(BINEXT)
 	test ! -e fort.*
 
 ############

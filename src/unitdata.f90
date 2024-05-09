@@ -5,7 +5,7 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-module units_types
+module unitdata
 
 use prec, only: WP
 implicit none
@@ -159,4 +159,4 @@ pure function square_unit(unit)
     square_unit%e = 2.0_WP * unit%e
 end function square_unit
 
-end module units_types
+end module unitdata

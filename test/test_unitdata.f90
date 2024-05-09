@@ -1,13 +1,13 @@
-! tests for the units_types module
+! tests for the unitdata module
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_units_types
+program test_unitdata
 
-use units_types, only: unit_type, unit_system_type, m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
+use unitdata, only: unit_type, unit_system_type, m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
 use prec, only: WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -18,15 +18,15 @@ type(test_results_type) :: tests
 type(unit_type)         :: unit1, unit2, unit_out
 type(unit_system_type)  :: unit_system
 
-call logger%open("units_types.nml")
+call logger%open("unitdata.nml")
 call tests%start_tests(logger)
 
 unit_system%base_units   = ["kg", "m ", "s "]
-unit_system%n_base_units = n_base_units
+unit_system%n_base_units = size(unit_system%base_units)
 
 allocate(unit_system%units(2))
-allocate(unit_system%units(1)%e(n_base_units))
-allocate(unit_system%units(2)%e(n_base_units))
+allocate(unit_system%units(1)%e(unit_system%n_base_units))
+allocate(unit_system%units(2)%e(unit_system%n_base_units))
 
 unit_system%units(1)%e(1) = 0.5_WP
 unit_system%units(1)%e(2) = 0.0_WP
@@ -38,7 +38,7 @@ unit_system%units(2)%e(3) = 0.0_WP
 
 call tests%integer_eq(unit_system%n_base_units, 3, "unit_system%n_base_units == 3")
 
-allocate(unit1%e(n_base_units))
+allocate(unit1%e(unit_system%n_base_units))
 unit1%e(1) = 1.0_WP
 unit1%e(2) = 1.5_WP
 unit1%e(3) = -2.0_WP
@@ -62,7 +62,7 @@ unit1%e(1) = 1.0_WP
 unit1%e(2) = 1.5_WP
 unit1%e(3) = -2.0_WP
 
-allocate(unit2%e(n_base_units))
+allocate(unit2%e(unit_system%n_base_units))
 unit2%e(1) = 2.0_WP
 unit2%e(2) = -4.0_WP
 unit2%e(3) = 1.25_WP
@@ -95,4 +95,4 @@ call tests%real_eq(unit_out%e(3), -4.0_WP, "square_unit, index 3")
 call tests%end_tests()
 call logger%close()
 
-end program test_units_types
+end program test_unitdata

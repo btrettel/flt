@@ -5,11 +5,11 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-module gen_units_mod
+module genunitsio
 
 use prec, only: WP
 use nmllog, only: log_type
-use units_types, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
+use unitdata, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
 implicit none
 private
 
@@ -37,7 +37,7 @@ contains
 
 subroutine read_config_namelist(filename, config_out, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
-    use units_types, only: MAX_BASE_UNITS, BASE_UNIT_LEN
+    use unitdata, only: MAX_BASE_UNITS, BASE_UNIT_LEN
     
     use prec, only: CL
     use checks, only: is_close
@@ -219,4 +219,4 @@ end subroutine read_config_namelist
 !    end if
 !end subroutine read_seed_unit_namelists
 
-end module gen_units_mod
+end module genunitsio

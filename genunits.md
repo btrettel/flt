@@ -1,4 +1,4 @@
-# gen_units: Minimalist compile-time physical unit consistency checking for Fortran
+# genunits: Minimalist compile-time physical unit consistency checking for Fortran
 
 ## to-do
 
@@ -19,8 +19,8 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
 
 ## files
 
-- app/gen_units.f90
-- src/units_types.f90
+- app/genunits.f90
+- src/unitdata.f90
     - DONE: `parameter`s
         - `UNIT_PREFIX = "unit_"`
     - `type`s
