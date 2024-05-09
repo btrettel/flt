@@ -13,7 +13,7 @@ use unitdata, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
 implicit none
 private
 
-public :: read_config_namelist
+public :: read_config_namelist, read_seed_unit_namelists
 
 character(len=*), parameter :: GEN_UNITS_LOG = "gen_units.nml"
 
@@ -127,96 +127,109 @@ subroutine read_config_namelist(filename, config_out, rc)
     end if
 end subroutine read_config_namelist
 
-!subroutine read_seed_unit_namelists(filename, config, rc)
-!    use, intrinsic :: iso_fortran_env, only: IOSTAT_END
+subroutine read_seed_unit_namelists(filename, config, rc)
+    use, intrinsic :: iso_fortran_env, only: IOSTAT_END
+    use checks, only: assert, is_close
+    use prec, only: CL
+    use unitdata, only: MAX_BASE_UNITS, MAX_LABEL_LEN
     
-!    use prec, only: CL
-!    use checks, only: is_close
-!    use nmllog, only: INFO_LEVEL
+    character(len=*), intent(in)      :: filename
+    type(config_type), intent(in out) :: config
+    integer, intent(out)              :: rc
     
-!    character(len=*), intent(in)   :: filename
-!    type(config_type), intent(out) :: config
-!    integer, intent(out)           :: rc
+    integer           :: nml_unit, n_seed_units, i_seed_unit, j_seed_unit, rc_nml, n_failures, i_base_unit
+    character(len=CL) :: nml_error_message
+    character(len=2)  :: i_seed_unit_string, j_seed_unit_string, i_base_unit_string
     
-!    integer           :: i_base_unit, nml_unit, rc_nml, n_failures, n_
-!    character(len=CL) :: nml_error_message
+    ! `seed_unit` namelist group
+    character(len=MAX_LABEL_LEN) :: label
+    real(kind=WP)                :: e(MAX_BASE_UNITS)
     
-!    open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
+    namelist /seed_unit/ label, e
     
-!    ! First get `n_pdims`, allocate `config`, and read everything in.
-!    n_pdims = 0
-!    do
-!        label = ""
-!        e = 0.0_WP
-!        read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
-        
-!        if (rc_nml == IOSTAT_END) then
-!            exit
-!        else if (rc_nml /= 0) then
-!            call config_out%logger%error(trim(nml_error_message))
-!            rc = rc_nml
-!            close(unit=nml_unit)
-!            return
-!        end if
-        
-!        n_pdims = n_pdims + 1
-!    end do
+    call assert(allocated(config%base_units))
     
-!    rewind nml_unit
-!    allocate(config_out%labels(n_pdims))
-!    allocate(config_out%pdims(n_pdims))
-!    i_pdim = 0
-!    do
-!        label = ""
-!        e = huge(1.0_WP)
-!        read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
+    open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
+    
+    ! First get `n_seed_units`, allocate `config`, and read everything in.
+    n_seed_units = 0
+    do
+        label = ""
+        e = 0.0_WP
+        read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
         
-!        if (rc_nml == IOSTAT_END) then
-!            exit
-!        else if (rc_nml /= 0) then
-!            call config_out%logger%error(trim(nml_error_message))
-!            rc = rc_nml
-!            close(unit=nml_unit)
-!            return
-!        end if
+        if (rc_nml == IOSTAT_END) then
+            exit
+        else if (rc_nml /= 0) then
+            call config%logger%error(trim(nml_error_message))
+            rc = rc_nml
+            close(unit=nml_unit)
+            return
+        end if
         
-!        i_pdim = i_pdim + 1
+        n_seed_units = n_seed_units + 1
+    end do
+    
+    rewind nml_unit
+    allocate(config%seed_labels(n_seed_units))
+    allocate(config%seed_units(n_seed_units))
+    i_seed_unit = 0
+    n_failures = 0
+    do
+        label = ""
+        e     = huge(1.0_WP)
+        read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
         
-!        !write(unit=*, fmt=*) i_pdim, trim(label), e(1:config_out%n_pdims)
-!        config_out%labels(i_pdim) = trim(label)
-!        config_out%pdims(i_pdim)%e = e(1:config_out%n_pdims)
+        if (rc_nml == IOSTAT_END) then
+            exit
+        else if (rc_nml /= 0) then
+            call config%logger%error(trim(nml_error_message))
+            rc = rc_nml
+            close(unit=nml_unit)
+            return
+        end if
         
-!        write(unit=i_pdim_string, fmt="(i0)") i_pdim
+        i_seed_unit = i_seed_unit + 1
         
-!        call config_out%logger%check(len(trim(label)) /= 0, &
-!                                        "pdim #" // trim(i_pdim_string) // " has an empty label.", n_failures)
+        !write(unit=*, fmt=*) i_seed_unit, trim(label), e(1:size(config%base_units))
+        config%seed_labels(i_seed_unit)  = trim(label)
+        config%seed_units(i_seed_unit)%e = e(1:size(config%base_units))
+        
+        write(unit=i_seed_unit_string, fmt="(i0)") i_seed_unit
+        
+        call config%logger%check(len(trim(label)) /= 0, &
+                                        "pdim #" // trim(i_seed_unit_string) // " has an empty label.", n_failures)
 
-!        do j_pdim = 1, i_pdim - 1
-!            write(unit=j_pdim_string, fmt="(i0)") j_pdim
-!            call config_out%logger%check(trim(label) /= config_out%labels(j_pdim), &
-!                                            "pdim #" // trim(i_pdim_string) // ' labeled "' // trim(config_out%labels(i_pdim)) &
-!                                                // '" has the same label as pdim #' // trim(j_pdim_string) // ".", n_failures)
-!            call config_out%logger%check(.not. pdim_in_set(config_out, config_out%pdims(i_pdim), &
-!                                                config_out%pdims(j_pdim:j_pdim)), &
-!                                            "pdim #" // trim(i_pdim_string) // ' labeled "' // trim(config_out%labels(i_pdim)) &
-!                                                // '" has the same exponents as pdim #' // trim(j_pdim_string) &
-!                                                // ' labeled "' // trim(config_out%labels(j_pdim)) // '".', n_failures)
-!        end do
+        do j_seed_unit = 1, i_seed_unit - 1
+            write(unit=j_seed_unit_string, fmt="(i0)") j_seed_unit
+            call config%logger%check(trim(label) /= config%seed_labels(j_seed_unit), &
+                                            "pdim #" // trim(i_seed_unit_string) // ' labeled "' &
+                                                // trim(config%seed_labels(i_seed_unit)) &
+                                                // '" has the same label as pdim #' // trim(j_seed_unit_string) // ".", n_failures)
+            ! TODO: Reenable the following.
+!            call config%logger%check(.not. pdim_in_set(config, config%seed_units(i_seed_unit), &
+!                                                config%seed_units(j_seed_unit:j_seed_unit)), &
+!                                            "pdim #" // trim(i_seed_unit_string) // ' labeled "' &
+!                                                // trim(config%seed_labels(i_seed_unit)) &
+!                                                // '" has the same exponents as pdim #' // trim(j_seed_unit_string) &
+!                                                // ' labeled "' // trim(config%seed_labels(j_seed_unit)) // '".', n_failures)
+        end do
         
-!        do i_exponent = 1, config_out%n_pdims
-!            write(unit=i_exponent_string, fmt="(i0)") i_exponent
-!            call config_out%logger%check(.not. is_close(config_out%pdims(i_pdim)%e(i_exponent), huge(1.0_WP)), &
-!                                            "In pdim #" // trim(i_pdim_string) // ' labeled "' // trim(config_out%labels(i_pdim)) &
-!                                            // '", exponent #' // trim(i_exponent_string) // " has not been set.", n_failures)
-!        end do
-!    end do
-!    close(unit=nml_unit)
+        do i_base_unit = 1, size(config%base_units)
+            write(unit=i_base_unit_string, fmt="(i0)") i_base_unit
+            call config%logger%check(.not. is_close(config%seed_units(i_seed_unit)%e(i_base_unit), huge(1.0_WP)), &
+                                            "In pdim #" // trim(i_seed_unit_string) // ' labeled "' &
+                                            // trim(config%seed_labels(i_seed_unit)) &
+                                            // '", exponent #' // trim(i_base_unit_string) // " has not been set.", n_failures)
+        end do
+    end do
+    close(unit=nml_unit)
     
-!    if (n_failures > 0) then
-!        call config_out%logger%error("input validation error(s)")
-!        rc = n_failures
-!        return
-!    end if
-!end subroutine read_seed_unit_namelists
+    if (n_failures > 0) then
+        call config%logger%error("input validation error(s)")
+        rc = n_failures
+        return
+    end if
+end subroutine read_seed_unit_namelists
 
 end module genunitsio

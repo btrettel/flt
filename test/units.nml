@@ -8,3 +8,28 @@ use_line        = "use prec, only: WP"
 min_exponents = 0.0, 0.0, -1.0
 max_exponents = 3.0, 0.0, 1.0
 /
+
+&seed_unit
+label = "length"
+e = 1.0, 0.0, 0.0
+/
+
+&seed_unit
+label = "time"
+e = 0.0, 0.0, 1.0
+/
+
+&seed_unit
+label = "velocity"
+e = 1.0, 0.0, -1.0
+/
+
+&seed_unit
+label = "area"
+e = 2.0, 0.0, 0.0
+/
+
+&seed_unit
+label = "volume"
+e = 3.0, 0.0, 0.0
+/
