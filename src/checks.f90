@@ -16,7 +16,7 @@ real(kind=WP), public, parameter :: TOL_FACTOR = 5.0_WP
 logical :: debug = .true.
 
 public :: abs_tolerance
-public :: is_close
+public :: is_close, all_close
 public :: assert
 public :: same_shape_as
 
@@ -57,9 +57,9 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     real(kind=WP), intent(in)           :: input_real_1, input_real_2
     real(kind=WP), intent(in), optional :: rel_tol, abs_tol
     
-    real(kind=WP) :: rel_tol_, abs_tol_, tol
-    
     logical :: is_close
+    
+    real(kind=WP) :: rel_tol_, abs_tol_, tol
     
     if (present(rel_tol)) then
         rel_tol_ = rel_tol
@@ -81,6 +81,47 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
         is_close = .false.
     end if
 end function is_close
+
+function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
+    real(kind=WP), intent(in)           :: input_real_1(:), input_real_2(:)
+    real(kind=WP), intent(in), optional :: rel_tol, abs_tol
+    
+    logical :: all_close
+    
+    integer :: i, n_match
+    
+    real(kind=WP) :: rel_tol_, abs_tol_
+    
+    if (present(rel_tol)) then
+        rel_tol_ = rel_tol
+    else
+        rel_tol_ = 0.0_WP
+    end if
+    
+    if (present(abs_tol)) then
+        abs_tol_ = abs_tol
+    else
+        abs_tol_ = abs_tolerance(maxval(abs(input_real_1)), maxval(abs(input_real_2)))
+    end if
+    
+    call assert(size(input_real_1) == size(input_real_2))
+    call assert(lbound(input_real_1, dim=1) == lbound(input_real_2, dim=1))
+    call assert(ubound(input_real_1, dim=1) == ubound(input_real_2, dim=1))
+    
+    all_close = .false.
+    n_match = 0
+    do i = lbound(input_real_1, dim=1), ubound(input_real_1, dim=1)
+        if (is_close(input_real_1(i), input_real_2(i), rel_tol=rel_tol_, abs_tol=abs_tol_)) then
+            n_match = n_match + 1
+        end if
+    end do
+    
+    if (n_match == size(input_real_1)) then
+        all_close = .true.
+    else
+        all_close = .false.
+    end if
+end function all_close
 
 pure subroutine assert(condition, message)
     logical, intent(in) :: condition

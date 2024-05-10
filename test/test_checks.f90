@@ -7,7 +7,7 @@
 
 program test_checks
 
-use checks, only: TOL_FACTOR, abs_tolerance, is_close, assert, same_shape_as
+use checks, only: TOL_FACTOR, abs_tolerance, is_close, all_close, assert, same_shape_as
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
@@ -107,6 +107,10 @@ call tests%logical_false(is_close(1.0_WP, 0.0_WP, abs_tol=1.0_WP, rel_tol=0.0_WP
 
 call tests%logical_false(is_close(1.0_WP, 0.0_WP, abs_tol=0.0_WP, rel_tol=1.0_WP), &
         "is_close, close numbers with set rel_tol, just outside")
+
+! TODO: More tests for `all_close`.
+call tests%logical_true(all_close([1.0_WP, 2.0_WP], [1.0_WP, 2.0_WP]), "all_close, .true.")
+call tests%logical_false(all_close([1.0_WP, 2.0_WP], [-1.0_WP, 2.0_WP]), "all_close, .false.")
 
 ! `assert(.true.)` does not terminate the program (no direct test performed)
 call assert(.true.)
