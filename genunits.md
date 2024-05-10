@@ -20,7 +20,7 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
 ## files
 
 - app/genunits.f90
-- src/unitdata.f90
+- src/genunits_data.f90
     - DONE: `parameter`s
         - `UNIT_PREFIX = "unit_"`
     - `type`s
@@ -34,7 +34,7 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
     - procedures
         - `generate_unit_system`
         - `generate_interfaces`
-- src/gen_units_mod.f90
+- src/genunits_io.f90
     - `type`s
         - `config_type`
             - DONE: `output_file`

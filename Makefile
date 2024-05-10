@@ -18,7 +18,7 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # Add later: dimmod.nml ga.nml
-NML = autodiff.nml checks.nml genunitsio.nml nmllog.nml unitdata.nml prec.nml purerng.nml timer.nml unittest.nml
+NML = autodiff.nml checks.nml genunits_io.nml nmllog.nml genunits_data.nml prec.nml purerng.nml timer.nml unittest.nml
 .PRECIOUS: $(NML)
 
 #############
@@ -134,7 +134,7 @@ src/prec$(DBGOBJEXT):
 
 src/pdim_mod$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
-src/genunitsio$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/unitdata$(DBGOBJEXT)
+src/genunits_io$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/genunits_data$(DBGOBJEXT)
 
 src/pdim_types$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
@@ -144,7 +144,7 @@ src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
 
-src/unitdata$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/genunits_data$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 ############
 # autodiff #
@@ -174,15 +174,15 @@ checks.nml: test_checks$(BINEXT) test_assert_false$(BINEXT) test_assert_false_me
 	$(RUN)test_checks$(BINEXT)
 	test ! -e fort.*
 
-##############
-# genunitsio #
-##############
+###############
+# genunits_io #
+###############
 
-test_genunitsio$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/unitdata$(DBGOBJEXT) src/genunitsio$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_genunitsio.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_genunitsio.f90
+test_genunits_io$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/genunits_data$(DBGOBJEXT) src/genunits_io$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_genunits_io.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_genunits_io.f90
 
-genunitsio.nml: test_genunitsio$(BINEXT)
-	$(RUN)test_genunitsio$(BINEXT)
+genunits_io.nml: test_genunits_io$(BINEXT)
+	$(RUN)test_genunits_io$(BINEXT)
 	test ! -e fort.*
 
 ##########
@@ -272,15 +272,15 @@ timer.nml: test_timer$(BINEXT)
 	$(RUN)test_timer$(BINEXT)
 	test ! -e fort.*
 
-############
-# unitdata #
-############
+#################
+# genunits_data #
+#################
 
-test_unitdata$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/unitdata$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_unitdata.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_unitdata.f90
+test_genunits_data$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/genunits_data$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_genunits_data.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_genunits_data.f90
 
-unitdata.nml: test_unitdata$(BINEXT)
-	$(RUN)test_unitdata$(BINEXT)
+genunits_data.nml: test_genunits_data$(BINEXT)
+	$(RUN)test_genunits_data$(BINEXT)
 	test ! -e fort.*
 	test ! -e fort.*
 

@@ -1,13 +1,13 @@
-! tests for the unitdata module
+! tests for the genunits_data module
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_unitdata
+program test_genunits_data
 
-use unitdata, only: unit_type, unit_system_type, m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
+use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
 use prec, only: WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -18,7 +18,7 @@ type(test_results_type) :: tests
 type(unit_type)         :: unit1, unit2, unit_out
 type(unit_system_type)  :: unit_system
 
-call logger%open("unitdata.nml")
+call logger%open("genunits_data.nml")
 call tests%start_tests(logger)
 
 unit_system%base_units   = ["kg", "m ", "s "]
@@ -95,4 +95,4 @@ call tests%real_eq(unit_out%e(3), -4.0_WP, "square_unit, index 3")
 call tests%end_tests()
 call logger%close()
 
-end program test_unitdata
+end program test_genunits_data

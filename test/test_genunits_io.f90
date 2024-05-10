@@ -1,13 +1,13 @@
-! tests for the genunitsio module
+! tests for the genunits_io module
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_genunitsio
+program test_genunits_io
 
-use genunitsio, only: config_type, read_config_namelist, read_seed_unit_namelists
+use genunits_io, only: config_type, read_config_namelist, read_seed_unit_namelists
 use prec, only: WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -20,7 +20,7 @@ integer                 :: rc
 
 character(len=*), parameter :: TEST_INPUT_FILE = "test/units.nml"
 
-call logger%open("genunitsio.nml")
+call logger%open("genunits_io.nml")
 call tests%start_tests(logger)
 
 call read_config_namelist(TEST_INPUT_FILE, config, rc)
@@ -53,4 +53,4 @@ call read_seed_unit_namelists(TEST_INPUT_FILE, config, rc)
 call tests%end_tests()
 call logger%close()
 
-end program test_genunitsio
+end program test_genunits_io

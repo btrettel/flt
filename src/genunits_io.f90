@@ -5,11 +5,11 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-module genunitsio
+module genunits_io
 
 use prec, only: WP
 use nmllog, only: log_type
-use unitdata, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
+use genunits_data, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
 implicit none
 private
 
@@ -37,7 +37,7 @@ contains
 
 subroutine read_config_namelist(filename, config_out, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
-    use unitdata, only: MAX_BASE_UNITS, BASE_UNIT_LEN
+    use genunits_data, only: MAX_BASE_UNITS, BASE_UNIT_LEN
     
     use prec, only: CL
     use checks, only: is_close
@@ -131,7 +131,7 @@ subroutine read_seed_unit_namelists(filename, config, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
     use checks, only: assert, is_close
     use prec, only: CL
-    use unitdata, only: MAX_BASE_UNITS, MAX_LABEL_LEN
+    use genunits_data, only: MAX_BASE_UNITS, MAX_LABEL_LEN
     
     character(len=*), intent(in)      :: filename
     type(config_type), intent(in out) :: config
@@ -198,18 +198,20 @@ subroutine read_seed_unit_namelists(filename, config, rc)
         write(unit=i_seed_unit_string, fmt="(i0)") i_seed_unit
         
         call config%logger%check(len(trim(label)) /= 0, &
-                                        "pdim #" // trim(i_seed_unit_string) // " has an empty label.", n_failures)
+                                        "seed_unit #" // trim(i_seed_unit_string) // " has an empty label.", n_failures)
 
         do j_seed_unit = 1, i_seed_unit - 1
             write(unit=j_seed_unit_string, fmt="(i0)") j_seed_unit
             call config%logger%check(trim(label) /= config%seed_labels(j_seed_unit), &
-                                            "pdim #" // trim(i_seed_unit_string) // ' labeled "' &
+                                            "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                                 // trim(config%seed_labels(i_seed_unit)) &
                                                 // '" has the same label as pdim #' // trim(j_seed_unit_string) // ".", n_failures)
             ! TODO: Reenable the following.
+            ! Use `config%seed_units(i_seed_unit)%in_system(unit_system)` by adding to `unit_system`.
+            ! Write `all_close` and modify `in_system` to use that too.
 !            call config%logger%check(.not. pdim_in_set(config, config%seed_units(i_seed_unit), &
 !                                                config%seed_units(j_seed_unit:j_seed_unit)), &
-!                                            "pdim #" // trim(i_seed_unit_string) // ' labeled "' &
+!                                            "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
 !                                                // trim(config%seed_labels(i_seed_unit)) &
 !                                                // '" has the same exponents as pdim #' // trim(j_seed_unit_string) &
 !                                                // ' labeled "' // trim(config%seed_labels(j_seed_unit)) // '".', n_failures)
@@ -232,4 +234,4 @@ subroutine read_seed_unit_namelists(filename, config, rc)
     end if
 end subroutine read_seed_unit_namelists
 
-end module genunitsio
+end module genunits_io
