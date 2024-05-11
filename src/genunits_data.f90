@@ -86,27 +86,20 @@ pure function readable(unit, unit_system)
 end function readable
 
 pure function in_system(unit, unit_system)
-    use checks, only: assert, is_close
+    use checks, only: assert, all_close
     
     class(unit_type), intent(in)       :: unit
     type(unit_system_type), intent(in) :: unit_system
     
     logical :: in_system
     
-    integer :: i_unit, i_base_unit, n_match
+    integer :: i_unit
     
     call assert(size(unit%e) == unit_system%n_base_units)
     
     in_system = .false.
     do i_unit = 1, size(unit_system%units)
-        n_match = 0
-        do i_base_unit = 1, unit_system%n_base_units
-            if (is_close(unit%e(i_base_unit), unit_system%units(i_unit)%e(i_base_unit))) then
-                n_match = n_match + 1
-            end if
-        end do
-        
-        if (n_match == unit_system%n_base_units) then
+        if (all_close(unit%e, unit_system%units(i_unit)%e)) then
             in_system = .true.
             exit
         end if

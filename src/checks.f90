@@ -82,7 +82,7 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     end if
 end function is_close
 
-function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
+pure function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
     real(kind=WP), intent(in)           :: input_real_1(:), input_real_2(:)
     real(kind=WP), intent(in), optional :: rel_tol, abs_tol
     
