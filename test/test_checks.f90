@@ -17,7 +17,7 @@ character(len=*), parameter :: ASSERT_FALSE_OUTPUT = "test_assert_false.txt"
 
 type(log_type)          :: logger
 type(test_results_type) :: tests
-integer                 :: rc_assert_false, test_assert_false_unit
+integer                 :: test_assert_false_unit
 logical                 :: test_assert_false_exists
 character(len=80)       :: assert_false_line
 
@@ -118,10 +118,7 @@ call assert(.true.)
 tests%n_tests = tests%n_tests + 1
 
 ! Check that `assert(.false.)` terminates with a non-zero exit code.
-! TODO: This would need to be updated for Windows as I'd add .exe to the executable filename there.
-! TODO: This also assumes Bash.
-call execute_command_line("./test_assert_false 2> " // ASSERT_FALSE_OUTPUT, exitstat=rc_assert_false)
-call tests%integer_ne(rc_assert_false, 0, "assert, .false., exit code")
+call tests%exit_code_ne("./test_assert_false", 0, "assert, .false., exit code", ASSERT_FALSE_OUTPUT, keep_file=.true.)
 
 inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
 call tests%logical_true(test_assert_false_exists, "assert, .false., output saved")
@@ -136,10 +133,8 @@ call tests%character_eq(assert_false_line, "ASSERTION FAILED.", "assert, .false.
 close(unit=test_assert_false_unit, status="delete")
 
 ! Check that `assert(.false., "Custom message.")` has the correct message.
-! TODO: This would need to be updated for Windows as I'd add .exe to the executable filename there.
-! TODO: This also assumes Bash.
-call execute_command_line("./test_assert_false_message 2> " // ASSERT_FALSE_OUTPUT, exitstat=rc_assert_false)
-call tests%integer_ne(rc_assert_false, 0, "assert, .false., message, exit code")
+call tests%exit_code_ne("./test_assert_false_message", 0, "assert, .false., message, exit code", &
+                            ASSERT_FALSE_OUTPUT, keep_file=.true.)
 
 inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
 call tests%logical_true(test_assert_false_exists, "assert, .false., message, output saved")

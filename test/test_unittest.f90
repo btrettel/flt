@@ -94,6 +94,7 @@ call tests%integer_le(2_I10, 2_I10, "integer_le, equal, I10")
 
 call tests%integer_le(1, 2, "integer_ne, equal")
 
+! TODO: This assumes *nix.
 call tests%exit_code_ne("false", 0, "exit_code_ne, success, no file", EXIT_CODE_FILE)
 
 inquire(file=EXIT_CODE_FILE, exist=exit_code_file_exists)
