@@ -48,9 +48,10 @@ call tests%integer_eq(rc, 0, "read_config_namelist, rc")
 
 call read_seed_unit_namelists(TEST_INPUT_FILE, config, rc)
 
+call tests%integer_eq(size(config%seed_units), 5, "read_seed_unit_namelists, size(config%seed_units)")
+call tests%integer_eq(size(config%seed_labels), 5, "read_seed_unit_namelists, size(config%seed_labels)")
 call tests%integer_eq(rc, 0, "read_seed_unit_namelists, rc")
-
-! TODO: Test `read_seed_unit_namelists`
+! TODO: Test more of `read_seed_unit_namelists`.
 
 call tests%end_tests()
 call logger%close()

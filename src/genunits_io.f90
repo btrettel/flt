@@ -30,7 +30,7 @@ type, public :: config_type
     
     type(unit_type), allocatable              :: seed_units(:)
     character(len=MAX_LABEL_LEN), allocatable :: seed_labels(:)
-    type(unit_type), allocatable              :: reject_units(:)
+    ! TODO: type(unit_type), allocatable              :: reject_units(:)
 end type config_type
 
 contains
