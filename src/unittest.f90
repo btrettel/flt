@@ -39,6 +39,7 @@ contains
     ! TODO: integer_gt, integer_lt
     procedure :: character_eq => character_eq
     ! TODO: character_ne
+    procedure :: exit_code_ne => exit_code_ne
     procedure :: start_tests => start_tests
     procedure :: end_tests => end_tests
 end type test_results_type
@@ -749,5 +750,34 @@ subroutine validate_timestamp(tests, timestamp, message)
         end if
     end if
 end subroutine validate_timestamp
+
+subroutine exit_code_ne(tests, command, compared_exit_code, message, output_file, keep_file)
+    class(test_results_type), intent(in out) :: tests
+    integer, intent(in)                      :: compared_exit_code
+    character(len=*), intent(in)             :: command, message, output_file
+    logical, intent(in), optional            :: keep_file
+    
+    integer :: rc_fail, failure_unit
+    logical :: keep_file_
+    
+    if (present(keep_file)) then
+        keep_file_ = keep_file
+    else
+        keep_file_ = .false.
+    end if
+    
+    ! TODO: This would need to be updated for Windows as I'd add .exe to the executable filename there.
+    ! TODO: This also assumes Bash.
+    call execute_command_line(command // " 2> " // output_file, exitstat=rc_fail)
+    call tests%integer_ne(rc_fail, compared_exit_code, message)
+
+    if (.not. keep_file_) then
+        ! Delete output file if test succeeded, otherwise keep it for examination.
+        if (rc_fail /= compared_exit_code) then
+            open(newunit=failure_unit, file=output_file, status="old", action="read")
+            close(unit=failure_unit, status="delete")
+        end if
+    end if
+end subroutine exit_code_ne
 
 end module unittest

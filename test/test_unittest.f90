@@ -17,6 +17,10 @@ type(log_type)          :: logger
 type(test_results_type) :: tests, failing_tests
 
 integer, parameter :: N_FAILING = 14
+character(len=*), parameter :: EXIT_CODE_FILE = "exit_code.txt"
+
+logical :: exit_code_file_exists
+integer :: exit_code_file_unit
 
 call logger%open("unittest.nml")
 call tests%start_tests(logger)
@@ -89,6 +93,21 @@ call tests%integer_le(1_I10, 2_I10, "integer_le, greater, I10")
 call tests%integer_le(2_I10, 2_I10, "integer_le, equal, I10")
 
 call tests%integer_le(1, 2, "integer_ne, equal")
+
+call tests%exit_code_ne("false", 0, "exit_code_ne, success, no file", EXIT_CODE_FILE)
+
+inquire(file=EXIT_CODE_FILE, exist=exit_code_file_exists)
+call tests%logical_false(exit_code_file_exists, "exit_code_ne, success, no file, file does not exist")
+
+call tests%exit_code_ne("false", 0, "exit_code_ne, success, with file", EXIT_CODE_FILE, keep_file=.true.)
+
+inquire(file=EXIT_CODE_FILE, exist=exit_code_file_exists)
+call tests%logical_true(exit_code_file_exists, "exit_code_ne, success, with file, file exists")
+
+if (exit_code_file_exists) then
+    open(newunit=exit_code_file_unit, file=EXIT_CODE_FILE, status="old", action="read")
+    close(unit=exit_code_file_unit, status="delete")
+end if
 
 ! tests which should fail
 
