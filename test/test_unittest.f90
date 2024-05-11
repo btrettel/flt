@@ -16,7 +16,7 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests, failing_tests
 
-integer, parameter :: N_FAILING = 14
+integer, parameter :: N_FAILING = 15
 character(len=*), parameter :: EXIT_CODE_FILE = "exit_code.txt"
 
 logical :: exit_code_file_exists
@@ -99,6 +99,7 @@ call tests%exit_code_ne("false", 0, "exit_code_ne, success, no file", EXIT_CODE_
 inquire(file=EXIT_CODE_FILE, exist=exit_code_file_exists)
 call tests%logical_false(exit_code_file_exists, "exit_code_ne, success, no file, file does not exist")
 
+! TODO: This assumes *nix.
 call tests%exit_code_ne("false", 0, "exit_code_ne, success, with file", EXIT_CODE_FILE, keep_file=.true.)
 
 inquire(file=EXIT_CODE_FILE, exist=exit_code_file_exists)
@@ -141,6 +142,17 @@ call failing_tests%integer_le(2, 1, "integer_le, failure")
 call failing_tests%character_eq("a", "b", "character_eq, failure (greater)")
 
 call failing_tests%character_eq("b", "a", "character_eq, failure (less)")
+
+! TODO: This assumes *nix.
+call failing_tests%exit_code_ne("true", 0, "exit_code_ne, failure, with file", EXIT_CODE_FILE)
+
+inquire(file=EXIT_CODE_FILE, exist=exit_code_file_exists)
+call tests%logical_true(exit_code_file_exists, "exit_code_ne, failure, no file, file exists")
+
+if (exit_code_file_exists) then
+    open(newunit=exit_code_file_unit, file=EXIT_CODE_FILE, status="old", action="read")
+    close(unit=exit_code_file_unit, status="delete")
+end if
 
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 
