@@ -48,6 +48,8 @@ call tests%integer_eq(rc, 0, "read_config_namelist, rc")
 
 call read_seed_unit_namelists(TEST_INPUT_FILE, config, rc)
 
+call tests%integer_eq(rc, 0, "read_seed_unit_namelists, rc")
+
 ! TODO: Test `read_seed_unit_namelists`
 
 call tests%end_tests()

@@ -129,7 +129,7 @@ end subroutine read_config_namelist
 
 subroutine read_seed_unit_namelists(filename, config, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
-    use checks, only: assert, is_close
+    use checks, only: assert, is_close, all_close
     use prec, only: CL
     use genunits_data, only: MAX_BASE_UNITS, MAX_LABEL_LEN
     
@@ -206,15 +206,11 @@ subroutine read_seed_unit_namelists(filename, config, rc)
                                             "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                                 // trim(config%seed_labels(i_seed_unit)) &
                                                 // '" has the same label as pdim #' // trim(j_seed_unit_string) // ".", n_failures)
-            ! TODO: Reenable the following.
-            ! Use `config%seed_units(i_seed_unit)%in_system(unit_system)` by adding to `unit_system`.
-            ! Write `all_close` and modify `in_system` to use that too.
-!            call config%logger%check(.not. pdim_in_set(config, config%seed_units(i_seed_unit), &
-!                                                config%seed_units(j_seed_unit:j_seed_unit)), &
-!                                            "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
-!                                                // trim(config%seed_labels(i_seed_unit)) &
-!                                                // '" has the same exponents as pdim #' // trim(j_seed_unit_string) &
-!                                                // ' labeled "' // trim(config%seed_labels(j_seed_unit)) // '".', n_failures)
+            call config%logger%check(.not. all_close(config%seed_units(i_seed_unit)%e, config%seed_units(j_seed_unit)%e), &
+                                            "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
+                                                // trim(config%seed_labels(i_seed_unit)) &
+                                                // '" has the same exponents as pdim #' // trim(j_seed_unit_string) &
+                                                // ' labeled "' // trim(config%seed_labels(j_seed_unit)) // '".', n_failures)
         end do
         
         do i_base_unit = 1, size(config%base_units)

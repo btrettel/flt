@@ -181,8 +181,20 @@ checks.nml: test_checks$(BINEXT) test_assert_false$(BINEXT) test_assert_false_me
 test_genunits_io$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/genunits_data$(DBGOBJEXT) src/genunits_io$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_genunits_io.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_genunits_io.f90
 
-genunits_io.nml: test_genunits_io$(BINEXT)
+genunits_io.nml: test_genunits_io$(BINEXT) test/units.nml
 	$(RUN)test_genunits_io$(BINEXT)
+	test ! -e fort.*
+
+#################
+# genunits_data #
+#################
+
+test_genunits_data$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/genunits_data$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_genunits_data.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_genunits_data.f90
+
+genunits_data.nml: test_genunits_data$(BINEXT)
+	$(RUN)test_genunits_data$(BINEXT)
+	test ! -e fort.*
 	test ! -e fort.*
 
 ##########
@@ -270,18 +282,6 @@ test_timer$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGO
 
 timer.nml: test_timer$(BINEXT)
 	$(RUN)test_timer$(BINEXT)
-	test ! -e fort.*
-
-#################
-# genunits_data #
-#################
-
-test_genunits_data$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/genunits_data$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_genunits_data.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_genunits_data.f90
-
-genunits_data.nml: test_genunits_data$(BINEXT)
-	$(RUN)test_genunits_data$(BINEXT)
-	test ! -e fort.*
 	test ! -e fort.*
 
 ############
