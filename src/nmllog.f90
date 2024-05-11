@@ -323,7 +323,6 @@ subroutine pure_log_close(pure_logger)
         deallocate(current)
     end do
     
-    ! TODO: call assert(.not. associated(pure_logger%tail))
     nullify(pure_logger%tail)
     
     call pure_logger%logger%debug("Pure logger ended.")

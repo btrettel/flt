@@ -15,13 +15,16 @@ private
 
 public :: read_config_namelist, read_seed_unit_namelists
 
-character(len=*), parameter :: GEN_UNITS_LOG = "gen_units.nml"
+character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
+
+! This is about the most the ifx will compile as of 2024-05-11.
+integer, parameter :: DEFAULT_MAX_N_UNITS = 28
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line
     real(kind=WP), allocatable    :: min_exponents(:), &
                                      max_exponents(:)
-    !integer :: max_n_units, max_n_interfaces
+    integer :: max_n_units!, max_n_interfaces
     !logical :: tests, comparison, sqrt, cbrt, square, instrinsics
     
     type(log_type) :: logger
@@ -54,11 +57,12 @@ subroutine read_config_namelist(filename, config_out, rc)
     character(len=CL)            :: output_file, type_definition, use_line
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
+    integer                      :: max_n_units
     !logical                      :: tests, comparison, sqrt, cbrt, square, instrinsics
     
-    namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents
+    namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents, max_n_units
     
-    call config_out%logger%open(GEN_UNITS_LOG, level=INFO_LEVEL)
+    call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
     
     do i_base_unit = 1, MAX_BASE_UNITS
         base_units(i_base_unit) = ""
@@ -69,6 +73,7 @@ subroutine read_config_namelist(filename, config_out, rc)
     use_line        = "use prec, only: WP"
     min_exponents   = -huge(1.0_WP)
     max_exponents   = huge(1.0_WP)
+    max_n_units     = DEFAULT_MAX_N_UNITS
 !    tests           = .false.
 !    comparison      = .false.
 !    sqrt            = .false.
@@ -99,6 +104,7 @@ subroutine read_config_namelist(filename, config_out, rc)
     config_out%use_line        = trim(use_line)
     config_out%min_exponents   = min_exponents(1:n_base_units)
     config_out%max_exponents   = max_exponents(1:n_base_units)
+    config_out%max_n_units     = max_n_units
     config_out%base_units      = base_units(1:n_base_units)
 !    config_out%tests           = tests
 !    config_out%comparison      = comparison
@@ -118,6 +124,10 @@ subroutine read_config_namelist(filename, config_out, rc)
         call config_out%logger%check(.not. is_close(max_exponents(i_base_unit), huge(1.0_WP)), &
                                         "max_exponents is not set properly?", n_failures)
     end do
+    
+    ! TODO: min_exponents <= max_exponents
+    
+    call config_out%logger%check(config_out%max_n_units > 0, "max_n_units must be 1 or greater.", n_failures)
     
     if (n_failures > 0) then
         call config_out%logger%error("config namelist input validation error(s)")
@@ -140,6 +150,7 @@ subroutine read_seed_unit_namelists(filename, config, rc)
     integer           :: nml_unit, n_seed_units, i_seed_unit, j_seed_unit, rc_nml, n_failures, i_base_unit
     character(len=CL) :: nml_error_message
     character(len=2)  :: i_seed_unit_string, j_seed_unit_string, i_base_unit_string
+    character(len=5)  :: n_seed_units_string, max_n_units_string
     
     ! `seed_unit` namelist group
     character(len=MAX_LABEL_LEN) :: label
@@ -153,6 +164,7 @@ subroutine read_seed_unit_namelists(filename, config, rc)
     
     ! First get `n_seed_units`, allocate `config`, and read everything in.
     n_seed_units = 0
+    n_failures   = 0
     do
         label = ""
         e = 0.0_WP
@@ -170,11 +182,18 @@ subroutine read_seed_unit_namelists(filename, config, rc)
         n_seed_units = n_seed_units + 1
     end do
     
+    write(unit=n_seed_units_string, fmt="(i0)") n_seed_units
+    write(unit=max_n_units_string, fmt="(i0)") config%max_n_units
+    call config%logger%check(n_seed_units <= config%max_n_units, &
+                                    "The number of seed units (" // trim(n_seed_units_string) &
+                                    // ") exceed max_n_units, the maximum number of units allowed (" // trim(max_n_units_string) &
+                                    // "). Either increase max_n_units or reduce the number of seed units.", &
+                                    n_failures)
+    
     rewind nml_unit
     allocate(config%seed_labels(n_seed_units))
     allocate(config%seed_units(n_seed_units))
     i_seed_unit = 0
-    n_failures = 0
     do
         label = ""
         e     = huge(1.0_WP)
@@ -229,5 +248,16 @@ subroutine read_seed_unit_namelists(filename, config, rc)
         return
     end if
 end subroutine read_seed_unit_namelists
+
+!subroutine generate_system(config, unit_system)
+!    use genunits_data, only: unit_system_type
+    
+!    type(config_type), intent(in) :: config
+    
+!    type(unit_system_type), intent(out) :: unit_system
+    
+!    ! TODO: Rather than using a linked-list, it's probably easiest to make the size of `unit_system%units` the maximum and reduce
+!    ! the size later if needed.
+!end subroutine generate_system
 
 end module genunits_io
