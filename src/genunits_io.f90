@@ -556,49 +556,54 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
 end subroutine write_binary_operator
 
-subroutine write_exponentiation_interfaces(unit_system, file_unit)
-    ! TODO: Pass in `config` so that you can enable or disable each of these according to the configuration.
-    
+subroutine write_exponentiation_interfaces(config, unit_system, file_unit)
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
+    type(config_type), intent(in)      :: config
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     
     integer         :: i_unit
     type(unit_type) :: trial_unit
     
-    write(unit=file_unit, fmt="(a)") "interface sqrt"
-    do i_unit = 1, size(unit_system%units)
-        trial_unit = sqrt_unit(unit_system%units(i_unit))
-        if (trial_unit%is_in(unit_system%units)) then
-            write(unit=file_unit, fmt="(2a)") "    module procedure sqrt_", trim(unit_system%units(i_unit)%label())
-        else
-            write(unit=file_unit, fmt="(2a)") "    ! excluded: sqrt_", trim(unit_system%units(i_unit)%label())
-        end if
-    end do
-    write(unit=file_unit, fmt="(2a)") "end interface sqrt", new_line("a")
+    if (config%sqrt) then
+        write(unit=file_unit, fmt="(a)") "interface sqrt"
+        do i_unit = 1, size(unit_system%units)
+            trial_unit = sqrt_unit(unit_system%units(i_unit))
+            if (trial_unit%is_in(unit_system%units)) then
+                write(unit=file_unit, fmt="(2a)") "    module procedure sqrt_", trim(unit_system%units(i_unit)%label())
+            else
+                write(unit=file_unit, fmt="(2a)") "    ! excluded: sqrt_", trim(unit_system%units(i_unit)%label())
+            end if
+        end do
+        write(unit=file_unit, fmt="(2a)") "end interface sqrt", new_line("a")
+    end if
     
-    write(unit=file_unit, fmt="(a)") "interface cbrt"
-    do i_unit = 1, size(unit_system%units)
-        trial_unit = cbrt_unit(unit_system%units(i_unit))
-        if (trial_unit%is_in(unit_system%units)) then
-            write(unit=file_unit, fmt="(2a)") "    module procedure cbrt_", trim(unit_system%units(i_unit)%label())
-        else
-            write(unit=file_unit, fmt="(2a)") "    ! excluded: cbrt_", trim(unit_system%units(i_unit)%label())
-        end if
-    end do
-    write(unit=file_unit, fmt="(2a)") "end interface cbrt", new_line("a")
+    if (config%cbrt) then
+        write(unit=file_unit, fmt="(a)") "interface cbrt"
+        do i_unit = 1, size(unit_system%units)
+            trial_unit = cbrt_unit(unit_system%units(i_unit))
+            if (trial_unit%is_in(unit_system%units)) then
+                write(unit=file_unit, fmt="(2a)") "    module procedure cbrt_", trim(unit_system%units(i_unit)%label())
+            else
+                write(unit=file_unit, fmt="(2a)") "    ! excluded: cbrt_", trim(unit_system%units(i_unit)%label())
+            end if
+        end do
+        write(unit=file_unit, fmt="(2a)") "end interface cbrt", new_line("a")
+    end if
     
-    write(unit=file_unit, fmt="(a)") "interface square"
-    do i_unit = 1, size(unit_system%units)
-        trial_unit = square_unit(unit_system%units(i_unit))
-        if (trial_unit%is_in(unit_system%units)) then
-            write(unit=file_unit, fmt="(2a)") "    module procedure square_", trim(unit_system%units(i_unit)%label())
-        else
-            write(unit=file_unit, fmt="(2a)") "    ! excluded: square_", trim(unit_system%units(i_unit)%label())
-        end if
-    end do
-    write(unit=file_unit, fmt="(2a)") "end interface square", new_line("a")
+    if (config%square) then
+        write(unit=file_unit, fmt="(a)") "interface square"
+        do i_unit = 1, size(unit_system%units)
+            trial_unit = square_unit(unit_system%units(i_unit))
+            if (trial_unit%is_in(unit_system%units)) then
+                write(unit=file_unit, fmt="(2a)") "    module procedure square_", trim(unit_system%units(i_unit)%label())
+            else
+                write(unit=file_unit, fmt="(2a)") "    ! excluded: square_", trim(unit_system%units(i_unit)%label())
+            end if
+        end do
+        write(unit=file_unit, fmt="(2a)") "end interface square", new_line("a")
+    end if
 end subroutine write_exponentiation_interfaces
 
 subroutine write_exponentiation_function(unit_system, file_unit, unit, op)
@@ -755,10 +760,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
         call config%write_type(file_unit, i_unit, unit_system)
     end do
     
-    ! TODO: Split apart `write_exponentiation_interfaces` so that this can get more granular.
-    if (config%sqrt .or. config%cbrt .or. config%square) then
-        call write_exponentiation_interfaces(unit_system, file_unit)
-    end if
+    call write_exponentiation_interfaces(config, unit_system, file_unit)
     
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
     

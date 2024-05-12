@@ -3,19 +3,7 @@
 ## to-do
 
 - Put `linspace` into an experimental file.
-- Put refactor into entirely new files to refer to the old ones as needed.
-
-## Terminology
-
-Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-programming-languages>, which is similar to the ISO standard as described by mills_quantities_2007, but a bit more consistent.
-
-- numerical value: `v`
-    -  mills_quantities_2007 p. 3
-- unit
-    - mills_quantities_2007 p. 3
-- physical dimension
-    - quantity (which seems inconsistent with "quantity" as a base dimension)
-- derived unit
+- 
 
 ## files
 
@@ -37,12 +25,6 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
 - src/genunits_io.f90
     - `type`s
         - `config_type`
-            - DONE: `output_file`
-            - DONE: `base_units`
-            - DONE: `type_definition`: Characters of type definition to use in derived time 
-            - DONE: `use_line`: Characters of custom use line(s) to put in the header of the generated module. Empty by default.
-            - TODO: `max_n_units`
-            - TODO: `max_n_interfaces`
             - TODO: `tests`
             - TODO: `comparison`: Enable or disable generation of comparison operators. `.true.` by default.
             - TODO: `sqrt`
@@ -59,8 +41,6 @@ Based largely on <https://www.gmpreussner.com/research/dimensional-analysis-in-p
             - `print_interface_stats`
                 - Print number of operators per type, exponentiation functions.
         - namelist readers (One subroutine per namelist group.)
-            - DONE: `read_config_namelist`
-            - TODO: `read_unit_namelists`
             - TODO: `read_reject_namelists`
         - test writers
             - Include tests for all combinations of operators, including those which should fail.

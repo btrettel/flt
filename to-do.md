@@ -3,15 +3,16 @@
 Priorities:
 
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
+    - remove dependency of genunits on nmllog?
 - `make install` to install pdim_gen.
-- pdim_mod.f90, pdim_gen.f90: Generates a module named `pdim_types` which provides compile-time checking of physical dimensions. (started)
+- genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
     - refactor
         - Break pdim_mod into multiple modules to help organization.
         - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
         - `MAX_LABEL_LEN` vs. `LABEL_LEN` is confusing.
     - Break up `write_module` to make testing parts easier.
         - Subroutine to generate `pdims`.
-    - `pdim_types.f90`
+    - `units.f90`
         - Unary negation.
         - Elementary functions like `sin`, `cos`, `log`, etc.
         - `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
@@ -24,16 +25,10 @@ Priorities:
     - Test exponentiation functions.
     - Compare compile and run times with and without `pdim_types`. Look at compile time for `pdim_types.mod` and also something calling the module separately.
         - `make benchmark`
-    - `pdim_gen.f90`: Read namelist file specified as command line argument, generate `pdim_types.f90`.
-        - Print number of operators created.
-    - `pdim_label`: Eliminate "magic number" of 5 (used in 10000 as well) and make it part of `config`
     - Better type names:
         - Type names which lead to good error messages are best. Example error messages:
-            - gfortran: `Error: Cannot convert TYPE(t_3f800000_00000000_bf800000) to TYPE(t_3f800000_00000000_00000000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
+            - gfortran: `Error: Cannot convert TYPE(unit_3f800000_00000000_bf800000) to TYPE(unit_3f800000_00000000_00000000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
             - ifx: `error #6197: An assignment of different structure types is invalid.` (So ifx doesn't say what the types are.)
-    - Namelist function to define setup.
-        - `pdim` namelist to specify physical dimensions to make shortcuts for, like `length` instead of `pdim_*_*_*`.
-            - Also use this to generate the required dimensions. Only generate dimensions created by combinations of the specified dimensions. This would reduce comilation time. This would also eliminate the need for the nested loops that restrict the number of physical dimensions to a predetermined number, and eliminate the need for `exponent_deltas`.
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
         - But how can I link `x` to the index of the `dv` member variable? I could try something like `diff(f, x, 1)` where `1` is the index.
