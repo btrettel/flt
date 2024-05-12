@@ -13,7 +13,8 @@ use genunits_data, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
 implicit none
 private
 
-public :: in_exponent_bounds, denominator_matches, write_type
+public :: in_exponent_bounds, denominator_matches, &
+            write_type, write_as_operators, write_md_operators, write_binary_operator
 
 character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
@@ -464,5 +465,297 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     
     write(unit=file_unit, fmt="(3a)") "end type ", trim(unit_system%units(i_unit)%label()), new_line("a")
 end subroutine write_type
+
+subroutine write_as_operators(unit_system, file_unit, unit)
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit
+    
+    ! add
+    call write_binary_operator(unit_system, file_unit, unit, unit, unit, "+")
+    
+    ! subtract
+    call write_binary_operator(unit_system, file_unit, unit, unit, unit, "-")
+end subroutine write_as_operators
+
+subroutine write_md_operators(unit_system, file_unit, unit_left, unit_right, n_interfaces)
+    use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit_left, unit_right
+    integer, intent(in out)            :: n_interfaces
+    
+    type(unit_type) :: unit_m, unit_d
+    
+    ! multiply
+    unit_m = m_unit(unit_left, unit_right)
+    if (unit_m%is_in(unit_system%units)) then
+        call write_binary_operator(unit_system, file_unit, unit_left, unit_right, unit_m, "*")
+        n_interfaces = n_interfaces + 1
+    end if
+    
+    ! divide
+    unit_d = d_unit(unit_left, unit_right)
+    if (unit_d%is_in(unit_system%units)) then
+        call write_binary_operator(unit_system, file_unit, unit_left, unit_right, unit_d, "/")
+        n_interfaces = n_interfaces + 1
+    end if
+end subroutine write_md_operators
+
+subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, unit_result, op)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit_left, unit_right, unit_result
+    character(len=*), intent(in)       :: op
+    
+    character(len=1)              :: op_label
+    character(len=:), allocatable :: binary_operator_procedure
+    
+    select case (op)
+        case ("+")
+            op_label = "a"
+        case ("-")
+            op_label = "s"
+        case ("*")
+            op_label = "m"
+        case ("/")
+            op_label = "d"
+!        case ("**")
+!            op_label = "e"
+        case default
+            error stop "write_binary_operator: invalid op"
+    end select
+    
+    binary_operator_procedure = op_label // "_" // trim(unit_left%label()) // "_" &
+                                    // trim(unit_right%label())
+    
+    call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN)
+    
+    write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(unit_left, unit_right)"
+    
+    write(unit=file_unit, fmt="(2a)") "    ! left: ", trim(unit_left%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! right: ", trim(unit_right%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit_result%readable(unit_system))
+    
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_left%label()), "), intent(in) :: unit_left"
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_right%label()), "), intent(in) :: unit_right"
+    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", binary_operator_procedure
+    
+    write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = unit_left%v ", op, " unit_right%v"
+    
+    write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
+end subroutine write_binary_operator
+
+!subroutine write_exponentiation_interfaces(config, file_unit, unit_system)
+!    use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
+    
+!    class(config_type), intent(in) :: config
+!    integer, intent(in)            :: file_unit
+!    type(unit_system)type), intent(in) :: unit_system
+    
+!    integer :: i_unit
+    
+!    write(unit=file_unit, fmt="(a)") "interface sqrt"
+!    do i_unit = 1, size(units)
+!        if (unit_in_set(config, sqrt_unit(units(i_unit)), units)) then
+        
+!            write(unit=file_unit, fmt="(2a)") "    module procedure sqrt_", trim(unit_label(config, units(i_unit)))
+!        else
+!            write(unit=file_unit, fmt="(2a)") "    ! excluded: sqrt_", trim(unit_label(config, units(i_unit)))
+!        end if
+!    end do
+!    write(unit=file_unit, fmt="(2a)") "end interface sqrt", new_line("a")
+    
+!    write(unit=file_unit, fmt="(a)") "interface cbrt"
+!    do i_unit = 1, size(units)
+!        if (unit_in_set(config, cbrt_unit(units(i_unit)), units)) then
+        
+!            write(unit=file_unit, fmt="(2a)") "    module procedure cbrt_", trim(unit_label(config, units(i_unit)))
+!        else
+!            write(unit=file_unit, fmt="(2a)") "    ! excluded: cbrt_", trim(unit_label(config, units(i_unit)))
+!        end if
+!    end do
+!    write(unit=file_unit, fmt="(2a)") "end interface cbrt", new_line("a")
+    
+!    write(unit=file_unit, fmt="(a)") "interface square"
+!    do i_unit = 1, size(units)
+!        if (unit_in_set(config, square_unit(units(i_unit)), units)) then
+        
+!            write(unit=file_unit, fmt="(2a)") "    module procedure square_", trim(unit_label(config, units(i_unit)))
+!        else
+!            write(unit=file_unit, fmt="(2a)") "    ! excluded: square_", trim(unit_label(config, units(i_unit)))
+!        end if
+!    end do
+!    write(unit=file_unit, fmt="(2a)") "end interface square", new_line("a")
+!end subroutine write_exponentiation_interfaces
+
+!subroutine write_exponentiation_function(config, file_unit, unit, op)
+!    class(config_type), intent(in) :: config
+!    integer, intent(in)            :: file_unit
+!    type(unit_type), intent(in)    :: unit
+!    character(len=*), intent(in)   :: op
+    
+!    type(unit_type)               :: unit_result
+!    character(len=:), allocatable :: op_pre, op_post, exponentiation_function
+    
+!    select case (op)
+!        case ("sqrt")
+!            op_pre = "sqrt("
+!            op_post = ")"
+            
+!            unit_result = sqrt_unit(unit)
+!        case ("cbrt")
+!            ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Fast-cube-root/m-p/1171728>
+!            ! <https://www.reddit.com/r/fortran/comments/t9qkqd/cuberoot_and_my_dissent_into_madness/>
+!            ! <https://github.com/fortran-lang/stdlib/issues/214>
+!            op_pre = "("
+!            op_post = ")**(1.0_WP/3.0_WP)"
+            
+!            unit_result = cbrt_unit(unit)
+!        case ("square")
+!            op_pre = "("
+!            op_post = ")**2"
+            
+!            unit_result = square_unit(unit)
+!        case default
+!            error stop "write_exponentiation_function: invalid op"
+!    end select
+    
+!    exponentiation_function = op // "_" // trim(unit_label(config, unit))
+    
+!    write(unit=file_unit, fmt="(3a)") "elemental function ", exponentiation_function, "(unit)"
+    
+!    write(unit=file_unit, fmt="(2a)") "    ! argument: ", trim(unit_human_readable(config, unit))
+!    write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit_human_readable(config, unit_result))
+    
+!    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_label(config, unit)), "), intent(in) :: unit"
+!    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_label(config, unit_result)), ") :: ", exponentiation_function
+    
+!    write(unit=file_unit, fmt="(6a)") "    ", exponentiation_function, "%v = ", op_pre, "unit%v", op_post
+    
+!    write(unit=file_unit, fmt="(3a)") "end function ", exponentiation_function, new_line("a")
+!end subroutine write_exponentiation_function
+
+!subroutine write_module(config, file_unit, rc)
+!    use checks, only: assert
+    
+!    class(config_type), intent(in) :: config
+!    integer, intent(in)            :: file_unit
+!    integer, intent(out)           :: rc
+    
+!    type(unit_type), allocatable :: units(:)
+!    integer :: n_exponents(config%n_units), i_unit, j_unit, k_unit, l_unit, max_label_len, n_interfaces, n_failures
+!    character(len=10) :: n_char
+!    character(len=20) :: use_format
+!    character(len=2)  :: i_unit_string
+    
+    
+    
+!    write(unit=n_char, fmt="(i0)") size(units)
+!    call config%logger%info("Generated " // trim(n_char) // " physical dimensions. Writing " // config%output_file // "...")
+    
+!    ! Now actually write the module.
+    
+!    write(unit=file_unit, fmt="(2a)") "module units", new_line("a")
+!    write(unit=file_unit, fmt="(2a)") config%use_line, new_line("a")
+!    write(unit=file_unit, fmt="(2a)") "implicit none"
+!    write(unit=file_unit, fmt="(2a)") "private", new_line("a")
+    
+!    if (config%exponentiation) then
+!        write(unit=file_unit, fmt="(2a)") "public :: sqrt, cbrt, square"
+!    end if
+!    write(unit=file_unit, fmt="(a)") ""
+    
+!    ! Write `use` lines as comments.
+!    if (size(config%labels) > 0) then
+!        write(unit=file_unit, fmt="(a)", advance="no") "!use units, only: "
+        
+!        max_label_len = 0
+!        do i_unit = 1, size(config%labels)
+!            max_label_len = max(max_label_len, len(trim(config%labels(i_unit))))
+!        end do
+        
+!        do i_unit = 1, size(config%labels)
+!            if (i_unit /= 1) then
+!                write(unit=file_unit, fmt="(a)", advance="no") "!use units, only: "
+!            end if
+            
+!            ! Align the `=>` and left-justify the labels.
+!            ! <https://fortran-lang.discourse.group/t/left-justification-of-strings/345>
+!            write(unit=use_format, fmt="(a, i0, a)") "(a, tr", max_label_len - len(trim(config%labels(i_unit))) + 1, ", 2a)"
+!            write(unit=file_unit, fmt=trim(use_format), advance="no") trim(config%labels(i_unit)), &
+!                                                                        "=> ", &
+!                                                                        trim(unit_label(config, config%units(i_unit)))
+!            if (config%exponentiation) then
+!                write(unit=file_unit, fmt="(a)") ", &"
+!            else
+!                if (i_unit /= size(config%labels)) then
+!                    write(unit=file_unit, fmt="(a)") ", &"
+!                else
+!                    write(unit=file_unit, fmt="(a)") ""
+!                end if
+!            end if
+!        end do
+!        if (config%exponentiation) then
+!            write(unit=file_unit, fmt="(a)") "!                 sqrt, cbrt, square"
+!        end if
+!        write(unit=file_unit, fmt="(a)") ""
+!    end if
+    
+!    do i_unit = 1, size(units)
+!        call write_type(config, file_unit, i_unit, units)
+!    end do
+    
+!    if (config%exponentiation) then
+!        call write_exponentiation_interfaces(config, file_unit, units)
+!    end if
+    
+!    write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
+    
+!    n_interfaces = 0
+    
+!    do i_unit = 1, size(units)
+!        call write_as_operators(config, file_unit, units(i_unit))
+!        n_interfaces = n_interfaces + 2
+!    end do
+    
+!    do i_unit = 1, size(units)
+!        do j_unit = 1, size(units)
+!            call write_md_operators(config, file_unit, units(i_unit), units(j_unit), units, n_interfaces)
+!        end do
+!    end do
+    
+!    if (config%exponentiation) then
+!        do i_unit = 1, size(units)
+!            if (unit_in_set(config, sqrt_unit(units(i_unit)), units)) then
+!                call write_exponentiation_function(config, file_unit, units(i_unit), "sqrt")
+!                n_interfaces = n_interfaces + 1
+!            end if
+            
+!            if (unit_in_set(config, cbrt_unit(units(i_unit)), units)) then
+!                call write_exponentiation_function(config, file_unit, units(i_unit), "cbrt")
+!                n_interfaces = n_interfaces + 1
+!            end if
+            
+!            if (unit_in_set(config, square_unit(units(i_unit)), units)) then
+!                call write_exponentiation_function(config, file_unit, units(i_unit), "square")
+!                n_interfaces = n_interfaces + 1
+!            end if
+!        end do
+!    end if
+    
+!    write(unit=file_unit, fmt="(a)") "end module units"
+    
+!    write(unit=n_char, fmt="(i0)") n_interfaces
+!    call config%logger%info("Generated " // trim(n_char) // " interfaces.")
+    
+!    rc = 0
+!end subroutine write_module
 
 end module genunits_io

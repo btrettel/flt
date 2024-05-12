@@ -7,7 +7,7 @@
 
 program test_genunits_io
 
-use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT
+!use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT
 
 use genunits_io, only: config_type, in_exponent_bounds, denominator_matches
 use genunits_data, only: unit_type, unit_system_type
