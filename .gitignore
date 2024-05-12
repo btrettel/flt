@@ -208,9 +208,8 @@ cython_debug/
 *.gcno
 modtable.txt
 *.nml
-!pdim_test.nml
 !units.nml
 test_*
 !test_*.f90
-pdim_gen
-src/pdim_types.f90
+genunits
+src/units.f90

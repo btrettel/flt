@@ -99,7 +99,7 @@ regexp-rules:
     regexp: ([^\s=])({operators})(?=\s)
     replacement: \1 \2
     active: false
-    # Disabled due to false positive in test_pdim_types.f90 on bash redirection operator for standard error.
+    # Disabled due to false positive in units.f90 on bash redirection operator for standard error.
 
   missing-space-after-operator:
     message: Missing space after operator

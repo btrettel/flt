@@ -62,15 +62,10 @@ x%v = 4.0_WP
 a   = square(x)
 call tests%real_eq(a%v, 16.0_WP, "units value, square")
 
-!call test_exit_code(tests, &
-!                    "make test_units_fail_1", &
-!                    "compile-time error for physical dimension mismatch, 1", &
-!                    "test_units_fail_1.txt")
-
-!call test_exit_code(tests, &
-!                    "make test_units_fail_2", &
-!                    "compile-time error for physical dimension mismatch, 2", &
-!                    "test_units_fail_2.txt")
+call tests%exit_code_ne("make test_units_fail_1", 0, &
+                            "compile-time error for physical dimension mismatch, 1", "test_units_fail_1.txt")
+call tests%exit_code_ne("make test_units_fail_2", 0, &
+                            "compile-time error for physical dimension mismatch, 2", "test_units_fail_2.txt")
 
 call tests%end_tests()
 call logger%close()

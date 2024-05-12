@@ -132,19 +132,17 @@ src/nmllog$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/prec$(DBGOBJEXT):
 
-src/pdim_mod$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/genunits_data$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/genunits_io$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/genunits_data$(DBGOBJEXT)
-
-src/pdim_types$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
 src/purerng$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
 src/timer$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
 
-src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
+src/units$(DBGOBJEXT): src/prec$(DBGOBJEXT)
 
-src/genunits_data$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT)
+src/unittest$(DBGOBJEXT): src/checks$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGOBJEXT)
 
 ############
 # autodiff #
@@ -261,14 +259,13 @@ timer.nml: test_timer$(BINEXT)
 test_units$(BINEXT): src/units$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_units.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_units.f90
 
-#test_pdim_types_fail_1$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
-#	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
+test_units_fail_1$(BINEXT): src/prec$(DBGOBJEXT) src/units$(DBGOBJEXT) test/test_units_fail_1.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_units_fail_1.f90
 
-#test_pdim_types_fail_2$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_2.f90
-#	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_2.f90
+test_units_fail_2$(BINEXT): src/prec$(DBGOBJEXT) src/units$(DBGOBJEXT) test/test_units_fail_2.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_units_fail_2.f90
 
-# test/test_pdim_types_fail_1.f90 test/test_pdim_types_fail_2.f90
-units.nml: test_units$(BINEXT)
+units.nml: test_units$(BINEXT) test/test_units_fail_1.f90 test/test_units_fail_2.f90
 	$(RUN)test_units$(BINEXT)
 	test ! -e fort.*
 	test ! -e fort.*

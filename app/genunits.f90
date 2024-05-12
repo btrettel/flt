@@ -1,4 +1,4 @@
-! Program to generate a module `pdim_types` which allows for compile-time physical dimension consistency checking.
+! Program to generate a module `units` which allows for compile-time physical dimension consistency checking.
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
