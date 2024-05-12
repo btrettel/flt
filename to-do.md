@@ -50,6 +50,10 @@ Priorities:
         - Compiling test_real.f90 without pdim_types (otherwise identical)
         - Running test.f90 with pdim_types
         - Running test_real.f90 without pdim_types (otherwise identical, to show effect on run-time performance)
+    - Compare error messages in different compilers for units.f90
+        - If necessary, request that lfortran type error message be similar to gfortran to be as useful as possible for units.f90.
+    - units test with operations on 3 or more different units to make sure the output is correct
+    - Do constructors like `length(1.0)` work?
 
 Later:
 
@@ -67,6 +71,8 @@ Later:
     - Check /home/ben/notes/programming/correctness/code-testing.txt for more ideas.
     - Note: This will be brittle in the sense that it will only work for my own particular coding style.
     - Distinguish between compilation errors and test failures in the mutation score.
+    - Mutation tester should not touch assertions.
+        - But it should note which assertions never fail as below.
     - Make highly parallelizable.
         - Apply the mutation operators in batches in parallel. This will require a pure random number generator.
         - Run the compiler in the next stage in parallel. This will allow me to note if the compilation fails as well.
@@ -132,6 +138,7 @@ Later:
     - Use `pure` logging for this?
 - nmlfuzz.f90: namelist fuzz tester
     - Make depend on ga.f90
+        - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
     - Use metaprogramming to make work since Fortran can't really do that well at present?
         - Have a computer-generated module that converts from genetic algorithm chromosome to namelist.
     - Make similar to <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>.
@@ -241,3 +248,17 @@ Later:
     - <https://www.forcheck.nl/index.html>
 - pdim_mod.f90:
     - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
+- checks.f90
+    - 
+- Bayesian inference Fortran module, to solve basic problems like the probabity of actually having breast cancer in Yudkowsky's "intyutive explanation" or whodunits. Use log probability or whatever is appropriate internally.
+- How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type?
+- Along side fmutate, make a simple test case reduction program for Fortran (freduce?). Just delete lines to reduce test cases.
+    - <https://gcc.gnu.org/pipermail/fortran/2009-October/030302.html>
+- Remove underscores in module and program names for consistency.
+    - `unittest` to `unit_test`?
+- Have module to insert probes into Fortran code.
+    - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
+        - > SPAG is able to insert calls to probes at various points in your code (see below).
+- dataplot-like approach to ease adding tests (but use namelists instead of a single CSV file)
+- Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
+- Verify checksums of all generated images that have them (PNG, for example).
