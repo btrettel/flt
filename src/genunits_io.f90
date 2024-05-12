@@ -14,7 +14,8 @@ implicit none
 private
 
 public :: in_exponent_bounds, denominator_matches, &
-            write_type, write_as_operators, write_md_operators, write_binary_operator, write_exponentiation_interfaces
+            write_type, write_as_operators, write_md_operators, write_binary_operator, &
+            write_exponentiation_interfaces, write_exponentiation_function
 
 character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
@@ -597,52 +598,54 @@ subroutine write_exponentiation_interfaces(unit_system, file_unit)
     write(unit=file_unit, fmt="(2a)") "end interface square", new_line("a")
 end subroutine write_exponentiation_interfaces
 
-!subroutine write_exponentiation_function(config, file_unit, unit, op)
-!    class(config_type), intent(in) :: config
-!    integer, intent(in)            :: file_unit
-!    type(unit_type), intent(in)    :: unit
-!    character(len=*), intent(in)   :: op
+subroutine write_exponentiation_function(unit_system, file_unit, unit, op)
+    use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
-!    type(unit_type)               :: unit_result
-!    character(len=:), allocatable :: op_pre, op_post, exponentiation_function
+    class(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                 :: file_unit
+    type(unit_type), intent(in)         :: unit
+    character(len=*), intent(in)        :: op
     
-!    select case (op)
-!        case ("sqrt")
-!            op_pre = "sqrt("
-!            op_post = ")"
+    type(unit_type)               :: unit_result
+    character(len=:), allocatable :: op_pre, op_post, exponentiation_function
+    
+    select case (op)
+        case ("sqrt")
+            op_pre = "sqrt("
+            op_post = ")"
             
-!            unit_result = sqrt_unit(unit)
-!        case ("cbrt")
-!            ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Fast-cube-root/m-p/1171728>
-!            ! <https://www.reddit.com/r/fortran/comments/t9qkqd/cuberoot_and_my_dissent_into_madness/>
-!            ! <https://github.com/fortran-lang/stdlib/issues/214>
-!            op_pre = "("
-!            op_post = ")**(1.0_WP/3.0_WP)"
+            unit_result = sqrt_unit(unit)
+        case ("cbrt")
+            ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Fast-cube-root/m-p/1171728>
+            ! <https://www.reddit.com/r/fortran/comments/t9qkqd/cuberoot_and_my_dissent_into_madness/>
+            ! <https://github.com/fortran-lang/stdlib/issues/214>
+            op_pre = "("
+            op_post = ")**(1.0_WP/3.0_WP)"
             
-!            unit_result = cbrt_unit(unit)
-!        case ("square")
-!            op_pre = "("
-!            op_post = ")**2"
+            unit_result = cbrt_unit(unit)
+        case ("square")
+            op_pre = "("
+            op_post = ")**2"
             
-!            unit_result = square_unit(unit)
-!        case default
-!            error stop "write_exponentiation_function: invalid op"
-!    end select
+            unit_result = square_unit(unit)
+        case default
+            error stop "write_exponentiation_function: invalid op"
+    end select
     
-!    exponentiation_function = op // "_" // trim(unit_label(config, unit))
+    exponentiation_function = op // "_" // trim(unit%label())
     
-!    write(unit=file_unit, fmt="(3a)") "elemental function ", exponentiation_function, "(unit)"
+    write(unit=file_unit, fmt="(3a)") "elemental function ", exponentiation_function, "(unit)"
     
-!    write(unit=file_unit, fmt="(2a)") "    ! argument: ", trim(unit_human_readable(config, unit))
-!    write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit_human_readable(config, unit_result))
+    write(unit=file_unit, fmt="(2a)") "    ! argument: ", trim(unit%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit_result%readable(unit_system))
     
-!    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_label(config, unit)), "), intent(in) :: unit"
-!    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_label(config, unit_result)), ") :: ", exponentiation_function
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: unit"
+    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", exponentiation_function
     
-!    write(unit=file_unit, fmt="(6a)") "    ", exponentiation_function, "%v = ", op_pre, "unit%v", op_post
+    write(unit=file_unit, fmt="(6a)") "    ", exponentiation_function, "%v = ", op_pre, "unit%v", op_post
     
-!    write(unit=file_unit, fmt="(3a)") "end function ", exponentiation_function, new_line("a")
-!end subroutine write_exponentiation_function
+    write(unit=file_unit, fmt="(3a)") "end function ", exponentiation_function, new_line("a")
+end subroutine write_exponentiation_function
 
 !subroutine write_module(config, file_unit, rc)
 !    use checks, only: assert
