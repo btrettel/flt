@@ -40,6 +40,7 @@ contains
     procedure :: read_config_namelist
     procedure :: read_seed_unit_namelists
     procedure :: generate_system
+    procedure :: write_type
 end type config_type
 
 contains
@@ -403,7 +404,9 @@ subroutine generate_system(config, unit_system)
     
     write(unit=*, fmt="(a, i0, a, i0)") "FINAL iter=", iter, " n_units=", n_units
     
-    unit_system%units = units(1:n_units)
+    unit_system%units        = units(1:n_units)
+    unit_system%base_units   = config%base_units
+    unit_system%n_base_units = size(config%base_units)
 end subroutine generate_system
 
 ! output
@@ -411,7 +414,7 @@ end subroutine generate_system
 subroutine write_type(config, file_unit, i_unit, unit_system)
     use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
     
-    type(config_type), intent(in)      :: config
+    class(config_type), intent(in)     :: config
     integer, intent(in)                :: file_unit, i_unit
     type(unit_system_type), intent(in) :: unit_system
     
