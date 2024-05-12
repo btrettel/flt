@@ -8,6 +8,7 @@ use_line        = "use prec, only: WP"
 
 min_exponents = 0.0, 0.0, -1.0
 max_exponents = 3.0, 0.0, 1.0
+denominators  = 2, 1, 2
 /
 
 &seed_unit

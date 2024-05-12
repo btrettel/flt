@@ -13,17 +13,19 @@ use genunits_data, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
 implicit none
 private
 
-public :: in_exponent_bounds
+public :: in_exponent_bounds, denominator_matches
 
 character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
 integer, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the most the ifx will compile as of 2024-05-11.
-                      DEFAULT_MAX_ITER    = huge(1)
+                      DEFAULT_MAX_ITER    = 50, &
+                      DEFAULT_DENOMINATOR = 1
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line
     real(kind=WP), allocatable    :: min_exponents(:), &
                                      max_exponents(:)
+    integer, allocatable          :: denominators(:)
     integer                       :: max_n_units, max_iter !, max_n_interfaces
     !logical :: tests, comparison, sqrt, cbrt, square, instrinsics
     
@@ -61,10 +63,10 @@ subroutine read_config_namelist(config_out, filename, rc)
     character(len=CL)            :: output_file, type_definition, use_line
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
-    integer                      :: max_n_units, max_iter
+    integer                      :: denominators(MAX_BASE_UNITS), max_n_units, max_iter
     !logical                      :: tests, comparison, sqrt, cbrt, square, instrinsics
     
-    namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents, max_n_units
+    namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents, denominators, max_n_units
     
     call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
     
@@ -77,6 +79,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     use_line        = "use prec, only: WP"
     min_exponents   = -huge(1.0_WP)
     max_exponents   = huge(1.0_WP)
+    denominators    = DEFAULT_DENOMINATOR
     max_n_units     = DEFAULT_MAX_N_UNITS
     max_iter        = DEFAULT_MAX_ITER
 !    tests           = .false.
@@ -109,6 +112,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     config_out%use_line        = trim(use_line)
     config_out%min_exponents   = min_exponents(1:n_base_units)
     config_out%max_exponents   = max_exponents(1:n_base_units)
+    config_out%denominators    = denominators(1:n_base_units)
     config_out%max_n_units     = max_n_units
     config_out%max_iter        = max_iter
     config_out%base_units      = base_units(1:n_base_units)
@@ -123,6 +127,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     call config_out%logger%check(n_base_units > 0, "base_units must have 1 or more members", n_failures)
     call config_out%logger%check(len(type_definition) > 0, "type_definition must have 1 or more characters", n_failures)
+    call config_out%logger%check(all(denominators >= 1), "all denominators must be 1 or more", n_failures)
     
     do i_base_unit = 1, n_base_units
         call config_out%logger%check(.not. is_close(min_exponents(i_base_unit), -huge(1.0_WP)), &
@@ -278,6 +283,23 @@ pure function in_exponent_bounds(config, unit)
     end do
 end function in_exponent_bounds
 
+pure function denominator_matches(e, d)
+    ! Returns `.true.` if `e` can be represented as a rational number with a denominator of `d`.
+    
+    use checks, only: is_close
+    
+    real(kind=WP), intent(in) :: e
+    integer, intent(in)       :: d
+    
+    logical :: denominator_matches
+    
+    real(kind=WP) :: ed
+    
+    ed = e * real(d, kind=WP)
+    
+    denominator_matches = is_close(real(nint(ed), kind=WP), ed)
+end function denominator_matches
+
 pure subroutine process_trial_unit(config, trial_unit, units, n_units, rc)
     ! If trial unit is within bounds and not in the previous array of units, add it.
     
@@ -289,7 +311,8 @@ pure subroutine process_trial_unit(config, trial_unit, units, n_units, rc)
     integer, intent(in out)         :: n_units
     integer, intent(out)            :: rc
     
-    logical :: within_bounds, unseen
+    logical :: within_bounds, unseen, denominator_valid
+    integer :: i_base_unit
     
     if (n_units >= config%max_n_units) then
         rc = 1
@@ -300,7 +323,16 @@ pure subroutine process_trial_unit(config, trial_unit, units, n_units, rc)
     
     within_bounds = in_exponent_bounds(config, trial_unit)
     unseen        = .not. trial_unit%is_in(units(1:n_units))
-    if (within_bounds .and. unseen) then
+    
+    denominator_valid = .true.
+    do i_base_unit = 1, size(config%base_units)
+        if (.not. denominator_matches(trial_unit%e(i_base_unit), config%denominators(i_base_unit))) then
+            denominator_valid = .false.
+            exit
+        end if
+    end do
+    
+    if (within_bounds .and. unseen .and. denominator_valid) then
         n_units = n_units + 1
         units(n_units) = trial_unit
     end if

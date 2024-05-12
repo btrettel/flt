@@ -7,7 +7,7 @@
 
 program test_genunits_io
 
-use genunits_io, only: config_type, in_exponent_bounds
+use genunits_io, only: config_type, in_exponent_bounds, denominator_matches
 use genunits_data, only: unit_type, unit_system_type
 use prec, only: WP
 use nmllog, only: log_type
@@ -20,6 +20,7 @@ type(config_type)       :: config
 integer                 :: rc
 type(unit_type)         :: unit
 type(unit_system_type)  :: unit_system
+!integer                 :: i_unit
 
 character(len=*), parameter :: TEST_INPUT_FILE = "test/units.nml"
 
@@ -60,6 +61,10 @@ call config%generate_system(unit_system)
 
 call tests%integer_eq(size(unit_system%units), 28, "generate_system, size(unit_system%units)")
 
+!do i_unit = 1, size(unit_system%units)
+!    print *, unit_system%units(i_unit)%e
+!end do
+
 ! `in_exponent_bounds`
 
 unit%e = [1.0_WP, 0.0_WP, 0.0_WP]
@@ -67,6 +72,14 @@ call tests%logical_true(in_exponent_bounds(config, unit), "in_exponent_bounds, .
 
 unit%e = [10.0_WP, 0.0_WP, 0.0_WP]
 call tests%logical_false(in_exponent_bounds(config, unit), "in_exponent_bounds, .false.")
+
+! `denominator_matches`
+
+call tests%logical_true(denominator_matches(1.0_WP, 2), "denominator_matches, .true. (1)")
+call tests%logical_true(denominator_matches(2.5_WP, 6), "denominator_matches, .true. (2)")
+
+call tests%logical_false(denominator_matches(0.5_WP, 1), "denominator_matches, .true. (1)")
+call tests%logical_false(denominator_matches(5.0_WP/3.0_WP, 2), "denominator_matches, .true. (2)")
 
 call tests%end_tests()
 call logger%close()
