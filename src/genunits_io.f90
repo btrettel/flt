@@ -13,18 +13,18 @@ use genunits_data, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
 implicit none
 private
 
-public :: read_config_namelist, read_seed_unit_namelists
+public :: in_exponent_bounds
 
 character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
-! This is about the most the ifx will compile as of 2024-05-11.
-integer, parameter :: DEFAULT_MAX_N_UNITS = 28
+integer, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the most the ifx will compile as of 2024-05-11.
+                      DEFAULT_MAX_ITER    = huge(1)
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line
     real(kind=WP), allocatable    :: min_exponents(:), &
                                      max_exponents(:)
-    integer :: max_n_units!, max_n_interfaces
+    integer                       :: max_n_units, max_iter !, max_n_interfaces
     !logical :: tests, comparison, sqrt, cbrt, square, instrinsics
     
     type(log_type) :: logger
@@ -34,11 +34,15 @@ type, public :: config_type
     type(unit_type), allocatable              :: seed_units(:)
     character(len=MAX_LABEL_LEN), allocatable :: seed_labels(:)
     ! TODO: type(unit_type), allocatable              :: reject_units(:)
+contains
+    procedure :: read_config_namelist
+    procedure :: read_seed_unit_namelists
+    procedure :: generate_system
 end type config_type
 
 contains
 
-subroutine read_config_namelist(filename, config_out, rc)
+subroutine read_config_namelist(config_out, filename, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
     use genunits_data, only: MAX_BASE_UNITS, BASE_UNIT_LEN
     
@@ -46,9 +50,9 @@ subroutine read_config_namelist(filename, config_out, rc)
     use checks, only: is_close
     use nmllog, only: INFO_LEVEL
     
-    character(len=*), intent(in)   :: filename
-    type(config_type), intent(out) :: config_out
-    integer, intent(out)           :: rc
+    class(config_type), intent(out) :: config_out
+    character(len=*), intent(in)    :: filename
+    integer, intent(out)            :: rc
     
     integer           :: i_base_unit, nml_unit, rc_nml, n_failures, n_base_units
     character(len=CL) :: nml_error_message
@@ -57,7 +61,7 @@ subroutine read_config_namelist(filename, config_out, rc)
     character(len=CL)            :: output_file, type_definition, use_line
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
-    integer                      :: max_n_units
+    integer                      :: max_n_units, max_iter
     !logical                      :: tests, comparison, sqrt, cbrt, square, instrinsics
     
     namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents, max_n_units
@@ -74,6 +78,7 @@ subroutine read_config_namelist(filename, config_out, rc)
     min_exponents   = -huge(1.0_WP)
     max_exponents   = huge(1.0_WP)
     max_n_units     = DEFAULT_MAX_N_UNITS
+    max_iter        = DEFAULT_MAX_ITER
 !    tests           = .false.
 !    comparison      = .false.
 !    sqrt            = .false.
@@ -105,6 +110,7 @@ subroutine read_config_namelist(filename, config_out, rc)
     config_out%min_exponents   = min_exponents(1:n_base_units)
     config_out%max_exponents   = max_exponents(1:n_base_units)
     config_out%max_n_units     = max_n_units
+    config_out%max_iter        = max_iter
     config_out%base_units      = base_units(1:n_base_units)
 !    config_out%tests           = tests
 !    config_out%comparison      = comparison
@@ -137,15 +143,15 @@ subroutine read_config_namelist(filename, config_out, rc)
     end if
 end subroutine read_config_namelist
 
-subroutine read_seed_unit_namelists(filename, config, rc)
+subroutine read_seed_unit_namelists(config, filename, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
     use checks, only: assert, is_close, all_close
     use prec, only: CL
     use genunits_data, only: MAX_BASE_UNITS, MAX_LABEL_LEN
     
-    character(len=*), intent(in)      :: filename
-    type(config_type), intent(in out) :: config
-    integer, intent(out)              :: rc
+    class(config_type), intent(in out) :: config
+    character(len=*), intent(in)       :: filename
+    integer, intent(out)               :: rc
     
     integer           :: nml_unit, n_seed_units, i_seed_unit, j_seed_unit, rc_nml, n_failures, i_base_unit
     character(len=CL) :: nml_error_message
@@ -249,15 +255,84 @@ subroutine read_seed_unit_namelists(filename, config, rc)
     end if
 end subroutine read_seed_unit_namelists
 
-!subroutine generate_system(config, unit_system)
-!    use genunits_data, only: unit_system_type
+pure function in_exponent_bounds(config, unit)
+    use checks, only: assert
+    use genunits_data, only: unit_type
     
-!    type(config_type), intent(in) :: config
+    type(config_type), intent(in) :: config
+    type(unit_type), intent(in)   :: unit
     
-!    type(unit_system_type), intent(out) :: unit_system
+    logical :: in_exponent_bounds
     
-!    ! TODO: Rather than using a linked-list, it's probably easiest to make the size of `unit_system%units` the maximum and reduce
-!    ! the size later if needed.
-!end subroutine generate_system
+    integer :: i_base_unit
+    
+    call assert(size(config%min_exponents) == size(config%max_exponents))
+    
+    in_exponent_bounds = .true.
+    do i_base_unit = 1, size(config%min_exponents)
+        if ((unit%e(i_base_unit) > config%max_exponents(i_base_unit)) &
+                .or. (unit%e(i_base_unit) < config%min_exponents(i_base_unit))) then
+            in_exponent_bounds = .false.
+            exit
+        end if
+    end do
+end function in_exponent_bounds
+
+subroutine generate_system(config, unit_system)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type, &
+                                m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
+    
+    class(config_type), intent(in)       :: config
+    type(unit_system_type), intent(out)  :: unit_system
+    
+    type(unit_type) :: units(config%max_n_units), trial_unit
+    integer         :: n_units, n_units_prev, i_units, j_units, iter
+    logical         :: within_bounds, unseen
+    
+    call assert(size(config%seed_units) <= config%max_n_units)
+    
+    ! Add all `seed_units` to `units`
+    units(1:size(config%seed_units)) = config%seed_units
+    
+    ! Create new units that appear from application of operators.
+    n_units = size(config%seed_units)
+    iter = 0
+    genunit_loop: do
+        iter = iter + 1
+        n_units_prev = n_units
+        
+        ! binary operators
+        do i_units = 1, n_units_prev
+            do j_units = 1, n_units_prev
+                ! multiplication
+                trial_unit = m_unit(units(i_units), units(j_units))
+                ! TODO: write subroutine to handle the next parts consistently for each
+                within_bounds = in_exponent_bounds(config, trial_unit)
+                unseen        = .not. trial_unit%is_in(units(1:n_units))
+                if (within_bounds .and. unseen) then
+                    n_units = n_units + 1
+                    units(n_units) = trial_unit
+                end if
+                
+                ! trial_unit = d_unit(units(i_units), units(j_units))
+                
+                exit genunit_loop
+            end do
+        end do
+        
+        ! unary operators
+        ! sqrt_unit
+        ! cbrt_unit
+        ! square_unit
+        if (iter > config%max_iter) then
+            exit genunit_loop
+        end if
+    end do genunit_loop
+    
+    print *, n_units
+    
+    unit_system%units = units(1:n_units)
+end subroutine generate_system
 
 end module genunits_io

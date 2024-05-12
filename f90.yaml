@@ -344,7 +344,7 @@ regexp-rules:
   elf90-use-write-not-print:
     message: use write instead of print (required by ELF90 and recommended by Chapman, p. 561)
     regexp: ^\s*print\b
-    active: true
+    active: false
   
   elf90-put-in-type-declaration:
     message: ELF90 and/or F prohibit(s) these as standalone statements as they are redundant

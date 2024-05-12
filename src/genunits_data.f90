@@ -24,7 +24,7 @@ type, public :: unit_type
 contains
     procedure :: label
     procedure :: readable
-    procedure :: in_system
+    procedure :: is_in
 end type unit_type
 
 type, public :: unit_system_type
@@ -85,26 +85,24 @@ pure function readable(unit, unit_system)
     readable = adjustl(readable)
 end function readable
 
-pure function in_system(unit, unit_system)
-    use checks, only: assert, all_close
+pure function is_in(unit, units)
+    use checks, only: all_close
     
-    class(unit_type), intent(in)       :: unit
-    type(unit_system_type), intent(in) :: unit_system
+    class(unit_type), intent(in) :: unit
+    type(unit_type), intent(in)  :: units(:)
     
-    logical :: in_system
+    logical :: is_in
     
     integer :: i_unit
     
-    call assert(size(unit%e) == unit_system%n_base_units)
-    
-    in_system = .false.
-    do i_unit = 1, size(unit_system%units)
-        if (all_close(unit%e, unit_system%units(i_unit)%e)) then
-            in_system = .true.
+    is_in = .false.
+    do i_unit = 1, size(units)
+        if (all_close(unit%e, units(i_unit)%e)) then
+            is_in = .true.
             exit
         end if
     end do
-end function in_system
+end function is_in
 
 ! unit calculus
 

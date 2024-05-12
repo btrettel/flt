@@ -7,7 +7,8 @@
 
 program test_genunits_io
 
-use genunits_io, only: config_type, read_config_namelist, read_seed_unit_namelists
+use genunits_io, only: config_type
+use genunits_data, only: unit_system_type
 use prec, only: WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -17,13 +18,14 @@ type(log_type)          :: logger
 type(test_results_type) :: tests
 type(config_type)       :: config
 integer                 :: rc
+type(unit_system_type)  :: unit_system
 
 character(len=*), parameter :: TEST_INPUT_FILE = "test/units.nml"
 
 call logger%open("genunits_io.nml")
 call tests%start_tests(logger)
 
-call read_config_namelist(TEST_INPUT_FILE, config, rc)
+call config%read_config_namelist(TEST_INPUT_FILE, rc)
 
 ! TODO: `type_definition` and `use_line` are set to the defaults below.
 ! Later use a different input file to check every member of `config`.
@@ -46,12 +48,16 @@ call tests%character_eq(config%base_units(2), "m", "read_config_namelist, config
 call tests%character_eq(config%base_units(3), "s", "read_config_namelist, config%base_units(3)")
 call tests%integer_eq(rc, 0, "read_config_namelist, rc")
 
-call read_seed_unit_namelists(TEST_INPUT_FILE, config, rc)
+call config%read_seed_unit_namelists(TEST_INPUT_FILE, rc)
 
 call tests%integer_eq(size(config%seed_units), 5, "read_seed_unit_namelists, size(config%seed_units)")
 call tests%integer_eq(size(config%seed_labels), 5, "read_seed_unit_namelists, size(config%seed_labels)")
 call tests%integer_eq(rc, 0, "read_seed_unit_namelists, rc")
 ! TODO: Test more of `read_seed_unit_namelists`.
+
+call config%generate_system(unit_system)
+
+! TODO: test `in_exponent_bounds`
 
 call tests%end_tests()
 call logger%close()

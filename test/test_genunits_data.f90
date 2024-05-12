@@ -46,15 +46,15 @@ unit1%e(3) = -2.0_WP
 call tests%character_eq(unit1%label(), "unit_p10000_p15000_m20000", "unit%label")
 call tests%character_eq(unit1%readable(unit_system), "kg^1.0000 m^1.5000 s^-2.0000", "unit%readable")
 
-! `in_system`
+! `is_in`
 
 unit1 = unit_system%units(1)
-call tests%logical_true(unit1%in_system(unit_system), "unit1%in_system(unit_system), .true.")
+call tests%logical_true(unit1%is_in(unit_system%units), "unit1%is_in(unit_system%units), .true.")
 
 unit1%e(1) = 1.5_WP
 unit1%e(2) = 0.0_WP
 unit1%e(3) = 0.0_WP
-call tests%logical_false(unit1%in_system(unit_system), "unit1%in_system(unit_system), .false.")
+call tests%logical_false(unit1%is_in(unit_system%units), "unit1%is_in(unit_system%units), .false.")
 
 ! unit calculus
 
