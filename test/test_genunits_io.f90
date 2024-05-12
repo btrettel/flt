@@ -38,7 +38,7 @@ call config%read_config_namelist(TEST_INPUT_FILE, rc)
 
 ! TODO: Test making `rc /= 0`.
 
-call tests%character_eq(config%output_file, "src/pdim_types.f90", "read_config_namelist, config%output_file")
+call tests%character_eq(config%output_file, "src/units.f90", "read_config_namelist, config%output_file")
 call tests%character_eq(config%type_definition, "real(kind=WP)", "read_config_namelist, config%type_definition")
 call tests%character_eq(config%use_line, "use prec, only: WP", "read_config_namelist, config%use_line")
 call tests%real_eq(config%min_exponents(1), 0.0_WP, "read_config_namelist, config%min_exponents(1)")

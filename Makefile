@@ -18,7 +18,7 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # Add later: dimmod.nml ga.nml
-NML = autodiff.nml checks.nml genunits_io.nml nmllog.nml genunits_data.nml prec.nml purerng.nml timer.nml unittest.nml
+NML = autodiff.nml checks.nml genunits_data.nml genunits_io.nml nmllog.nml prec.nml purerng.nml timer.nml units.nml unittest.nml
 .PRECIOUS: $(NML)
 
 #############
@@ -66,7 +66,7 @@ all:
 
 .PHONY: clean
 clean:
-	$(RM) *.nml *.mod *.gcda *.gcno test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg src/*.gcda src/*.gcno $(COV) html-cov/ src/pdim_types.f90 pdim_gen
+	$(RM) *.nml *.mod *.gcda *.gcno test_* src/*.$(OBJEXT) src/*$(DBGOBJEXT) *.dbg src/*.gcda src/*.gcno $(COV) html-cov/ src/units.f90 genunits
 
 # TODO: `.f90$(OBJEXT):`
 
@@ -174,6 +174,18 @@ checks.nml: test_checks$(BINEXT) test_assert_false$(BINEXT) test_assert_false_me
 	$(RUN)test_checks$(BINEXT)
 	test ! -e fort.*
 
+############
+# genunits #
+############
+
+genunits$(BINEXT): src/genunits_data$(DBGOBJEXT) src/genunits_io$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) app/genunits.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) app/genunits.f90
+
+src/units.f90: genunits$(BINEXT) test/units.nml
+	$(RUN)genunits$(BINEXT) test/units.nml
+	test ! -e fort.*
+	test ! -e fort.*
+
 ###############
 # genunits_io #
 ###############
@@ -208,48 +220,6 @@ nmllog.nml: test_nmllog$(BINEXT)
 	$(RUN)test_nmllog$(BINEXT)
 	test ! -e fort.*
 
-############
-# pdim_mod #
-############
-
-test_pdim_mod$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_mod.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_mod.f90
-
-pdim_mod.nml: test_pdim_mod$(BINEXT)
-	$(RUN)test_pdim_mod$(BINEXT)
-	test ! -e fort.*
-	test ! -e fort.*
-
-##############
-# pdim_types #
-##############
-
-test_pdim_types$(BINEXT): src/pdim_types$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_pdim_types.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types.f90
-
-test_pdim_types_fail_1$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
-
-test_pdim_types_fail_2$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_2.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_2.f90
-
-pdim_types.nml: test_pdim_types$(BINEXT) test/test_pdim_types_fail_1.f90 test/test_pdim_types_fail_2.f90
-	$(RUN)test_pdim_types$(BINEXT)
-	test ! -e fort.*
-	test ! -e fort.*
-
-############
-# genunits #
-############
-
-genunits$(BINEXT): src/genunits_data$(DBGOBJEXT) src/genunits_io$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) app/genunits.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) app/genunits.f90
-
-src/units.f90: genunits$(BINEXT) test/units.nml
-	$(RUN)genunits$(BINEXT) test/units.nml
-	test ! -e fort.*
-	test ! -e fort.*
-
 ########
 # prec #
 ########
@@ -282,6 +252,25 @@ test_timer$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/timer$(DBGO
 
 timer.nml: test_timer$(BINEXT)
 	$(RUN)test_timer$(BINEXT)
+	test ! -e fort.*
+
+#########
+# units #
+#########
+
+test_units$(BINEXT): src/units$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_units.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_units.f90
+
+#test_pdim_types_fail_1$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
+#	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_1.f90
+
+#test_pdim_types_fail_2$(BINEXT): src/prec$(DBGOBJEXT) src/pdim_types$(DBGOBJEXT) test/test_pdim_types_fail_2.f90
+#	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_pdim_types_fail_2.f90
+
+# test/test_pdim_types_fail_1.f90 test/test_pdim_types_fail_2.f90
+units.nml: test_units$(BINEXT)
+	$(RUN)test_units$(BINEXT)
+	test ! -e fort.*
 	test ! -e fort.*
 
 ############
