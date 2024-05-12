@@ -1,5 +1,5 @@
 &config
-output_file     = "src/pdim_types.f90"
+output_file     = "src/units.f90"
 base_units      = "kg", "m", "s"
 type_definition = "real(kind=WP)"
 !type_definition = "type(ad)"

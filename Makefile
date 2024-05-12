@@ -239,14 +239,14 @@ pdim_types.nml: test_pdim_types$(BINEXT) test/test_pdim_types_fail_1.f90 test/te
 	test ! -e fort.*
 
 ############
-# pdim_gen #
+# genunits #
 ############
 
-pdim_gen$(BINEXT): src/pdim_mod$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) src/unittest$(DBGOBJEXT) app/pdim_gen.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) app/pdim_gen.f90
+genunits$(BINEXT): src/genunits_data$(DBGOBJEXT) src/genunits_io$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) app/genunits.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) app/genunits.f90
 
-src/pdim_types.f90: pdim_gen$(BINEXT) test/pdim_test.nml
-	$(RUN)pdim_gen$(BINEXT) test/pdim_test.nml
+src/units.f90: genunits$(BINEXT) test/units.nml
+	$(RUN)genunits$(BINEXT) test/units.nml
 	test ! -e fort.*
 	test ! -e fort.*
 

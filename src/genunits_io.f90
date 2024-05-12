@@ -45,6 +45,7 @@ contains
     procedure :: read_seed_unit_namelists
     procedure :: generate_system
     procedure :: write_type
+    procedure :: write_module
 end type config_type
 
 contains
@@ -698,7 +699,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
         
         do i_seed_unit = 1, size(config%seed_labels)
             if (i_seed_unit /= 1) then
-                write(unit=file_unit, fmt="(a)", advance="no") "                  "
+                write(unit=file_unit, fmt="(a)", advance="no") "!                 "
             end if
             
             ! Align the `=>` and left-justify the labels.
