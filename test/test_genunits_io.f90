@@ -7,8 +7,8 @@
 
 program test_genunits_io
 
-use genunits_io, only: config_type
-use genunits_data, only: unit_system_type
+use genunits_io, only: config_type, in_exponent_bounds
+use genunits_data, only: unit_type, unit_system_type
 use prec, only: WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -18,6 +18,7 @@ type(log_type)          :: logger
 type(test_results_type) :: tests
 type(config_type)       :: config
 integer                 :: rc
+type(unit_type)         :: unit
 type(unit_system_type)  :: unit_system
 
 character(len=*), parameter :: TEST_INPUT_FILE = "test/units.nml"
@@ -57,7 +58,13 @@ call tests%integer_eq(rc, 0, "read_seed_unit_namelists, rc")
 
 call config%generate_system(unit_system)
 
-! TODO: test `in_exponent_bounds`
+! `in_exponent_bounds`
+
+unit%e = [1.0_WP, 0.0_WP, 0.0_WP]
+call tests%logical_true(in_exponent_bounds(config, unit), "in_exponent_bounds, .true.")
+
+unit%e = [10.0_WP, 0.0_WP, 0.0_WP]
+call tests%logical_false(in_exponent_bounds(config, unit), "in_exponent_bounds, .false.")
 
 call tests%end_tests()
 call logger%close()

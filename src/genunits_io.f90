@@ -299,6 +299,8 @@ subroutine generate_system(config, unit_system)
     n_units = size(config%seed_units)
     iter = 0
     genunit_loop: do
+        write(unit=*, fmt="(a, i0, a, i0)") "iter=", iter, " n_units=", n_units
+        
         iter = iter + 1
         n_units_prev = n_units
         
@@ -329,8 +331,6 @@ subroutine generate_system(config, unit_system)
             exit genunit_loop
         end if
     end do genunit_loop
-    
-    print *, n_units
     
     unit_system%units = units(1:n_units)
 end subroutine generate_system
