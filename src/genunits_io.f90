@@ -278,6 +278,34 @@ pure function in_exponent_bounds(config, unit)
     end do
 end function in_exponent_bounds
 
+pure subroutine process_trial_unit(config, trial_unit, units, n_units, rc)
+    ! If trial unit is within bounds and not in the previous array of units, add it.
+    
+    use genunits_data, only: unit_type
+    
+    type(config_type), intent(in)   :: config
+    type(unit_type), intent(in)     :: trial_unit
+    type(unit_type), intent(in out) :: units(:)
+    integer, intent(in out)         :: n_units
+    integer, intent(out)            :: rc
+    
+    logical :: within_bounds, unseen
+    
+    if (n_units >= config%max_n_units) then
+        rc = 1
+        return
+    end if
+    
+    rc = 0
+    
+    within_bounds = in_exponent_bounds(config, trial_unit)
+    unseen        = .not. trial_unit%is_in(units(1:n_units))
+    if (within_bounds .and. unseen) then
+        n_units = n_units + 1
+        units(n_units) = trial_unit
+    end if
+end subroutine process_trial_unit
+
 subroutine generate_system(config, unit_system)
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, &
@@ -287,8 +315,7 @@ subroutine generate_system(config, unit_system)
     type(unit_system_type), intent(out)  :: unit_system
     
     type(unit_type) :: units(config%max_n_units), trial_unit
-    integer         :: n_units, n_units_prev, i_units, j_units, iter
-    logical         :: within_bounds, unseen
+    integer         :: n_units, n_units_prev, i_units, j_units, iter, rc
     
     call assert(size(config%seed_units) <= config%max_n_units)
     
@@ -304,33 +331,44 @@ subroutine generate_system(config, unit_system)
         iter = iter + 1
         n_units_prev = n_units
         
-        ! binary operators
         do i_units = 1, n_units_prev
+            ! binary operators
             do j_units = 1, n_units_prev
                 ! multiplication
                 trial_unit = m_unit(units(i_units), units(j_units))
-                ! TODO: write subroutine to handle the next parts consistently for each
-                within_bounds = in_exponent_bounds(config, trial_unit)
-                unseen        = .not. trial_unit%is_in(units(1:n_units))
-                if (within_bounds .and. unseen) then
-                    n_units = n_units + 1
-                    units(n_units) = trial_unit
-                end if
+                call process_trial_unit(config, trial_unit, units, n_units, rc)
+                if (rc /= 0) exit genunit_loop
                 
-                ! trial_unit = d_unit(units(i_units), units(j_units))
-                
-                exit genunit_loop
+                ! division
+                trial_unit = d_unit(units(i_units), units(j_units))
+                call process_trial_unit(config, trial_unit, units, n_units, rc)
+                if (rc /= 0) exit genunit_loop
             end do
+            
+            ! unary operators
+            
+            ! square root
+            trial_unit = sqrt_unit(units(i_units))
+            call process_trial_unit(config, trial_unit, units, n_units, rc)
+            if (rc /= 0) exit genunit_loop
+            
+            ! cube root
+            trial_unit = cbrt_unit(units(i_units))
+            call process_trial_unit(config, trial_unit, units, n_units, rc)
+            if (rc /= 0) exit genunit_loop
+            
+            ! square
+            trial_unit = square_unit(units(i_units))
+            call process_trial_unit(config, trial_unit, units, n_units, rc)
+            if (rc /= 0) exit genunit_loop
         end do
         
-        ! unary operators
-        ! sqrt_unit
-        ! cbrt_unit
-        ! square_unit
-        if (iter > config%max_iter) then
+        if ((iter > config%max_iter) .or. (n_units == n_units_prev)) then
             exit genunit_loop
         end if
     end do genunit_loop
+    
+    write(unit=*, fmt="(a, i0, a, i0)") "FINAL iter=", iter, " n_units=", n_units
     
     unit_system%units = units(1:n_units)
 end subroutine generate_system

@@ -58,6 +58,8 @@ call tests%integer_eq(rc, 0, "read_seed_unit_namelists, rc")
 
 call config%generate_system(unit_system)
 
+call tests%integer_eq(size(unit_system%units), 28, "generate_system, size(unit_system%units)")
+
 ! `in_exponent_bounds`
 
 unit%e = [1.0_WP, 0.0_WP, 0.0_WP]
