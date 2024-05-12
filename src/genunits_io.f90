@@ -20,9 +20,9 @@ public :: in_exponent_bounds, denominator_matches, &
 
 character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
-integer, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the most the ifx will compile as of 2024-05-11.
-                      DEFAULT_MAX_ITER    = 50, &
-                      DEFAULT_DENOMINATOR = 1
+integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the most the ifx will compile as of 2024-05-12.
+                              DEFAULT_MAX_ITER    = 50, &
+                              DEFAULT_DENOMINATOR = 1
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line

@@ -65,7 +65,7 @@ call tests%integer_eq(rc, 0, "read_seed_unit_namelists, rc")
 
 call config%generate_system(unit_system)
 
-call tests%integer_eq(size(unit_system%units), 28, "generate_system, size(unit_system%units)")
+call tests%integer_eq(size(unit_system%units), config%max_n_units, "generate_system, size(unit_system%units)")
 call tests%integer_eq(unit_system%n_base_units, 3, "generate_system, unit_system%n_base_units)")
 call tests%integer_eq(size(unit_system%base_units), 3, "generate_system, size(unit_system%base_units))")
 
