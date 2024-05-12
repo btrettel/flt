@@ -50,12 +50,16 @@ call tests%character_eq(config%base_units(2), "m", "read_config_namelist, config
 call tests%character_eq(config%base_units(3), "s", "read_config_namelist, config%base_units(3)")
 call tests%integer_eq(rc, 0, "read_config_namelist, rc")
 
+! `read_seed_unit_namelists`
+
 call config%read_seed_unit_namelists(TEST_INPUT_FILE, rc)
 
 call tests%integer_eq(size(config%seed_units), 5, "read_seed_unit_namelists, size(config%seed_units)")
 call tests%integer_eq(size(config%seed_labels), 5, "read_seed_unit_namelists, size(config%seed_labels)")
 call tests%integer_eq(rc, 0, "read_seed_unit_namelists, rc")
 ! TODO: Test more of `read_seed_unit_namelists`.
+
+! `generate_system`
 
 call config%generate_system(unit_system)
 
@@ -64,6 +68,8 @@ call tests%integer_eq(size(unit_system%units), 28, "generate_system, size(unit_s
 !do i_unit = 1, size(unit_system%units)
 !    print *, unit_system%units(i_unit)%e
 !end do
+
+! TODO: test that none of the units are outside the bounds or violate the desired denominator
 
 ! `in_exponent_bounds`
 

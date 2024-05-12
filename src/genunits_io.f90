@@ -13,7 +13,7 @@ use genunits_data, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
 implicit none
 private
 
-public :: in_exponent_bounds, denominator_matches
+public :: in_exponent_bounds, denominator_matches, write_type
 
 character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
@@ -235,18 +235,19 @@ subroutine read_seed_unit_namelists(config, filename, rc)
             call config%logger%check(trim(label) /= config%seed_labels(j_seed_unit), &
                                             "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                                 // trim(config%seed_labels(i_seed_unit)) &
-                                                // '" has the same label as pdim #' // trim(j_seed_unit_string) // ".", n_failures)
+                                                // '" has the same label as seed_unit #' // trim(j_seed_unit_string) // ".", &
+                                                n_failures)
             call config%logger%check(.not. all_close(config%seed_units(i_seed_unit)%e, config%seed_units(j_seed_unit)%e), &
                                             "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                                 // trim(config%seed_labels(i_seed_unit)) &
-                                                // '" has the same exponents as pdim #' // trim(j_seed_unit_string) &
+                                                // '" has the same exponents as seed_unit #' // trim(j_seed_unit_string) &
                                                 // ' labeled "' // trim(config%seed_labels(j_seed_unit)) // '".', n_failures)
         end do
         
         do i_base_unit = 1, size(config%base_units)
             write(unit=i_base_unit_string, fmt="(i0)") i_base_unit
             call config%logger%check(.not. is_close(config%seed_units(i_seed_unit)%e(i_base_unit), huge(1.0_WP)), &
-                                            "In pdim #" // trim(i_seed_unit_string) // ' labeled "' &
+                                            "In seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                             // trim(config%seed_labels(i_seed_unit)) &
                                             // '", exponent #' // trim(i_base_unit_string) // " has not been set.", n_failures)
         end do
@@ -404,5 +405,61 @@ subroutine generate_system(config, unit_system)
     
     unit_system%units = units(1:n_units)
 end subroutine generate_system
+
+! output
+
+subroutine write_type(config, file_unit, i_unit, unit_system)
+    use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
+    
+    type(config_type), intent(in)      :: config
+    integer, intent(in)                :: file_unit, i_unit
+    type(unit_system_type), intent(in) :: unit_system
+    
+    integer         :: j_unit
+    type(unit_type) :: trial_unit
+    
+    write(unit=file_unit, fmt="(2a)") "type, public :: ", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(2a)") "    ! ", trim(unit_system%units(i_unit)%readable(unit_system))
+    write(unit=file_unit, fmt="(3a)") "    ", config%type_definition, " :: v"
+    write(unit=file_unit, fmt="(a)") "contains"
+    
+    write(unit=file_unit, fmt="(4a)") "    procedure, private :: a_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(+) => a_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    
+    write(unit=file_unit, fmt="(4a)") "    procedure, private :: s_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    
+    do j_unit = 1, size(unit_system%units)
+        ! multiply
+        trial_unit = m_unit(unit_system%units(i_unit), unit_system%units(j_unit))
+        if (trial_unit%is_in(unit_system%units)) then
+            write(unit=file_unit, fmt="(5a)") "    procedure, private :: m_", &
+                trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
+            write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(*) => m_", &
+                trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
+        else
+            write(unit=file_unit, fmt="(5a)") "    ! excluded: m_", &
+                trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
+        end if
+        
+        ! divide
+        trial_unit = d_unit(unit_system%units(i_unit), unit_system%units(j_unit))
+        if (trial_unit%is_in(unit_system%units)) then
+            write(unit=file_unit, fmt="(5a)") "    procedure, private :: d_", &
+                trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
+            write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(/) => d_", &
+                trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
+        else
+            write(unit=file_unit, fmt="(5a)") "    ! excluded: d_", &
+                trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
+        end if
+    end do
+    
+    write(unit=file_unit, fmt="(3a)") "end type ", trim(unit_system%units(i_unit)%label()), new_line("a")
+end subroutine write_type
 
 end module genunits_io
