@@ -63,7 +63,7 @@ a   = square(x)
 call tests%real_eq(a%v, 16.0_WP, "units value, square")
 
 x%v = 1.0_WP
-y   = x
+y   = +x
 call tests%real_eq(y%v, 1.0_WP, "units value, unary positive")
 
 x%v = 1.0_WP
