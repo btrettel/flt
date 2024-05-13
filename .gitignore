@@ -208,7 +208,7 @@ cython_debug/
 *.gcno
 modtable.txt
 *.nml
-!units.nml
+!genunits_input.nml
 test_*
 !test_*.f90
 genunits

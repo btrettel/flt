@@ -179,8 +179,8 @@ checks.nml: test_checks$(BINEXT) test_assert_false$(BINEXT) test_assert_false_me
 genunits$(BINEXT): src/genunits_data$(DBGOBJEXT) src/genunits_io$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/nmllog$(DBGOBJEXT) app/genunits.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) app/genunits.f90
 
-src/units.f90: genunits$(BINEXT) test/units.nml
-	$(RUN)genunits$(BINEXT) test/units.nml
+src/units.f90: genunits$(BINEXT) test/genunits_input.nml
+	$(RUN)genunits$(BINEXT) test/genunits_input.nml
 	test ! -e fort.*
 	test ! -e fort.*
 
@@ -191,7 +191,7 @@ src/units.f90: genunits$(BINEXT) test/units.nml
 test_genunits_io$(BINEXT): src/checks$(DBGOBJEXT) src/prec$(DBGOBJEXT) src/genunits_data$(DBGOBJEXT) src/genunits_io$(DBGOBJEXT) src/unittest$(DBGOBJEXT) test/test_genunits_io.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) $(DBGFLAGS) src/*$(DBGOBJEXT) test/test_genunits_io.f90
 
-genunits_io.nml: test_genunits_io$(BINEXT) test/units.nml
+genunits_io.nml: test_genunits_io$(BINEXT) test/genunits_input.nml
 	$(RUN)test_genunits_io$(BINEXT)
 	test ! -e fort.*
 

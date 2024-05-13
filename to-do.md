@@ -13,7 +13,6 @@ Priorities:
     - Break up `write_module` to make testing parts easier.
         - Subroutine to generate `pdims`.
     - `units.f90`
-        - Unary negation.
         - Elementary functions like `sin`, `cos`, `log`, etc.
         - `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
         - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each unit)

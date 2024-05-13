@@ -15,6 +15,7 @@ private
 
 public :: in_exponent_bounds, denominator_matches, &
             write_as_operators, write_md_operators, write_binary_operator, &
+            write_unary_operator, &
             write_exponentiation_interfaces, write_exponentiation_function, &
             write_module
 
@@ -31,7 +32,7 @@ type, public :: config_type
     integer, allocatable          :: denominators(:)
     
     integer :: max_n_units, max_iter !, max_n_interfaces
-    logical :: tests, comparison, sqrt, cbrt, square, instrinsics
+    logical :: tests, comparison, unary, sqrt, cbrt, square, instrinsics
     
     type(log_type) :: logger
     
@@ -70,9 +71,10 @@ subroutine read_config_namelist(config_out, filename, rc)
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
     integer                      :: denominators(MAX_BASE_UNITS), max_n_units, max_iter
-    logical                      :: tests, comparison, sqrt, cbrt, square, instrinsics
+    logical                      :: tests, comparison, unary, sqrt, cbrt, square, instrinsics
     
-    namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents, denominators, max_n_units
+    namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents, denominators, &
+                        max_n_units, tests, comparison, unary, sqrt, cbrt, square, instrinsics
     
     call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
     
@@ -90,6 +92,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     max_iter        = DEFAULT_MAX_ITER
     tests           = .true.
     comparison      = .true.
+    unary           = .true.
     sqrt            = .true.
     cbrt            = .true.
     square          = .true.
@@ -124,6 +127,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     config_out%base_units      = base_units(1:n_base_units)
     config_out%tests           = tests
     config_out%comparison      = comparison
+    config_out%unary           = unary
     config_out%sqrt            = sqrt
     config_out%cbrt            = cbrt
     config_out%square          = square
@@ -441,6 +445,14 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     
+    if (config%unary) then
+        write(unit=file_unit, fmt="(2a)") "    procedure, private :: a_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(+) => a_", trim(unit_system%units(i_unit)%label())
+        
+        write(unit=file_unit, fmt="(2a)") "    procedure, private :: s_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(-) => s_", trim(unit_system%units(i_unit)%label())
+    end if
+    
     do j_unit = 1, size(unit_system%units)
         ! multiply
         trial_unit = m_unit(unit_system%units(i_unit), unit_system%units(j_unit))
@@ -555,6 +567,44 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     
     write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
 end subroutine write_binary_operator
+
+subroutine write_unary_operator(unit_system, file_unit, unit, op)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit
+    character(len=*), intent(in)       :: op
+    
+    character(len=1)              :: op_label
+    character(len=:), allocatable :: unary_operator_procedure
+    
+    select case (op)
+        case ("+")
+            op_label = "a"
+        case ("-")
+            op_label = "s"
+        case default
+            error stop "write_unary_operator: invalid op"
+    end select
+    
+    unary_operator_procedure = op_label // "_" // trim(unit%label())
+    
+    call assert(len(unary_operator_procedure) <= MAX_LABEL_LEN)
+    
+    write(unit=file_unit, fmt="(3a)") "elemental function ", unary_operator_procedure, "(unit)"
+    
+    write(unit=file_unit, fmt="(2a)") "    ! argument: ", trim(unit%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit%readable(unit_system))
+    
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: unit"
+    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit%label()), ") :: ", unary_operator_procedure
+    
+    write(unit=file_unit, fmt="(5a)") "    ", unary_operator_procedure, "%v = ", op, "unit%v"
+    
+    write(unit=file_unit, fmt="(3a)") "end function ", unary_operator_procedure, new_line("a")
+end subroutine write_unary_operator
 
 subroutine write_exponentiation_interfaces(config, unit_system, file_unit)
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
@@ -769,6 +819,12 @@ subroutine write_module(config, unit_system, file_unit, rc)
     do i_unit = 1, size(unit_system%units)
         call write_as_operators(unit_system, file_unit, unit_system%units(i_unit))
         n_interfaces = n_interfaces + 2
+        
+        if (config%unary) then
+            call write_unary_operator(unit_system, file_unit, unit_system%units(i_unit), "+")
+            call write_unary_operator(unit_system, file_unit, unit_system%units(i_unit), "-")
+            n_interfaces = n_interfaces + 2
+        end if
     end do
     
     do i_unit = 1, size(unit_system%units)

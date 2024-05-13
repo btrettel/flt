@@ -62,6 +62,14 @@ x%v = 4.0_WP
 a   = square(x)
 call tests%real_eq(a%v, 16.0_WP, "units value, square")
 
+x%v = 1.0_WP
+y   = x
+call tests%real_eq(y%v, 1.0_WP, "units value, unary positive")
+
+x%v = 1.0_WP
+y   = -x
+call tests%real_eq(y%v, -1.0_WP, "units value, unary negative")
+
 call tests%exit_code_ne("make test_units_fail_1", 0, &
                             "compile-time error for physical dimension mismatch, 1", "test_units_fail_1.txt")
 call tests%exit_code_ne("make test_units_fail_2", 0, &

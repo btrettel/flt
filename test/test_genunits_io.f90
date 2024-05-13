@@ -24,7 +24,7 @@ type(unit_type)         :: unit
 type(unit_system_type)  :: unit_system
 integer                 :: i_base_unit
 
-character(len=*), parameter :: TEST_INPUT_FILE = "test/units.nml"
+character(len=*), parameter :: TEST_INPUT_FILE = "test/genunits_input.nml"
 
 call logger%open("genunits_io.nml")
 call tests%start_tests(logger)
