@@ -27,21 +27,25 @@
         - `config_type`
             - TODO: `tests`
             - TODO: `comparison`: Enable or disable generation of comparison operators. `.true.` by default.
-            - TODO: `sqrt`
-            - TODO: `cbrt`
-            - TODO: `square`
-            - TODO: `intrinsics`: Enable or disable generation of equivalents for many intrinsic operators. `.true.` by default.
-            - TODO: `custom`: Character array of additional custom elemental functions to create equivalents of. Empty by default.
+            - DONE: `sqrt`
+            - DONE: `cbrt`
+            - DONE: `square`
+            - TODO: `intrinsics`: Intrinsic functions with same input and output units, or `integer` output. `abs`, `maxval`, `minval`, `maxloc`, `minloc`
+            - TODO: `custom`: Character array of additional custom intrinsic functions to create equivalents of. These must have unitless arguments and results. (So `sqrt` received separate treatment as that is not necessarily unitless.)
+                - <https://cyber.dabamos.de/programming/modernfortran/intrinsic-procedures.html>
+                - <https://gitlab.com/everythingfunctional/quaff/-/issues/17>
     - procedures (mostly subroutines to write Fortran code)
         - module writers
             - `write_module`: Calls all the other subroutines.
+                - TODO: Split this up more per below.
             - `write_header`
-            - `write_intrinsics`
-                - <https://gitlab.com/everythingfunctional/quaff/-/issues/17>
+            - TODO: `write_intrinsics`
+            - TODO: `write_custom`
             - `print_interface_stats`
                 - Print number of operators per type, exponentiation functions.
         - namelist readers (One subroutine per namelist group.)
             - TODO: `read_reject_namelists`
+            - TODO: `read_custom_namelists`
         - test writers
             - Include tests for all combinations of operators, including those which should fail.
 - src/units.f90 (computer generated)

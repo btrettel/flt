@@ -32,7 +32,7 @@ type, public :: config_type
     integer, allocatable          :: denominators(:)
     
     integer :: max_n_units, max_iter !, max_n_interfaces
-    logical :: tests, comparison, unary, sqrt, cbrt, square, instrinsics
+    logical :: tests, comparison, unary, sqrt, cbrt, square, intrinsics
     
     type(log_type) :: logger
     
@@ -41,6 +41,8 @@ type, public :: config_type
     type(unit_type), allocatable              :: seed_units(:)
     character(len=MAX_LABEL_LEN), allocatable :: seed_labels(:)
     ! TODO: type(unit_type), allocatable              :: reject_units(:)
+    
+    character(len=MAX_LABEL_LEN), allocatable :: custom(:)
 contains
     procedure :: read_config_namelist
     procedure :: read_seed_unit_namelists
@@ -71,10 +73,10 @@ subroutine read_config_namelist(config_out, filename, rc)
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
     integer                      :: denominators(MAX_BASE_UNITS), max_n_units, max_iter
-    logical                      :: tests, comparison, unary, sqrt, cbrt, square, instrinsics
+    logical                      :: tests, comparison, unary, sqrt, cbrt, square, intrinsics
     
     namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents, denominators, &
-                        max_n_units, tests, comparison, unary, sqrt, cbrt, square, instrinsics
+                        max_n_units, tests, comparison, unary, sqrt, cbrt, square, intrinsics
     
     call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
     
@@ -96,7 +98,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     sqrt            = .true.
     cbrt            = .true.
     square          = .true.
-    instrinsics     = .true.
+    intrinsics      = .true.
     
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
@@ -131,7 +133,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     config_out%sqrt            = sqrt
     config_out%cbrt            = cbrt
     config_out%square          = square
-    config_out%instrinsics     = instrinsics
+    config_out%intrinsics      = intrinsics
     
     n_failures = 0
     
