@@ -2,31 +2,28 @@
 
 Priorities:
 
-- Make nmllog.f90 optionally not print the time and/or level to stdout.
-    - remove dependency of genunits on nmllog?
-- `make install` to install pdim_gen.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
+    - Do constructors like `length(1.0)` work?
     - refactor
         - Break pdim_mod into multiple modules to help organization.
         - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
-        - `MAX_LABEL_LEN` vs. `LABEL_LEN` is confusing.
     - Break up `write_module` to make testing parts easier.
-        - Subroutine to generate `pdims`.
     - `units.f90`
-        - Elementary functions like `sin`, `cos`, `log`, etc.
+        - Comparison operators.
+        - Elementary functions which have same units for input and output.
+        - Custom intrinsics which have unitless input and output (like `sin`, `cos`, `log`, etc.).
         - `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
         - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each unit)
         - function to format type to string with units or dimensions
-            - Can specify SI units for printing?
         - derived type I/O for printing?
     - Unit tests for all procedures.
     - Characterization test comparing against known valid `units.f90`.
     - Test exponentiation functions.
-    - Compare compile and run times with and without `pdim_types`. Look at compile time for `pdim_types.mod` and also something calling the module separately.
+    - Compare compile and run times with and without `units`. Look at compile time for `units.mod` and also something calling the module separately.
         - `make benchmark`
     - Better type names:
         - Type names which lead to good error messages are best. Example error messages:
-            - gfortran: `Error: Cannot convert TYPE(unit_3f800000_00000000_bf800000) to TYPE(unit_3f800000_00000000_00000000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
+            - gfortran: `Error: Cannot convert TYPE(unit_p10000_p00000_m10000) to TYPE(unit_p10000_p00000_p00000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
             - ifx: `error #6197: An assignment of different structure types is invalid.` (So ifx doesn't say what the types are.)
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
@@ -36,18 +33,20 @@ Priorities:
     - Test with AD.
     - Test with arrays instead of scalars.
     - Recursion to handle arbitrary numbers of exponents.
-    - `real(...)` to convert `dimless` to `real(kind=WP)` for when an intrinsic or something else that expects a `real(kind=WP)` isn't available. Also: `int`.
+    - `real(...)` to convert `unitless` to `real(kind=WP)` for when an intrinsic or something else that expects a `real(kind=WP)` isn't available. Also: `int`.
     - Table with times for various compilers on the same computer, as a function of number of pdims generated:
-        - Running pdim_gen
-        - Compiling pdim_types.f90
-        - Compiling test.f90 with pdim_types
-        - Compiling test_real.f90 without pdim_types (otherwise identical)
-        - Running test.f90 with pdim_types
-        - Running test_real.f90 without pdim_types (otherwise identical, to show effect on run-time performance)
+        - Running genunits
+        - Compiling units.f90
+        - Compiling test_units.f90 with units
+        - Compiling test_real.f90 without units (otherwise identical)
+        - Running test_units.f90 with units
+        - Running test_real.f90 without units (otherwise identical, to show effect on run-time performance)
     - Compare error messages in different compilers for units.f90
         - If necessary, request that lfortran type error message be similar to gfortran to be as useful as possible for units.f90.
     - units test with operations on 3 or more different units to make sure the output is correct
-    - Do constructors like `length(1.0)` work?
+- Make nmllog.f90 optionally not print the time and/or level to stdout.
+    - remove dependency of genunits on nmllog?
+- `make install` to install pdim_gen.
 
 Later:
 
