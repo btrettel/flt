@@ -2,6 +2,15 @@
 
 Priorities:
 
+- Build system improvements:
+    - Automatically generate dependency structure for Makefiles, write to file to be included. This could solve the problem you're having with having to list all dependencies recursively.
+        - depends.py
+        - `find . -type f -name "*.f90"`
+    - `BUILD=debug` vs. `BUILD=release` instead of having different debug object file extensions.
+    - Making work with NMAKE, GNU Make, and BSD Make.
+    - Fortran module dependencies being wrong (Brad Richardson's comments)
+    - Making compatible with FPM.
+    - `make all` also tries `bmake all`
 - Assertions
     - f90lint: Minimum assertion percentage.
     - Require assertion messages.
@@ -14,7 +23,7 @@ Priorities:
     - Break `write_module` into multiple modules to help organization and make testing parts easier.
     - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
     - Add `test_unit` to genunits_io.f90 to write to test file.
-    - As comments, print number of types and interfaces at the end of the generated file, along with the namelist file used to generate the file.
+    - As comments, print number of types and interfaces at the end of the generated file, along with genunits git revision information, and the namelist file used to generate the file.
     - `units.f90`
         - Comparison operators.
         - Elementary functions which have same units for input and output.
@@ -55,6 +64,7 @@ Priorities:
     - Lint the generated file units.f90.
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
 - `make install` to install genunits.
+- Readd linspace
 
 Later:
 
@@ -265,3 +275,5 @@ Later:
 - dataplot-like approach to ease adding tests (but use namelists instead of a single CSV file)
 - Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
 - Verify checksums of all generated images that have them (PNG, for example).
+- <https://www.tensorflow.org/guide/core/optimizers_core>
+    - Help plan interface to gradient descent
