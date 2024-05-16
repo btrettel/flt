@@ -2,12 +2,19 @@
 
 Priorities:
 
+- Assertions
+    - f90lint: Minimum assertion percentage.
+    - Require assertion messages.
+    - Add more assertions.
+- Common issue in my Fortran code: not using `lbound` and `ubound`
+    - Do arrays passed into procedures maintain these index bounds?
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
+    - Remove dependency on nmllog.
     - Do constructors like `length(1.0)` work?
-    - refactor
-        - Break pdim_mod into multiple modules to help organization.
-        - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
-    - Break up `write_module` to make testing parts easier.
+    - Break `write_module` into multiple modules to help organization and make testing parts easier.
+    - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
+    - Add `test_unit` to genunits_io.f90 to write to test file.
+    - As comments, print number of types and interfaces at the end of the generated file, along with the namelist file used to generate the file.
     - `units.f90`
         - Comparison operators.
         - Elementary functions which have same units for input and output.
@@ -34,7 +41,7 @@ Priorities:
     - Test with arrays instead of scalars.
     - Recursion to handle arbitrary numbers of exponents.
     - `real(...)` to convert `unitless` to `real(kind=WP)` for when an intrinsic or something else that expects a `real(kind=WP)` isn't available. Also: `int`.
-    - Table with times for various compilers on the same computer, as a function of number of pdims generated:
+    - Table with times for various compilers on the same computer, as a function of number of units generated:
         - Running genunits
         - Compiling units.f90
         - Compiling test_units.f90 with units
@@ -44,9 +51,10 @@ Priorities:
     - Compare error messages in different compilers for units.f90
         - If necessary, request that lfortran type error message be similar to gfortran to be as useful as possible for units.f90.
     - units test with operations on 3 or more different units to make sure the output is correct
+    - Check for spaces at the end of lines.
+    - Lint the generated file units.f90.
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
-    - remove dependency of genunits on nmllog?
-- `make install` to install pdim_gen.
+- `make install` to install genunits.
 
 Later:
 
@@ -146,7 +154,9 @@ Later:
 - semgrep static analysis
 - Program to ensure that all error codes in errors and assertions are unique.
 - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
-- <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
+- Sensitivity analysis for model parameters.
+    - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
+    - Use AD for sensitivity analysis for important inputs? Make it possible to turn off AD for these inputs during "production" runs for speed.
 - input validation
     - Write module to ease input validation. For example, a subroutine to write a message about a variable being out of bounds.
     - `call validate_bounds(x, "x", rc, lower=0, lower_inclusive=.true.)`
@@ -239,7 +249,7 @@ Later:
     - <http://simconglobal.com/fpt_summary.html>
     - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
     - <https://www.forcheck.nl/index.html>
-- pdim_mod.f90:
+- genunits:
     - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
 - checks.f90
     - 

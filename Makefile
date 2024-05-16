@@ -18,8 +18,8 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # Add later: dimmod.nml ga.nml
-NML = autodiff.nml checks.nml genunits_data.nml genunits_io.nml nmllog.nml prec.nml purerng.nml timer.nml units.nml unittest.nml
-.PRECIOUS: $(NML)
+TESTNML = autodiff.nml checks.nml genunits_data.nml genunits_io.nml nmllog.nml prec.nml purerng.nml timer.nml units.nml unittest.nml
+.PRECIOUS: $(TESTNML)
 
 #############
 # Compilers #
@@ -57,9 +57,9 @@ all:
 	$(MAKE) clean
 	$(MAKE) nvfortran
 	$(MAKE) clean
-	@echo "***************************************"
-	@echo "* All tests passed for all compilers. *"
-	@echo "***************************************"
+	@echo =======================================
+	@echo = All tests passed for all compilers. =
+	@echo =======================================
 
 .SUFFIXES:
 .SUFFIXES: .f90 .$(OBJEXT) $(DBGOBJEXT)
@@ -74,11 +74,11 @@ clean:
 	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $(DBGFLAGS) $<
 
 .PHONY: test
-test: $(NML)
-	@echo "*********************"
-	@echo "* All tests passed. *"
-	@echo "*********************"
-	@echo "Compiler: $(FC)"
+test: $(TESTNML)
+	@echo =====================
+	@echo = All tests passed. =
+	@echo =====================
+	@echo Compiler: $(FC)
 
 .PHONY: valgrind
 valgrind:
@@ -89,7 +89,7 @@ lint:
 	$(RUN)lint-wrapper.py src/*.f90 test/*.f90
 
 # TODO: Make depend on *.gcda files?
-html-cov/index.html: $(NML)
+html-cov/index.html: $(TESTNML)
 	lcov --directory . --directory src/ --capture --output-file $(COV)
 	genhtml -t "flt" -o html-cov $(COV)
 
