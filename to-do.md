@@ -8,7 +8,11 @@ Priorities:
         - `find . -type f -name "*.f90"`
     - `BUILD=debug` vs. `BUILD=release` instead of having different debug object file extensions.
     - Making work with NMAKE, GNU Make, and BSD Make.
-    - Fortran module dependencies being wrong (Brad Richardson's comments)
+    - Fortran module dependencies being wrong
+        - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/18>
+            - > I will note that from a quick scan of your script and makefile, it doesn’t actually appear to guarantee correct order of compilation (i.e. your .o files don’t depend on .mod files).
+        - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/23>
+            - > For Fortran, an object file depends on the source file it is compiled from AND all the .mod files for any modules USEd in the source file. A .mod file depends on the source file in which that module is defined. An executable depends on all the object files for all the code it uses, and code they use, etc, even if that code wasn’t in a module, and so doesn’t get included via a USE statement.
     - Making compatible with FPM.
     - `make all` also tries `bmake all`
 - Assertions
