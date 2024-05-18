@@ -9,7 +9,7 @@ MAKEFLAGS = --warn-undefined-variables
 
 # defaults
 BUILD = debug
-include linux_1.mk
+include build/linux_1.mk
 
 #############
 # Compilers #
@@ -17,13 +17,13 @@ include linux_1.mk
 
 # gfortran
 ifeq ($(FC),gfortran)
-include gfortran.mk
+include build/gfortran.mk
 else ifeq ($(FC),ifx)
-include ifx.mk
+include build/ifx.mk
 else ifeq ($(FC),ifort)
-include ifort.mk
+include build/ifort.mk
 else ifeq ($(FC),nvfortran)
-include nvfortran.mk
+include build/nvfortran.mk
 else
 $(error Invalid FC: $(FC))
 endif
@@ -40,5 +40,5 @@ else
 $(error Set BUILD to either debug or release. BUILD=$(BUILD))
 endif
 
-include common.mk
-include linux_2.mk
+include build/common.mk
+include build/linux_2.mk
