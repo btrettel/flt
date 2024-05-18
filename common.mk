@@ -16,10 +16,6 @@ TESTNML = autodiff.nml checks.nml genunits_data.nml genunits_io.nml nmllog.nml p
 .SUFFIXES:
 .SUFFIXES: .f90 .$(OBJEXT)
 
-.PHONY: clean
-clean:
-	$(RM) *.nml *.mod *.gcda *.gcno test_* src$(DIR_SEP)*.$(OBJEXT) *.dbg src$(DIR_SEP)*.gcda src$(DIR_SEP)*.gcno $(COV) html-cov$(DIR_SEP) src$(DIR_SEP)units.f90 genunits$(BINEXT)
-
 .f90.$(OBJEXT):
 	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $<
 
@@ -29,6 +25,10 @@ test: $(TESTNML)
 	@echo = All tests passed. =
 	@echo =====================
 	@echo Compiler: $(FC)
+
+.PHONY: clean
+clean:
+	$(RM) *.nml *.mod *.gcda *.gcno test_* src$(DIR_SEP)*.$(OBJEXT) *.dbg src$(DIR_SEP)*.gcda src$(DIR_SEP)*.gcno $(COV) html-cov$(DIR_SEP) src$(DIR_SEP)units.f90 genunits$(BINEXT)
 
 ################
 # Dependencies #

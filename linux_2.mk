@@ -1,12 +1,3 @@
-BINEXT   = 
-RUN      = ./
-RM       = rm -rfv
-OFLAG    = -o
-OBJEXT   = o
-OBJFLAGS = -c -o
-COV      = lcov_tests.info
-DIR_SEP  = /
-
 # Why run `make valgrind` here? As it uses gfortran and is more strict.
 .PHONY: all
 all:
