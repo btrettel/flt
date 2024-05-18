@@ -3,6 +3,7 @@
 Priorities:
 
 - Build system improvements:
+    - Add headers.
     - Automatically generate dependency structure for Makefiles, write to file to be included. This could solve the problem you're having with having to list all dependencies recursively.
         - depends.py
         - `find . -type f -name "*.f90"`
