@@ -42,4 +42,5 @@ $(error Set BUILD to either debug or release. BUILD=$(BUILD))
 endif
 
 include mk/common.mk
+include mk/depends.mk
 include mk/linux_2.mk

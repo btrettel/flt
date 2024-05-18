@@ -4,13 +4,10 @@ Priorities:
 
 - Build system improvements:
     - Add headers.
-    - Automatically generate dependency structure for Makefiles, write to file to be included. This could solve the problem you're having with having to list all dependencies recursively.
-        - depends.py
-        - `find . -type f -name "*.f90"`
-    - `BUILD=debug` vs. `BUILD=release` instead of having different debug object file extensions.
     - `BUILD=release` disables assertions
     - Making work with NMAKE, GNU Make, and BSD Make.
         - Figure out how to pass the `-f` argument to the `MAKE` macro so that recursive make works (for example, `bmake -f BSDmakefile all` and `pdpmake -f PDPmakefile all`).
+            - Instead of `make all`, do that in a Python script which calls all targets for `make`, `bmake`, and `pdpmake`?
         - Figure out how to specify `BUILD` and `FC` in pdpmake.
         - Figure out how to add back `test ! -e fort.*` and `test ! -e FORT.*` to tests as I don't know what the Windows equivalent is.
             - Do these checks in Fortran?

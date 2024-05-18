@@ -27,3 +27,4 @@ FFLAGS = $(FFLAGS) $(RFLAGS)
 !endif
 
 !include mk\common.mk
+!include mk\depends.mk
