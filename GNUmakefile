@@ -24,14 +24,17 @@ else ifeq ($(FC),ifort)
 include ifort.mk
 else ifeq ($(FC),nvfortran)
 include nvfortran.mk
+else
+$(error Invalid FC: $(FC))
 endif
 # LATER: FC=lfortran, particularly for the style suggestions
 # FFLAGS   = --link-with-gcc
-# DBGFLAGS =
+# DBGFLAGS = -g
+# RFLAGS   = --fast
 
 ifeq ($(BUILD),debug)
 FFLAGS += $(DBGFLAGS)
-else ifeq ($(BUILD),debug)
+else ifeq ($(BUILD),release)
 FFLAGS += $(RFLAGS)
 else
 $(error Set BUILD to either debug or release. BUILD=$(BUILD))
