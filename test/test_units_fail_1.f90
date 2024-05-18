@@ -18,7 +18,7 @@ type(time)   :: t
 x%v = 1.0_WP
 t%v = 1.0_WP
 
-! This will fail to compile.
+! This should fail to compile.
 z = x / t
 
 end program test_units_fail_1

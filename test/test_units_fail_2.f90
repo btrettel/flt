@@ -15,7 +15,7 @@ type(length) :: x, z
 
 x%v = 1.0_WP
 
-! This will fail to compile.
+! This should fail to compile.
 z = sqrt(x)
 
 end program test_units_fail_2

@@ -7,22 +7,22 @@ Priorities:
         - depends.py
         - `find . -type f -name "*.f90"`
     - `BUILD=debug` vs. `BUILD=release` instead of having different debug object file extensions.
+    - `BUILD=release` disables assertions
     - Making work with NMAKE, GNU Make, and BSD Make.
-    - Fortran module dependencies being wrong
-        - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/18>
-            - > I will note that from a quick scan of your script and makefile, it doesn’t actually appear to guarantee correct order of compilation (i.e. your .o files don’t depend on .mod files).
-        - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/23>
-            - > For Fortran, an object file depends on the source file it is compiled from AND all the .mod files for any modules USEd in the source file. A .mod file depends on the source file in which that module is defined. An executable depends on all the object files for all the code it uses, and code they use, etc, even if that code wasn’t in a module, and so doesn’t get included via a USE statement.
-    - Making compatible with FPM.
-    - `make all` also tries `bmake all`
 - Assertions
-    - f90lint: Minimum assertion percentage.
+    - f90lint.py: Minimum assertion percentage.
     - Require assertion messages.
     - Add more assertions.
+    - `assert_dimension`
+        - Make this check that size, lower bound, and upper bound match.
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
-    - Remove dependency on nmllog.
+    - `unit_left`, `unit_right`, and `unit_result`, should be changed to something like `left`, `right`, `result` as these are not units.
+    - Don't print sqrt, cbrt, or square if they have nothing to print.
+    - Add `config%kind_parameter`.
+    - Make `write_exponentiation_function` use `config%kind_parameter` instead of `_WP`.
+    - Remove dependency on nmllog so that this can be separated out more easily.
     - Do constructors like `length(1.0)` work?
     - Break `write_module` into multiple modules to help organization and make testing parts easier.
     - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
@@ -166,7 +166,6 @@ Later:
     - Require construct names for nested `do` loops and `if` statements.
     - Check that assertions have unique messages. List relevant variable values in error message.
 - semgrep static analysis
-- Program to ensure that all error codes in errors and assertions are unique.
 - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
 - Sensitivity analysis for model parameters.
     - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
@@ -265,8 +264,6 @@ Later:
     - <https://www.forcheck.nl/index.html>
 - genunits:
     - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
-- checks.f90
-    - 
 - Bayesian inference Fortran module, to solve basic problems like the probabity of actually having breast cancer in Yudkowsky's "intyutive explanation" or whodunits. Use log probability or whatever is appropriate internally.
 - How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type?
 - Along side fmutate, make a simple test case reduction program for Fortran (freduce?). Just delete lines to reduce test cases.
@@ -281,3 +278,10 @@ Later:
 - Verify checksums of all generated images that have them (PNG, for example).
 - <https://www.tensorflow.org/guide/core/optimizers_core>
     - Help plan interface to gradient descent
+- Build system improvements:
+    - Fortran module dependencies being wrong
+        - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/18>
+            - > I will note that from a quick scan of your script and makefile, it doesn’t actually appear to guarantee correct order of compilation (i.e. your .o files don’t depend on .mod files).
+        - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/23>
+            - > For Fortran, an object file depends on the source file it is compiled from AND all the .mod files for any modules USEd in the source file. A .mod file depends on the source file in which that module is defined. An executable depends on all the object files for all the code it uses, and code they use, etc, even if that code wasn’t in a module, and so doesn’t get included via a USE statement.
+    - Making compatible with FPM.

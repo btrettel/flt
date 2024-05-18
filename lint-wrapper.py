@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -Werror
+#!/usr/bin/env -S python3 -Werror
 # -*- coding: utf-8 -*-
 
 import xml.etree.ElementTree as ET

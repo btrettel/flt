@@ -16,7 +16,7 @@ private
 
 public :: f
 
-! Both the dependent and independent variables need to be of type `rd`.
+! Both the dependent and independent variables need to be of type `ad`.
 type, public :: ad
     real(kind=WP)              :: v     ! function value
     real(kind=WP), allocatable :: dv(:) ! function derivatives value
@@ -41,7 +41,7 @@ end type ad
 
 contains
 
-! Constructors for `rd`
+! Constructors for `ad`
 ! ---------------------
 
 elemental subroutine init(x, v, n, n_dv)
@@ -82,7 +82,7 @@ end subroutine init_const
 ! -------------------
 
 elemental function ad_ad_add(ad_1, ad_2)
-    ! Adds two `rd`s.
+    ! Adds two `ad`s.
     
     class(ad), intent(in) :: ad_1, ad_2
     
@@ -93,7 +93,7 @@ elemental function ad_ad_add(ad_1, ad_2)
 end function ad_ad_add
 
 elemental function ad_real_add(ad_in, real_in)
-    ! Adds a `rd` and a `real`.
+    ! Adds a `ad` and a `real`.
 
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
@@ -105,7 +105,7 @@ elemental function ad_real_add(ad_in, real_in)
 end function ad_real_add
 
 elemental function real_ad_add(real_in, ad_in)
-    ! Adds a `real` and a `rd`.
+    ! Adds a `real` and a `ad`.
 
     real(kind=WP), intent(in) :: real_in
     class(ad), intent(in)     :: ad_in
@@ -117,7 +117,7 @@ elemental function real_ad_add(real_in, ad_in)
 end function real_ad_add
 
 elemental function ad_ad_subtract(ad_1, ad_2)
-    ! Subtracts two `rd`s.
+    ! Subtracts two `ad`s.
 
     class(ad), intent(in) :: ad_1, ad_2
     
@@ -128,7 +128,7 @@ elemental function ad_ad_subtract(ad_1, ad_2)
 end function ad_ad_subtract
 
 elemental function ad_real_subtract(ad_in, real_in)
-    ! Subtracts a `real` from a `rd`.
+    ! Subtracts a `real` from a `ad`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -140,7 +140,7 @@ elemental function ad_real_subtract(ad_in, real_in)
 end function ad_real_subtract
 
 elemental function real_ad_subtract(real_in, ad_in)
-    ! Subtracts a `real` from a `rd`.
+    ! Subtracts a `real` from a `ad`.
 
     real(kind=WP), intent(in)  :: real_in
     class(ad), intent(in)      :: ad_in
@@ -163,7 +163,7 @@ elemental function ad_unary_minus(ad_in)
 end function ad_unary_minus
 
 elemental function ad_ad_multiply(ad_1, ad_2)
-    ! Multiplies two `rd`s.
+    ! Multiplies two `ad`s.
 
     class(ad), intent(in) :: ad_1, ad_2
     
@@ -174,7 +174,7 @@ elemental function ad_ad_multiply(ad_1, ad_2)
 end function ad_ad_multiply
 
 elemental function ad_real_multiply(ad_in, real_in)
-    ! Multiplies a `rd` by a `real`.
+    ! Multiplies a `ad` by a `real`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -186,7 +186,7 @@ elemental function ad_real_multiply(ad_in, real_in)
 end function ad_real_multiply
 
 elemental function real_ad_multiply(real_in, ad_in)
-    ! Multiplies a `real` by a `rd`.
+    ! Multiplies a `real` by a `ad`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -198,7 +198,7 @@ elemental function real_ad_multiply(real_in, ad_in)
 end function real_ad_multiply
 
 elemental function ad_ad_divide(ad_1, ad_2)
-    ! Divides two `rd`.
+    ! Divides two `ad`.
 
     class(ad), intent(in) :: ad_1, ad_2
     
@@ -209,7 +209,7 @@ elemental function ad_ad_divide(ad_1, ad_2)
 end function ad_ad_divide
 
 elemental function ad_real_divide(ad_in, real_in)
-    ! Divides a `rd` by a `real`.
+    ! Divides a `ad` by a `real`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -221,7 +221,7 @@ elemental function ad_real_divide(ad_in, real_in)
 end function ad_real_divide
 
 elemental function real_ad_divide(real_in, ad_in)
-    ! Divides a `real` by a `rd`.
+    ! Divides a `real` by a `ad`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -233,7 +233,7 @@ elemental function real_ad_divide(real_in, ad_in)
 end function real_ad_divide
 
 elemental function ad_real_exponentiate(ad_in, real_in)
-    ! Exponentiates a `rd` by a `real`.
+    ! Exponentiates a `ad` by a `real`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -245,7 +245,7 @@ elemental function ad_real_exponentiate(ad_in, real_in)
 end function ad_real_exponentiate
 
 elemental function ad_integer_exponentiate(ad_in, integer_in)
-    ! Exponentiates a `rd` by an `integer`.
+    ! Exponentiates a `ad` by an `integer`.
 
     class(ad), intent(in) :: ad_in
     integer, intent(in)   :: integer_in

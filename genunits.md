@@ -1,9 +1,14 @@
 # genunits: Minimalist compile-time physical unit consistency checking for Fortran
 
-## to-do
+Why write genunits? Why not use an existing solution?
 
-- Put `linspace` into an experimental file.
-- 
+- genunits is designed to be as general and easy to extend as possible.
+    - Often, units I desire are missing from other packages. In particular, few other packages support rational unit exponents, which are very common in turbulence.
+    - TODO: Unit-aware intrinsic functions can easily be added by changing the input file, and this is a first-class feature (it is the *only* way to add unit-aware intrinsic functions).
+- As Van Snyder highlights, generating the full set of units within certain bounds requires a huge number of units. This leads to slow compilation times for many compilers. genunits avoids this by intelligently prioritizing which units to include.
+- Fortran specifically:
+    - PhysUnits checks units are run-time, which will have an impact on performance.
+    - quaff is quite nice, but does not use type-bound operators, requiring a bit more work. The units coverage also isn't as good as I'd like, missing turbulence quantities.
 
 ## files
 

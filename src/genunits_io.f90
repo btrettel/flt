@@ -562,7 +562,7 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit_result%readable(unit_system))
     
     write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_left%label()), "), intent(in) :: unit_left"
-    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_right%label()), "), intent(in) :: unit_right"
+    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_right%label()), "), intent(in) :: unit_right"
     write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", binary_operator_procedure
     
     write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = unit_left%v ", op, " unit_right%v"

@@ -130,13 +130,13 @@ pure subroutine assert(condition, message)
     
     character(len=:), allocatable :: message_, full_message
     
-    if (present(message)) then
-        message_ = " " // message
-    else
-        message_ = ""
-    end if
-    
     if (debug) then
+        if (present(message)) then
+            message_ = " " // message
+        else
+            message_ = ""
+        end if
+        
         if (.not. condition) then
             ! Why not concatenate the strings on the `error stop` line?
             ! That leads to ifx garbling the error message as of version `ifx (IFX) 2024.0.2 20231213`.
