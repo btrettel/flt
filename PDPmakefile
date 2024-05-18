@@ -1,0 +1,20 @@
+# Public domain POSIX make on Linux
+# Works with `pdpmake -f PDPmakefile`.
+
+.POSIX:
+
+.PRAGMA: target_name
+
+# defaults
+BUILD = debug
+include mk/linux_1.mk
+
+#############
+# Compilers #
+#############
+
+# Only gfortran for now.
+include mk/gfortran.mk
+
+include mk/common.mk
+include mk/linux_2.mk

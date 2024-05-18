@@ -1,4 +1,5 @@
 # GNU Make on Linux
+# Works with `make` on Ubuntu.
 
 .POSIX:
 
@@ -9,7 +10,7 @@ MAKEFLAGS = --warn-undefined-variables
 
 # defaults
 BUILD = debug
-include build/linux_1.mk
+include mk/linux_1.mk
 
 #############
 # Compilers #
@@ -17,13 +18,13 @@ include build/linux_1.mk
 
 # gfortran
 ifeq ($(FC),gfortran)
-include build/gfortran.mk
+include mk/gfortran.mk
 else ifeq ($(FC),ifx)
-include build/ifx.mk
+include mk/ifx_linux.mk
 else ifeq ($(FC),ifort)
-include build/ifort.mk
+include mk/ifort_linux.mk
 else ifeq ($(FC),nvfortran)
-include build/nvfortran.mk
+include mk/nvfortran.mk
 else
 $(error Invalid FC: $(FC))
 endif
@@ -40,5 +41,5 @@ else
 $(error Set BUILD to either debug or release. BUILD=$(BUILD))
 endif
 
-include build/common.mk
-include build/linux_2.mk
+include mk/common.mk
+include mk/linux_2.mk

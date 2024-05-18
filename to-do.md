@@ -10,12 +10,16 @@ Priorities:
     - `BUILD=debug` vs. `BUILD=release` instead of having different debug object file extensions.
     - `BUILD=release` disables assertions
     - Making work with NMAKE, GNU Make, and BSD Make.
+        - Figure out how to pass the `-f` argument to the `MAKE` macro so that recursive make works (for example, `bmake -f BSDmakefile all` and `pdpmake -f PDPmakefile all`).
+        - Figure out how to specify `BUILD` and `FC` in pdpmake.
+        - Figure out how to add back `test ! -e fort.*` and `test ! -e FORT.*` to tests as I don't know what the Windows equivalent is.
+            - Do these checks in Fortran?
 - Assertions
     - f90lint.py: Minimum assertion percentage.
     - Require assertion messages.
     - Add more assertions.
     - `assert_dimension`
-        - Make this check that size, lower bound, and upper bound match.
+        - Make this check that size, lower bound, and upper bound match. Checking only the shape is not enough!
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)

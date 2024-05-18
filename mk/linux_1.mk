@@ -1,9 +1,11 @@
-FC       = gfortran
+# default compiler
+FC = gfortran
+
 BINEXT   = 
 RUN      = ./
 RM       = rm -rfv
 OFLAG    = -o
 OBJEXT   = o
 OBJFLAGS = -c -o
-COV      = lcov_tests.info
 DIR_SEP  = /
+COV      = lcov_tests.info

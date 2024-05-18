@@ -1,0 +1,29 @@
+# NMAKE on Windows
+# Should work with `nmake /f Nmakefile` (untested).
+
+# defaults
+BUILD = debug
+!include mk\windows.mk
+
+#############
+# Compilers #
+#############
+
+# gfortran
+!if "$(FC)" == "ifort"
+!include mk\ifort_windows.mk
+!elseif "$(FC)" == "ifx"
+!include mk\ifx_windows.mk
+!else
+!error Invalid FC: $(FC)
+!endif
+
+!if "$(BUILD)" == "debug"
+FFLAGS = $(FFLAGS) $(DBGFLAGS)
+!elseif "$(BUILD)" == "release"
+FFLAGS = $(FFLAGS) $(RFLAGS)
+!else
+!error Set BUILD to either debug or release. BUILD=$(BUILD)
+!endif
+
+!include mk\common.mk

@@ -1,11 +1,14 @@
 # BSD Make on Linux
 # Probably will work on BSD too, though that is not tested.
+# Works with `bmake -f BSDmakefile` on Ubuntu.
 
 .POSIX:
 
+.DELETE_ON_ERROR:
+
 # defaults
 BUILD = debug
-.include <build/linux_1.mk>
+.include <mk/linux_1.mk>
 
 #############
 # Compilers #
@@ -13,13 +16,13 @@ BUILD = debug
 
 # gfortran
 .if $(FC) == gfortran
-.include <build/gfortran.mk>
+.include <mk/gfortran.mk>
 .elif $(FC) == ifx
-.include <build/ifx.mk>
+.include <mk/ifx_linux.mk>
 .elif $(FC) == ifort
-.include <build/ifort.mk>
+.include <mk/ifort_linux.mk>
 .elif $(FC) == nvfortran
-.include <build/nvfortran.mk>
+.include <mk/nvfortran.mk>
 .else
 .error Invalid FC: $(FC)
 .endif
@@ -36,5 +39,5 @@ FFLAGS += $(RFLAGS)
 .error Set BUILD to either debug or release. BUILD=$(BUILD)
 .endif
 
-.include <build/common.mk>
-.include <build/linux_2.mk>
+.include <mk/common.mk>
+.include <mk/linux_2.mk>
