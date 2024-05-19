@@ -8,6 +8,9 @@ import argparse
 
 OUTPUT_FILE = os.path.join("mk", "depends.mk")
 
+# The `build` module (debug.f90 or release.f90, depending on the value of the `BUILD` make macro) disables assertions. Because this violates this program's assumption that the filename matches that of the module name (`build` is not the same as `debug` or `release`), I had to add some logic to this program to handle this case. Part of that includes ignoring the following files and manually adding a file with the filename `$(BUILD)` later.
+reject_files = [os.path.join("src", "debug.f90"), os.path.join("src", "release.f90")]
+
 class dependency_structure:
     def __init__(self, filename, program, module, name, dependencies):
         self.filename      = filename
@@ -38,8 +41,11 @@ parser = argparse.ArgumentParser(description="Generates a Makefile fragment desc
 parser.add_argument('file', nargs='+')
 args = parser.parse_args()
 
-depstructs = []
+depstructs = [dependency_structure(os.path.join("src", "$(BUILD)"), False, True, "build", set())]
 for filename in args.file:
+    if filename in reject_files:
+        continue
+    
     with open(filename, "r") as file_handler:
         program      = False
         module       = False
@@ -114,7 +120,10 @@ with open(OUTPUT_FILE, "w") as output_handler:
             output_handler.write("{}$(DIR_SEP){}.$(OBJEXT):".format(directory, depstruct.name))
             
             for dependency in depstruct.dependencies:
-                output_handler.write(" src$(DIR_SEP){}.$(OBJEXT)".format(dependency))
+                if dependency != "build":
+                    output_handler.write(" src$(DIR_SEP){}.$(OBJEXT)".format(dependency))
+                else:
+                    output_handler.write(" src$(DIR_SEP)$(BUILD).$(OBJEXT)")
             
             output_handler.write(" {}$(DIR_SEP){}.f90\n\n".format(directory, depstruct.name))
     
@@ -133,7 +142,10 @@ with open(OUTPUT_FILE, "w") as output_handler:
             
             dependency_string = ""
             for dependency in depstruct.dependencies:
-                dependency_string = dependency_string + " src$(DIR_SEP){}.$(OBJEXT)".format(dependency)
+                if dependency != "build":
+                    dependency_string = dependency_string + " src$(DIR_SEP){}.$(OBJEXT)".format(dependency)
+                else:
+                    dependency_string = dependency_string + " src$(DIR_SEP)$(BUILD).$(OBJEXT)"
             
             output_handler.write(dependency_string)
             output_handler.write(" {}$(DIR_SEP){}.f90\n".format(directory, depstruct.name))

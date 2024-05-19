@@ -13,8 +13,6 @@ private
 
 real(kind=WP), public, parameter :: TOL_FACTOR = 5.0_WP
 
-logical :: debug = .true.
-
 public :: abs_tolerance
 public :: is_close, all_close
 public :: assert
@@ -124,13 +122,15 @@ pure function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
 end function all_close
 
 pure subroutine assert(condition, message)
+    use build, only: DEBUG
+    
     logical, intent(in) :: condition
     
     character(len=*), intent(in), optional :: message
     
     character(len=:), allocatable :: message_, full_message
     
-    if (debug) then
+    if (DEBUG) then
         if (present(message)) then
             message_ = " " // message
         else

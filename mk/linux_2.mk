@@ -19,6 +19,7 @@ valgrind:
 	$(MAKE) test RUN='valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 --show-reachable=no ./'
 
 # TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
+.PHONY: lint
 lint:
 	$(RUN)lint-wrapper.py src/*.f90 test/*.f90
 
@@ -27,4 +28,9 @@ html-cov/index.html: $(TESTNML)
 	lcov --directory . --directory src/ --capture --output-file $(COV)
 	genhtml -t "flt" -o html-cov $(COV)
 
+.PHONY: coverage
 coverage: html-cov/index.html
+
+.PHONY: depends
+depends:
+	$(RUN)depends.py app/*.f90 src/*.f90 test/*.f90

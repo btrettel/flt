@@ -7,6 +7,7 @@
 
 program test_checks
 
+use build, only: DEBUG
 use checks, only: TOL_FACTOR, abs_tolerance, is_close, all_close, assert, same_shape_as
 use nmllog, only: log_type
 use prec, only: WP
@@ -117,36 +118,41 @@ call assert(.true.)
 ! The test passed if execution reaches here, so manually increment the test counters.
 tests%n_tests = tests%n_tests + 1
 
-! Check that `assert(.false.)` terminates with a non-zero exit code.
-call tests%exit_code_ne("./test_assert_false", 0, "assert, .false., exit code", ASSERT_FALSE_OUTPUT, keep_file=.true.)
+if (DEBUG) then
+    ! Check that `assert(.false.)` terminates with a non-zero exit code.
+    call tests%exit_code_ne("./test_assert_false", 0, "assert, .false., exit code", ASSERT_FALSE_OUTPUT, keep_file=.true.)
 
-inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
-call tests%logical_true(test_assert_false_exists, "assert, .false., output saved")
+    inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
+    call tests%logical_true(test_assert_false_exists, "assert, .false., output saved")
 
-! Test default assertion failure message.
-open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
-read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
-read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
-call tests%character_eq(assert_false_line, "ASSERTION FAILED.", "assert, .false., default assertion message")
+    ! Test default assertion failure message.
+    open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
+    read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
+    read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
+    call tests%character_eq(assert_false_line, "ASSERTION FAILED.", "assert, .false., default assertion message")
 
-! Delete saved file.
-close(unit=test_assert_false_unit, status="delete")
+    ! Delete saved file.
+    close(unit=test_assert_false_unit, status="delete")
 
-! Check that `assert(.false., "Custom message.")` has the correct message.
-call tests%exit_code_ne("./test_assert_false_message", 0, "assert, .false., message, exit code", &
-                            ASSERT_FALSE_OUTPUT, keep_file=.true.)
+    ! Check that `assert(.false., "Custom message.")` has the correct message.
+    call tests%exit_code_ne("./test_assert_false_message", 0, "assert, .false., message, exit code", &
+                                ASSERT_FALSE_OUTPUT, keep_file=.true.)
 
-inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
-call tests%logical_true(test_assert_false_exists, "assert, .false., message, output saved")
+    inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
+    call tests%logical_true(test_assert_false_exists, "assert, .false., message, output saved")
 
-! Test default assertion failure message.
-open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
-read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
-read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
-call tests%character_eq(assert_false_line, "ASSERTION FAILED. Custom message.", "assert, .false., message, assertion message")
+    ! Test default assertion failure message.
+    open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
+    read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
+    read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
+    call tests%character_eq(assert_false_line, "ASSERTION FAILED. Custom message.", "assert, .false., message, assertion message")
 
-! Delete saved file.
-close(unit=test_assert_false_unit, status="delete")
+    ! Delete saved file.
+    close(unit=test_assert_false_unit, status="delete")
+else
+    ! Check that `assert(.false.)` does not terminate with a non-zero exit code for .
+    call tests%exit_code_eq("./test_assert_false", 0, "assert, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
+end if
 
 ! `same_shape_as`
 

@@ -4,13 +4,14 @@ Priorities:
 
 - Build system improvements:
     - Add headers.
-    - `BUILD=release` disables assertions
     - Making work with NMAKE, GNU Make, and BSD Make.
         - Figure out how to pass the `-f` argument to the `MAKE` macro so that recursive make works (for example, `bmake -f BSDmakefile all` and `pdpmake -f PDPmakefile all`).
             - Instead of `make all`, do that in a Python script which calls all targets for `make`, `bmake`, and `pdpmake`?
         - Figure out how to specify `BUILD` and `FC` in pdpmake.
         - Figure out how to add back `test ! -e fort.*` and `test ! -e FORT.*` to tests as I don't know what the Windows equivalent is.
             - Do these checks in Fortran?
+- port.f90
+    - `platform` like Python's `sys.platform`.
 - Assertions
     - f90lint.py: Minimum assertion percentage.
     - Require assertion messages.
@@ -215,12 +216,6 @@ Later:
             - This is good for long lists because the column header in the table can go off-screen.
         - Look into how other CFD softwares output iterative progress for ideas. Which metrics do they output?
 - Makefile
-    - Change Makefile to make object files of the `test_*.f90` files and list the dependencies only once?
-    - Fortran Makefile dependency generator
-    - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/18>:
-        - > I will note that from a quick scan of your script and makefile, it doesn’t actually appear to guarantee correct order of compilation (i.e. your .o files don’t depend on .mod files).
-    - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/23>
-        - > For Fortran, an object file depends on the source file it is compiled from AND all the .mod files for any modules USEd in the source file. A .mod file depends on the source file in which that module is defined. An executable depends on all the object files for all the code it uses, and code they use, etc, even if that code wasn’t in a module, and so doesn’t get included via a USE statement.
     - <https://aoterodelaroza.github.io/devnotes/modern-fortran-makefiles/>
     - <https://fortran-lang.org/en/learn/building_programs/project_make/>
 - Add tests to compare speed of parallel vs. serial
@@ -287,3 +282,6 @@ Later:
         - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/23>
             - > For Fortran, an object file depends on the source file it is compiled from AND all the .mod files for any modules USEd in the source file. A .mod file depends on the source file in which that module is defined. An executable depends on all the object files for all the code it uses, and code they use, etc, even if that code wasn’t in a module, and so doesn’t get included via a USE statement.
     - Making compatible with FPM.
+- Tests
+    - Test `exit_code_eq` better. Check if the file is kept or not.
+    - Make sure that debug builds enable assertions.
