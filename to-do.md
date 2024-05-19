@@ -15,11 +15,12 @@ Priorities:
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
+    - Remove dependency on nmllog so that this can be separated out more easily.
+        - This will also help to compile genunits with lfortran, though it's not sufficient as `is_close` won't compile with lfortran due to `spacing`.
     - `unit_left`, `unit_right`, and `unit_result`, should be changed to something like `left`, `right`, `result` as these are not units.
     - Don't print sqrt, cbrt, or square if they have nothing to print.
     - Add `config%kind_parameter`.
     - Make `write_exponentiation_function` use `config%kind_parameter` instead of `_WP`.
-    - Remove dependency on nmllog so that this can be separated out more easily.
     - Do constructors like `length(1.0)` work?
     - Break `write_module` into multiple modules to help organization and make testing parts easier.
     - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.

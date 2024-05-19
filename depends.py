@@ -113,13 +113,16 @@ with open(OUTPUT_FILE, "w") as output_handler:
     output_handler.write("#######################\n\n")
     for depstruct in depstructs:
         if depstruct.module:
+            if depstruct.name == "build":
+                continue
+            
             directory = os.path.split(depstruct.filename)[0]
             
             print("Writing module dependencies: {}".format(depstruct.name))
             
             output_handler.write("{}$(DIR_SEP){}.$(OBJEXT):".format(directory, depstruct.name))
             
-            for dependency in depstruct.dependencies:
+            for dependency in sorted(depstruct.dependencies):
                 if dependency != "build":
                     output_handler.write(" src$(DIR_SEP){}.$(OBJEXT)".format(dependency))
                 else:
@@ -141,7 +144,7 @@ with open(OUTPUT_FILE, "w") as output_handler:
             output_handler.write("{}$(BINEXT):".format(depstruct.name))
             
             dependency_string = ""
-            for dependency in depstruct.dependencies:
+            for dependency in sorted(depstruct.dependencies):
                 if dependency != "build":
                     dependency_string = dependency_string + " src$(DIR_SEP){}.$(OBJEXT)".format(dependency)
                 else:
