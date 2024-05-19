@@ -26,8 +26,7 @@ public :: timeit
 type, public :: timer_type
     logical                  :: active = .false. ! whether the timer is currently timing
     integer(kind=TIMER_KIND) :: sum_count = 0_TIMER_KIND, & ! time before current timer start
-                                start_count, &
-                                count_max
+                                start_count, count_max
     real(kind=WP)            :: count_rate
     
     ! nagfor complains if `count_rate` is different type than `count` or `count_max`:

@@ -12,7 +12,7 @@ src$(DIR_SEP)genunits_data.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP
 
 src$(DIR_SEP)genunits_io.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)genunits_io.f90
 
-src$(DIR_SEP)nmllog.$(OBJEXT): src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)nmllog.f90
+src$(DIR_SEP)nmllog.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)nmllog.f90
 
 src$(DIR_SEP)prec.$(OBJEXT): src$(DIR_SEP)prec.f90
 

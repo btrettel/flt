@@ -105,6 +105,8 @@ function now()
 end function now
 
 subroutine log_open(this, filename, level, file_level, stdout_level)
+    use checks, only: assert
+    
     class(log_type), intent(out) :: this
     
     character(len=*), intent(in)  :: filename
@@ -131,10 +133,20 @@ subroutine log_open(this, filename, level, file_level, stdout_level)
             file=trim(this%filename), &
             delim="quote", &
             recl=NML_RECL)
+    
+    call assert(this%file_level >= 0)
+    call assert(this%stdout_level >= 0)
 end subroutine log_open
 
 subroutine log_close(this)
+    use checks, only: assert
+    
     class(log_type), intent(in out) :: this
+    
+    logical :: unit_open
+    
+    inquire(unit=this%unit, opened=unit_open)
+    call assert(unit_open)
     
     close(unit=this%unit)
     this%unit = UNIT_CLOSED
@@ -142,6 +154,7 @@ end subroutine log_close
 
 subroutine log_writer(this, message_in, level_code)
     use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT, ERROR_UNIT
+    use checks, only: assert
     
     type(log_type), intent(in) :: this
     
@@ -149,11 +162,15 @@ subroutine log_writer(this, message_in, level_code)
     integer, intent(in)          :: level_code
     
     integer :: print_unit
+    logical :: unit_open
     
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=:), allocatable :: level, message
     
     namelist /log/ timestamp, level, message
+    
+    inquire(unit=this%unit, opened=unit_open)
+    call assert(unit_open)
     
     timestamp = now()
     
@@ -186,6 +203,9 @@ subroutine log_writer(this, message_in, level_code)
     if (level_code >= this%stdout_level) then
         write(unit=print_unit, fmt="(a, a, a, a, a)") timestamp, " [", level, "] ", message
     end if
+    
+    call assert(this%file_level >= 0)
+    call assert(this%stdout_level >= 0)
 end subroutine log_writer
 
 subroutine log_debug(this, message)
@@ -233,6 +253,7 @@ subroutine log_debug_info(this)
     use, intrinsic :: ieee_arithmetic, only: ieee_support_datatype, ieee_support_denormal, ieee_support_divide, &
                                                 ieee_support_inf, ieee_support_nan, ieee_support_sqrt, ieee_support_standard
     use prec, only: WP
+    use checks, only: assert
     
     ! Maybe:
     ! - `epsilon`
@@ -247,6 +268,7 @@ subroutine log_debug_info(this)
     
     character(len=:), allocatable :: compiler_options, compiler_version, level
     character(len=TIMESTAMP_LEN)  :: timestamp
+    logical                       :: unit_open
     
     !real(kind=WP) :: real_huge
     integer       :: real_kind_code, real_precision, real_range, real_radix, &
@@ -261,6 +283,9 @@ subroutine log_debug_info(this)
                             real_support_datatype, real_support_denormal, real_support_divide, &
                             real_support_inf, real_support_nan, real_support_sqrt, real_support_standard, &
                             integer_kind_code, integer_range, integer_huge
+    
+    inquire(unit=this%unit, opened=unit_open)
+    call assert(unit_open)
     
     timestamp        = now()
     level            = DEBUG_STRING
@@ -298,11 +323,15 @@ end subroutine log_debug_info
 ! ------------
 
 subroutine pure_log_open(pure_logger, logger)
+    use checks, only: assert
+    
     class(pure_log_type), intent(out) :: pure_logger
     type(log_type), intent(in)        :: logger
     
     call logger%debug("Pure logger started.")
     pure_logger%logger = logger
+    
+    call assert(pure_logger%logger%unit /= UNIT_CLOSED)
 end  subroutine pure_log_open
 
 subroutine pure_log_close(pure_logger)
@@ -336,10 +365,13 @@ pure subroutine pure_log_writer(pure_logger, message, level)
     
     type(pure_log_data_type), pointer :: pure_log_data
     
+    ! TODO: Assert something here. Try something about the association status of a pointer?
+    
     allocate(pure_log_data)
     pure_log_data%message = message
     pure_log_data%level   = level
     
+    ! TODO: Document this better. It's not clear to me what the logic here is.
     if (.not. associated(pure_logger%head)) then
         pure_logger%head => pure_log_data
     else
@@ -401,6 +433,8 @@ end subroutine pure_log_critical
 ! pass/fail.
 
 subroutine impure_check(logger, condition, message, rc)
+    use checks, only: assert
+    
     class(log_type), intent(in)  :: logger
     logical, intent(in)          :: condition ! condition to check
     character(len=*), intent(in) :: message   ! error message to print if `condition` is `.false.`
@@ -411,9 +445,13 @@ subroutine impure_check(logger, condition, message, rc)
         
         rc = rc + 1
     end if
+    
+    call assert(rc >= 0)
 end subroutine impure_check
 
 pure subroutine pure_check(logger, condition, message, rc)
+    use checks, only: assert
+    
     class(pure_log_type), intent(in out) :: logger
     logical, intent(in)                  :: condition ! condition to check
     character(len=*), intent(in)         :: message   ! error message to print if `condition` is `.false.`
@@ -424,6 +462,8 @@ pure subroutine pure_check(logger, condition, message, rc)
         
         rc = rc + 1
     end if
+    
+    call assert(rc >= 0)
 end subroutine pure_check
 
 end module nmllog

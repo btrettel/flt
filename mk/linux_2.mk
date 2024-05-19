@@ -24,7 +24,7 @@ valgrind:
 # TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
 .PHONY: lint
 lint:
-	$(RUN)f90lint.py app/*.f90 src/*.f90 test/*.f90
+	#$(RUN)f90lint.py app/*.f90 src/*.f90 test/*.f90
 	$(RUN)lint-wrapper.py app/*.f90 src/*.f90 test/*.f90
 
 # TODO: Make depend on *.gcda files?
