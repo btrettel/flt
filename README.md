@@ -15,7 +15,7 @@ Misc. Fortran libraries and tools (all at various stages of development), intend
 
 Other files:
 
-- f90.yaml: Modified rules file for the Fortran linter[flinter](https://pypi.org/project/flinter/).
+- f90.yaml: Modified rules file for the Fortran linter [flinter](https://pypi.org/project/flinter/).
 - lint-wrapper.py: Runs the linters [flinter](https://pypi.org/project/flinter/) and [i-Code CNES](https://github.com/cnescatlab/i-CodeCNES/), reads their output, and has a useful exit code for Makefiles to detect linter suggestions.
 
 ## Goals
