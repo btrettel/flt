@@ -2,17 +2,11 @@
 
 Priorities:
 
-- Build system improvements:
-    - Add headers.
-    - Making work with NMAKE, GNU Make, and BSD Make.
-        - Figure out how to pass the `-f` argument to the `MAKE` macro so that recursive make works (for example, `bmake -f BSDmakefile all` and `pdpmake -f PDPmakefile all`).
-            - Instead of `make all`, do that in a Python script which calls all targets for `make`, `bmake`, and `pdpmake`?
-        - Figure out how to specify `BUILD` and `FC` in pdpmake.
-        - Figure out how to add back `test ! -e fort.*` and `test ! -e FORT.*` to tests as I don't know what the Windows equivalent is.
-            - Do these checks in Fortran?
 - port.f90
     - `platform` like Python's `sys.platform`.
     - Get all tests to pass on Windows.
+- Build system improvements:
+    - Make `PYTHON` macro so that you can run at least some of the Python scripts on Windows.
 - Assertions
     - Require assertion messages.
     - Add more assertions.
@@ -291,3 +285,9 @@ Later:
 - Tests
     - Test `exit_code_eq` better. Check if the file is kept or not.
     - Make sure that debug builds enable assertions.
+- Build system improvements:
+    - Making work with NMAKE, GNU Make, and BSD Make.
+        - Figure out how to pass the `-f` argument to the `MAKE` macro so that recursive make works (for example, `bmake -f BSDmakefile all` and `pdpmake -f PDPmakefile all`).
+        - Figure out how to specify `BUILD` and `FC` in pdpmake.
+        - Figure out how to add back `test ! -e fort.*` and `test ! -e FORT.*` to tests as I don't know what the Windows equivalent is.
+            - Do these checks in Fortran?

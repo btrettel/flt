@@ -1,4 +1,5 @@
 # Why run `make valgrind` here? As it uses gfortran and is more strict.
+# LATER: Enable FC=lfortran for `make all`, particularly for the style suggestions
 .PHONY: all
 all:
 	$(MAKE) lint

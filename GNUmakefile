@@ -1,5 +1,10 @@
-# GNU Make on Linux
-# Works with `make` on Ubuntu.
+# Summary: Makefile for GNU Make
+# Standard: POSIX (tested on GNU Make, BSD Make, pdpmake, and Microsoft NMAKE)
+# Author: Ben Trettel (<http://trettel.us/>)
+# Project: [flt](https://github.com/btrettel/flt)
+# License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+
+# Tested with GNU Make on Linux. Works with `make` on Ubuntu.
 
 .POSIX:
 
@@ -16,7 +21,6 @@ include mk/linux_1.mk
 # Compilers #
 #############
 
-# gfortran
 ifeq ($(FC),gfortran)
 include mk/gfortran.mk
 else ifeq ($(FC),ifx)
@@ -25,13 +29,11 @@ else ifeq ($(FC),ifort)
 include mk/ifort_linux.mk
 else ifeq ($(FC),nvfortran)
 include mk/nvfortran.mk
+else ifeq ($(FC),lfortran)
+include mk/lfortran.mk
 else
 $(error Invalid FC: $(FC))
 endif
-# LATER: FC=lfortran, particularly for the style suggestions
-# FFLAGS   = --link-with-gcc
-# DBGFLAGS = -g
-# RFLAGS   = --fast
 
 ifeq ($(BUILD),debug)
 FFLAGS += $(DBGFLAGS)
