@@ -8,7 +8,7 @@
 program test_checks
 
 use build, only: DEBUG
-use checks, only: TOL_FACTOR, abs_tolerance, is_close, all_close, assert, same_shape_as
+use checks, only: TOL_FACTOR, abs_tolerance, is_close, all_close, assert, assert_dimension
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
@@ -22,9 +22,9 @@ integer                 :: test_assert_false_unit
 logical                 :: test_assert_false_exists
 character(len=80)       :: assert_false_line
 
-real(kind=WP) ::    a1(5), b1(5), c1(4), &
-                    a2(5, 5), b2(5, 5), c2(4, 4), &
-                    a3(5, 5), b3(5, 5), c3(4, 4)
+real(kind=WP) :: a1(5),    b1(5),    &
+                 a2(5, 5), b2(5, 5), &
+                 a3(5, 5), b3(5, 5)
 
 call logger%open("checks.nml")
 call tests%start_tests(logger)
@@ -119,7 +119,7 @@ call assert(.true.)
 tests%n_tests = tests%n_tests + 1
 
 if (DEBUG) then
-    ! Check that `assert(.false.)` terminates with a non-zero exit code.
+    ! Check that `assert(.false.)` terminates with a non-zero exit code for debug mode.
     call tests%exit_code_ne("./test_assert_false", 0, "assert, .false., exit code", ASSERT_FALSE_OUTPUT, keep_file=.true.)
 
     inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
@@ -150,20 +150,33 @@ if (DEBUG) then
     ! Delete saved file.
     close(unit=test_assert_false_unit, status="delete")
 else
-    ! Check that `assert(.false.)` does not terminate with a non-zero exit code for .
+    ! Check that `assert(.false.)` does not terminate with a non-zero exit code for release mode.
     call tests%exit_code_eq("./test_assert_false", 0, "assert, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
 end if
 
-! `same_shape_as`
+! `assert_dimension`
 
-call tests%logical_true(same_shape_as(a1, b1), "same_shape_as, rank 1, .true.")
-call tests%logical_false(same_shape_as(a1, c1), "same_shape_as, rank 1, .false.")
+call assert_dimension(a1, b1) ! rank 1
+call assert_dimension(a2, b2) ! rank 2
+call assert_dimension(a3, b3) ! rank 3
 
-call tests%logical_true(same_shape_as(a2, b2), "same_shape_as, rank 2, .true.")
-call tests%logical_false(same_shape_as(a2, c2), "same_shape_as, rank 2, .false.")
-
-call tests%logical_true(same_shape_as(a3, b3), "same_shape_as, rank 3, .true.")
-call tests%logical_false(same_shape_as(a3, c3), "same_shape_as, rank 3, .false.")
+if (DEBUG) then
+    ! Check that `assert_dimension` terminates with a non-zero exit code for debug mode.
+    call tests%exit_code_ne("./test_assert_dimension_false_1", 0, &
+                                "assert_dimension, rank 1, .false., exit code", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_ne("./test_assert_dimension_false_2", 0, &
+                                "assert_dimension, rank 2, .false., exit code", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_ne("./test_assert_dimension_false_3", 0, &
+                                "assert_dimension, rank 3, .false., exit code", ASSERT_FALSE_OUTPUT)
+else
+    ! Check that `assert_dimension` does not terminate with a non-zero exit code for release mode.
+    call tests%exit_code_eq("./test_assert_dimension_false_1", 0, &
+                                "assert_dimension, rank 1, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_eq("./test_assert_dimension_false_2", 0, &
+                                "assert_dimension, rank 2, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_eq("./test_assert_dimension_false_3", 0, &
+                                "assert_dimension, rank 3, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
+end if
 
 call tests%end_tests()
 call logger%close()

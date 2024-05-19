@@ -42,7 +42,7 @@ depends:
 # Most of these won't compile due to gaps in lfortran, but some will.
 .PHONY: lfortran
 lfortran:
-	$(MAKE) FC=lfortran src/autodiff.o
+	#$(MAKE) FC=lfortran src/autodiff.o
 	#$(MAKE) FC=lfortran src/checks.o
 	$(MAKE) FC=lfortran src/debug.o
 	#$(MAKE) FC=lfortran src/genunits_data.o

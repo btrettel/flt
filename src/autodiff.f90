@@ -11,9 +11,6 @@ use prec, only: WP
 implicit none
 private
 
-! No assertions are here for the size of the `dv` member variable as normal bounds checks will catch inconsistencies in that.
-! Adding these assertions might be necessary if I switch to using `do` loops for speed.
-
 public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
@@ -45,26 +42,28 @@ contains
 ! ---------------------
 
 elemental subroutine init(x, v, n, n_dv)
-    class(ad), intent(in out) :: x ! `class` can't be `intent(out)` and `pure`?!?
+    use checks, only: assert
+    
+    class(ad), intent(in out) :: x    ! `class` can't be `intent(out)` and `pure`?!?
     real(kind=WP), intent(in) :: v    ! value of variable to set
     integer, intent(in)       :: n, & ! variable number represented (sets the appropriate derivative)
                                  n_dv ! total number of differentiable variables
 
-    !integer :: i_dv ! loop index
-
-!    do i_dv = 1, NDVARS
-!        if (i_dv == n) then
-!            ad_var%dv(i_dv) = 1.0_WP
-!        else
-!            ad_var%dv(i_dv) = 0.0_WP
-!        end if
-!    end do
+    integer :: i_dv ! loop index
     
-    call init_const(x, v, n_dv)
-
-    ! The following may be slower, though I should test that.
-    ! But it will give a run-time error in debug mode if `n` is out of bounds.
-    x%dv(n) = 1.0_WP
+    x%v = v
+    
+    allocate(x%dv(n_dv))
+    do i_dv = 1, n_dv
+        if (i_dv == n) then
+            x%dv(i_dv) = 1.0_WP
+        else
+            x%dv(i_dv) = 0.0_WP
+        end if
+    end do
+    
+    call assert(n >= 1, "autodiff.f90 (init): n must be 1 or more")
+    call assert(n <= n_dv, "autodiff.f90 (init): n must be n_dv or less")
 end subroutine init
 
 elemental subroutine init_const(x, v, n_dv)
@@ -74,8 +73,8 @@ elemental subroutine init_const(x, v, n_dv)
     
     allocate(x%dv(n_dv))
 
-    x%v    = v
-    x%dv   = 0.0_WP
+    x%v  = v
+    x%dv = 0.0_WP
 end subroutine init_const
 
 ! Operator procedures

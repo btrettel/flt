@@ -60,7 +60,8 @@ for filename in args.file:
                     if not filename.startswith("test"):
                         global_num_lines_code = global_num_lines_code + 1
                         
-                        if line.strip().startswith("call assert"):
+                        # `error stop` lines are for error termination, so they are like assertions. They are used where assertions aren't appropriate.
+                        if (line.strip().startswith("call assert") or line.strip().startswith("error stop") or ("%check(" in line)):
                             global_num_assertions = global_num_assertions + 1
                             local_num_assertions  = local_num_assertions + 1
                     else:
@@ -96,5 +97,11 @@ global_test_ratio = global_num_lines_tests / global_num_lines_code
 if (global_test_ratio < TEST_RATIO_LOWER_LIMIT):
     print("Global lines-of-tests to lines-of-code ratio is {:.2f} (<{:.2f}).".format(global_test_ratio, TEST_RATIO_LOWER_LIMIT))
     exit_code = 1
+
+print("\n==============")
+print("= Statistics =")
+print("==============")
+print("Global assertion density: {:.2f}%".format(global_assertion_density))
+print("Global lines-of-tests to lines-of-code ratio: {:.2f}".format(global_test_ratio))
 
 exit(exit_code)

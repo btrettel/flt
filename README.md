@@ -11,7 +11,7 @@ Misc. Fortran libraries and tools (all at various stages of development), intend
 - prec.f90: Module to set precisions, lengths, and mathematical constants. Uses common convention of `WP` for real precision.
 - purerng.f90: Module for pure random number generators. Interface similar to intrinsic `random_number` and `random_seed` (but not identical to avoid conflict with `size` intrinsic). Includes a deterministic "random" number generator to mock actual random number generators for testing.
 - timer.f90: Module for wall-clock timers. Interface is similar to [StopWatch](https://math.nist.gov/StopWatch/).
-- unittest.f90: Module for unit testing procedures. Interface is probably unique, but output has some similarities to Python's unittest module.
+- unittest.f90: Module for unit testing procedures. Interface is probably unique, but output has some similarities to Python's [unittest](https://docs.python.org/3/library/unittest.html) module.
 
 Other files:
 

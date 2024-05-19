@@ -16,15 +16,13 @@ real(kind=WP), public, parameter :: TOL_FACTOR = 5.0_WP
 public :: abs_tolerance
 public :: is_close, all_close
 public :: assert
-public :: same_shape_as
+public :: assert_dimension ! TODO: test this
 
-! TODO: `all_close` like <https://numpy.org/doc/stable/reference/generated/numpy.allclose.html>
-
-interface same_shape_as
-    module procedure same_shape_as_real_rank_1
-    module procedure same_shape_as_real_rank_2
-    module procedure same_shape_as_real_rank_3
-end interface same_shape_as
+interface assert_dimension
+    module procedure assert_dimension_rank_1
+    module procedure assert_dimension_rank_2
+    module procedure assert_dimension_rank_3
+end interface assert_dimension
 
 contains
 
@@ -81,6 +79,8 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
 end function is_close
 
 pure function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
+    ! like <https://numpy.org/doc/stable/reference/generated/numpy.allclose.html>
+    
     real(kind=WP), intent(in)           :: input_real_1(:), input_real_2(:)
     real(kind=WP), intent(in), optional :: rel_tol, abs_tol
     
@@ -102,9 +102,7 @@ pure function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
         abs_tol_ = abs_tolerance(maxval(abs(input_real_1)), maxval(abs(input_real_2)))
     end if
     
-    call assert(size(input_real_1) == size(input_real_2))
-    call assert(lbound(input_real_1, dim=1) == lbound(input_real_2, dim=1))
-    call assert(ubound(input_real_1, dim=1) == ubound(input_real_2, dim=1))
+    call assert_dimension(input_real_1, input_real_2)
     
     all_close = .false.
     n_match = 0
@@ -149,40 +147,28 @@ pure subroutine assert(condition, message)
     end if
 end subroutine assert
 
-pure function same_shape_as_real_rank_1(a, b)
+pure subroutine assert_dimension_rank_1(a, b)
     real(kind=WP), intent(in) :: a(:), b(:)
     
-    logical :: same_shape_as_real_rank_1
-    
-    if (any(shape(a) /= shape(b))) then
-        same_shape_as_real_rank_1 = .false.
-    else
-        same_shape_as_real_rank_1 = .true.
-    end if
-end function same_shape_as_real_rank_1
+    call assert(size(a) == size(b))
+    call assert(all(lbound(a) == lbound(b)))
+    call assert(all(ubound(a) == ubound(b)))
+end subroutine assert_dimension_rank_1
 
-pure function same_shape_as_real_rank_2(a, b)
+pure subroutine assert_dimension_rank_2(a, b)
     real(kind=WP), intent(in) :: a(:, :), b(:, :)
     
-    logical :: same_shape_as_real_rank_2
-    
-    if (any(shape(a) /= shape(b))) then
-        same_shape_as_real_rank_2 = .false.
-    else
-        same_shape_as_real_rank_2 = .true.
-    end if
-end function same_shape_as_real_rank_2
+    call assert(size(a) == size(b))
+    call assert(all(lbound(a) == lbound(b)))
+    call assert(all(ubound(a) == ubound(b)))
+end subroutine assert_dimension_rank_2
 
-pure function same_shape_as_real_rank_3(a, b)
+pure subroutine assert_dimension_rank_3(a, b)
     real(kind=WP), intent(in) :: a(:, :, :), b(:, :, :)
     
-    logical :: same_shape_as_real_rank_3
-    
-    if (any(shape(a) /= shape(b))) then
-        same_shape_as_real_rank_3 = .false.
-    else
-        same_shape_as_real_rank_3 = .true.
-    end if
-end function same_shape_as_real_rank_3
+    call assert(size(a) == size(b))
+    call assert(all(lbound(a) == lbound(b)))
+    call assert(all(ubound(a) == ubound(b)))
+end subroutine assert_dimension_rank_3
 
 end module checks
