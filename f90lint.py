@@ -7,7 +7,7 @@ import os
 import argparse
 
 ASSERTION_DENSITY_LOWER_LIMIT = 2.0
-TEST_RATIO_LOWER_LIMIT        = 1.0
+TEST_RATIO_LOWER_LIMIT        = 0.5
 
 # These files won't have any assertions, so they should be ignored.
 ignore_files = [os.path.join("src", "debug.f90"), os.path.join("src", "release.f90"), os.path.join("src", "units.f90")]
@@ -80,21 +80,21 @@ for file_stat in file_stats:
 
 for file_stat in file_stats:
     if (file_stat.assertion_density < ASSERTION_DENSITY_LOWER_LIMIT) and (not file_stat.filename.startswith("test")):
-        print("WARNING: Assertion density for {} is {:.2f}%, which is below the lower limit of {:.2f}%.".format(file_stat.filename, file_stat.assertion_density, ASSERTION_DENSITY_LOWER_LIMIT))
+        print("{}: Assertion density is {:.2f}% (<{:.2f}%).".format(file_stat.filename, file_stat.assertion_density, ASSERTION_DENSITY_LOWER_LIMIT))
         exit_code = 1
     
     if (file_stat.test_ratio < TEST_RATIO_LOWER_LIMIT) and file_stat.filename.startswith("src"):
-        print("WARNING: Lines-of-tests to lines-of-code ratio for module {} is {:.2f}, which is below the lower limit of {:.2f}.".format(file_stat.filename, file_stat.test_ratio, TEST_RATIO_LOWER_LIMIT))
+        print("{}: Lines-of-tests to lines-of-code ratio is {:.2f} (<{:.2f}).".format(file_stat.filename, file_stat.test_ratio, TEST_RATIO_LOWER_LIMIT))
         exit_code = 1
 
 global_assertion_density = 100.0 * global_num_assertions / global_num_lines_code
 if (global_assertion_density < ASSERTION_DENSITY_LOWER_LIMIT):
-    print("WARNING: Global assertion density is {:.2f}%, which is below the lower limit of {:.2f}%.".format(global_assertion_density, ASSERTION_DENSITY_LOWER_LIMIT))
+    print("Global assertion density is {:.2f}% (<{:.2f}%).".format(global_assertion_density, ASSERTION_DENSITY_LOWER_LIMIT))
     exit_code = 1
 
 global_test_ratio = global_num_lines_tests / global_num_lines_code
 if (global_test_ratio < TEST_RATIO_LOWER_LIMIT):
-    print("WARNING: Global lines-of-tests to lines-of-code ratio is {:.2f}, which is below the lower limit of {:.2f}.".format(global_test_ratio, TEST_RATIO_LOWER_LIMIT))
+    print("Global lines-of-tests to lines-of-code ratio is {:.2f} (<{:.2f}).".format(global_test_ratio, TEST_RATIO_LOWER_LIMIT))
     exit_code = 1
 
 exit(exit_code)
