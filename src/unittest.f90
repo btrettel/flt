@@ -48,12 +48,12 @@ end type test_results_type
 
 contains
 
-subroutine logical_true(this, condition, message_in)
+subroutine logical_true(tests, condition, message_in)
     ! Check whether test `condition` is `.true.`, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     logical, intent(in)          :: condition
     character(len=*), intent(in) :: message_in
@@ -72,29 +72,29 @@ subroutine logical_true(this, condition, message_in)
     compared_logical = .true.
     
     test_passes = condition
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine logical_true
 
-subroutine logical_false(this, condition, message_in)
+subroutine logical_false(tests, condition, message_in)
     ! Check whether test `condition` is `.false.`, increase `number_of_failures` if `.true.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     logical, intent(in)          :: condition
     character(len=*), intent(in) :: message_in
@@ -113,30 +113,30 @@ subroutine logical_false(this, condition, message_in)
     compared_logical = .false.
     
     test_passes = .not. condition
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine logical_false
 
-subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
+subroutine real_eq(tests, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use checks, only: abs_tolerance, is_close
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     real(kind=WP), intent(in)    :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
@@ -169,12 +169,12 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
         tolerance = abs_tolerance(returned_real, compared_real)
     end if
     
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real expected = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "    tolerance = ", tolerance
@@ -188,20 +188,20 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine real_eq
 
-subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
+subroutine real_ne(tests, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use checks, only: abs_tolerance, is_close
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     real(kind=WP), intent(in)    :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
@@ -234,12 +234,12 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
         tolerance = abs_tolerance(returned_real, compared_real)
     end if
     
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "      /= real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "    tolerance = ", tolerance
@@ -253,19 +253,19 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine real_ne
 
-subroutine real_gt(this, returned_real, compared_real, message_in)
+subroutine real_gt(tests, returned_real, compared_real, message_in)
     ! Check whether `returned_real > compared_real`, increase `number_of_failures` if `.true.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     real(kind=WP), intent(in)    :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
@@ -286,31 +286,31 @@ subroutine real_gt(this, returned_real, compared_real, message_in)
     
     test_passes = returned_real > compared_real
     
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "       > real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine real_gt
 
-subroutine integer5_eq(this, returned_integer, compared_integer, message_in)
+subroutine integer5_eq(tests, returned_integer, compared_integer, message_in)
     ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     integer, intent(in)          :: returned_integer, compared_integer
     character(len=*), intent(in) :: message_in
@@ -329,12 +329,12 @@ subroutine integer5_eq(this, returned_integer, compared_integer, message_in)
     test_operator = "=="
     
     test_passes = (returned_integer == compared_integer)
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer expected = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      difference = ", abs(returned_integer - compared_integer)
@@ -342,20 +342,20 @@ subroutine integer5_eq(this, returned_integer, compared_integer, message_in)
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine integer5_eq
 
-subroutine integer10_eq(this, returned_integer, compared_integer, message_in)
+subroutine integer10_eq(tests, returned_integer, compared_integer, message_in)
     ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use prec, only: I10
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     integer(kind=I10), intent(in) :: returned_integer, compared_integer
     character(len=*), intent(in)  :: message_in
@@ -374,12 +374,12 @@ subroutine integer10_eq(this, returned_integer, compared_integer, message_in)
     test_operator = "=="
     
     test_passes = (returned_integer == compared_integer)
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i11)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i11)") "integer expected = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, i11)") "      difference = ", abs(returned_integer - compared_integer)
@@ -387,19 +387,19 @@ subroutine integer10_eq(this, returned_integer, compared_integer, message_in)
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine integer10_eq
 
-subroutine integer_ne(this, returned_integer, compared_integer, message_in)
+subroutine integer_ne(tests, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer` equal than `compared_integer`, increase `number_of_failures` if `.true.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     integer, intent(in)          :: returned_integer, compared_integer
     character(len=*), intent(in) :: message_in
@@ -419,31 +419,31 @@ subroutine integer_ne(this, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer /= compared_integer)
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      /= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine integer_ne
 
-subroutine integer5_ge(this, returned_integer, compared_integer, message_in)
+subroutine integer5_ge(tests, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer >= compared_integer`, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     integer, intent(in)          :: returned_integer, compared_integer
     character(len=*), intent(in) :: message_in
@@ -463,32 +463,32 @@ subroutine integer5_ge(this, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer >= compared_integer)
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      >= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine integer5_ge
 
-subroutine integer10_ge(this, returned_integer, compared_integer, message_in)
+subroutine integer10_ge(tests, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer >= compared_integer`, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use prec, only: I10
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     integer(kind=I10), intent(in) :: returned_integer, compared_integer
     character(len=*), intent(in)  :: message_in
@@ -508,31 +508,31 @@ subroutine integer10_ge(this, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer >= compared_integer)
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i11)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i11)") "      >= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine integer10_ge
 
-subroutine integer5_le(this, returned_integer, compared_integer, message_in)
+subroutine integer5_le(tests, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer <= compared_integer`, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     integer, intent(in)          :: returned_integer, compared_integer
     character(len=*), intent(in) :: message_in
@@ -552,32 +552,32 @@ subroutine integer5_le(this, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer <= compared_integer)
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      <= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine integer5_le
 
-subroutine integer10_le(this, returned_integer, compared_integer, message_in)
+subroutine integer10_le(tests, returned_integer, compared_integer, message_in)
     ! Check whether `returned_integer <= compared_integer`, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use prec, only: I10
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     integer(kind=I10), intent(in) :: returned_integer, compared_integer
     character(len=*), intent(in)  :: message_in
@@ -597,31 +597,31 @@ subroutine integer10_le(this, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer <= compared_integer)
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      <= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine integer10_le
 
-subroutine character_eq(this, returned_character_in, compared_character_in, message_in)
+subroutine character_eq(tests, returned_character_in, compared_character_in, message_in)
     ! Check whether two character variables are identical, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     character(len=*), intent(in) :: returned_character_in, compared_character_in
     character(len=*), intent(in) :: message_in
@@ -646,65 +646,65 @@ subroutine character_eq(this, returned_character_in, compared_character_in, mess
     ! The namelist file will have a lot of spaces otherwise.
     
     test_passes = (trim(returned_character) == trim(compared_character))
-    write(unit=this%logger%unit, nml=test_result)
+    write(unit=tests%logger%unit, nml=test_result)
     
     if (.not. test_passes) then
-        this%n_failures = this%n_failures + 1
+        tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= this%logger%stdout_level) then
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
             write(unit=ERROR_UNIT, fmt="(a)") "character returned = " // returned_character
             write(unit=ERROR_UNIT, fmt="(a)") "character expected = " // compared_character
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
     
-    this%n_tests = this%n_tests + 1
+    tests%n_tests = tests%n_tests + 1
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine character_eq
 
-subroutine start_tests(this, logger)
+subroutine start_tests(tests, logger)
     use nmllog, only: DEBUG_LEVEL
     
-    class(test_results_type), intent(out) :: this
+    class(test_results_type), intent(out) :: tests
     
     type(log_type), intent(in) :: logger
     
-    call this%wtime%start()
+    call tests%wtime%start()
     
-    this%logger              = logger
-    this%logger%stdout_level = DEBUG_LEVEL
-    this%logger%file_level   = DEBUG_LEVEL
+    tests%logger              = logger
+    tests%logger%stdout_level = DEBUG_LEVEL
+    tests%logger%file_level   = DEBUG_LEVEL
 end subroutine start_tests
 
-subroutine end_tests(this)
+subroutine end_tests(tests)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-    class(test_results_type), intent(in out) :: this
+    class(test_results_type), intent(in out) :: tests
     
     integer       :: n_tests, n_failures
     real(kind=WP) :: duration ! in seconds
     
     namelist /tests_summary/ n_tests, n_failures, duration
     
-    call assert(this%n_tests >= 0)
-    call assert(this%n_failures >= 0)
-    call assert(this%n_failures <= this%n_tests)
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
     
-    call this%wtime%stop()
-    duration      = this%wtime%read()
-    n_tests       = this%n_tests
-    n_failures    = this%n_failures
-    write(unit=this%logger%unit, nml=tests_summary)
+    call tests%wtime%stop()
+    duration      = tests%wtime%read()
+    n_tests       = tests%n_tests
+    n_failures    = tests%n_failures
+    write(unit=tests%logger%unit, nml=tests_summary)
     
-    write(unit=*, fmt="(a, i0, a, f0.3, a)") "Ran ", this%n_tests, " tests in ", duration, "s"
+    write(unit=*, fmt="(a, i0, a, f0.3, a)") "Ran ", tests%n_tests, " tests in ", duration, "s"
     
-    if (this%n_failures /= 0) then
-        write(unit=ERROR_UNIT, fmt="(a, i0, a)") "FAILED (failures=", this%n_failures, ")"
+    if (tests%n_failures /= 0) then
+        write(unit=ERROR_UNIT, fmt="(a, i0, a)") "FAILED (failures=", tests%n_failures, ")"
         write(unit=ERROR_UNIT, fmt="(a)") LONG_LINE
-        call this%logger%close()
+        call tests%logger%close()
         stop 1
     else
         write(unit=*, fmt="(a, a)") "All tests passed.", new_line("a")
@@ -785,7 +785,7 @@ subroutine validate_timestamp(tests, timestamp, message)
         if (rc_read == 0) then
             call tests%integer_ge(milliseconds, 0, message // ", milliseconds lower bound")
             
-            ! This is commented out as I guess I can't make milliseconds too high.
+            ! tests is commented out as I guess I can't make milliseconds too high.
 !            call tests%integer_le(milliseconds, 999, message // ", milliseconds upper bound")
         end if
         
@@ -828,8 +828,8 @@ subroutine exit_code_eq(tests, command, compared_exit_code, message, output_file
         keep_file_ = .false.
     end if
     
-    ! TODO: This would need to be updated for Windows as I'd add .exe to the executable filename there.
-    ! TODO: This also assumes Bash.
+    ! TODO: this would need to be updated for Windows as I'd add .exe to the executable filename there.
+    ! TODO: tests also assumes Bash.
     call execute_command_line(command // " 2> " // output_file, exitstat=rc_fail)
     call tests%integer_eq(rc_fail, compared_exit_code, message)
 
@@ -861,8 +861,8 @@ subroutine exit_code_ne(tests, command, compared_exit_code, message, output_file
         keep_file_ = .false.
     end if
     
-    ! TODO: This would need to be updated for Windows as I'd add .exe to the executable filename there.
-    ! TODO: This also assumes Bash.
+    ! TODO: this would need to be updated for Windows as I'd add .exe to the executable filename there.
+    ! TODO: tests also assumes Bash.
     call execute_command_line(command // " 2> " // output_file, exitstat=rc_fail)
     call tests%integer_ne(rc_fail, compared_exit_code, message)
 
