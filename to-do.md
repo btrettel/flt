@@ -39,6 +39,7 @@ Priorities:
         - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each unit)
         - function to format type to string with units or dimensions
         - derived type I/O for printing?
+        - Add assertions to the generated module (if appropriate), and have the option to enable or disable assertions.
     - Unit tests for all procedures.
     - Characterization test comparing against known valid `units.f90`.
     - Test exponentiation functions.
