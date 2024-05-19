@@ -1,9 +1,11 @@
 # Public domain POSIX make on Linux
+# <https://frippery.org/make/>
 # Works with `pdpmake -f PDPmakefile`.
+# Intended mostly to make sure that common.mk and depends.mk are POSIX compliant.
 
 .POSIX:
 
-.PRAGMA: target_name
+.PRAGMA: target_name posix_202x
 
 # defaults
 BUILD = debug
@@ -13,8 +15,9 @@ include mk/linux_1.mk
 # Compilers #
 #############
 
-# Only gfortran for now.
+# Only gfortran with BUILD=debug for now.
 include mk/gfortran.mk
+FFLAGS ::= $(FFLAGS) $(DBGFLAGS)
 
 include mk/common.mk
 include mk/depends.mk

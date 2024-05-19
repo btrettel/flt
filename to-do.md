@@ -12,8 +12,8 @@ Priorities:
             - Do these checks in Fortran?
 - port.f90
     - `platform` like Python's `sys.platform`.
+    - Get all tests to pass on Windows.
 - Assertions
-    - f90lint.py: Minimum assertion percentage.
     - Require assertion messages.
     - Add more assertions.
     - `assert_dimension`
@@ -262,6 +262,11 @@ Later:
     - <https://www.forcheck.nl/index.html>
 - genunits:
     - For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
+    - FPM installation
+    - New GitHub repository specifically for this.
+    - Advertising:
+        - Post on Fortran Discourse.
+        - Create Fortran Wiki page on "Physical units" and list it there.
 - Bayesian inference Fortran module, to solve basic problems like the probabity of actually having breast cancer in Yudkowsky's "intyutive explanation" or whodunits. Use log probability or whatever is appropriate internally.
 - How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type?
 - Along side fmutate, make a simple test case reduction program for Fortran (freduce?). Just delete lines to reduce test cases.

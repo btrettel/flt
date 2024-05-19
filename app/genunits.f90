@@ -26,17 +26,23 @@ if (len(input_file) == 0) then
 end if
 
 call config%read_config_namelist(input_file, rc)
-if (rc /= 0) error stop
+if (rc /= 0) then
+    error stop
+end if
 
 call config%read_seed_unit_namelists(input_file, rc)
-if (rc /= 0) error stop
+if (rc /= 0) then
+    error stop
+end if
 
 call config%generate_system(unit_system)
 
 open(newunit=out_unit, action="write", status="replace", position="rewind", file=config%output_file)
 call config%write_module(unit_system, out_unit, rc)
 close(unit=out_unit)
-if (rc /= 0) error stop
+if (rc /= 0) then
+    error stop
+end if
 
 call config%logger%close()
 
