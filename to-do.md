@@ -67,7 +67,6 @@ Priorities:
     - Lint the generated file units.f90.
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
 - `make install` to install genunits.
-- Readd linspace
 
 Later:
 

@@ -10,6 +10,7 @@ module unittest
 use prec, only: WP, CL
 use nmllog, only: log_type, now, TIMESTAMP_LEN, DEBUG_LEVEL
 use timer, only: timer_type
+use checks, only: assert
 implicit none
 private
 
@@ -82,6 +83,10 @@ subroutine logical_true(this, condition, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine logical_true
 
 subroutine logical_false(this, condition, message_in)
@@ -119,13 +124,17 @@ subroutine logical_false(this, condition, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine logical_false
 
 subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are close, increase `number_of_failures` if `.false.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
-    use checks, only: abs_tolerance, is_close, assert
+    use checks, only: abs_tolerance, is_close
     
     class(test_results_type), intent(in out) :: this
     
@@ -180,13 +189,17 @@ subroutine real_eq(this, returned_real, compared_real, message_in, abs_tol)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine real_eq
 
 subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     ! Check whether two reals are not close, increase `number_of_failures` if `.true.`.
     
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
-    use checks, only: abs_tolerance, is_close, assert
+    use checks, only: abs_tolerance, is_close
     
     class(test_results_type), intent(in out) :: this
     
@@ -241,6 +254,10 @@ subroutine real_ne(this, returned_real, compared_real, message_in, abs_tol)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine real_ne
 
 subroutine real_gt(this, returned_real, compared_real, message_in)
@@ -282,6 +299,10 @@ subroutine real_gt(this, returned_real, compared_real, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine real_gt
 
 subroutine integer5_eq(this, returned_integer, compared_integer, message_in)
@@ -322,6 +343,10 @@ subroutine integer5_eq(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine integer5_eq
 
 subroutine integer10_eq(this, returned_integer, compared_integer, message_in)
@@ -363,6 +388,10 @@ subroutine integer10_eq(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine integer10_eq
 
 subroutine integer_ne(this, returned_integer, compared_integer, message_in)
@@ -403,6 +432,10 @@ subroutine integer_ne(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine integer_ne
 
 subroutine integer5_ge(this, returned_integer, compared_integer, message_in)
@@ -443,6 +476,10 @@ subroutine integer5_ge(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine integer5_ge
 
 subroutine integer10_ge(this, returned_integer, compared_integer, message_in)
@@ -484,6 +521,10 @@ subroutine integer10_ge(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine integer10_ge
 
 subroutine integer5_le(this, returned_integer, compared_integer, message_in)
@@ -524,6 +565,10 @@ subroutine integer5_le(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine integer5_le
 
 subroutine integer10_le(this, returned_integer, compared_integer, message_in)
@@ -565,6 +610,10 @@ subroutine integer10_le(this, returned_integer, compared_integer, message_in)
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine integer10_le
 
 subroutine character_eq(this, returned_character_in, compared_character_in, message_in)
@@ -610,6 +659,10 @@ subroutine character_eq(this, returned_character_in, compared_character_in, mess
     end if
     
     this%n_tests = this%n_tests + 1
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
 end subroutine character_eq
 
 subroutine start_tests(this, logger)
@@ -635,6 +688,10 @@ subroutine end_tests(this)
     real(kind=WP) :: duration ! in seconds
     
     namelist /tests_summary/ n_tests, n_failures, duration
+    
+    call assert(this%n_tests >= 0)
+    call assert(this%n_failures >= 0)
+    call assert(this%n_failures <= this%n_tests)
     
     call this%wtime%stop()
     duration      = this%wtime%read()
@@ -750,6 +807,10 @@ subroutine validate_timestamp(tests, timestamp, message)
             call tests%integer_le(timezone_minutes, 59, message // ", timezone_minutes upper bound")
         end if
     end if
+    
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine validate_timestamp
 
 subroutine exit_code_eq(tests, command, compared_exit_code, message, output_file, keep_file)
@@ -779,6 +840,10 @@ subroutine exit_code_eq(tests, command, compared_exit_code, message, output_file
             close(unit=failure_unit, status="delete")
         end if
     end if
+    
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine exit_code_eq
 
 subroutine exit_code_ne(tests, command, compared_exit_code, message, output_file, keep_file)
@@ -808,6 +873,10 @@ subroutine exit_code_ne(tests, command, compared_exit_code, message, output_file
             close(unit=failure_unit, status="delete")
         end if
     end if
+    
+    call assert(tests%n_tests >= 0)
+    call assert(tests%n_failures >= 0)
+    call assert(tests%n_failures <= tests%n_tests)
 end subroutine exit_code_ne
 
 end module unittest
