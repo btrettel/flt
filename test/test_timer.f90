@@ -16,13 +16,15 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests
 type(timer_type)        :: wtime
-real(kind=WP)           :: duration_seconds, timeit_duration_seconds
+real(kind=WP)           :: duration_seconds, timeit_duration_seconds_1, timeit_duration_seconds_2
 
 integer :: i, j
 integer, parameter :: N = 2000
-real(kind=WP), allocatable :: a(:, :)
 
 ! Why is `a` is allocatable? If it's not, then nvfortran fails with a segmentation fault.
+real(kind=WP), allocatable :: a(:, :)
+
+! TODO: Do test with `sleep 2` on Linux and `timeout /t 2 /nobreak` on Windows.
 
 call logger%open("timer.nml")
 call tests%start_tests(logger)
@@ -51,9 +53,17 @@ call tests%integer_ge(int(wtime%sum_count, kind=kind(1)), 1, "timer_type, sum_co
 
 call wtime%reset()
 call tests%integer_eq(int(wtime%sum_count, kind=kind(1)), 0, "timer_type, sum_count after resetting")
+call tests%logical_false(wtime%active, "timer_type, active after restart")
 
-timeit_duration_seconds = timeit(timeit_test, number=5)
-call tests%real_gt(timeit_duration_seconds, 0.0_WP, "timeit")
+timeit_duration_seconds_1 = timeit(timeit_test, number=5)
+call tests%real_gt(timeit_duration_seconds_1, 0.0_WP, "timeit, 1")
+
+timeit_duration_seconds_2 = timeit(timeit_test, number=65)
+call tests%real_gt(timeit_duration_seconds_2, 0.0_WP, "timeit, 2")
+
+write(unit=*, fmt="(a)")
+
+call tests%real_gt(timeit_duration_seconds_2, timeit_duration_seconds_1, "timeit, higher number takes longer")
 
 call tests%end_tests()
 call logger%close()
@@ -61,7 +71,7 @@ call logger%close()
 contains
 
 subroutine timeit_test()
-    write(unit=*, fmt=*) 5
+    write(unit=*, fmt="(a)", advance="no") "="
 end subroutine timeit_test
 
 end program test_timer

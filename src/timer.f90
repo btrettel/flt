@@ -8,6 +8,7 @@
 module timer
 
 use prec, only: WP
+use checks, only: assert
 implicit none
 private
 
@@ -56,13 +57,14 @@ subroutine start_timer(timer)
     integer(kind=TIMER_KIND) :: start_count, count_max
     real(kind=WP)            :: count_rate
     
-    if (timer%active) then
-        error stop "start_timer: Timer is already active."
-    end if
+    call assert(.not. timer%active, "timer (start_timer): An active timer can not be started.")
     
     timer%active = .true.
     
     call system_clock(start_count, count_rate, count_max)
+    
+    call assert(count_rate > 0.0_WP)
+    call assert(count_max > 0)
     
     ! If the timer was previously used, make sure that the `count_rate` and `count_max` match that previously used.
     if (timer%sum_count /= 0_TIMER_KIND) then
@@ -83,13 +85,14 @@ subroutine stop_timer(timer)
     integer(kind=TIMER_KIND) :: stop_count, count_max, before_count_max
     real(kind=WP)            :: count_rate
     
-    if (.not. timer%active) then
-        error stop "stop_timer: Timer is not active."
-    end if
+    call assert(timer%active, "timer (stop_timer): An inactive timer has already stopped.")
     
     timer%active = .false.
     
     call system_clock(stop_count, count_rate, count_max)
+    
+    call assert(count_rate > 0.0_WP)
+    call assert(count_max > 0)
     
     call assert(is_close(timer%count_rate, count_rate))
     call assert(timer%count_max == count_max)
@@ -112,17 +115,17 @@ end subroutine stop_timer
 pure subroutine reset_timer(timer)
     class(timer_type), intent(in out) :: timer
     
-    if (timer%active) then
-        error stop "reset_timer: Timer is already active."
-    end if
+    call assert(.not. timer%active, "timer (reset_timer): Timer must be inactive to be reset.")
     
-    timer%sum_count   = 0_TIMER_KIND
+    timer%sum_count = 0_TIMER_KIND
 end subroutine reset_timer
 
 pure function read_timer(timer)
     class(timer_type), intent(in) :: timer
     
     real(kind=WP) :: read_timer
+    
+    call assert(.not. timer%active, "timer (read_timer): Timer must be inactive to be read.")
     
     read_timer = real(timer%sum_count, WP) / timer%count_rate
 end function read_timer
