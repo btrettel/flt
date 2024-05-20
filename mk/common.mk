@@ -47,3 +47,15 @@ genunits_io.nml: test$(DIR_SEP)genunits_input.nml
 units.nml: test$(DIR_SEP)test_units_fail_1.f90 test$(DIR_SEP)test_units_fail_2.f90
 
 unittest.nml: prec.nml
+
+###########################
+# Portable Python scripts #
+###########################
+
+.PHONY: f90lint
+f90lint:
+	$(PYTHON) f90lint.py app$(DIR_SEP)*.f90 src$(DIR_SEP)*.f90 test$(DIR_SEP)*.f90
+
+.PHONY: depends
+depends:
+	$(PYTHON) depends.py app$(DIR_SEP)*.f90 src$(DIR_SEP)*.f90 test$(DIR_SEP)*.f90

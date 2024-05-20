@@ -24,8 +24,7 @@ valgrind:
 # TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
 .PHONY: lint
 lint:
-	#$(RUN)f90lint.py app/*.f90 src/*.f90 test/*.f90
-	$(RUN)lint-wrapper.py app/*.f90 src/*.f90 test/*.f90
+	$(PYTHON) lint-wrapper.py app$(DIR_SEP)*.f90 src$(DIR_SEP)*.f90 test$(DIR_SEP)*.f90
 
 # TODO: Make depend on *.gcda files?
 html-cov/index.html: $(TESTNML)
@@ -34,10 +33,6 @@ html-cov/index.html: $(TESTNML)
 
 .PHONY: coverage
 coverage: html-cov/index.html
-
-.PHONY: depends
-depends:
-	$(RUN)depends.py app/*.f90 src/*.f90 test/*.f90
 
 # Most of these won't compile due to gaps in lfortran, but some will.
 .PHONY: lfortran
@@ -49,7 +44,7 @@ lfortran:
 	#$(MAKE) FC=lfortran src/genunits_io.o
 	#$(MAKE) FC=lfortran src/nmllog.o
 	$(MAKE) FC=lfortran src/prec.o
-	$(MAKE) FC=lfortran src/port.o
+	#$(MAKE) FC=lfortran src/port.o
 	#$(MAKE) FC=lfortran src/purerng.o
 	$(MAKE) FC=lfortran src/release.o
 	#$(MAKE) FC=lfortran src/timer.o
