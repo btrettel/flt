@@ -11,10 +11,13 @@ implicit none
 private
 
 integer, public, parameter :: PLATFORM_UNKNOWN  = -1
-integer, public, parameter :: PLATFORM_UNIXLIKE = 0
-integer, public, parameter :: PLATFORM_WINDOWS  = 1
+integer, public, parameter :: PLATFORM_UNIXLIKE = 1
+integer, public, parameter :: PLATFORM_WINDOWS  = 2
 
-public :: platform
+character(len=1), public, parameter :: DIR_SEPS(2) = ["/", achar(92)]
+! For Windows (index 2), nvfortran thinks `\` is trying to escape something, so I need to use `achar`.
+
+public :: platform, path_join
 
 contains
 
@@ -38,8 +41,8 @@ function platform()
     
     call get_environment_variable("PATH", path)
     
-    forward_slash_index = index(path, "/") ! Unix-like
-    backslash_index     = index(path, achar(92)) ! Windows (nvfortran thinks `\` is trying to escape something, so I need to use `achar`.
+    forward_slash_index = index(path, DIR_SEPS(PLATFORM_UNIXLIKE))
+    backslash_index     = index(path, DIR_SEPS(PLATFORM_WINDOWS))
     
     if ((forward_slash_index > 0) .and. (backslash_index == 0)) then
         platform = PLATFORM_UNIXLIKE
@@ -52,5 +55,33 @@ function platform()
     call assert(platform >= PLATFORM_UNKNOWN)
     call assert(platform <= PLATFORM_WINDOWS)
 end function platform
+
+function path_join(path_array)
+    use prec, only: CL
+    use checks, only: assert
+    
+    character(len=CL), intent(in) :: path_array(:)
+    
+    character(len=CL) :: path_join
+    character(len=1)  :: DIR_SEP
+    
+    integer :: i_path
+    
+    call assert(size(path_array) >= 1)
+    call assert(platform() > 0)
+    
+    DIR_SEP = DIR_SEPS(platform())
+    
+    path_join = ""
+    do i_path = lbound(path_array, dim=1), ubound(path_array, dim=1)
+        path_join = trim(path_join) // trim(path_array(i_path))
+        
+        if (i_path /= ubound(path_array, dim=1)) then
+            path_join = trim(path_join) // DIR_SEP
+        end if
+    end do
+    
+    call assert(len(trim(path_join)) >= 1)
+end function path_join
 
 end module port
