@@ -49,6 +49,7 @@ lfortran:
 	#$(MAKE) FC=lfortran src/genunits_io.o
 	#$(MAKE) FC=lfortran src/nmllog.o
 	$(MAKE) FC=lfortran src/prec.o
+	$(MAKE) FC=lfortran src/port.o
 	#$(MAKE) FC=lfortran src/purerng.o
 	$(MAKE) FC=lfortran src/release.o
 	#$(MAKE) FC=lfortran src/timer.o

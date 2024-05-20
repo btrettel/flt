@@ -5,7 +5,7 @@
 # License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 # Add later: dimmod.nml ga.nml
-TESTNML = autodiff.nml checks.nml genunits_data.nml genunits_io.nml nmllog.nml prec.nml purerng.nml timer.nml units.nml unittest.nml
+TESTNML = autodiff.nml checks.nml genunits_data.nml genunits_io.nml nmllog.nml port.nml prec.nml purerng.nml timer.nml units.nml unittest.nml
 .PRECIOUS: $(TESTNML)
 
 ###############

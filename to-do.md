@@ -3,10 +3,10 @@
 Priorities:
 
 - port.f90
-    - `platform` like Python's `sys.platform`.
     - Get all tests to pass on Windows.
 - Build system improvements:
     - Make `PYTHON` macro so that you can run at least some of the Python scripts on Windows.
+    - Make `TESTNML` auto-generated.
 - Assertions
     - Require assertion messages.
     - Add more assertions.
