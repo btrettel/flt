@@ -15,7 +15,7 @@ MAKEFLAGS = --warn-undefined-variables
 
 # defaults
 BUILD = debug
-include mk/linux_1.mk
+include mk/linux_defaults.mk
 
 #############
 # Compilers #

@@ -8,7 +8,7 @@
 
 # defaults
 BUILD = debug
-!include mk\windows.mk
+!include mk\windows_defaults.mk
 
 #############
 # Compilers #

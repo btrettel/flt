@@ -42,11 +42,14 @@ parser.add_argument('file', nargs='+')
 args = parser.parse_args()
 
 depstructs = [dependency_structure(os.path.join("src", "$(BUILD)"), False, True, "build", set())]
-for filename in args.file:
-    if filename in ignore_files:
+for filepath in args.file:
+    # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
+    filepath = os.path.relpath(filepath)
+    
+    if filepath in ignore_files:
         continue
     
-    with open(filename, "r") as file_handler:
+    with open(filepath, "r") as file_handler:
         program      = False
         module       = False
         name         = None
@@ -67,22 +70,22 @@ for filename in args.file:
             if line.strip().startswith("use "):
                 dependencies.add(get_module_name_from_use(line))
         
-        print("{} program={} module={} name={} dependencies={}".format(filename, program, module, name, dependencies))
+        print("{} program={} module={} name={} dependencies={}".format(filepath, program, module, name, dependencies))
         
         if (program and module):
-            print("{} contains both a program and a module. depends.py assumes that a file contains one or the other, not both.".format(filename))
+            print("{} contains both a program and a module. depends.py assumes that a file contains one or the other, not both.".format(filepath))
             exit(1)
         
-        if os.path.basename(filename) != name + ".f90":
-            print("{} contains module or program {}, when I require that the two have the same name.".format(filename, name))
+        if os.path.basename(filepath) != name + ".f90":
+            print("{} contains module or program {}, when I require that the two have the same name.".format(filepath, name))
             exit(1)
         
         if module:
-            if os.path.split(filename)[0] != "src":
-                print("{} contains a module which is not in the src directory. All modules must be in the src directory.".format(filename))
+            if os.path.split(filepath)[0] != "src":
+                print("{} contains a module which is not in the src directory. All modules must be in the src directory.".format(filepath))
                 exit(1)
         
-        depstructs.append(dependency_structure(filename, program, module, name, dependencies))
+        depstructs.append(dependency_structure(filepath, program, module, name, dependencies))
 
 for depstruct in depstructs:
     # For programs, I need the entire recursive dependency structure.

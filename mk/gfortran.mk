@@ -3,6 +3,8 @@
 
 FFLAGS   = -Wall -Wextra -Werror -pedantic-errors -Wno-maybe-uninitialized -std=f2018 -Wconversion -Wconversion-extra -fimplicit-none -fmax-errors=1 -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=-2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -ffree-line-length-132
 DBGFLAGS = -Og -g -fbacktrace -fcheck=all -ffpe-trap=invalid,zero,overflow,underflow,denormal --coverage
-RFLAGS   = -O2 -Wno-uninitialized
+RFLAGS   = -O2 -Wno-uninitialized -fopt-info-missed=$(MISSED) -fopenmp
 
 # <https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html>
+
+# TODO: `-funroll`

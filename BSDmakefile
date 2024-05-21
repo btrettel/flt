@@ -12,7 +12,7 @@
 
 # defaults
 BUILD = debug
-.include <mk/linux_1.mk>
+.include <mk/linux_defaults.mk>
 
 #############
 # Compilers #

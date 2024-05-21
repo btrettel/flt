@@ -5,10 +5,22 @@ Priorities:
 - port.f90
     - Get all tests to pass on Windows.
 - Build system improvements:
+    - Make depends and f90lint take input files and both automatically find all f90 files. `*` doesn't work on Windows.
     - Make `TESTNML` auto-generated.
+    - Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all`
+    - `PAR` make macro to switch between GPU and CPU for ifx, nvfortran, etc.
+    - depends.py: Return error if module is missing in 
+- gitrev.py:
+    - generates src/revision.f90 containing `REVISION` (not `GIT_REVISION` as it could come from something other than Git)
+    - `git rev-parse --short HEAD`
+    - `git show --no-patch --format=%ci HEAD`
+    - `include` this line in the `build` module
+    - Modify genunits to print REVISION, DEBUG, compiler info (compiler, flags).
 - Assertions
     - Require assertion messages.
-    - Add more assertions.
+- f90lint:
+    - Add tests for remaining modules which aren't passing.
+    - Check for modules which don't have tests.
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
@@ -62,6 +74,10 @@ Priorities:
     - units test with operations on 3 or more different units to make sure the output is correct
     - Check for spaces at the end of lines.
     - Lint the generated file units.f90.
+    - Namelist group `template` which will read in a template and create versions of the procedure for all units and the proper interface block. Until Fortran has good generics, this is the only way to get a generic procedure
+        - `&template file="file.f90" /`
+        - Example: `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
+    - Have a section listing what various error messages shown by various compilers mean. Some of these error messages are not particularly clear and that harms debugging. Also note which compilers have more useful error messages for genunits.
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
 - `make install` to install genunits.
 

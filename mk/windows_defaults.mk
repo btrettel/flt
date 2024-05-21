@@ -7,7 +7,8 @@ RM       = del /q
 OFLAG    = /o
 OBJEXT   = obj
 OBJFLAGS = /c /o
-CLEAN    = *.nml *.mod src$(DIR_SEP)*.$(OBJEXT) src$(DIR_SEP)units.f90 *$(BINEXT) *.pdb
+MISSED   = missed.txt
+CLEAN    = *.nml *.mod *.$(OBJEXT) src$(DIR_SEP)*.$(OBJEXT) $(MISSED) src$(DIR_SEP)units.f90 *$(BINEXT) *.pdb *.opt.yaml
 CMP      = fc
 PYTHON   = python
 

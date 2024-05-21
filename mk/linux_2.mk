@@ -24,7 +24,7 @@ valgrind:
 # TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
 .PHONY: lint
 lint:
-	$(PYTHON) lint-wrapper.py app$(DIR_SEP)*.f90 src$(DIR_SEP)*.f90 test$(DIR_SEP)*.f90
+	$(PYTHON) py$(DIR_SEP)lint-wrapper.py app$(DIR_SEP)*.f90 src$(DIR_SEP)*.f90 test$(DIR_SEP)*.f90
 
 # TODO: Make depend on *.gcda files?
 html-cov/index.html: $(TESTNML)
