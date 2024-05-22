@@ -2,6 +2,9 @@
 
 Priorities:
 
+- autodiff.f90
+    - Test `sqrt`
+    - Test `assert_dimension_ad_rank_*`
 - port.f90
     - Get all tests to pass on Windows.
 - Build system improvements:
@@ -23,6 +26,7 @@ Priorities:
     - Check for modules which don't have tests.
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
+    - For all array procedures, have tests with non-default array lower bounds.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
     - Remove dependency on nmllog so that this can be separated out more easily.
         - This will also help to compile genunits with lfortran, though it's not sufficient as `is_close` won't compile with lfortran due to `spacing`.
@@ -44,6 +48,7 @@ Priorities:
         - function to format type to string with units or dimensions
         - derived type I/O for printing?
         - Add assertions to the generated module (if appropriate), and have the option to enable or disable assertions.
+        - Generic `assert_dimension` for all combinations of units.
     - Unit tests for all procedures.
     - Characterization test comparing against known valid `units.f90`.
     - Test exponentiation functions.

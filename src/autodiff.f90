@@ -11,6 +11,8 @@ use prec, only: WP
 implicit none
 private
 
+public :: sqrt
+public :: assert_dimension
 public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
@@ -35,6 +37,16 @@ contains
     procedure, private :: ad_real_exponentiate, ad_integer_exponentiate
     generic, public :: operator(**) => ad_real_exponentiate, ad_integer_exponentiate
 end type ad
+
+interface sqrt
+    module procedure :: ad_sqrt
+end interface sqrt
+
+interface assert_dimension
+    module procedure assert_dimension_ad_rank_1
+    module procedure assert_dimension_ad_rank_2
+    module procedure assert_dimension_ad_rank_3
+end interface assert_dimension
 
 contains
 
@@ -97,7 +109,7 @@ elemental function ad_ad_add(ad_1, ad_2)
 end function ad_ad_add
 
 elemental function ad_real_add(ad_in, real_in)
-    ! Adds a `ad` and a `real`.
+    ! Adds an `ad` and a `real`.
 
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
@@ -109,7 +121,7 @@ elemental function ad_real_add(ad_in, real_in)
 end function ad_real_add
 
 elemental function real_ad_add(real_in, ad_in)
-    ! Adds a `real` and a `ad`.
+    ! Adds a `real` and an `ad`.
 
     real(kind=WP), intent(in) :: real_in
     class(ad), intent(in)     :: ad_in
@@ -132,7 +144,7 @@ elemental function ad_ad_subtract(ad_1, ad_2)
 end function ad_ad_subtract
 
 elemental function ad_real_subtract(ad_in, real_in)
-    ! Subtracts a `real` from a `ad`.
+    ! Subtracts a `real` from an `ad`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -144,7 +156,7 @@ elemental function ad_real_subtract(ad_in, real_in)
 end function ad_real_subtract
 
 elemental function real_ad_subtract(real_in, ad_in)
-    ! Subtracts a `real` from a `ad`.
+    ! Subtracts a `real` from an `ad`.
 
     real(kind=WP), intent(in)  :: real_in
     class(ad), intent(in)      :: ad_in
@@ -178,7 +190,7 @@ elemental function ad_ad_multiply(ad_1, ad_2)
 end function ad_ad_multiply
 
 elemental function ad_real_multiply(ad_in, real_in)
-    ! Multiplies a `ad` by a `real`.
+    ! Multiplies an `ad` by a `real`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -190,7 +202,7 @@ elemental function ad_real_multiply(ad_in, real_in)
 end function ad_real_multiply
 
 elemental function real_ad_multiply(real_in, ad_in)
-    ! Multiplies a `real` by a `ad`.
+    ! Multiplies a `real` by an `ad`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -213,7 +225,7 @@ elemental function ad_ad_divide(ad_1, ad_2)
 end function ad_ad_divide
 
 elemental function ad_real_divide(ad_in, real_in)
-    ! Divides a `ad` by a `real`.
+    ! Divides an `ad` by a `real`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -225,7 +237,7 @@ elemental function ad_real_divide(ad_in, real_in)
 end function ad_real_divide
 
 elemental function real_ad_divide(real_in, ad_in)
-    ! Divides a `real` by a `ad`.
+    ! Divides a `real` by an `ad`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -237,7 +249,7 @@ elemental function real_ad_divide(real_in, ad_in)
 end function real_ad_divide
 
 elemental function ad_real_exponentiate(ad_in, real_in)
-    ! Exponentiates a `ad` by a `real`.
+    ! Exponentiates an `ad` by a `real`.
 
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -249,7 +261,7 @@ elemental function ad_real_exponentiate(ad_in, real_in)
 end function ad_real_exponentiate
 
 elemental function ad_integer_exponentiate(ad_in, integer_in)
-    ! Exponentiates a `ad` by an `integer`.
+    ! Exponentiates an `ad` by an `integer`.
 
     class(ad), intent(in) :: ad_in
     integer, intent(in)   :: integer_in
@@ -261,6 +273,51 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
 end function ad_integer_exponentiate
 
 ! No `rd**rd` as that's not likely to happen in CFD.
+
+elemental function ad_sqrt(ad_in)
+    ! Takes the square root of an `ad`.
+    
+    use checks, only: assert, is_close
+    
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_sqrt
+    
+    call assert(.not. is_close(ad_in%v, 0.0_WP))
+    
+    ad_sqrt%v  = sqrt(ad_in%v)
+    ad_sqrt%dv = ad_in%dv/(2.0_WP * sqrt(ad_in%v))
+end function ad_sqrt
+
+pure subroutine assert_dimension_ad_rank_1(a, b)
+    use checks, only: assert
+    
+    type(ad), intent(in) :: a(:), b(:)
+    
+    call assert(size(a) == size(b))
+    call assert(all(lbound(a) == lbound(b)))
+    call assert(all(ubound(a) == ubound(b)))
+end subroutine assert_dimension_ad_rank_1
+
+pure subroutine assert_dimension_ad_rank_2(a, b)
+    use checks, only: assert
+    
+    type(ad), intent(in) :: a(:, :), b(:, :)
+    
+    call assert(size(a) == size(b))
+    call assert(all(lbound(a) == lbound(b)))
+    call assert(all(ubound(a) == ubound(b)))
+end subroutine assert_dimension_ad_rank_2
+
+pure subroutine assert_dimension_ad_rank_3(a, b)
+    use checks, only: assert
+    
+    type(ad), intent(in) :: a(:, :, :), b(:, :, :)
+    
+    call assert(size(a) == size(b))
+    call assert(all(lbound(a) == lbound(b)))
+    call assert(all(ubound(a) == ubound(b)))
+end subroutine assert_dimension_ad_rank_3
 
 pure function f(x, y)
     ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.
