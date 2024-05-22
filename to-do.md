@@ -5,6 +5,9 @@ Priorities:
 - autodiff.f90
     - Test `sqrt`
     - Test `assert_dimension_ad_rank_*`
+- depends.py
+    - Return an error if module depends on itself.
+    - Return an error for circular dependencies in general.
 - port.f90
     - Get all tests to pass on Windows.
 - Build system improvements:

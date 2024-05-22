@@ -277,13 +277,13 @@ end function ad_integer_exponentiate
 elemental function ad_sqrt(ad_in)
     ! Takes the square root of an `ad`.
     
-    use checks, only: assert, is_close
+    use checks, only: assert
     
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_sqrt
     
-    call assert(.not. is_close(ad_in%v, 0.0_WP))
+    call assert(ad_in%v > 0.0_WP)
     
     ad_sqrt%v  = sqrt(ad_in%v)
     ad_sqrt%dv = ad_in%dv/(2.0_WP * sqrt(ad_in%v))
