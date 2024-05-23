@@ -25,8 +25,24 @@ def is_empty_or_comment(line):
     return not len(line_clean) > 0
 
 parser = argparse.ArgumentParser(description="A linter for Fortran 90 and later intended for Ben Trettel's use.")
-parser.add_argument('file', nargs='+')
+parser.add_argument('directories', nargs='+')
 args = parser.parse_args()
+
+fail = False
+
+filepaths = []
+for directory in sorted(args.directories):
+    if not os.path.isdir(directory):
+        print("{} is not a directory.")
+        fail = True
+    else:
+        for filename in os.listdir(directory):
+            if filename.endswith(".f90"):
+                filepaths.append(os.path.join(directory, filename))
+
+if fail:
+    print("Error(s) encountered, stopping.")
+    exit(1)
 
 exit_code = 0
 
@@ -34,7 +50,7 @@ global_num_lines_code  = 0
 global_num_lines_tests = 0
 global_num_assertions  = 0
 file_stats = []
-for filename in args.file:
+for filename in sorted(filepaths):
     if filename in ignore_files:
         continue
     

@@ -56,8 +56,8 @@ unittest.nml: prec.nml
 
 .PHONY: f90lint
 f90lint:
-	$(PYTHON) py$(DIR_SEP)f90lint.py app$(DIR_SEP)*.f90 src$(DIR_SEP)*.f90 test$(DIR_SEP)*.f90
+	$(PYTHON) py$(DIR_SEP)f90lint.py app src test
 
 .PHONY: depends
 depends:
-	$(PYTHON) py$(DIR_SEP)depends.py app$(DIR_SEP)*.f90 src$(DIR_SEP)*.f90 test$(DIR_SEP)*.f90
+	$(PYTHON) py$(DIR_SEP)depends.py app src test

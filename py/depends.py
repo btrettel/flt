@@ -40,16 +40,28 @@ def get_module_name_from_use(line):
     return line[start_index:end_index]
 
 parser = argparse.ArgumentParser(description="Generates a Makefile fragment describing the dependencies of a Fortran project.")
-parser.add_argument('file', nargs='+')
+parser.add_argument('directories', nargs='+')
 args = parser.parse_args()
+
+fail = False
+
+filepaths = []
+for directory in sorted(args.directories):
+    if not os.path.isdir(directory):
+        print("{} is not a directory.")
+        fail = True
+    else:
+        for filename in sorted(os.listdir(directory)):
+            if filename.endswith(".f90"):
+                filepaths.append(os.path.join(directory, filename))
+
+if fail:
+    print("Error(s) encountered, stopping.")
+    exit(1)
 
 depstructs = [dependency_structure(os.path.join("src", "$(BUILD)"), False, True, "build", set())]
 all_dependencies = set()
-fail = False
-for filepath in args.file:
-    # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
-    filepath = os.path.relpath(filepath)
-    
+for filepath in sorted(filepaths):
     if filepath in no_dependency_check_files:
         continue
     
