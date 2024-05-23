@@ -7,11 +7,14 @@
 
 program test_autodiff
 
+use build, only: DEBUG
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
-use autodiff, only: ad, f
+use autodiff, only: ad, assert_dimension, f
 implicit none
+
+character(len=*), parameter :: ASSERT_FALSE_OUTPUT = "test_assert_false.txt"
 
 type(log_type)          :: logger
 type(test_results_type) :: tests
@@ -21,6 +24,10 @@ type(ad)      :: u(2), v(2), w(2), x, y, z
 integer       :: c
 
 integer, parameter :: N_DV = 2
+
+type(ad) :: a1(5),    b1(5),    &
+            a2(5, 5), b2(5, 5), &
+            a3(5, 5), b3(5, 5)
 
 call logger%open("autodiff.nml")
 call tests%start_tests(logger)
@@ -157,6 +164,32 @@ call tests%real_eq(w(1)%dv(2), 0.0_WP, "rd_var, 1, derivative (dv 2)")
 call tests%real_eq(w(2)%v, 7.0_WP, "rd_var array, 2, value")
 call tests%real_eq(w(2)%dv(1), 0.0_WP, "rd_var, 2, derivative (dv 1)")
 call tests%real_eq(w(2)%dv(2), 1.0_WP, "rd_var, 2, derivative (dv 2)")
+
+! TODO: `sqrt`
+
+! `assert_dimension`
+
+call assert_dimension(a1, b1) ! rank 1
+call assert_dimension(a2, b2) ! rank 2
+call assert_dimension(a3, b3) ! rank 3
+
+if (DEBUG) then
+    ! Check that `assert_dimension` terminates with a non-zero exit code for debug mode.
+    call tests%exit_code_ne("./test_assert_dimension_false_4", 0, &
+                                "assert_dimension, ad, rank 1, .false., exit code", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_ne("./test_assert_dimension_false_5", 0, &
+                                "assert_dimension, ad, rank 2, .false., exit code", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_ne("./test_assert_dimension_false_6", 0, &
+                                "assert_dimension, ad, rank 3, .false., exit code", ASSERT_FALSE_OUTPUT)
+else
+    ! Check that `assert_dimension` does not terminate with a non-zero exit code for release mode.
+    call tests%exit_code_eq("./test_assert_dimension_false_4", 0, &
+                                "assert_dimension, ad, rank 1, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_eq("./test_assert_dimension_false_5", 0, &
+                                "assert_dimension, ad, rank 2, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_eq("./test_assert_dimension_false_6", 0, &
+                                "assert_dimension, ad, rank 3, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
+end if
 
 call tests%end_tests()
 call logger%close()

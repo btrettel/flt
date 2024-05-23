@@ -49,6 +49,24 @@ test_assert_dimension_false_3$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR
 assert_dimension_false_3.nml: test_assert_dimension_false_3$(BINEXT)
 	$(RUN)test_assert_dimension_false_3$(BINEXT)
 
+test_assert_dimension_false_4$(BINEXT): src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_4.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_4.f90
+
+assert_dimension_false_4.nml: test_assert_dimension_false_4$(BINEXT)
+	$(RUN)test_assert_dimension_false_4$(BINEXT)
+
+test_assert_dimension_false_5$(BINEXT): src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_5.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_5.f90
+
+assert_dimension_false_5.nml: test_assert_dimension_false_5$(BINEXT)
+	$(RUN)test_assert_dimension_false_5$(BINEXT)
+
+test_assert_dimension_false_6$(BINEXT): src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_6.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_6.f90
+
+assert_dimension_false_6.nml: test_assert_dimension_false_6$(BINEXT)
+	$(RUN)test_assert_dimension_false_6$(BINEXT)
+
 test_assert_false$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_false.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_false.f90
 
