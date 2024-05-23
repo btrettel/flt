@@ -1,6 +1,3 @@
-# default compiler
-FC = gfortran
-
 BINEXT   = 
 RUN      = ./
 RM       = rm -rfv

@@ -14,6 +14,16 @@
 MAKEFLAGS = --warn-undefined-variables
 
 # defaults
+ifdef F90
+FC=$(F90)
+else
+ifndef FC
+FC = gfortran
+# fort77 is GNU Make's default, which I'm overriding.
+else ifeq ($(FC),fort77)
+FC = gfortran
+endif
+endif
 BUILD = debug
 include mk/linux_defaults.mk
 
@@ -31,12 +41,12 @@ else ifeq ($(FC),nvfortran)
 include mk/nvfortran.mk
 else ifeq ($(FC),lfortran)
 include mk/lfortran.mk
-else
-$(error Invalid FC: $(FC))
+#else
+#$(error Invalid FC: $(FC))
 endif
 
 ifeq ($(BUILD),debug)
-FFLAGS += $(DBGFLAGS)
+FFLAGS += $(DFLAGS)
 else ifeq ($(BUILD),release)
 FFLAGS += $(RFLAGS)
 else

@@ -7,6 +7,9 @@
 # Partially tested with NMAKE on Windows. Some tests will fail due to non-portable code. Should eventually work with `nmake /f Nmakefile`.
 
 # defaults
+!ifndef FC
+FC=ifort
+!endif
 BUILD = debug
 !include mk\windows_defaults.mk
 
@@ -23,7 +26,7 @@ BUILD = debug
 !endif
 
 !if "$(BUILD)" == "debug"
-FFLAGS = $(FFLAGS) $(DBGFLAGS)
+FFLAGS = $(FFLAGS) $(DFLAGS)
 !elseif "$(BUILD)" == "release"
 FFLAGS = $(FFLAGS) $(RFLAGS)
 !else

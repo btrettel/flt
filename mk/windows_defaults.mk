@@ -1,6 +1,3 @@
-# default compiler
-FC = ifort
-
 BINEXT   = .exe
 RUN      = 
 RM       = del /q

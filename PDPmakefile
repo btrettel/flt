@@ -11,6 +11,7 @@
 .PRAGMA: target_name posix_202x
 
 # defaults
+FC    = gfortran
 BUILD = debug
 include mk/linux_defaults.mk
 
@@ -20,7 +21,7 @@ include mk/linux_defaults.mk
 
 # Only gfortran with BUILD=debug for now.
 include mk/gfortran.mk
-FFLAGS ::= $(FFLAGS) $(DBGFLAGS)
+FFLAGS ::= $(FFLAGS) $(DFLAGS)
 
 include mk/common.mk
 include mk/depends.mk

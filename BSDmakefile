@@ -11,6 +11,16 @@
 .DELETE_ON_ERROR:
 
 # defaults
+.ifdef F90
+FC=$(F90)
+.else
+.ifndef FC
+FC = gfortran
+# f77 is bmake's default, which I'm overriding.
+.elif $(FC) == f77
+FC = gfortran
+.endif
+.endif
 BUILD = debug
 .include <mk/linux_defaults.mk>
 
@@ -28,12 +38,14 @@ BUILD = debug
 .include <mk/nvfortran.mk>
 .elif $(FC) == lfortran
 .include <mk/lfortran.mk>
-.else
-.error Invalid FC: $(FC)
+.elif $(FC) == crayftn
+.include <mk/crayftn.mk>
+#.else
+#.error Invalid FC: $(FC)
 .endif
 
 .if $(BUILD) == debug
-FFLAGS += $(DBGFLAGS)
+FFLAGS += $(DFLAGS)
 .elif $(BUILD) == release
 FFLAGS += $(RFLAGS)
 .else
