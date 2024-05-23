@@ -68,6 +68,10 @@ for filepath in args.file:
                     name = get_module_name_from_module(line)
             
             if line.strip().startswith("use "):
+                if get_module_name_from_use(line) == name:
+                    print("{} can't depend on itself.".format(filepath))
+                    exit(1)
+                
                 dependencies.add(get_module_name_from_use(line))
         
         print("{} program={} module={} name={} dependencies={}".format(filepath, program, module, name, dependencies))

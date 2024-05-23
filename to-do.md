@@ -4,24 +4,24 @@ Priorities:
 
 - autodiff.f90
     - Test `sqrt`
+    - Add comparison operators
 - depends.py
-    - Return an error if module depends on itself.
     - Return an error for circular dependencies in general.
+    - Return error if no file exists for a required module.
+    - Make depends and f90lint take input files and both automatically find all f90 files. `*` doesn't work on Windows.
+    - Make `TESTNML` auto-generated.
 - port.f90
     - Get all tests to pass on Windows.
 - Build system improvements:
     - Replace PDPmakefile with POSIXmakefile that is strictly POSIX (has no `include` or any other non-POSIX things) and should work on IBM AIX make too. This file can be constructed from the other files via `make POSIXmakefile`. Don't set `FC` and whatnot, instead set those via the command line or defaults?
-    - Make depends and f90lint take input files and both automatically find all f90 files. `*` doesn't work on Windows.
-    - Make `TESTNML` auto-generated.
-    - Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all`
+    - Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all` (`SFLAGS`?)
     - `PFLAGS` make macro to switch between GPU and CPU for ifx, nvfortran, etc.
-    - depends.py: Return error if module is missing in 
 - gitrev.py:
     - generates src/revision.f90 containing `REVISION` (not `GIT_REVISION` as it could come from something other than Git)
     - `git rev-parse --short HEAD`
     - `git show --no-patch --format=%ci HEAD`
     - `include` this line in the `build` module
-    - Modify genunits to print REVISION, DEBUG, compiler info (compiler, flags).
+    - Modify genunits to print `REVISION`, `DEBUG`, compiler info (compiler, flags).
 - Assertions
     - Require assertion messages.
 - f90lint:
