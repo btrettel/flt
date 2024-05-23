@@ -7,7 +7,6 @@ Priorities:
     - Add comparison operators
 - depends.py
     - Return an error for circular dependencies in general.
-    - Return error if no file exists for a required module.
     - Make depends and f90lint take input files and both automatically find all f90 files. `*` doesn't work on Windows.
     - Make `TESTNML` auto-generated.
 - port.f90

@@ -9,7 +9,9 @@ import argparse
 OUTPUT_FILE = os.path.join("mk", "depends.mk")
 
 # The `build` module (debug.f90 or release.f90, depending on the value of the `BUILD` make macro) disables assertions. Because this violates this program's assumption that the filename matches that of the module name (`build` is not the same as `debug` or `release`), I had to add some logic to this program to handle this case. Part of that includes ignoring the following files and manually adding a file with the filename `$(BUILD)` later.
-ignore_files = [os.path.join("src", "debug.f90"), os.path.join("src", "release.f90")]
+no_dependency_check_files = [os.path.join("src", "debug.f90"), os.path.join("src", "release.f90")]
+
+modules_to_not_check_for_existence_of = ["build", "units"]
 
 class dependency_structure:
     def __init__(self, filename, program, module, name, dependencies):
@@ -42,11 +44,13 @@ parser.add_argument('file', nargs='+')
 args = parser.parse_args()
 
 depstructs = [dependency_structure(os.path.join("src", "$(BUILD)"), False, True, "build", set())]
+all_dependencies = set()
+fail = False
 for filepath in args.file:
     # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
     filepath = os.path.relpath(filepath)
     
-    if filepath in ignore_files:
+    if filepath in no_dependency_check_files:
         continue
     
     with open(filepath, "r") as file_handler:
@@ -70,26 +74,39 @@ for filepath in args.file:
             if line.strip().startswith("use "):
                 if get_module_name_from_use(line) == name:
                     print("{} can't depend on itself.".format(filepath))
-                    exit(1)
+                    fail = True
                 
                 dependencies.add(get_module_name_from_use(line))
+                all_dependencies.add(get_module_name_from_use(line))
         
         print("{} program={} module={} name={} dependencies={}".format(filepath, program, module, name, dependencies))
         
         if (program and module):
             print("{} contains both a program and a module. depends.py assumes that a file contains one or the other, not both.".format(filepath))
-            exit(1)
+            fail = True
         
         if os.path.basename(filepath) != name + ".f90":
             print("{} contains module or program {}, when I require that the two have the same name.".format(filepath, name))
-            exit(1)
+            fail = True
         
         if module:
             if os.path.split(filepath)[0] != "src":
                 print("{} contains a module which is not in the src directory. All modules must be in the src directory.".format(filepath))
-                exit(1)
+                fail = True
         
         depstructs.append(dependency_structure(filepath, program, module, name, dependencies))
+
+for dependency in sorted(all_dependencies):
+    if dependency in modules_to_not_check_for_existence_of:
+        continue
+    
+    if not os.path.exists(os.path.join("src", dependency+".f90")):
+        print("Module dependency {} does not exist.".format(dependency))
+        fail = True
+
+if fail:
+    print("Error(s) encountered, stopping.")
+    exit(1)
 
 for depstruct in depstructs:
     # For programs, I need the entire recursive dependency structure.
