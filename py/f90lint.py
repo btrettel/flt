@@ -1,8 +1,6 @@
 #!/usr/bin/env -S python3 -Werror
 # -*- coding: utf-8 -*-
 
-# Bash: `./f90lint.py app/*.f90 src/*.f90 test/*.f90`
-
 import os
 import argparse
 
@@ -32,6 +30,9 @@ fail = False
 
 filepaths = []
 for directory in sorted(args.directories):
+    # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
+    directory = os.path.relpath(directory)
+    
     if not os.path.isdir(directory):
         print("{} is not a directory.")
         fail = True
