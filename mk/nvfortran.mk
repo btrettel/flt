@@ -6,3 +6,5 @@ RFLAGS = -fast -Minfo=all -Mneginfo=all
 
 # TODO: `-stdpar=multicore` for CPUs
 # TODO: `-stdpar=gpu` (or `-stdpar`) for GPUs
+# TODO: `-gpu=ccnative`
+# TODO: `-gpu=debug`

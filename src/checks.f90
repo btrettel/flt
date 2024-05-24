@@ -11,7 +11,9 @@ use prec, only: WP
 implicit none
 private
 
-real(kind=WP), public, parameter :: TOL_FACTOR = 5.0_WP
+! <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
+! I started `TOL_FACTOR` at 5, but increased it to 25 based on experience.
+real(kind=WP), public, parameter :: TOL_FACTOR = 25.0_WP
 
 public :: abs_tolerance
 public :: is_close, all_close
