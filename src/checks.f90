@@ -21,9 +21,9 @@ public :: assert
 public :: assert_dimension ! TODO: test this
 
 interface assert_dimension
-    module procedure assert_dimension_real_rank_1
-    module procedure assert_dimension_real_rank_2
-    module procedure assert_dimension_real_rank_3
+    module procedure assert_dimension_rank_1
+    module procedure assert_dimension_rank_2
+    module procedure assert_dimension_rank_3
 end interface assert_dimension
 
 contains
@@ -149,28 +149,28 @@ pure subroutine assert(condition, message)
     end if
 end subroutine assert
 
-pure subroutine assert_dimension_real_rank_1(a, b)
-    real(kind=WP), intent(in) :: a(:), b(:)
+pure subroutine assert_dimension_rank_1(a, b)
+    class(*), intent(in) :: a(:), b(:)
     
     call assert(size(a) == size(b))
     call assert(all(lbound(a) == lbound(b)))
     call assert(all(ubound(a) == ubound(b)))
-end subroutine assert_dimension_real_rank_1
+end subroutine assert_dimension_rank_1
 
-pure subroutine assert_dimension_real_rank_2(a, b)
-    real(kind=WP), intent(in) :: a(:, :), b(:, :)
+pure subroutine assert_dimension_rank_2(a, b)
+    class(*), intent(in) :: a(:, :), b(:, :)
     
     call assert(size(a) == size(b))
     call assert(all(lbound(a) == lbound(b)))
     call assert(all(ubound(a) == ubound(b)))
-end subroutine assert_dimension_real_rank_2
+end subroutine assert_dimension_rank_2
 
-pure subroutine assert_dimension_real_rank_3(a, b)
-    real(kind=WP), intent(in) :: a(:, :, :), b(:, :, :)
+pure subroutine assert_dimension_rank_3(a, b)
+    class(*), intent(in) :: a(:, :, :), b(:, :, :)
     
     call assert(size(a) == size(b))
     call assert(all(lbound(a) == lbound(b)))
     call assert(all(ubound(a) == ubound(b)))
-end subroutine assert_dimension_real_rank_3
+end subroutine assert_dimension_rank_3
 
 end module checks

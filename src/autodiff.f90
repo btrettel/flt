@@ -12,7 +12,6 @@ implicit none
 private
 
 public :: sqrt
-public :: assert_dimension
 public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
@@ -41,12 +40,6 @@ end type ad
 interface sqrt
     module procedure :: ad_sqrt
 end interface sqrt
-
-interface assert_dimension
-    module procedure assert_dimension_ad_rank_1
-    module procedure assert_dimension_ad_rank_2
-    module procedure assert_dimension_ad_rank_3
-end interface assert_dimension
 
 contains
 
@@ -288,36 +281,6 @@ elemental function ad_sqrt(ad_in)
     ad_sqrt%v  = sqrt(ad_in%v)
     ad_sqrt%dv = ad_in%dv/(2.0_WP * sqrt(ad_in%v))
 end function ad_sqrt
-
-pure subroutine assert_dimension_ad_rank_1(a, b)
-    use checks, only: assert
-    
-    type(ad), intent(in) :: a(:), b(:)
-    
-    call assert(size(a) == size(b))
-    call assert(all(lbound(a) == lbound(b)))
-    call assert(all(ubound(a) == ubound(b)))
-end subroutine assert_dimension_ad_rank_1
-
-pure subroutine assert_dimension_ad_rank_2(a, b)
-    use checks, only: assert
-    
-    type(ad), intent(in) :: a(:, :), b(:, :)
-    
-    call assert(size(a) == size(b))
-    call assert(all(lbound(a) == lbound(b)))
-    call assert(all(ubound(a) == ubound(b)))
-end subroutine assert_dimension_ad_rank_2
-
-pure subroutine assert_dimension_ad_rank_3(a, b)
-    use checks, only: assert
-    
-    type(ad), intent(in) :: a(:, :, :), b(:, :, :)
-    
-    call assert(size(a) == size(b))
-    call assert(all(lbound(a) == lbound(b)))
-    call assert(all(ubound(a) == ubound(b)))
-end subroutine assert_dimension_ad_rank_3
 
 pure function f(x, y)
     ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.
