@@ -181,7 +181,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     
     namelist /seed_unit/ label, e
     
-    call assert(allocated(config%base_units))
+    call assert(allocated(config%base_units), "genunits_io (read_seed_unit_namelists): base units must be allocated")
     
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
     
@@ -284,7 +284,10 @@ pure function in_exponent_bounds(config, unit)
     
     integer :: i_base_unit
     
-    call assert(size(config%min_exponents) == size(config%max_exponents))
+    call assert(size(config%min_exponents) == size(config%max_exponents), &
+                    "genunits_io (in_exponent_bounds): min and max exponents have inconsistent sizes")
+    call assert(all(config%min_exponents <= config%max_exponents), &
+                    "genunits_io (in_exponent_bounds): min exponents must be <= max exponents")
     
     in_exponent_bounds = .true.
     do i_base_unit = 1, size(config%min_exponents)
@@ -362,7 +365,8 @@ subroutine generate_system(config, unit_system)
     type(unit_type) :: units(config%max_n_units), trial_unit
     integer         :: n_units, n_units_prev, i_units, j_units, iter, rc
     
-    call assert(size(config%seed_units) <= config%max_n_units)
+    call assert(size(config%seed_units) <= config%max_n_units, &
+                    "genunits_io (generate_system): there are more seed units than ")
     
     ! Add all `seed_units` to `units`
     units(1:size(config%seed_units)) = config%seed_units
@@ -553,7 +557,8 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     binary_operator_procedure = op_label // "_" // trim(unit_left%label()) // "_" &
                                     // trim(unit_right%label())
     
-    call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN)
+    call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_binary_operator): " // &
+                        "binary_operator_procedure name is too long and won't meet the Fortran 2003 standard")
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(unit_left, unit_right)"
     
@@ -593,7 +598,8 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
     
     unary_operator_procedure = op_label // "_" // trim(unit%label())
     
-    call assert(len(unary_operator_procedure) <= MAX_LABEL_LEN)
+    call assert(len(unary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_unary_operator): " // &
+                        "unary_operator_procedure name is too long and won't meet the Fortran 2003 standard")
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", unary_operator_procedure, "(unit)"
     

@@ -62,13 +62,13 @@ subroutine start_timer(timer)
     
     call system_clock(start_count, count_rate, count_max)
     
-    call assert(count_rate > 0.0_WP)
-    call assert(count_max > 0)
+    call assert(count_rate > 0.0_WP, "timer (start_timer): negative count rate")
+    call assert(count_max > 0, "timer (start_timer): negative count max")
     
     ! If the timer was previously used, make sure that the `count_rate` and `count_max` match that previously used.
     if (timer%sum_count /= 0_TIMER_KIND) then
-        call assert(timer%count_max == count_max)
-        call assert(is_close(timer%count_rate, count_rate))
+        call assert(timer%count_max == count_max, "timer (start_timer): inconsistent count_max")
+        call assert(is_close(timer%count_rate, count_rate), "timer (start_timer): inconsistent count rate")
     end if
     
     timer%start_count = start_count
@@ -90,11 +90,11 @@ subroutine stop_timer(timer)
     
     call system_clock(stop_count, count_rate, count_max)
     
-    call assert(count_rate > 0.0_WP)
-    call assert(count_max > 0)
+    call assert(count_rate > 0.0_WP, "timer (stop_timer): negative count rate")
+    call assert(count_max > 0, "timer (stop_timer): negative count max")
     
-    call assert(is_close(timer%count_rate, count_rate))
-    call assert(timer%count_max == count_max)
+    call assert(is_close(timer%count_rate, count_rate), "timer (stop_timer): inconsistent count_max")
+    call assert(timer%count_max == count_max, "timer (stop_timer): inconsistent count rate")
     
     ! Detect if the timer wraps.
     if (stop_count < timer%start_count) then

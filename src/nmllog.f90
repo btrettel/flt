@@ -80,6 +80,8 @@ end type pure_log_data_type
 contains
 
 function now()
+    use checks, only: assert
+    
     character(len=5)             :: zone
     integer                      :: values(8)
     character(len=4)             :: year
@@ -102,6 +104,21 @@ function now()
     
     now = year // "-" // month // "-" // day // "T" // hour // ":" // minutes // ":" // seconds // &
                 "." // milliseconds // zone(1:3) // ":" // zone(4:5)
+    
+    call assert(values(1) > 2000, "nmllog (now): year is in the past")
+    call assert(values(1) < 2100, "nmllog (now): year is in the future")
+    call assert(values(2) >= 1, "nmllog (now): month is below 1")
+    call assert(values(2) <= 12, "nmllog (now): month is above 12")
+    call assert(values(3) >= 1, "nmllog (now): day is below 1")
+    call assert(values(3) <= 31, "nmllog (now): day is above 31")
+    call assert(values(5) >= 0, "nmllog (now): hour is below 0")
+    call assert(values(5) <= 23, "nmllog (now): hour is above 23")
+    call assert(values(6) >= 0, "nmllog (now): minutes are below 0")
+    call assert(values(6) <= 59, "nmllog (now): minutes are above 23")
+    call assert(values(7) >= 0, "nmllog (now): seconds are below 0")
+    call assert(values(7) <= 59, "nmllog (now): seconds are above 23")
+    call assert(values(8) >= 0, "nmllog (now): milliseconds are below 0")
+    call assert(values(8) <= 999, "nmllog (now): milliseconds are above 999")
 end function now
 
 subroutine log_open(this, filename, level, file_level, stdout_level)
@@ -134,8 +151,8 @@ subroutine log_open(this, filename, level, file_level, stdout_level)
             delim="quote", &
             recl=NML_RECL)
     
-    call assert(this%file_level >= 0)
-    call assert(this%stdout_level >= 0)
+    call assert(this%file_level >= 0, "nmllog (log_open): file_level is negative")
+    call assert(this%stdout_level >= 0, "nmllog (log_open): stdout_level is negative")
 end subroutine log_open
 
 subroutine log_close(this)
@@ -146,7 +163,7 @@ subroutine log_close(this)
     logical :: unit_open
     
     inquire(unit=this%unit, opened=unit_open)
-    call assert(unit_open)
+    call assert(unit_open, "nmllog (log_close): unit must be open to close")
     
     close(unit=this%unit)
     this%unit = UNIT_CLOSED
@@ -170,7 +187,7 @@ subroutine log_writer(this, message_in, level_code)
     namelist /log/ timestamp, level, message
     
     inquire(unit=this%unit, opened=unit_open)
-    call assert(unit_open)
+    call assert(unit_open, "nmllog (log_writer): unit must be open to write")
     
     timestamp = now()
     
@@ -204,8 +221,8 @@ subroutine log_writer(this, message_in, level_code)
         write(unit=print_unit, fmt="(a, a, a, a, a)") timestamp, " [", level, "] ", message
     end if
     
-    call assert(this%file_level >= 0)
-    call assert(this%stdout_level >= 0)
+    call assert(this%file_level >= 0, "nmllog (log_writer): file_level is negative")
+    call assert(this%stdout_level >= 0, "nmllog (log_writer): stdout_level is negative")
 end subroutine log_writer
 
 subroutine log_debug(this, message)
@@ -285,7 +302,7 @@ subroutine log_debug_info(this)
                             integer_kind_code, integer_range, integer_huge
     
     inquire(unit=this%unit, opened=unit_open)
-    call assert(unit_open)
+    call assert(unit_open, "nmllog (log_debug_info): unit must be open to write")
     
     timestamp        = now()
     level            = DEBUG_STRING
@@ -328,10 +345,13 @@ subroutine pure_log_open(pure_logger, logger)
     class(pure_log_type), intent(out) :: pure_logger
     type(log_type), intent(in)        :: logger
     
+    logical :: unit_open
+    
     call logger%debug("Pure logger started.")
     pure_logger%logger = logger
     
-    call assert(pure_logger%logger%unit /= UNIT_CLOSED)
+    inquire(unit=pure_logger%logger%unit, opened=unit_open)
+    call assert(unit_open, "nmllog (pure_log_open): unit must be open to create pure log")
 end  subroutine pure_log_open
 
 subroutine pure_log_close(pure_logger)
@@ -446,7 +466,7 @@ subroutine impure_check(logger, condition, message, rc)
         rc = rc + 1
     end if
     
-    call assert(rc >= 0)
+    call assert(rc >= 0, "nmllog (impure_check): negative rc should be impossible")
 end subroutine impure_check
 
 pure subroutine pure_check(logger, condition, message, rc)
@@ -463,7 +483,7 @@ pure subroutine pure_check(logger, condition, message, rc)
         rc = rc + 1
     end if
     
-    call assert(rc >= 0)
+    call assert(rc >= 0, "nmllog (pure_check): negative rc should be impossible")
 end subroutine pure_check
 
 end module nmllog

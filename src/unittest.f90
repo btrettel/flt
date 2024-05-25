@@ -84,9 +84,9 @@ subroutine logical_true(tests, condition, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (logical_true): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (logical_true): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (logical_true): number of failures exceeds number of tests")
 end subroutine logical_true
 
 subroutine logical_false(tests, condition, message_in)
@@ -125,9 +125,9 @@ subroutine logical_false(tests, condition, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (logical_false): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (logical_false): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (logical_false): number of failures exceeds number of tests")
 end subroutine logical_false
 
 subroutine real_eq(tests, returned_real, compared_real, message_in, abs_tol)
@@ -154,7 +154,7 @@ subroutine real_eq(tests, returned_real, compared_real, message_in, abs_tol)
                             returned_real, compared_real, tolerance, difference
     
     difference = abs(returned_real - compared_real)
-    call assert(difference >= 0.0_WP)
+    call assert(difference >= 0.0_WP, "unittest (real_eq): difference is negative")
     
     test_operator = "=="
     timestamp     = now()
@@ -190,9 +190,9 @@ subroutine real_eq(tests, returned_real, compared_real, message_in, abs_tol)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (real_eq): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (real_eq): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (real_eq): number of failures exceeds number of tests")
 end subroutine real_eq
 
 subroutine real_ne(tests, returned_real, compared_real, message_in, abs_tol)
@@ -219,7 +219,7 @@ subroutine real_ne(tests, returned_real, compared_real, message_in, abs_tol)
                             returned_real, compared_real, tolerance, difference
     
     difference = abs(returned_real - compared_real)
-    call assert(difference >= 0.0_WP)
+    call assert(difference >= 0.0_WP, "unittest (real_ne): difference is negative")
     
     test_operator = "/="
     timestamp     = now()
@@ -255,9 +255,9 @@ subroutine real_ne(tests, returned_real, compared_real, message_in, abs_tol)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (real_ne): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (real_ne): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (real_ne): number of failures exceeds number of tests")
 end subroutine real_ne
 
 subroutine real_gt(tests, returned_real, compared_real, message_in)
@@ -300,9 +300,9 @@ subroutine real_gt(tests, returned_real, compared_real, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (real_gt): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (real_gt): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (real_gt): number of failures exceeds number of tests")
 end subroutine real_gt
 
 subroutine integer5_eq(tests, returned_integer, compared_integer, message_in)
@@ -344,9 +344,9 @@ subroutine integer5_eq(tests, returned_integer, compared_integer, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (integer5_eq): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (integer5_eq): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (integer5_eq): number of failures exceeds number of tests")
 end subroutine integer5_eq
 
 subroutine integer10_eq(tests, returned_integer, compared_integer, message_in)
@@ -389,9 +389,9 @@ subroutine integer10_eq(tests, returned_integer, compared_integer, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (integer10_eq): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (integer10_eq): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (integer10_eq): number of failures exceeds number of tests")
 end subroutine integer10_eq
 
 subroutine integer_ne(tests, returned_integer, compared_integer, message_in)
@@ -433,9 +433,9 @@ subroutine integer_ne(tests, returned_integer, compared_integer, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (integer_ne): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (integer_ne): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (integer_ne): number of failures exceeds number of tests")
 end subroutine integer_ne
 
 subroutine integer5_ge(tests, returned_integer, compared_integer, message_in)
@@ -477,9 +477,9 @@ subroutine integer5_ge(tests, returned_integer, compared_integer, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (integer5_ge): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (integer5_ge): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (integer5_ge): number of failures exceeds number of tests")
 end subroutine integer5_ge
 
 subroutine integer10_ge(tests, returned_integer, compared_integer, message_in)
@@ -522,9 +522,9 @@ subroutine integer10_ge(tests, returned_integer, compared_integer, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (integer10_ge): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (integer10_ge): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (integer10_ge): number of failures exceeds number of tests")
 end subroutine integer10_ge
 
 subroutine integer5_le(tests, returned_integer, compared_integer, message_in)
@@ -566,9 +566,9 @@ subroutine integer5_le(tests, returned_integer, compared_integer, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (integer5_le): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (integer5_le): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (integer5_le): number of failures exceeds number of tests")
 end subroutine integer5_le
 
 subroutine integer10_le(tests, returned_integer, compared_integer, message_in)
@@ -611,9 +611,9 @@ subroutine integer10_le(tests, returned_integer, compared_integer, message_in)
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (integer10_le): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (integer10_le): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (integer10_le): number of failures exceeds number of tests")
 end subroutine integer10_le
 
 subroutine character_eq(tests, returned_character_in, compared_character_in, message_in)
@@ -660,9 +660,9 @@ subroutine character_eq(tests, returned_character_in, compared_character_in, mes
     
     tests%n_tests = tests%n_tests + 1
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (character_eq): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (character_eq): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (character_eq): number of failures exceeds number of tests")
 end subroutine character_eq
 
 subroutine start_tests(tests, logger)
@@ -689,9 +689,9 @@ subroutine end_tests(tests)
     
     namelist /tests_summary/ n_tests, n_failures, duration
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (end_tests): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (end_tests): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (end_tests): number of failures exceeds number of tests")
     
     call tests%wtime%stop()
     duration      = tests%wtime%read()
@@ -808,9 +808,9 @@ subroutine validate_timestamp(tests, timestamp, message)
         end if
     end if
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (validate_timestamp): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (validate_timestamp): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (validate_timestamp): number of failures exceeds number of tests")
 end subroutine validate_timestamp
 
 subroutine exit_code_eq(tests, command, compared_exit_code, message, output_file, keep_file)
@@ -841,9 +841,9 @@ subroutine exit_code_eq(tests, command, compared_exit_code, message, output_file
         end if
     end if
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (exit_code_eq): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (exit_code_eq): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (exit_code_eq): number of failures exceeds number of tests")
 end subroutine exit_code_eq
 
 subroutine exit_code_ne(tests, command, compared_exit_code, message, output_file, keep_file)
@@ -874,9 +874,9 @@ subroutine exit_code_ne(tests, command, compared_exit_code, message, output_file
         end if
     end if
     
-    call assert(tests%n_tests >= 0)
-    call assert(tests%n_failures >= 0)
-    call assert(tests%n_failures <= tests%n_tests)
+    call assert(tests%n_tests >= 0, "unittest (exit_code_ne): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (exit_code_ne): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (exit_code_ne): number of failures exceeds number of tests")
 end subroutine exit_code_ne
 
 end module unittest

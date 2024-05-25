@@ -124,23 +124,16 @@ end function all_close
 pure subroutine assert(condition, message)
     use build, only: DEBUG
     
-    logical, intent(in) :: condition
+    logical, intent(in)          :: condition
+    character(len=*), intent(in) :: message
     
-    character(len=*), intent(in), optional :: message
-    
-    character(len=:), allocatable :: message_, full_message
+    character(len=:), allocatable :: full_message
     
     if (DEBUG) then
-        if (present(message)) then
-            message_ = " " // message
-        else
-            message_ = ""
-        end if
-        
         if (.not. condition) then
             ! Why not concatenate the strings on the `error stop` line?
             ! That leads to ifx garbling the error message as of version `ifx (IFX) 2024.0.2 20231213`.
-            full_message = "***" // new_line("a") // "ASSERTION FAILED." // message_
+            full_message = "***" // new_line("a") // "ASSERTION FAILED. " // message
             
             ! Why is the message in all caps? To make it more noticeable.
             
@@ -152,25 +145,22 @@ end subroutine assert
 pure subroutine assert_dimension_rank_1(a, b)
     class(*), intent(in) :: a(:), b(:)
     
-    call assert(size(a) == size(b))
-    call assert(all(lbound(a) == lbound(b)))
-    call assert(all(ubound(a) == ubound(b)))
+    call assert(all(lbound(a) == lbound(b)), "checks (assert_dimension_rank_1): lbound")
+    call assert(all(ubound(a) == ubound(b)), "checks (assert_dimension_rank_1): ubound")
 end subroutine assert_dimension_rank_1
 
 pure subroutine assert_dimension_rank_2(a, b)
     class(*), intent(in) :: a(:, :), b(:, :)
     
-    call assert(size(a) == size(b))
-    call assert(all(lbound(a) == lbound(b)))
-    call assert(all(ubound(a) == ubound(b)))
+    call assert(all(lbound(a) == lbound(b)), "checks (assert_dimension_rank_2): lbound")
+    call assert(all(ubound(a) == ubound(b)), "checks (assert_dimension_rank_2): ubound")
 end subroutine assert_dimension_rank_2
 
 pure subroutine assert_dimension_rank_3(a, b)
     class(*), intent(in) :: a(:, :, :), b(:, :, :)
     
-    call assert(size(a) == size(b))
-    call assert(all(lbound(a) == lbound(b)))
-    call assert(all(ubound(a) == ubound(b)))
+    call assert(all(lbound(a) == lbound(b)), "checks (assert_dimension_rank_3): lbound")
+    call assert(all(ubound(a) == ubound(b)), "checks (assert_dimension_rank_3): ubound")
 end subroutine assert_dimension_rank_3
 
 end module checks

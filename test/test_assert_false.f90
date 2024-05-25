@@ -10,6 +10,6 @@ program test_assert_false
 use checks, only: assert
 implicit none
 
-call assert(.false.)
+call assert(.false., "Custom message.")
 
 end program test_assert_false

@@ -276,7 +276,7 @@ elemental function ad_sqrt(ad_in)
     
     type(ad) :: ad_sqrt
     
-    call assert(ad_in%v > 0.0_WP)
+    call assert(ad_in%v > 0.0_WP, "autodiff (ad_sqrt): argument is zero or negative")
     
     ad_sqrt%v  = sqrt(ad_in%v)
     ad_sqrt%dv = ad_in%dv/(2.0_WP * sqrt(ad_in%v))

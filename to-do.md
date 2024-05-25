@@ -19,8 +19,6 @@ Priorities:
     - `git show --no-patch --format=%ci HEAD`
     - `include` this line in the `build` module
     - Modify genunits to print `REVISION`, `DEBUG`, compiler info (compiler, flags).
-- Assertions
-    - Require assertion messages.
 - f90lint:
     - Add tests for remaining modules which aren't passing.
     - Check for modules which don't have tests.

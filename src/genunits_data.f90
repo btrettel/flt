@@ -59,7 +59,7 @@ pure function label(unit)
     end do
     
     ! Ensure that the `unit_label` won't be too long to be valid in Fortran 2003.
-    call assert(len(trim(label)) <= MAX_LABEL_LEN)
+    call assert(len(trim(label)) <= MAX_LABEL_LEN, "genunits_data (label): label is too long")
 end function label
 
 pure function readable(unit, unit_system)
@@ -74,7 +74,7 @@ pure function readable(unit, unit_system)
     integer          :: i_base_unit
     character(len=1) :: exponent_len_string
     
-    call assert(size(unit%e) == unit_system%n_base_units)
+    call assert(size(unit%e) == unit_system%n_base_units, "genunits_data (readable): inconsistent number of base units")
     
     readable = ""
     write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN - 1

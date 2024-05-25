@@ -108,11 +108,18 @@ subroutine purerng_random_seed(rng, seed_size, put, get)
             case (RNG_LECUYER)
                 allocate(rng%seed(SIZE_LECUYER))
             case (RNG_DETERM)
-                call assert(put(1) >= 2_I10)
-                call assert(put(1) <= size(put, kind=I10))
+                call assert(put(1) >= 2_I10, "purerng (purerng_random_seed): For RNG_DETERM, the first put index is the " // &
+                                                "index of put for the next deterministic PRNG draw. Consequently, the first " // &
+                                                "index must be 2 or greater as indices 2 to the end are for the return " // &
+                                                "values of the deterministic PRNG draws.")
+                call assert(put(1) <= size(put, kind=I10), "For RNG_DETERM, the first put index is the " // &
+                                                "index of put for the next deterministic PRNG draw. Consequently, the first " // &
+                                                "index must be less than or equal to the length of the put array.")
                 do i = 2, size(put)
-                    call assert(put(i) >= 0_I10)
-                    call assert(put(i) <= DETERM_DENOM)
+                    call assert(put(i) >= 0_I10, "purerng (purerng_random_seed): For RNG_DETERM, return values are " // &
+                                                 "proportional to the returned PRNG, and consequently must be >= 0.")
+                    call assert(put(i) <= DETERM_DENOM, "purerng (purerng_random_seed): For RNG_DETERM, return values are " // &
+                                                 "proportional to the returned PRNG, and consequently must be <= DETERM_DENOM.")
                 end do
             case default
                 error stop "purerng_random_seed(put): type of random number generator not selected."
@@ -155,14 +162,16 @@ elemental subroutine lecuyer(rng, harvest)
     
     integer(kind=I10) :: k(L), z
     
-    call assert(allocated(rng%seed))
-    call assert(size(rng%seed) == 2)
+    call assert(allocated(rng%seed), "purerng (lecuyer): seed array must be allocated")
+    call assert(size(rng%seed) == 2, "purerng (lecuyer): seed array is the wrong size")
     
     ! lecuyer_efficient_1988 p. 747R
-    call assert(rng%seed(1) >= 1_I10)
-    call assert(rng%seed(1) <= LECUYER_M(1) - 1_I10)
-    call assert(rng%seed(2) >= 1_I10)
-    call assert(rng%seed(2) <= LECUYER_M(2) - 1_I10)
+    call assert(rng%seed(1) >= 1_I10, "purerng (lecuyer): seed(1) >= 1, see lecuyer_efficient_1988 p. 747R (in)")
+    call assert(rng%seed(1) <= LECUYER_M(1) - 1_I10, "purerng (lecuyer): seed(1) <= LECUYER_M(1) - 1, " // &
+                                                        "see lecuyer_efficient_1988 p. 747R (in)")
+    call assert(rng%seed(2) >= 1_I10, "purerng (lecuyer): seed(2) >= 1, lecuyer_efficient_1988 p. 747R (in)")
+    call assert(rng%seed(2) <= LECUYER_M(2) - 1_I10, "purerng (lecuyer): seed(2) <= LECUYER_M(2) - 1, " // &
+                                                        "see lecuyer_efficient_1988 p. 747R (in)")
     
     k        = rng%seed / LECUYER_Q
     rng%seed = LECUYER_A * (rng%seed - k * LECUYER_Q) - k * LECUYER_R
@@ -181,16 +190,18 @@ elemental subroutine lecuyer(rng, harvest)
     ! lecuyer_efficient_1988 p. 747R:
     ! > Notice that the function will never return 0.0 or 1.0, as long as `REAL` variables have at least 23-bit mantissa (this is
     ! > the case for most 32-bit machines).
-    call assert(harvest > 0.0_WP)
-    call assert(harvest < 1.0_WP)
-    call assert(z > 0_I10)
-    call assert(z < LECUYER_M(1))
+    call assert(harvest > 0.0_WP, "purerng (lecuyer): harvest <= 0")
+    call assert(harvest < 1.0_WP, "purerng (lecuyer): harvest >= 1")
+    call assert(z > 0_I10, "purerng (lecuyer): z <= 0")
+    call assert(z < LECUYER_M(1), "purerng (lecuyer): z >= LECUYER_M(1)")
     
     ! Same `seed` bounds as before.
-    call assert(rng%seed(1) >= 1_I10)
-    call assert(rng%seed(1) <= LECUYER_M(1) - 1_I10)
-    call assert(rng%seed(2) >= 1_I10)
-    call assert(rng%seed(2) <= LECUYER_M(2) - 1_I10)
+    call assert(rng%seed(1) >= 1_I10, "purerng (lecuyer): seed(1) >= 1, see lecuyer_efficient_1988 p. 747R (in)")
+    call assert(rng%seed(1) <= LECUYER_M(1) - 1_I10, "purerng (lecuyer): seed(1) <= LECUYER_M(1) - 1, " // &
+                                                        "see lecuyer_efficient_1988 p. 747R (in)")
+    call assert(rng%seed(2) >= 1_I10, "purerng (lecuyer): seed(2) >= 1, lecuyer_efficient_1988 p. 747R (in)")
+    call assert(rng%seed(2) <= LECUYER_M(2) - 1_I10, "purerng (lecuyer): seed(2) <= LECUYER_M(2) - 1, " // &
+                                                        "see lecuyer_efficient_1988 p. 747R (in)")
 end subroutine lecuyer
 
 elemental subroutine determ(rng, harvest)
@@ -210,10 +221,10 @@ elemental subroutine determ(rng, harvest)
         rng%seed(1) = 2_I10
     end if
     
-    call assert(harvest >= 0.0_WP)
-    call assert(harvest <= 1.0_WP)
-    call assert(rng%seed(1) >= 2_I10)
-    call assert(rng%seed(1) <= size(rng%seed, kind=I10))
+    call assert(harvest >= 0.0_WP, "purerng (determ): harvest <= 0")
+    call assert(harvest <= 1.0_WP, "purerng (determ): harvest >= 1")
+    call assert(rng%seed(1) >= 2_I10, "purerng (determ): z <= 0")
+    call assert(rng%seed(1) <= size(rng%seed, kind=I10), "purerng (determ): z >= LECUYER_M(1)")
 end subroutine determ
 
 end module purerng

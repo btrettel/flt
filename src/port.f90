@@ -52,8 +52,8 @@ function platform()
         platform = PLATFORM_UNKNOWN
     end if
     
-    call assert(platform >= PLATFORM_UNKNOWN)
-    call assert(platform <= PLATFORM_WINDOWS)
+    call assert(platform >= PLATFORM_UNKNOWN, "port (platform): platform is below the range")
+    call assert(platform <= PLATFORM_WINDOWS, "port (platform): platform is above the range")
 end function platform
 
 function path_join(path_array)
@@ -67,8 +67,8 @@ function path_join(path_array)
     
     integer :: i_path
     
-    call assert(size(path_array) >= 1)
-    call assert(platform() > 0)
+    call assert(size(path_array) >= 1, "port (path_join): path_array is too short to join")
+    call assert(platform() > 0, "port (path_join): unknown platform")
     
     DIR_SEP = DIR_SEPS(platform())
     
@@ -81,7 +81,7 @@ function path_join(path_array)
         end if
     end do
     
-    call assert(len(trim(path_join)) >= 1)
+    call assert(len(trim(path_join)) >= 1, "port (path_join): joined path should have a length of at least 1")
 end function path_join
 
 end module port

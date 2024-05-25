@@ -114,28 +114,13 @@ call tests%logical_true(all_close([1.0_WP, 2.0_WP], [1.0_WP, 2.0_WP]), "all_clos
 call tests%logical_false(all_close([1.0_WP, 2.0_WP], [-1.0_WP, 2.0_WP]), "all_close, .false.")
 
 ! `assert(.true.)` does not terminate the program (no direct test performed)
-call assert(.true.)
+call assert(.true., "assert(.true.) test failed?")
 ! The test passed if execution reaches here, so manually increment the test counters.
 tests%n_tests = tests%n_tests + 1
 
 if (DEBUG) then
-    ! Check that `assert(.false.)` terminates with a non-zero exit code for debug mode.
-    call tests%exit_code_ne("./test_assert_false", 0, "assert, .false., exit code", ASSERT_FALSE_OUTPUT, keep_file=.true.)
-
-    inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
-    call tests%logical_true(test_assert_false_exists, "assert, .false., output saved")
-
-    ! Test default assertion failure message.
-    open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
-    read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
-    read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
-    call tests%character_eq(assert_false_line, "ASSERTION FAILED.", "assert, .false., default assertion message")
-
-    ! Delete saved file.
-    close(unit=test_assert_false_unit, status="delete")
-
     ! Check that `assert(.false., "Custom message.")` has the correct message.
-    call tests%exit_code_ne("./test_assert_false_message", 0, "assert, .false., message, exit code", &
+    call tests%exit_code_ne("./test_assert_false", 0, "assert, .false., message, exit code", &
                                 ASSERT_FALSE_OUTPUT, keep_file=.true.)
 
     inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
