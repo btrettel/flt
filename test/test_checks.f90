@@ -19,7 +19,7 @@ character(len=*), parameter :: ASSERT_FALSE_OUTPUT = "test_assert_false.txt"
 type(log_type)          :: logger
 type(test_results_type) :: tests
 integer                 :: test_assert_false_unit
-logical                 :: test_assert_false_exists
+logical                 :: is_close_array(2), test_assert_false_exists
 character(len=80)       :: assert_false_line
 
 real(kind=WP) :: a1(5),    b1(5),    &
@@ -108,6 +108,17 @@ call tests%logical_false(is_close(1.0_WP, 0.0_WP, abs_tol=1.0_WP, rel_tol=0.0_WP
 
 call tests%logical_false(is_close(1.0_WP, 0.0_WP, abs_tol=0.0_WP, rel_tol=1.0_WP), &
         "is_close, close numbers with set rel_tol, just outside")
+
+! `elemental` `is_close` tests
+is_close_array = is_close([0.0_WP, 10.0_WP], [0.0_WP, 10.0_WP])
+call tests%logical_true(all(is_close_array), "is_close, elemental (1)")
+
+is_close_array = is_close([0.0_WP, 10.0_WP], [1.0_WP, 9.0_WP])
+call tests%logical_false(all(is_close_array), "is_close, elemental (2)")
+
+is_close_array = is_close([-1.0_WP, 5.0_WP], [2.0_WP, 5.0_WP])
+call tests%logical_false(is_close_array(1), "is_close, elemental (3, index 1)")
+call tests%logical_true(is_close_array(2), "is_close, elemental (3, index 2)")
 
 ! TODO: More tests for `all_close`.
 call tests%logical_true(all_close([1.0_WP, 2.0_WP], [1.0_WP, 2.0_WP]), "all_close, .true.")

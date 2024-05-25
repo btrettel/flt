@@ -18,9 +18,12 @@ real(kind=WP), public, parameter :: TOL_FACTOR = 25.0_WP
 public :: abs_tolerance
 public :: is_close, all_close
 public :: assert
-public :: assert_dimension ! TODO: test this
+public :: assert_dimension
 
 interface assert_dimension
+    ! LATER: nvfortran doesn't seem to properly support "assumed-rank" arrays, so I made 3 different subroutines.
+    ! nvfortran will compile, but the run-time behavior will be wrong.
+    
     module procedure assert_dimension_rank_1
     module procedure assert_dimension_rank_2
     module procedure assert_dimension_rank_3
@@ -40,7 +43,7 @@ pure function abs_tolerance(input_real_1, input_real_2)
     abs_tolerance = TOL_FACTOR * spacing(max(abs(input_real_1), abs(input_real_2)))
 end function abs_tolerance
 
-pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
+elemental function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     ! Determine whether two reals are close.
     
     ! Interface based on stdlib, though implementation is different.
@@ -49,8 +52,6 @@ pure function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     ! Also see:
     ! <https://numpy.org/doc/stable/reference/generated/numpy.isclose.html>
     ! <https://docs.python.org/3/library/math.html#math.isclose>
-    
-    ! TODO: Make array versions like in numpy.
     
     real(kind=WP), intent(in)           :: input_real_1, input_real_2
     real(kind=WP), intent(in), optional :: rel_tol, abs_tol

@@ -22,6 +22,8 @@ Priorities:
 - f90lint:
     - Add tests for remaining modules which aren't passing.
     - Check for modules which don't have tests.
+    - Measure `TODO` density and have bound on it to keep code clean.
+    - Measure and enforce code comment density. Assertions count towards this.
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
     - For all array procedures, have tests with non-default array lower bounds.
