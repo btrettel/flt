@@ -33,5 +33,6 @@ FFLAGS = $(FFLAGS) $(RFLAGS)
 !error Set BUILD to either debug or release. BUILD=$(BUILD)
 !endif
 
+!include mk\testnml.mk
 !include mk\common.mk
 !include mk\depends.mk

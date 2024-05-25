@@ -7,7 +7,6 @@ Priorities:
     - Add comparison operators
 - depends.py
     - Return an error for circular dependencies in general.
-    - Make `TESTNML` auto-generated.
 - port.f90
     - Get all tests to pass on Windows.
 - Build system improvements:
@@ -86,6 +85,7 @@ Priorities:
     - Have a section listing what various error messages shown by various compilers mean. Some of these error messages are not particularly clear and that harms debugging. Also note which compilers have more useful error messages for genunits.
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
 - `make install` to install genunits.
+- Option to disable automatic differentiation in Makefile for speed.
 
 Later:
 

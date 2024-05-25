@@ -41,6 +41,8 @@ else ifeq ($(FC),nvfortran)
 include mk/nvfortran.mk
 else ifeq ($(FC),lfortran)
 include mk/lfortran.mk
+else ifeq ($(FC),crayftn)
+include mk/crayftn.mk
 #else
 #$(error Invalid FC: $(FC))
 endif
@@ -53,6 +55,7 @@ else
 $(error Set BUILD to either debug or release. BUILD=$(BUILD))
 endif
 
+include mk/testnml.mk
 include mk/common.mk
 include mk/depends.mk
 include mk/linux_2.mk

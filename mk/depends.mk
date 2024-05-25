@@ -34,50 +34,17 @@ genunits$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT)
 test_assert_dimension_false_1$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_1.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_1.f90
 
-assert_dimension_false_1.nml: test_assert_dimension_false_1$(BINEXT)
-	$(RUN)test_assert_dimension_false_1$(BINEXT)
-
 test_assert_dimension_false_2$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_2.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_2.f90
-
-assert_dimension_false_2.nml: test_assert_dimension_false_2$(BINEXT)
-	$(RUN)test_assert_dimension_false_2$(BINEXT)
 
 test_assert_dimension_false_3$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_3.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_3.f90
 
-assert_dimension_false_3.nml: test_assert_dimension_false_3$(BINEXT)
-	$(RUN)test_assert_dimension_false_3$(BINEXT)
-
-test_assert_dimension_false_4$(BINEXT): src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_4.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_4.f90
-
-assert_dimension_false_4.nml: test_assert_dimension_false_4$(BINEXT)
-	$(RUN)test_assert_dimension_false_4$(BINEXT)
-
-test_assert_dimension_false_5$(BINEXT): src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_5.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_5.f90
-
-assert_dimension_false_5.nml: test_assert_dimension_false_5$(BINEXT)
-	$(RUN)test_assert_dimension_false_5$(BINEXT)
-
-test_assert_dimension_false_6$(BINEXT): src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_6.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_6.f90
-
-assert_dimension_false_6.nml: test_assert_dimension_false_6$(BINEXT)
-	$(RUN)test_assert_dimension_false_6$(BINEXT)
-
 test_assert_false$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_false.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_false.f90
 
-assert_false.nml: test_assert_false$(BINEXT)
-	$(RUN)test_assert_false$(BINEXT)
-
 test_assert_false_message$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_false_message.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_false_message.f90
-
-assert_false_message.nml: test_assert_false_message$(BINEXT)
-	$(RUN)test_assert_false_message$(BINEXT)
 
 test_autodiff$(BINEXT): src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_autodiff.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)autodiff.$(OBJEXT) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_autodiff.f90
@@ -142,14 +109,8 @@ units.nml: test_units$(BINEXT)
 test_units_fail_1$(BINEXT): src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJEXT) test$(DIR_SEP)test_units_fail_1.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJEXT) test$(DIR_SEP)test_units_fail_1.f90
 
-units_fail_1.nml: test_units_fail_1$(BINEXT)
-	$(RUN)test_units_fail_1$(BINEXT)
-
 test_units_fail_2$(BINEXT): src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJEXT) test$(DIR_SEP)test_units_fail_2.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJEXT) test$(DIR_SEP)test_units_fail_2.f90
-
-units_fail_2.nml: test_units_fail_2$(BINEXT)
-	$(RUN)test_units_fail_2$(BINEXT)
 
 test_unittest$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_unittest.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_unittest.f90

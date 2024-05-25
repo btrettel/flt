@@ -8,6 +8,8 @@
 
 .POSIX:
 
+# non-POSIX
+# <https://innolitics.com/articles/make-delete-on-error/>
 .DELETE_ON_ERROR:
 
 # defaults
@@ -52,6 +54,7 @@ FFLAGS += $(RFLAGS)
 .error Set BUILD to either debug or release. BUILD=$(BUILD)
 .endif
 
+.include <mk/testnml.mk>
 .include <mk/common.mk>
 .include <mk/depends.mk>
 .include <mk/linux_2.mk>
