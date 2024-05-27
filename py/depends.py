@@ -11,8 +11,6 @@ TESTNML_FILE = os.path.join("mk", "testnml.mk")
 # The `build` module (debug.f90 or release.f90, depending on the value of the `BUILD` make macro) disables assertions. Because this violates this program's assumption that the filename matches that of the module name (`build` is not the same as `debug` or `release`), I had to add some logic to this program to handle this case. Part of that includes ignoring the following files and manually adding a file with the filename `$(BUILD)` later.
 no_dependency_check_files = [os.path.join("src", "debug.f90"), os.path.join("src", "release.f90")]
 
-modules_to_not_check_for_existence_of = ["build", "units"]
-
 class dependency_structure:
     def __init__(self, filename, program, module, name, dependencies):
         self.filename      = filename
@@ -47,6 +45,7 @@ config = configparser.ConfigParser()
 config.read(args.file)
 
 directories = config['depends']['directories'].split(' ')
+modules_to_not_check_for_existence_of = config['depends']['no_existence_check'].split(' ')
 
 fail = False
 
