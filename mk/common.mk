@@ -50,8 +50,8 @@ unittest.nml: prec.nml
 
 .PHONY: f90lint
 f90lint:
-	$(PYTHON) py$(DIR_SEP)f90lint.py app src test
+	$(PYTHON) py$(DIR_SEP)f90lint.py config.ini
 
 .PHONY: depends
 depends:
-	$(PYTHON) py$(DIR_SEP)depends.py app src test
+	$(PYTHON) py$(DIR_SEP)depends.py config.ini

@@ -9,6 +9,20 @@ Priorities:
     - Return an error for circular dependencies in general.
 - port.f90
     - Get all tests to pass on Windows.
+    - Wrapper for `execute_command_line` that handles `./` on \*nix vs. nothing on Windows and file extension (nothing vs. `.exe`).
+    - Differences between Windows and \*nix
+        - `rm_cmd`: `del /q` vs. `rm`
+        - `rmdir_cmd`: `rmdir /s /q` vs. `rmdir`
+        - `cd_cmd`: `cd` vs. `cd`
+        - `mv_cmd`: `move` vs. `mv`
+        - `cp_cmd`: `copy` vs. `cp`
+        - `mkdir_cmd`: `mkdir` vs. `mkdir`
+        - `cmd_separator`: `&` vs. `;`
+        - `dir_separator`: `\` vs. `/`
+        - `binext`: `.exe` vs. ``
+        - `run`: nothing vs. `./`
+        - `cmp`: `fc` vs. `cmp`
+    - Note: Would be faster to detect platform at compile-time, but more convoluted. Given that I probably won't be calling these commands in a way that will impact performance much, I'm not worried about it.
 - Build system improvements:
     - Replace PDPmakefile with POSIXmakefile that is strictly POSIX (has no `include` or any other non-POSIX things) and should work on IBM AIX make too. This file can be constructed from the other files via `make POSIXmakefile`. Don't set `FC` and whatnot, instead set those via the command line or defaults?
     - Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all` (`SFLAGS`?)
@@ -22,11 +36,23 @@ Priorities:
 - f90lint:
     - Add tests for remaining modules which aren't passing.
     - Check for modules which don't have tests.
-    - Measure `TODO` density and have bound on it to keep code clean.
-    - Measure and enforce code comment density. Assertions count towards this.
+    - Measure `TODO` density and have bound on it to keep them current.
+    - Identify untested procedures by looking at `use` lines in tests. This won't work for type-bound procedures, though.
+    - Require that all functions be `pure`.
+    - Output checking:
+        - Presence of files that should not be there: `fort.*`, `FORT.*`
+        - Fortran format overflow: `*` in ifort/gfortran/crayftn/nvfortran
+        - `forrtl: error`
+        - `NaN`
+        - `Infinity`
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
     - For all array procedures, have tests with non-default array lower bounds.
+- grad.f90: gradient descent
+    - Cubic line search, test if local minimum
+    - <https://www.tensorflow.org/guide/core/optimizers_core>
+        - Help plan interface to gradient descent
+    - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only. Make gradient descent include robust optimization by default, taking into account the uncertainty.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
     - Remove dependency on nmllog so that this can be separated out more easily.
         - This will also help to compile genunits with lfortran, though it's not sufficient as `is_close` won't compile with lfortran due to `spacing`.
@@ -176,10 +202,11 @@ Later:
     - Make similar to <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>.
     - Use fuzzing primarily to find assertion violations with integration tests.
     - I guess the objective function includes the code coverage and whether or not an assertion violation occurred.
+    - For speed, incentivize causing assertion failures as quickly as possible. The objective function is a function of both whether the code ran successfully or not and how quickly it failed if it did fail.
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
     - Enforce some Power of 10 rules, particularly procedure lengths.
-    - Start tracking comment density and adding more code comments. Density > 25%?
-    - Require that all functions are pure.
+    - Measure and enforce code comment density? Assertions count towards this.
+        - <https://dirkriehle.com/2009/02/04/the-sweet-spot-of-code-commenting-in-open-source/comment-page-1/>
     - Require construct names for nested `do` loops and `if` statements.
     - Check that assertions have unique messages. List relevant variable values in error message.
 - semgrep static analysis
@@ -292,8 +319,6 @@ Later:
 - dataplot-like approach to ease adding tests (but use namelists instead of a single CSV file)
 - Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
 - Verify checksums of all generated images that have them (PNG, for example).
-- <https://www.tensorflow.org/guide/core/optimizers_core>
-    - Help plan interface to gradient descent
 - Build system improvements:
     - Fortran module dependencies being wrong
         - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/18>
@@ -303,10 +328,16 @@ Later:
     - Making compatible with FPM.
 - Tests
     - Test `exit_code_eq` better. Check if the file is kept or not.
-    - Make sure that debug builds enable assertions.
+    - Make sure that debug builds enable assertions by looking at the test log output.
 - Build system improvements:
     - Making work with NMAKE, GNU Make, and BSD Make.
         - Figure out how to pass the `-f` argument to the `MAKE` macro so that recursive make works (for example, `bmake -f BSDmakefile all` and `pdpmake -f PDPmakefile all`).
         - Figure out how to specify `BUILD` and `FC` in pdpmake.
         - Figure out how to add back `test ! -e fort.*` and `test ! -e FORT.*` to tests as I don't know what the Windows equivalent is.
             - Do these checks in Fortran?
+- interval arithmetic
+    - Combination with automatic differentiation: <http://www.mscs.mu.edu/%7Egeorgec/IFAQ/rocco1.html>
+- `constrained` data type
+    - <http://www.acorvid.com/2017/12/13/what-i-miss-when-writing-fortran/>
+        - > Constrained reals; for example, absolute mass, pressure, or temperature variables which throw an exception if they become negative. This is a first-class feature of types in Ada (constrained subtype)
+    - Can be done with a derived type with custom operators.

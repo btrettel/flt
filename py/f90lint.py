@@ -3,6 +3,7 @@
 
 import os
 import argparse
+import configparser
 
 ASSERTION_DENSITY_LOWER_LIMIT = 2.0
 TEST_RATIO_LOWER_LIMIT        = 0.5
@@ -23,13 +24,18 @@ def is_empty_or_comment(line):
     return not len(line_clean) > 0
 
 parser = argparse.ArgumentParser(description="A linter for Fortran 90 and later intended for Ben Trettel's use.")
-parser.add_argument('directories', nargs='+')
+parser.add_argument("file", help="input file to read")
 args = parser.parse_args()
+
+config = configparser.ConfigParser()
+config.read(args.file)
+
+directories = config['f90lint']['directories'].split(' ')
 
 fail = False
 
 filepaths = []
-for directory in sorted(args.directories):
+for directory in sorted(directories):
     # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
     directory = os.path.relpath(directory)
     

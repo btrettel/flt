@@ -3,6 +3,7 @@
 
 import os
 import argparse
+import configparser
 
 DEPENDS_FILE = os.path.join("mk", "depends.mk")
 TESTNML_FILE = os.path.join("mk", "testnml.mk")
@@ -39,13 +40,18 @@ def get_module_name_from_use(line):
     return line[start_index:end_index]
 
 parser = argparse.ArgumentParser(description="Generates a Makefile fragment describing the dependencies of a Fortran project.")
-parser.add_argument('directories', nargs='+')
+parser.add_argument("file", help="input file to read")
 args = parser.parse_args()
+
+config = configparser.ConfigParser()
+config.read(args.file)
+
+directories = config['depends']['directories'].split(' ')
 
 fail = False
 
 filepaths = []
-for directory in sorted(args.directories):
+for directory in sorted(directories):
     # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
     directory = os.path.relpath(directory)
     
