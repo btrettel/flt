@@ -31,6 +31,10 @@ def get_module_name_from_use(line):
     
     return line[start_index:end_index]
 
+def canonicalize_path(path):
+    path_split = path.split("/")
+    return os.path.join(*path_split)
+
 parser = argparse.ArgumentParser(description="Generates a Makefile fragment describing the dependencies of a Fortran project.")
 parser.add_argument("file", help="input file to read")
 args = parser.parse_args()
@@ -45,14 +49,10 @@ skip_indexing_raw = config['depends']['skip_indexing'].split(' ')
 # Canonicalize `skip_indexing`
 skip_indexing = []
 for skip_indexing_i in skip_indexing_raw:
-    split_skip_indexing_i = skip_indexing_i.split("/")
-    skip_indexing.append(os.path.join(*split_skip_indexing_i))
+    skip_indexing.append(canonicalize_path(skip_indexing_i))
 
-depends_file_split = config['depends']['depends_file'].split("/")
-depends_file = os.path.join(*depends_file_split)
-
-testnml_file_split = config['depends']['testnml_file'].split("/")
-testnml_file = os.path.join(*testnml_file_split)
+depends_file = canonicalize_path(config['depends']['depends_file'])
+testnml_file = canonicalize_path(config['depends']['testnml_file'])
 
 fail = False
 
