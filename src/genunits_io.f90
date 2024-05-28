@@ -614,17 +614,17 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
     write(unit=file_unit, fmt="(3a)") "end function ", unary_operator_procedure, new_line("a")
 end subroutine write_unary_operator
 
-subroutine write_exponentiation_interfaces(config, unit_system, file_unit)
+subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
-    type(config_type), intent(in)      :: config
+    logical, intent(in)                :: use_sqrt, use_cbrt, use_square
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     
     integer         :: i_unit
     type(unit_type) :: trial_unit
     
-    if (config%sqrt) then
+    if (use_sqrt) then
         write(unit=file_unit, fmt="(a)") "interface sqrt"
         do i_unit = 1, size(unit_system%units)
             trial_unit = sqrt_unit(unit_system%units(i_unit))
@@ -637,7 +637,7 @@ subroutine write_exponentiation_interfaces(config, unit_system, file_unit)
         write(unit=file_unit, fmt="(2a)") "end interface sqrt", new_line("a")
     end if
     
-    if (config%cbrt) then
+    if (use_cbrt) then
         write(unit=file_unit, fmt="(a)") "interface cbrt"
         do i_unit = 1, size(unit_system%units)
             trial_unit = cbrt_unit(unit_system%units(i_unit))
@@ -650,7 +650,7 @@ subroutine write_exponentiation_interfaces(config, unit_system, file_unit)
         write(unit=file_unit, fmt="(2a)") "end interface cbrt", new_line("a")
     end if
     
-    if (config%square) then
+    if (use_square) then
         write(unit=file_unit, fmt="(a)") "interface square"
         do i_unit = 1, size(unit_system%units)
             trial_unit = square_unit(unit_system%units(i_unit))
@@ -726,6 +726,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     character(len=10) :: n_char
     character(len=20) :: use_format
     type(unit_type)   :: trial_unit
+    logical           :: use_sqrt, use_cbrt, use_square
     
     write(unit=n_char, fmt="(i0)") size(unit_system%units)
     call config%logger%info("Generated " // trim(n_char) // " physical dimensions. Writing " // config%output_file // "...")
@@ -737,15 +738,50 @@ subroutine write_module(config, unit_system, file_unit, rc)
     write(unit=file_unit, fmt="(2a)") "implicit none"
     write(unit=file_unit, fmt="(2a)") "private", new_line("a")
     
-    if (config%sqrt) then
+    use_sqrt   = config%sqrt
+    use_cbrt   = config%cbrt
+    use_square = config%square
+    if (use_sqrt .or. use_cbrt .or. use_square) then
+        do i_unit = 1, size(unit_system%units)
+            if (use_sqrt) then
+                trial_unit = sqrt_unit(unit_system%units(i_unit))
+                if (.not. trial_unit%is_in(unit_system%units)) then
+                    use_sqrt = .false.
+                    exit
+                end if
+            end if
+        end do
+        
+        do i_unit = 1, size(unit_system%units)
+            if (use_cbrt) then
+                trial_unit = cbrt_unit(unit_system%units(i_unit))
+                if (.not. trial_unit%is_in(unit_system%units)) then
+                    use_cbrt = .false.
+                    exit
+                end if
+            end if
+        end do
+        
+        do i_unit = 1, size(unit_system%units)
+            if (use_square) then
+                trial_unit = square_unit(unit_system%units(i_unit))
+                if (.not. trial_unit%is_in(unit_system%units)) then
+                    use_square = .false.
+                    exit
+                end if
+            end if
+        end do
+    end if
+    
+    if (use_sqrt) then
         write(unit=file_unit, fmt="(2a)") "public :: sqrt"
     end if
     
-    if (config%cbrt) then
+    if (use_cbrt) then
         write(unit=file_unit, fmt="(2a)") "public :: cbrt"
     end if
     
-    if (config%square) then
+    if (use_square) then
         write(unit=file_unit, fmt="(2a)") "public :: square"
     end if
     
@@ -772,7 +808,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             write(unit=file_unit, fmt=trim(use_format), advance="no") trim(config%seed_labels(i_seed_unit)), &
                                                                         "=> ", &
                                                                         trim(config%seed_units(i_seed_unit)%label())
-            if (config%sqrt .or. config%cbrt .or. config%square) then
+            if (use_sqrt .or. use_cbrt .or. use_square) then
                 write(unit=file_unit, fmt="(a)") ", &"
             else
                 if (i_seed_unit /= size(config%seed_labels)) then
@@ -783,31 +819,31 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end if
         end do
         
-        if (config%sqrt .or. config%cbrt .or. config%square) then
+        if (use_sqrt .or. use_cbrt .or. use_square) then
             write(unit=file_unit, fmt="(a)", advance="no") "!                 "
         end if
         
-        if (config%sqrt) then
+        if (use_sqrt) then
             write(unit=file_unit, fmt="(a)", advance="no") "sqrt"
             
-            if (config%cbrt .or. config%square) then
+            if (use_cbrt .or. use_square) then
                 write(unit=file_unit, fmt="(a)", advance="no") ", "
             end if
         end if
         
-        if (config%cbrt) then
+        if (use_cbrt) then
             write(unit=file_unit, fmt="(a)", advance="no") "cbrt"
             
-            if (config%square) then
+            if (use_square) then
                 write(unit=file_unit, fmt="(a)", advance="no") ", "
             end if
         end if
         
-        if (config%square) then
+        if (use_square) then
             write(unit=file_unit, fmt="(a)", advance="no") "square"
         end if
         
-        if (config%sqrt .or. config%cbrt .or. config%square) then
+        if (use_sqrt .or. use_cbrt .or. use_square) then
             write(unit=file_unit, fmt="(a)") ""
         end if
         
@@ -818,7 +854,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
         call config%write_type(file_unit, i_unit, unit_system)
     end do
     
-    call write_exponentiation_interfaces(config, unit_system, file_unit)
+    call write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
     
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
     
@@ -841,9 +877,9 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end do
     end do
     
-    if (config%sqrt .or. config%cbrt .or. config%square) then
+    if (use_sqrt .or. use_cbrt .or. use_square) then
         do i_unit = 1, size(unit_system%units)
-            if (config%sqrt) then
+            if (use_sqrt) then
                 trial_unit = sqrt_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
                     call write_exponentiation_function(unit_system, file_unit, unit_system%units(i_unit), "sqrt")
@@ -851,7 +887,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
                 end if
             end if
             
-            if (config%cbrt) then
+            if (use_cbrt) then
                 trial_unit = cbrt_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
                     call write_exponentiation_function(unit_system, file_unit, unit_system%units(i_unit), "cbrt")
@@ -859,7 +895,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
                 end if
             end if
             
-            if (config%square) then
+            if (use_square) then
                 trial_unit = square_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
                     call write_exponentiation_function(unit_system, file_unit, unit_system%units(i_unit), "square")
