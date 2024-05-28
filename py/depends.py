@@ -35,6 +35,13 @@ def canonicalize_path(path):
     path_split = path.split("/")
     return os.path.join(*path_split)
 
+def canonicalize_paths(path_string):
+    path_string_split = path_string.split(' ')
+    paths = []
+    for path_string_split_i in path_string_split:
+        paths.append(canonicalize_path(path_string_split_i))
+    return paths
+
 parser = argparse.ArgumentParser(description="Generates a Makefile fragment describing the dependencies of a Fortran project.")
 parser.add_argument("file", help="input file to read")
 args = parser.parse_args()
@@ -44,15 +51,9 @@ config.read(args.file)
 
 directories        = config['depends']['directories'].split(' ')
 no_existence_check = config['depends']['no_existence_check'].split(' ')
-
-skip_indexing_raw = config['depends']['skip_indexing'].split(' ')
-# Canonicalize `skip_indexing`
-skip_indexing = []
-for skip_indexing_i in skip_indexing_raw:
-    skip_indexing.append(canonicalize_path(skip_indexing_i))
-
-depends_file = canonicalize_path(config['depends']['depends_file'])
-testnml_file = canonicalize_path(config['depends']['testnml_file'])
+skip_indexing_raw  = canonicalize_paths(config['depends']['skip_indexing'])
+depends_file       = canonicalize_path(config['depends']['depends_file'])
+testnml_file       = canonicalize_path(config['depends']['testnml_file'])
 
 fail = False
 

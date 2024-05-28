@@ -8,9 +8,6 @@ import configparser
 ASSERTION_DENSITY_LOWER_LIMIT = 2.0
 TEST_RATIO_LOWER_LIMIT        = 0.5
 
-# These files won't have any assertions, so they should be ignored.
-ignore_files = [os.path.join("src", "debug.f90"), os.path.join("src", "release.f90"), os.path.join("src", "units.f90")]
-
 class file_stats_class:
     def __init__(self, filename, assertion_density, lines):
         self.filename          = filename
@@ -23,6 +20,17 @@ def is_empty_or_comment(line):
     
     return not len(line_clean) > 0
 
+def canonicalize_path(path):
+    path_split = path.split("/")
+    return os.path.join(*path_split)
+
+def canonicalize_paths(path_string):
+    path_string_split = path_string.split(' ')
+    paths = []
+    for path_string_split_i in path_string_split:
+        paths.append(canonicalize_path(path_string_split_i))
+    return paths
+
 parser = argparse.ArgumentParser(description="A linter for Fortran 90 and later intended for Ben Trettel's use.")
 parser.add_argument("file", help="input file to read")
 args = parser.parse_args()
@@ -30,7 +38,10 @@ args = parser.parse_args()
 config = configparser.ConfigParser()
 config.read(args.file)
 
-directories = config['f90lint']['directories'].split(' ')
+directories              = config['f90lint']['directories'].split(' ')
+skip_indexing            = canonicalize_paths(config['f90lint']['skip_indexing'])
+ignore_assertion_density = canonicalize_paths(config['f90lint']['ignore_assertion_density'])
+ignore_test_sloc_ratio   = canonicalize_paths(config['f90lint']['ignore_test_sloc_ratio'])
 
 fail = False
 
@@ -58,7 +69,7 @@ global_num_lines_tests = 0
 global_num_assertions  = 0
 file_stats = []
 for filename in sorted(filepaths):
-    if filename in ignore_files:
+    if filename in skip_indexing:
         continue
     
     with open(filename, "r") as file_handler:
@@ -103,11 +114,11 @@ for file_stat in file_stats:
                     break
 
 for file_stat in file_stats:
-    if (file_stat.assertion_density < ASSERTION_DENSITY_LOWER_LIMIT) and (not file_stat.filename.startswith("test")):
+    if (file_stat.assertion_density < ASSERTION_DENSITY_LOWER_LIMIT) and (not file_stat.filename.startswith("test")) and (not file_stat.filename in ignore_assertion_density):
         print("{}: Assertion density is {:.2f}% (<{:.2f}%).".format(file_stat.filename, file_stat.assertion_density, ASSERTION_DENSITY_LOWER_LIMIT))
         exit_code = 1
     
-    if (file_stat.test_ratio < TEST_RATIO_LOWER_LIMIT) and file_stat.filename.startswith("src"):
+    if (file_stat.test_ratio < TEST_RATIO_LOWER_LIMIT) and file_stat.filename.startswith("src") and (not file_stat.filename in ignore_test_sloc_ratio):
         print("{}: Lines-of-tests to lines-of-code ratio is {:.2f} (<{:.2f}).".format(file_stat.filename, file_stat.test_ratio, TEST_RATIO_LOWER_LIMIT))
         exit_code = 1
 
