@@ -51,7 +51,7 @@ config.read(args.file)
 
 directories        = config['depends']['directories'].split(' ')
 no_existence_check = config['depends']['no_existence_check'].split(' ')
-skip_indexing_raw  = canonicalize_paths(config['depends']['skip_indexing'])
+skip_indexing      = canonicalize_paths(config['depends']['skip_indexing'])
 depends_file       = canonicalize_path(config['depends']['depends_file'])
 testnml_file       = canonicalize_path(config['depends']['testnml_file'])
 
