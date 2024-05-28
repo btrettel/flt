@@ -4,6 +4,7 @@ base_units      = "kg", "m", "s"
 type_definition = "real(kind=WP)"
 !type_definition = "type(ad)"
 use_line        = "use prec, only: WP"
+kind_parameter  = "WP"
 max_n_units     = 10
 
 min_exponents = 0.0, 0.0, -1.0

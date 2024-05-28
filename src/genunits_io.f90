@@ -26,7 +26,7 @@ integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the mo
                               DEFAULT_DENOMINATOR = 1
 
 type, public :: config_type
-    character(len=:), allocatable :: output_file, type_definition, use_line
+    character(len=:), allocatable :: output_file, type_definition, use_line, kind_parameter
     real(kind=WP), allocatable    :: min_exponents(:), &
                                      max_exponents(:)
     integer, allocatable          :: denominators(:)
@@ -69,13 +69,14 @@ subroutine read_config_namelist(config_out, filename, rc)
     character(len=CL) :: nml_error_message
     
     ! `config` namelist group
-    character(len=CL)            :: output_file, type_definition, use_line
+    character(len=CL)            :: output_file, type_definition, use_line, kind_parameter
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
     integer                      :: denominators(MAX_BASE_UNITS), max_n_units, max_iter
     logical                      :: tests, comparison, unary, sqrt, cbrt, square, intrinsics
     
-    namelist /config/ output_file, base_units, type_definition, use_line, min_exponents, max_exponents, denominators, &
+    namelist /config/ output_file, base_units, type_definition, use_line, kind_parameter, &
+                        min_exponents, max_exponents, denominators, &
                         max_n_units, tests, comparison, unary, sqrt, cbrt, square, intrinsics
     
     call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
@@ -87,6 +88,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     output_file     = ""
     type_definition = "real(kind=WP)"
     use_line        = "use prec, only: WP"
+    kind_parameter  = ""
     min_exponents   = -huge(1.0_WP)
     max_exponents   = huge(1.0_WP)
     denominators    = DEFAULT_DENOMINATOR
@@ -107,7 +109,6 @@ subroutine read_config_namelist(config_out, filename, rc)
     if ((rc_nml /= 0) .and. (rc_nml /= IOSTAT_END)) then
         call config_out%logger%error(trim(nml_error_message))
         rc = rc_nml
-        close(unit=nml_unit)
         return
     end if
     
@@ -121,6 +122,13 @@ subroutine read_config_namelist(config_out, filename, rc)
     config_out%output_file     = trim(output_file)
     config_out%type_definition = trim(type_definition)
     config_out%use_line        = trim(use_line)
+    
+    if (len(trim(kind_parameter)) == 0) then
+        config_out%kind_parameter = ""
+    else
+        config_out%kind_parameter = "_" // trim(kind_parameter)
+    end if
+    
     config_out%min_exponents   = min_exponents(1:n_base_units)
     config_out%max_exponents   = max_exponents(1:n_base_units)
     config_out%denominators    = denominators(1:n_base_units)
@@ -664,13 +672,14 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
     end if
 end subroutine write_exponentiation_interfaces
 
-subroutine write_exponentiation_function(unit_system, file_unit, unit, op)
+subroutine write_exponentiation_function(config, unit_system, file_unit, unit, op)
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
-    class(unit_system_type), intent(in) :: unit_system
-    integer, intent(in)                 :: file_unit
-    type(unit_type), intent(in)         :: unit
-    character(len=*), intent(in)        :: op
+    type(config_type), intent(in)      :: config
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit
+    character(len=*), intent(in)       :: op
     
     type(unit_type)               :: unit_result
     character(len=:), allocatable :: op_pre, op_post, exponentiation_function
@@ -686,7 +695,7 @@ subroutine write_exponentiation_function(unit_system, file_unit, unit, op)
             ! <https://www.reddit.com/r/fortran/comments/t9qkqd/cuberoot_and_my_dissent_into_madness/>
             ! <https://github.com/fortran-lang/stdlib/issues/214>
             op_pre = "("
-            op_post = ")**(1.0_WP/3.0_WP)"
+            op_post = ")**(1.0" // config%kind_parameter // "/3.0" // config%kind_parameter // ")"
             
             unit_result = cbrt_unit(unit)
         case ("square")
@@ -738,35 +747,35 @@ subroutine write_module(config, unit_system, file_unit, rc)
     write(unit=file_unit, fmt="(2a)") "implicit none"
     write(unit=file_unit, fmt="(2a)") "private", new_line("a")
     
-    use_sqrt   = config%sqrt
-    use_cbrt   = config%cbrt
-    use_square = config%square
-    if (use_sqrt .or. use_cbrt .or. use_square) then
+    use_sqrt   = .false.
+    use_cbrt   = .false.
+    use_square = .false.
+    if (config%sqrt .or. config%cbrt .or. config%square) then
         do i_unit = 1, size(unit_system%units)
-            if (use_sqrt) then
+            if (config%sqrt) then
                 trial_unit = sqrt_unit(unit_system%units(i_unit))
-                if (.not. trial_unit%is_in(unit_system%units)) then
-                    use_sqrt = .false.
+                if (trial_unit%is_in(unit_system%units)) then
+                    use_sqrt = .true.
                     exit
                 end if
             end if
         end do
         
         do i_unit = 1, size(unit_system%units)
-            if (use_cbrt) then
+            if (config%cbrt) then
                 trial_unit = cbrt_unit(unit_system%units(i_unit))
-                if (.not. trial_unit%is_in(unit_system%units)) then
-                    use_cbrt = .false.
+                if (trial_unit%is_in(unit_system%units)) then
+                    use_cbrt = .true.
                     exit
                 end if
             end if
         end do
         
         do i_unit = 1, size(unit_system%units)
-            if (use_square) then
+            if (config%cbrt) then
                 trial_unit = square_unit(unit_system%units(i_unit))
-                if (.not. trial_unit%is_in(unit_system%units)) then
-                    use_square = .false.
+                if (trial_unit%is_in(unit_system%units)) then
+                    use_square = .true.
                     exit
                 end if
             end if
@@ -882,7 +891,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             if (use_sqrt) then
                 trial_unit = sqrt_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
-                    call write_exponentiation_function(unit_system, file_unit, unit_system%units(i_unit), "sqrt")
+                    call write_exponentiation_function(config, unit_system, file_unit, unit_system%units(i_unit), "sqrt")
                     n_interfaces = n_interfaces + 1
                 end if
             end if
@@ -890,7 +899,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             if (use_cbrt) then
                 trial_unit = cbrt_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
-                    call write_exponentiation_function(unit_system, file_unit, unit_system%units(i_unit), "cbrt")
+                    call write_exponentiation_function(config, unit_system, file_unit, unit_system%units(i_unit), "cbrt")
                     n_interfaces = n_interfaces + 1
                 end if
             end if
@@ -898,7 +907,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             if (use_square) then
                 trial_unit = square_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
-                    call write_exponentiation_function(unit_system, file_unit, unit_system%units(i_unit), "square")
+                    call write_exponentiation_function(config, unit_system, file_unit, unit_system%units(i_unit), "square")
                     n_interfaces = n_interfaces + 1
                 end if
             end if
