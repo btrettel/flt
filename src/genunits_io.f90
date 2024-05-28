@@ -560,17 +560,17 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_binary_operator): " // &
                         "binary_operator_procedure name is too long and won't meet the Fortran 2003 standard")
     
-    write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(unit_left, unit_right)"
+    write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(left, right)"
     
     write(unit=file_unit, fmt="(2a)") "    ! left: ", trim(unit_left%readable(unit_system))
     write(unit=file_unit, fmt="(2a)") "    ! right: ", trim(unit_right%readable(unit_system))
     write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit_result%readable(unit_system))
     
-    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_left%label()), "), intent(in) :: unit_left"
-    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_right%label()), "), intent(in) :: unit_right"
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_left%label()), "), intent(in) :: left"
+    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_right%label()), "), intent(in) :: right"
     write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", binary_operator_procedure
     
-    write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = unit_left%v ", op, " unit_right%v"
+    write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left%v ", op, " right%v"
     
     write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
 end subroutine write_binary_operator
@@ -601,15 +601,15 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
     call assert(len(unary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_unary_operator): " // &
                         "unary_operator_procedure name is too long and won't meet the Fortran 2003 standard")
     
-    write(unit=file_unit, fmt="(3a)") "elemental function ", unary_operator_procedure, "(unit)"
+    write(unit=file_unit, fmt="(3a)") "elemental function ", unary_operator_procedure, "(arg)"
     
     write(unit=file_unit, fmt="(2a)") "    ! argument: ", trim(unit%readable(unit_system))
     write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit%readable(unit_system))
     
-    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: unit"
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: arg"
     write(unit=file_unit, fmt="(4a)") "    type(", trim(unit%label()), ") :: ", unary_operator_procedure
     
-    write(unit=file_unit, fmt="(5a)") "    ", unary_operator_procedure, "%v = ", op, "unit%v"
+    write(unit=file_unit, fmt="(5a)") "    ", unary_operator_procedure, "%v = ", op, "arg%v"
     
     write(unit=file_unit, fmt="(3a)") "end function ", unary_operator_procedure, new_line("a")
 end subroutine write_unary_operator
@@ -700,15 +700,15 @@ subroutine write_exponentiation_function(unit_system, file_unit, unit, op)
     
     exponentiation_function = op // "_" // trim(unit%label())
     
-    write(unit=file_unit, fmt="(3a)") "elemental function ", exponentiation_function, "(unit)"
+    write(unit=file_unit, fmt="(3a)") "elemental function ", exponentiation_function, "(arg)"
     
-    write(unit=file_unit, fmt="(2a)") "    ! argument: ", trim(unit%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! arg: ", trim(unit%readable(unit_system))
     write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit_result%readable(unit_system))
     
-    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: unit"
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: arg"
     write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", exponentiation_function
     
-    write(unit=file_unit, fmt="(6a)") "    ", exponentiation_function, "%v = ", op_pre, "unit%v", op_post
+    write(unit=file_unit, fmt="(6a)") "    ", exponentiation_function, "%v = ", op_pre, "arg%v", op_post
     
     write(unit=file_unit, fmt="(3a)") "end function ", exponentiation_function, new_line("a")
 end subroutine write_exponentiation_function
