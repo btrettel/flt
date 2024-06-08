@@ -5,9 +5,6 @@ Priorities:
 - autodiff.f90
     - Test `sqrt`
     - Add comparison operators
-- depends.py
-    - `src$(DIR_SEP)revision.f90: $(ALLSRC)`
-    - Generate `ALLSRC` and put it in `before.mk`.
 - gitrev.py:
     - Test revision.f90.
     - Modify genunits to print `REVISION`, `DEBUG`, compiler info (compiler, flags).

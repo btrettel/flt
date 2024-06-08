@@ -6,3 +6,9 @@
 
 TESTNML = autodiff.nml checks.nml genunits_data.nml genunits_io.nml nmllog.nml port.nml prec.nml purerng.nml timer.nml units.nml unittest.nml
 .PRECIOUS: $(TESTNML)
+
+####################
+# All source files #
+####################
+
+ALLSRC = app$(DIR_SEP)genunits.f90 src$(DIR_SEP)autodiff.f90 src$(DIR_SEP)checks.f90 src$(DIR_SEP)debug.f90 src$(DIR_SEP)genunits_data.f90 src$(DIR_SEP)genunits_io.f90 src$(DIR_SEP)nmllog.f90 src$(DIR_SEP)port.f90 src$(DIR_SEP)prec.f90 src$(DIR_SEP)purerng.f90 src$(DIR_SEP)release.f90 src$(DIR_SEP)timer.f90 src$(DIR_SEP)unittest.f90 test$(DIR_SEP)test_assert_dimension_false_1.f90 test$(DIR_SEP)test_assert_dimension_false_2.f90 test$(DIR_SEP)test_assert_dimension_false_3.f90 test$(DIR_SEP)test_assert_false.f90 test$(DIR_SEP)test_autodiff.f90 test$(DIR_SEP)test_checks.f90 test$(DIR_SEP)test_genunits_data.f90 test$(DIR_SEP)test_genunits_io.f90 test$(DIR_SEP)test_nmllog.f90 test$(DIR_SEP)test_port.f90 test$(DIR_SEP)test_prec.f90 test$(DIR_SEP)test_purerng.f90 test$(DIR_SEP)test_timer.f90 test$(DIR_SEP)test_units.f90 test$(DIR_SEP)test_units_fail_1.f90 test$(DIR_SEP)test_units_fail_2.f90 test$(DIR_SEP)test_unittest.f90

@@ -84,9 +84,12 @@ if fail:
 
 depstructs = []
 all_dependencies = set()
+all_source = set()
 for filepath in sorted(filepaths):
     if filepath in skip_indexing:
         continue
+    
+    all_source.add(filepath)
     
     with open(filepath, "r") as file_handler:
         program      = False
@@ -252,4 +255,14 @@ with open(before_file, "w") as output_handler:
     for test_nml in sorted(test_nmls):
         output_handler.write(" {}".format(test_nml))
     
-    output_handler.write("\n.PRECIOUS: $(TESTNML)")
+    output_handler.write("\n.PRECIOUS: $(TESTNML)\n\n")
+    
+    print("Writing ALLSRC...")
+    output_handler.write("####################\n")
+    output_handler.write("# All source files #\n")
+    output_handler.write("####################\n\nALLSRC =")
+    for source in sorted(all_source):
+        directory = os.path.split(source)[0]
+        filename  = os.path.split(source)[1]
+        
+        output_handler.write(" {}$(DIR_SEP){}".format(directory, filename))
