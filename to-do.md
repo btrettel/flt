@@ -5,8 +5,9 @@ Priorities:
 - autodiff.f90
     - Test `sqrt`
     - Add comparison operators
+- depends.py:
+    - Add to config.ini ability to list more to add to `ALLSRC`.
 - gitrev.py:
-    - Test revision.f90.
     - Modify genunits to print `REVISION`, `DEBUG`, compiler info (compiler, flags).
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
