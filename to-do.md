@@ -7,7 +7,6 @@ Priorities:
     - Add comparison operators
 - depends.py
     - `src$(DIR_SEP)revision.f90: $(ALLSRC)`
-    - Rename `testnml.mk` to `before.mk`.
     - Generate `ALLSRC` and put it in `before.mk`.
 - gitrev.py:
     - Test revision.f90.

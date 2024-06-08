@@ -23,7 +23,7 @@ include mk/linux_defaults.mk
 include mk/gfortran.mk
 FFLAGS ::= $(FFLAGS) $(DFLAGS)
 
-include mk/testnml.mk
+include mk/before.mk
 include mk/common.mk
 include mk/depends.mk
 include mk/linux_2.mk

@@ -55,7 +55,7 @@ else
 $(error Set BUILD to either debug or release. BUILD=$(BUILD))
 endif
 
-include mk/testnml.mk
+include mk/before.mk
 include mk/common.mk
 include mk/depends.mk
 include mk/linux_2.mk
