@@ -81,7 +81,7 @@ for directory in sorted(directories):
 
 all_source = set()
 for filename in sorted(os.listdir("mk")):
-    all_source.add(filename)
+    all_source.add(os.path.join("mk", filename))
 
 for filepath in sorted(allsrc_raw):
     # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
