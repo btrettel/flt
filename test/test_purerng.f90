@@ -21,6 +21,7 @@ call tests%start_tests(logger)
 call test_unique(tests)
 call test_lecuyer(tests)
 call test_determ(tests)
+call test_concurrent(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -46,7 +47,7 @@ subroutine test_lecuyer(tests)
     call tests%integer_eq(seed_size, 2, "lecuyer, random_seed(size)")
     
     call rng%get_rng_num(rng_num)
-    call tests%integer_eq(rng_num, RNG_LECUYER, "lecuyer, rng=RNG_LECUYER")
+    call tests%integer_eq(rng_num, RNG_LECUYER, "lecuyer, rng=RNG_LECUYER (default)")
 
     allocate(seed(seed_size))
     call rng%random_seed(put=[2147483562_I10, 2147483398_I10])
@@ -143,5 +144,36 @@ subroutine test_unique(tests)
     
     call tests%integer_ne(RNG_DETERM, RNG_LECUYER, "RNG_DETERM /= RNG_LECUYER")
 end subroutine test_unique
+
+subroutine test_concurrent(tests)
+    ! Test that PRNG works in `do concurrent` loop, particularly on nvfortran due to it's extra restrictions.
+    
+    ! TODO: Later switch to have different seeds for each once you have the parallel seed selection set up.
+    ! Test that each random number is different in that case.
+    
+    use prec, only: WP
+    use purerng, only: rng_type
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    integer, parameter :: N_RNGS = 100
+    
+    type(rng_type) :: rng(N_RNGS)
+    real(kind=WP)  :: harvest(N_RNGS)
+    integer        :: i_rng
+    
+    do i_rng = 1, N_RNGS ! SERIAL
+        call rng(i_rng)%random_seed()
+    end do
+    
+    do concurrent (i_rng = 1:N_RNGS)
+        call rng(i_rng)%random_number(harvest(i_rng))
+    end do
+    
+    ! TODO: Replace these pointless tests with tests that each `harvest` is different after adding parallel seed selection.
+    do i_rng = 1, N_RNGS ! SERIAL
+        call tests%real_gt(harvest(i_rng), 0.0_WP, "test_concurrent, greater than zero")
+    end do
+end subroutine test_concurrent
 
 end program test_purerng
