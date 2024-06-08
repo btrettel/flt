@@ -6,7 +6,9 @@ Priorities:
     - Test `sqrt`
     - Add comparison operators
 - depends.py
-    - Add files listed in `include` lines to depends.mk output.
+    - `src$(DIR_SEP)revision.f90: $(ALLSRC)`
+    - Rename `testnml.mk` to `before.mk`.
+    - Generate `ALLSRC` and put it in `before.mk`.
 - gitrev.py:
     - Test revision.f90.
     - Modify genunits to print `REVISION`, `DEBUG`, compiler info (compiler, flags).
@@ -175,6 +177,7 @@ Later:
 - Have Python script to insert probes into (instrument) Fortran code, particularly for Monte Carlo arithmetic.
     - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
         - > SPAG is able to insert calls to probes at various points in your code (see below).
+    - <https://docs.cypress.io/guides/tooling/code-coverage>
     - Don't insert probes into `pure` and `elemental` procedures.
 - nmlfuzz.f90: namelist fuzz tester
     - Make depend on ga.f90

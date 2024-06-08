@@ -6,13 +6,13 @@ import argparse
 import configparser
 
 class dependency_structure:
-    def __init__(self, filename, program, module, name, dependencies):
+    def __init__(self, filename, program, module, name, dependencies, includes):
         self.filename     = filename
         self.program      = program
         self.module       = module
         self.name         = name
         self.dependencies = dependencies
-        #self.includes     = includes
+        self.includes     = includes
 
 def get_program_name_from_program(line):
     start_index = line.find("program") + 8
@@ -29,6 +29,12 @@ def get_module_name_from_module(line):
 def get_module_name_from_use(line):
     start_index = line.find("use") + 4
     end_index   = line.find(",")
+    
+    return line[start_index:end_index]
+
+def get_file_name_from_include(line):
+    start_index = line.find('include "') + 9
+    end_index   = line.rfind('"')
     
     return line[start_index:end_index]
 
@@ -50,11 +56,12 @@ args = parser.parse_args()
 config = configparser.ConfigParser()
 config.read(args.file)
 
-directories        = config['depends']['directories'].split(' ')
-no_existence_check = config['depends']['no_existence_check'].split(' ')
-skip_indexing      = canonicalize_paths(config['depends']['skip_indexing'])
-depends_file       = canonicalize_path(config['depends']['depends_file'])
-testnml_file       = canonicalize_path(config['depends']['testnml_file'])
+directories          = config['depends']['directories'].split(' ')
+no_existence_check   = config['depends']['no_existence_check'].split(' ')
+module_name_mismatch = canonicalize_paths(config['depends']['module_name_mismatch'])
+skip_indexing        = canonicalize_paths(config['depends']['skip_indexing'])
+depends_file         = canonicalize_path(config['depends']['depends_file'])
+testnml_file         = canonicalize_path(config['depends']['testnml_file'])
 
 fail = False
 
@@ -64,7 +71,7 @@ for directory in sorted(directories):
     directory = os.path.relpath(directory)
     
     if not os.path.isdir(directory):
-        print("{} is not a directory.")
+        print("ERROR: {} is not a directory.")
         fail = True
     else:
         for filename in sorted(os.listdir(directory)):
@@ -75,7 +82,7 @@ if fail:
     print("Error(s) encountered, stopping.")
     exit(1)
 
-depstructs = [dependency_structure(os.path.join("src", "$(BUILD)"), False, True, "build", set())]
+depstructs = []
 all_dependencies = set()
 for filepath in sorted(filepaths):
     if filepath in skip_indexing:
@@ -85,7 +92,8 @@ for filepath in sorted(filepaths):
         program      = False
         module       = False
         name         = None
-        dependencies = set()
+        dependencies = set() # `use` lines
+        includes     = set()
         
         for line in file_handler.readlines():
             if line.strip().startswith("program "):
@@ -101,30 +109,47 @@ for filepath in sorted(filepaths):
             
             if line.strip().startswith("use "):
                 if get_module_name_from_use(line) == name:
-                    print("{} can't depend on itself.".format(filepath))
+                    print("ERROR: {} can't depend on itself.".format(filepath))
                     fail = True
                 
                 dependencies.add(get_module_name_from_use(line))
                 all_dependencies.add(get_module_name_from_use(line))
+                
+                if get_module_name_from_use(line).startswith("iso_"):
+                    
+                    fail = True
+            
+            if line.strip().startswith("include "):
+                # TODO
+                # if get_file_name_from_include(line) == filename:
+                    # print("ERROR: {} can't include itself.".format(filepath))
+                    # fail = True
+                
+                includes.add(get_file_name_from_include(line))
         
-        print("{} program={} module={} name={} dependencies={}".format(filepath, program, module, name, dependencies))
+        print("{} program={} module={} name={} dependencies={} includes={}".format(filepath, program, module, name, dependencies, includes))
         
         if (program and module):
-            print("{} contains both a program and a module. depends.py assumes that a file contains one or the other, not both.".format(filepath))
+            print("ERROR: {} contains both a program and a module. depends.py assumes that a file contains one or the other, not both.".format(filepath))
             fail = True
         
         if not name is None:
-            if os.path.basename(filepath) != name + ".f90":
-                print("{} contains module or program {}, when I require that the two have the same name.".format(filepath, name))
+            if not filepath in module_name_mismatch:
+                if os.path.basename(filepath) != name + ".f90":
+                    print("ERROR: {} contains module or program {}, when I require that the two have the same name.".format(filepath, name))
+                    fail = True
+            
+            if "." in name:
+                print("ERROR: The module name for {} can't contain a period as this code assumes there are no periods in the module name.".format(filepath))
                 fail = True
         
         if module:
             if os.path.split(filepath)[0] != "src":
-                print("{} contains a module which is not in the src directory. All modules must be in the src directory.".format(filepath))
+                print("ERROR: {} contains a module which is not in the src directory. All modules must be in the src directory.".format(filepath))
                 fail = True
         
         if (program or module):
-            depstructs.append(dependency_structure(filepath, program, module, name, dependencies))
+            depstructs.append(dependency_structure(filepath, program, module, name, dependencies, includes))
         else:
             assert name is None, "name should not be set for something which is not a program or module"
 
@@ -133,7 +158,7 @@ for dependency in sorted(all_dependencies):
         continue
     
     if not os.path.exists(os.path.join("src", dependency+".f90")):
-        print("Module dependency {} does not exist.".format(dependency))
+        print("ERROR: Module dependency {} does not exist.".format(dependency))
         fail = True
 
 if fail:
@@ -146,12 +171,9 @@ for depstruct in depstructs:
         num_dependencies_prev = 0
         num_dependencies      = len(depstruct.dependencies)
         
-        #print("Before:", depstruct.name, depstruct.dependencies)
-        
         while (num_dependencies > num_dependencies_prev):
             for sub_depstruct in depstructs:
                 if sub_depstruct.name in depstruct.dependencies:
-                    #print("here", sub_depstruct.name, sub_depstruct.dependencies)
                     depstruct.dependencies = depstruct.dependencies.union(sub_depstruct.dependencies)
             
             num_dependencies_prev = num_dependencies
@@ -169,14 +191,13 @@ with open(depends_file, "w") as output_handler:
     output_handler.write("#######################\n\n")
     for depstruct in depstructs:
         if depstruct.module:
-            if depstruct.name == "build":
-                continue
-            
             directory = os.path.split(depstruct.filename)[0]
+            filename  = os.path.split(depstruct.filename)[1]
+            basename  = filename.split(".")[0]
             
-            print("Writing module dependencies: {}".format(depstruct.name))
+            print("Writing module dependencies: {}".format(depstruct.filename))
             
-            output_handler.write("{}$(DIR_SEP){}.$(OBJEXT):".format(directory, depstruct.name))
+            output_handler.write("{}$(DIR_SEP){}.$(OBJEXT):".format(directory, basename))
             
             for dependency in sorted(depstruct.dependencies):
                 if dependency != "build":
@@ -184,7 +205,10 @@ with open(depends_file, "w") as output_handler:
                 else:
                     output_handler.write(" src$(DIR_SEP)$(BUILD).$(OBJEXT)")
             
-            output_handler.write(" {}$(DIR_SEP){}.f90\n\n".format(directory, depstruct.name))
+            for include in sorted(depstruct.includes):
+                output_handler.write(" src$(DIR_SEP){}".format(include))
+            
+            output_handler.write(" {}$(DIR_SEP){}\n\n".format(directory, filename))
     
     # Write program dependencies.
     

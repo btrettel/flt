@@ -8,6 +8,8 @@ src$(DIR_SEP)autodiff.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec
 
 src$(DIR_SEP)checks.$(OBJEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)checks.f90
 
+src$(DIR_SEP)debug.$(OBJEXT): src$(DIR_SEP)revision.f90 src$(DIR_SEP)debug.f90
+
 src$(DIR_SEP)genunits_data.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)genunits_data.f90
 
 src$(DIR_SEP)genunits_io.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)genunits_io.f90
@@ -19,6 +21,8 @@ src$(DIR_SEP)port.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(O
 src$(DIR_SEP)prec.$(OBJEXT): src$(DIR_SEP)prec.f90
 
 src$(DIR_SEP)purerng.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)purerng.f90
+
+src$(DIR_SEP)release.$(OBJEXT): src$(DIR_SEP)revision.f90 src$(DIR_SEP)release.f90
 
 src$(DIR_SEP)timer.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.f90
 
