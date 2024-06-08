@@ -21,7 +21,7 @@ private
 ! <https://fortran-lang.discourse.group/t/proper-usage-of-system-clock/3245/3>
 integer, public, parameter :: TIMER_KIND = selected_int_kind(18)
 
-public :: timeit
+public :: timeit, sleep
 
 type, public :: timer_type
     logical                  :: active = .false. ! whether the timer is currently timing
@@ -158,5 +158,41 @@ function timeit(f, number)
     
     timeit = wtime%read()
 end function timeit
+
+subroutine sleep(duration)
+    use checks, only: assert
+    
+    real(kind=WP), intent(in) :: duration
+    
+    integer(kind=TIMER_KIND) :: start_count, count_max, stop_count, running_count
+    real(kind=WP)            :: count_rate
+    
+    call assert(duration > 0.0_WP, "duration must be greater than zero.")
+    
+    call system_clock(start_count, count_rate, count_max)
+    stop_count = start_count + ceiling(duration * count_rate, TIMER_KIND)
+    
+    ! Detect if the timer will wrap.
+    if (stop_count > count_max) then
+        ! It's not clear to me if this is off by one, but I guess that doesn't matter much.
+        stop_count = stop_count - count_max
+    end if
+    
+    do ! SERIAL
+        call system_clock(running_count, count_rate, count_max)
+        
+        if (start_count < stop_count) then
+            ! Normal case where the clock doesn't wrap.
+            if (running_count > stop_count) then
+                exit
+            end if
+        else
+            ! If the clock wraps...
+            if ((running_count > stop_count) .and. (running_count < start_count)) then
+                exit
+            end if
+        end if
+    end do
+end subroutine sleep
 
 end module timer
