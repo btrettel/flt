@@ -115,7 +115,7 @@ subroutine purerng_random_seed(rng, seed_size, put, get)
                 call assert(put(1) <= size(put, kind=I10), "For RNG_DETERM, the first put index is the " // &
                                                 "index of put for the next deterministic PRNG draw. Consequently, the first " // &
                                                 "index must be less than or equal to the length of the put array.")
-                do i = 2, size(put)
+                do concurrent (i = 2:size(put))
                     call assert(put(i) >= 0_I10, "purerng (purerng_random_seed): For RNG_DETERM, return values are " // &
                                                  "proportional to the returned PRNG, and consequently must be >= 0.")
                     call assert(put(i) <= DETERM_DENOM, "purerng (purerng_random_seed): For RNG_DETERM, return values are " // &

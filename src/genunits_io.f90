@@ -81,7 +81,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
     
-    do i_base_unit = 1, MAX_BASE_UNITS
+    do concurrent (i_base_unit = 1:MAX_BASE_UNITS)
         base_units(i_base_unit) = ""
     end do
     
@@ -113,7 +113,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     end if
     
     n_base_units = 0
-    do i_base_unit = 1, MAX_BASE_UNITS
+    do i_base_unit = 1, MAX_BASE_UNITS ! SERIAL
         if (trim(base_units(i_base_unit)) /= "") then
             n_base_units = n_base_units + 1
         end if
@@ -149,7 +149,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     call config_out%logger%check(len(type_definition) > 0, "type_definition must have 1 or more characters", n_failures)
     call config_out%logger%check(all(denominators >= 1), "all denominators must be 1 or more", n_failures)
     
-    do i_base_unit = 1, n_base_units
+    do i_base_unit = 1, n_base_units ! SERIAL
         call config_out%logger%check(.not. is_close(min_exponents(i_base_unit), -huge(1.0_WP)), &
                                         "min_exponents is not set properly?", n_failures)
         call config_out%logger%check(.not. is_close(max_exponents(i_base_unit), huge(1.0_WP)), &
@@ -196,7 +196,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     ! First get `n_seed_units`, allocate `config`, and read everything in.
     n_seed_units = 0
     n_failures   = 0
-    do
+    do ! SERIAL
         label = ""
         e = 0.0_WP
         read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
@@ -225,7 +225,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     allocate(config%seed_labels(n_seed_units))
     allocate(config%seed_units(n_seed_units))
     i_seed_unit = 0
-    do
+    do ! SERIAL
         label = ""
         e     = huge(1.0_WP)
         read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
@@ -250,7 +250,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         call config%logger%check(len(trim(label)) /= 0, &
                                         "seed_unit #" // trim(i_seed_unit_string) // " has an empty label.", n_failures)
 
-        do j_seed_unit = 1, i_seed_unit - 1
+        do j_seed_unit = 1, i_seed_unit - 1 ! SERIAL
             write(unit=j_seed_unit_string, fmt="(i0)") j_seed_unit
             call config%logger%check(trim(label) /= config%seed_labels(j_seed_unit), &
                                             "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
@@ -264,7 +264,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
                                                 // ' labeled "' // trim(config%seed_labels(j_seed_unit)) // '".', n_failures)
         end do
         
-        do i_base_unit = 1, size(config%base_units)
+        do i_base_unit = 1, size(config%base_units) ! SERIAL
             write(unit=i_base_unit_string, fmt="(i0)") i_base_unit
             call config%logger%check(.not. is_close(config%seed_units(i_seed_unit)%e(i_base_unit), huge(1.0_WP)), &
                                             "In seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
@@ -298,7 +298,7 @@ pure function in_exponent_bounds(config, unit)
                     "genunits_io (in_exponent_bounds): min exponents must be <= max exponents")
     
     in_exponent_bounds = .true.
-    do i_base_unit = 1, size(config%min_exponents)
+    do i_base_unit = 1, size(config%min_exponents) ! SERIAL
         if ((unit%e(i_base_unit) > config%max_exponents(i_base_unit)) &
                 .or. (unit%e(i_base_unit) < config%min_exponents(i_base_unit))) then
             in_exponent_bounds = .false.
@@ -349,7 +349,7 @@ pure subroutine process_trial_unit(config, trial_unit, units, n_units, rc)
     unseen        = .not. trial_unit%is_in(units(1:n_units))
     
     denominator_valid = .true.
-    do i_base_unit = 1, size(config%base_units)
+    do i_base_unit = 1, size(config%base_units) ! SERIAL
         if (.not. denominator_matches(trial_unit%e(i_base_unit), config%denominators(i_base_unit))) then
             denominator_valid = .false.
             exit
@@ -382,15 +382,15 @@ subroutine generate_system(config, unit_system)
     ! Create new units that appear from application of operators.
     n_units = size(config%seed_units)
     iter = 0
-    genunit_loop: do
+    genunit_loop: do ! SERIAL
         write(unit=*, fmt="(a, i0, a, i0)") "iter=", iter, " n_units=", n_units
         
         iter = iter + 1
         n_units_prev = n_units
         
-        do i_units = 1, n_units_prev
+        do i_units = 1, n_units_prev ! SERIAL
             ! binary operators
-            do j_units = 1, n_units_prev
+            do j_units = 1, n_units_prev ! SERIAL
                 ! multiplication
                 trial_unit = m_unit(units(i_units), units(j_units))
                 call process_trial_unit(config, trial_unit, units, n_units, rc)
@@ -467,7 +467,7 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
         write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(-) => s_", trim(unit_system%units(i_unit)%label())
     end if
     
-    do j_unit = 1, size(unit_system%units)
+    do j_unit = 1, size(unit_system%units) ! SERIAL
         ! multiply
         trial_unit = m_unit(unit_system%units(i_unit), unit_system%units(j_unit))
         if (trial_unit%is_in(unit_system%units)) then
@@ -634,7 +634,7 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
     
     if (use_sqrt) then
         write(unit=file_unit, fmt="(a)") "interface sqrt"
-        do i_unit = 1, size(unit_system%units)
+        do i_unit = 1, size(unit_system%units) ! SERIAL
             trial_unit = sqrt_unit(unit_system%units(i_unit))
             if (trial_unit%is_in(unit_system%units)) then
                 write(unit=file_unit, fmt="(2a)") "    module procedure sqrt_", trim(unit_system%units(i_unit)%label())
@@ -647,7 +647,7 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
     
     if (use_cbrt) then
         write(unit=file_unit, fmt="(a)") "interface cbrt"
-        do i_unit = 1, size(unit_system%units)
+        do i_unit = 1, size(unit_system%units) ! SERIAL
             trial_unit = cbrt_unit(unit_system%units(i_unit))
             if (trial_unit%is_in(unit_system%units)) then
                 write(unit=file_unit, fmt="(2a)") "    module procedure cbrt_", trim(unit_system%units(i_unit)%label())
@@ -660,7 +660,7 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
     
     if (use_square) then
         write(unit=file_unit, fmt="(a)") "interface square"
-        do i_unit = 1, size(unit_system%units)
+        do i_unit = 1, size(unit_system%units) ! SERIAL
             trial_unit = square_unit(unit_system%units(i_unit))
             if (trial_unit%is_in(unit_system%units)) then
                 write(unit=file_unit, fmt="(2a)") "    module procedure square_", trim(unit_system%units(i_unit)%label())
@@ -751,7 +751,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     use_cbrt   = .false.
     use_square = .false.
     if (config%sqrt .or. config%cbrt .or. config%square) then
-        do i_unit = 1, size(unit_system%units)
+        do i_unit = 1, size(unit_system%units) ! SERIAL
             if (config%sqrt) then
                 trial_unit = sqrt_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
@@ -761,7 +761,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end if
         end do
         
-        do i_unit = 1, size(unit_system%units)
+        do i_unit = 1, size(unit_system%units) ! SERIAL
             if (config%cbrt) then
                 trial_unit = cbrt_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
@@ -771,7 +771,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end if
         end do
         
-        do i_unit = 1, size(unit_system%units)
+        do i_unit = 1, size(unit_system%units) ! SERIAL
             if (config%cbrt) then
                 trial_unit = square_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
@@ -801,11 +801,11 @@ subroutine write_module(config, unit_system, file_unit, rc)
         write(unit=file_unit, fmt="(a)", advance="no") "!use units, only: "
         
         max_label_len = 0
-        do i_seed_unit = 1, size(config%seed_labels)
+        do i_seed_unit = 1, size(config%seed_labels) ! SERIAL
             max_label_len = max(max_label_len, len(trim(config%seed_labels(i_seed_unit))))
         end do
         
-        do i_seed_unit = 1, size(config%seed_labels)
+        do i_seed_unit = 1, size(config%seed_labels) ! SERIAL
             if (i_seed_unit /= 1) then
                 write(unit=file_unit, fmt="(a)", advance="no") "!                 "
             end if
@@ -859,7 +859,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
         write(unit=file_unit, fmt="(a)") ""
     end if
     
-    do i_unit = 1, size(unit_system%units)
+    do i_unit = 1, size(unit_system%units) ! SERIAL
         call config%write_type(file_unit, i_unit, unit_system)
     end do
     
@@ -869,7 +869,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     n_interfaces = 0
     
-    do i_unit = 1, size(unit_system%units)
+    do i_unit = 1, size(unit_system%units) ! SERIAL
         call write_as_operators(unit_system, file_unit, unit_system%units(i_unit))
         n_interfaces = n_interfaces + 2
         
@@ -880,14 +880,14 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end if
     end do
     
-    do i_unit = 1, size(unit_system%units)
-        do j_unit = 1, size(unit_system%units)
+    do i_unit = 1, size(unit_system%units) ! SERIAL
+        do j_unit = 1, size(unit_system%units) ! SERIAL
             call write_md_operators(unit_system, file_unit, unit_system%units(i_unit), unit_system%units(j_unit), n_interfaces)
         end do
     end do
     
     if (use_sqrt .or. use_cbrt .or. use_square) then
-        do i_unit = 1, size(unit_system%units)
+        do i_unit = 1, size(unit_system%units) ! SERIAL
             if (use_sqrt) then
                 trial_unit = sqrt_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then

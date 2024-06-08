@@ -48,7 +48,7 @@ pure function label(unit)
     
     label = UNIT_PREFIX
     write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN
-    do i_base_unit = 1, size(unit%e)
+    do i_base_unit = 1, size(unit%e) ! SERIAL
         if (unit%e(i_base_unit) < 0.0_WP) then
             exponent_sign = "m"
         else
@@ -78,7 +78,7 @@ pure function readable(unit, unit_system)
     
     readable = ""
     write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN - 1
-    do i_base_unit = 1, unit_system%n_base_units
+    do i_base_unit = 1, unit_system%n_base_units ! SERIAL
         write(unit=readable, fmt="(4a, f0." // exponent_len_string // ")") trim(readable), " ", &
                                                     trim(unit_system%base_units(i_base_unit)), "^", unit%e(i_base_unit)
     end do
@@ -96,7 +96,7 @@ pure function is_in(unit, units)
     integer :: i_unit
     
     is_in = .false.
-    do i_unit = 1, size(units)
+    do i_unit = 1, size(units) ! SERIAL
         if (all_close(unit%e, units(i_unit)%e)) then
             is_in = .true.
             exit

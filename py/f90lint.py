@@ -74,10 +74,7 @@ for filename in sorted(filepaths):
     
     with open(filename, "r") as file_handler:
         contains_executable_code = False
-        line_no = 0
         for line in file_handler.readlines():
-            line_no = line_no + 1
-            
             if line.strip().startswith("program ") or line.strip().startswith("contains"):
                 contains_executable_code = True
                 break
@@ -88,10 +85,15 @@ for filename in sorted(filepaths):
             local_num_lines_code_or_tests = 0
             local_num_lines_tests         = 0
             local_num_assertions          = 0
+            line_no                       = 0
             for line in file_handler.readlines():
+                line_no = line_no + 1
+                
                 # If the line isn't empty or only comments.
                 if not is_empty_or_comment(line):
                     local_num_lines_code_or_tests = local_num_lines_code_or_tests + 1
+                    
+                    line_no_comments = line.split("!")[0].strip()
                     
                     # Tests don't have assertions, so they shouldn't count towards the assertion count.
                     if not filename.startswith("test"):
@@ -102,8 +104,14 @@ for filename in sorted(filepaths):
                             global_num_assertions = global_num_assertions + 1
                             local_num_assertions  = local_num_assertions + 1
                         
-                        if line.strip().startswith("do "):
-                            if (not line.strip().startswith("do concurrent ")) and (not "! SERIAL" in line):
+                        # Normal `do` loops return an error unless they have the pragma `! SERIAL` on the same line. The point of this is to encourage me to use `do concurrent` as much as possible to make sure that the code can be parallelized well.
+                        if ":" in line_no_comments:
+                            line_do = line_no_comments.split(":")[1].strip()
+                        else:
+                            line_do = line_no_comments
+                        
+                        if line_do.startswith("do ") or (line_do == "do"):
+                            if (not line_do.startswith("do concurrent ")) and (not "! SERIAL" in line):
                                 print("{}:{}: do concurrent not used". format(filename, line_no))
                                 exit_code = 1
                     else:

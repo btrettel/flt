@@ -63,12 +63,8 @@ elemental subroutine init(x, v, n, n_dv)
     x%v = v
     
     allocate(x%dv(n_dv))
-    do i_dv = 1, n_dv
-        if (i_dv == n) then
-            x%dv(i_dv) = 1.0_WP
-        else
-            x%dv(i_dv) = 0.0_WP
-        end if
+    do concurrent (i_dv = 1:n_dv)
+        x%dv(i_dv) = merge(1.0_WP, 0.0_WP, i_dv == n)
     end do
 end subroutine init
 

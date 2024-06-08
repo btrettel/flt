@@ -360,7 +360,7 @@ subroutine pure_log_close(pure_logger)
     type(pure_log_data_type), pointer :: current
     
     ! Write and deallocate all messages.
-    do
+    do ! SERIAL
         if (.not. associated(pure_logger%head)) then
             exit
         end if

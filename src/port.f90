@@ -73,7 +73,7 @@ function path_join(path_array)
     DIR_SEP = DIR_SEPS(platform())
     
     path_join = ""
-    do i_path = lbound(path_array, dim=1), ubound(path_array, dim=1)
+    do i_path = lbound(path_array, dim=1), ubound(path_array, dim=1) ! SERIAL
         path_join = trim(path_join) // trim(path_array(i_path))
         
         if (i_path /= ubound(path_array, dim=1)) then

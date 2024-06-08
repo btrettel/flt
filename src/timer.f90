@@ -150,7 +150,7 @@ function timeit(f, number)
     end if
     
     call wtime%start()
-    do i = 1, number_
+    do i = 1, number_ ! SERIAL
         ! Since the subroutine doesn't return anything, won't it be optimized out?
         call f()
     end do
