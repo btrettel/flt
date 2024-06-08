@@ -7,11 +7,13 @@
 
 program genunits
 
+use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+use build, only: DEBUG, REVISION, REVISION_DATE, MODIFIED
 use genunits_data, only: unit_system_type
 use genunits_io, only: config_type
 implicit none
 
-character(len=:), allocatable :: input_file
+character(len=:), allocatable :: input_file, modified_string
 type(config_type)             :: config
 integer                       :: arg_len, out_unit, rc
 type(unit_system_type)        :: unit_system
@@ -22,6 +24,24 @@ call get_command_argument(1, value=input_file)
 
 if (len(input_file) == 0) then
     write(unit=*, fmt="(a)") "Usage: genunits FILENAME"
+    
+    if (MODIFIED) then
+       modified_string = ", modified"
+    else
+       modified_string = "" 
+    end if
+    
+    write(unit=*, fmt="(a)") "Git revision: " // REVISION // " (" // REVISION_DATE // modified_string // ")"
+    
+    if (DEBUG) then
+        write(unit=*, fmt="(a)") "Build: debug"
+    else
+        write(unit=*, fmt="(a)") "Build: release"
+    end if
+    
+    write(unit=*, fmt="(a, a)") "Compiler: ", compiler_version()
+    write(unit=*, fmt="(a, a)") "Compiler flags: ", compiler_options()
+    
     stop
 end if
 
