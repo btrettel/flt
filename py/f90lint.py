@@ -74,7 +74,10 @@ for filename in sorted(filepaths):
     
     with open(filename, "r") as file_handler:
         contains_executable_code = False
+        line_no = 0
         for line in file_handler.readlines():
+            line_no = line_no + 1
+            
             if line.strip().startswith("program ") or line.strip().startswith("contains"):
                 contains_executable_code = True
                 break
@@ -98,6 +101,11 @@ for filename in sorted(filepaths):
                         if (line.strip().startswith("call assert") or line.strip().startswith("error stop") or ("%check(" in line)):
                             global_num_assertions = global_num_assertions + 1
                             local_num_assertions  = local_num_assertions + 1
+                        
+                        if line.strip().startswith("do "):
+                            if (not line.strip().startswith("do concurrent ")) and (not "! SERIAL" in line):
+                                print("{}:{}: do concurrent not used". format(filename, line_no))
+                                exit_code = 1
                     else:
                         global_num_lines_tests = global_num_lines_tests + 1
             
