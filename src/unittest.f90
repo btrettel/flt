@@ -40,7 +40,7 @@ contains
     ! TODO: integer_gt, integer_lt
     procedure :: character_eq => character_eq
     ! TODO: character_ne
-    procedure :: exit_code_eq=> exit_code_eq
+    procedure :: exit_code_eq => exit_code_eq
     procedure :: exit_code_ne => exit_code_ne
     procedure :: start_tests => start_tests
     procedure :: end_tests => end_tests

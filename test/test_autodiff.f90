@@ -11,7 +11,7 @@ use checks, only: assert_dimension
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
-use autodiff, only: ad, f
+use autodiff, only: ad, f, sqrt
 implicit none
 
 type(log_type)          :: logger
@@ -163,7 +163,15 @@ call tests%real_eq(w(2)%v, 7.0_WP, "rd_var array, 2, value")
 call tests%real_eq(w(2)%dv(1), 0.0_WP, "rd_var, 2, derivative (dv 1)")
 call tests%real_eq(w(2)%dv(2), 1.0_WP, "rd_var, 2, derivative (dv 2)")
 
-! TODO: `sqrt`
+! `sqrt`
+
+deallocate(x%dv)
+call x%init(2.0_WP, 1, N_DV)
+y = sqrt(4.0_WP * x)
+
+call tests%real_eq(y%v, sqrt(8.0_WP), "rd_var sqrt, value")
+call tests%real_eq(y%dv(1), 1.0_WP / sqrt(2.0_WP), "rd_var sqrt, derivative (dv 1)")
+call tests%real_eq(y%dv(2), 0.0_WP, "rd_var sqrt, derivative (dv 2)")
 
 ! Make sure that `assert_dimension` works for `ad`.
 

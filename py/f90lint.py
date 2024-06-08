@@ -114,6 +114,16 @@ for filename in sorted(filepaths):
                             if (not line_do.startswith("do concurrent ")) and (not "! SERIAL" in line):
                                 print("{}:{}: do concurrent not used". format(filename, line_no))
                                 exit_code = 1
+                        
+                        # # Require `function`s to be marked as `pure`, `impure`, or `elemental`.
+                        # if line_no_comments.startswith("function "):
+                            # print("{}:{}: functions must be pure or elemental". format(filename, line_no))
+                            # exit_code = 1
+                        
+                        # # Require `subroutines`s to be marked as `pure`, `impure`, or `elemental`.
+                        # if line_no_comments.startswith("subroutine "):
+                            # print("{}:{}: subroutines must be marked as pure, elemental, or impure". format(filename, line_no))
+                            # exit_code = 1
                     else:
                         global_num_lines_tests = global_num_lines_tests + 1
             

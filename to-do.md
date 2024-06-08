@@ -3,7 +3,6 @@
 Priorities:
 
 - autodiff.f90
-    - Test `sqrt`
     - Add comparison operators
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
@@ -137,9 +136,6 @@ Later:
         - moving parentheses (common mistake)
     - When complete, add here: <https://fortranwiki.org/fortran/show/Mutation+testing+frameworks>
 - `purerng`:
-    - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
-    - Change `I10` to `INT64` to work with xoshiro256**.
-    - Test that `INT64` has enough precision for the `lecuyer` RNG.
     - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
     - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
         - lecuyer_implementing_1991
@@ -203,13 +199,14 @@ Later:
     - Base on <https://pandera.readthedocs.io/en/stable/index.html>?
 - latex.f90:
     - Calculated numbers in papers: Write procedure to output LaTeX code to a file (appending by default) with a particular number format. Could pass in a Fortran format string.
+    - Include in io.f90?
 - read and save CSV and Sqlite files:
     - regex validation field for CSV
 - convergence.f90: convergence testing framework
     - grid convergence
     - temporal convergence
     - MC convergence
-- Add validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
+- Add model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
 - Poisson solvers, using same or similar interface as FISHPACK
     - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>
         - Old: <https://people.math.sc.edu/Burkardt/f77_src/fishpack/fishpack.html>
@@ -219,7 +216,6 @@ Later:
     - <https://ascl.net/1609.005>
     - <https://arc.ucar.edu/knowledge_base/71991310>
         - <https://github.com/NCAR/NCAR-Classic-Libraries-for-Geophysics>
-- Add a generic Makefile template for Fortran projects to FLT.
 - `io.f90`:
     - convenience subroutines
         - `print_box` (other similar things for the most important messages that I don't want to miss)
@@ -234,15 +230,12 @@ Later:
                 - `iteration=2200 residual=0.0937`
             - This is good for long lists because the column header in the table can go off-screen.
         - Look into how other CFD softwares output iterative progress for ideas. Which metrics do they output?
-- Makefile
-    - <https://aoterodelaroza.github.io/devnotes/modern-fortran-makefiles/>
-    - <https://fortran-lang.org/en/learn/building_programs/project_make/>
 - Add tests to compare speed of parallel vs. serial
 - unittest.f90
     - maybe: Instead of `integer_eq`, `real_eq`, use generic `eq`?
     - Ensure that all test messages are unique.
     - Keep track of test results so that you know whether a test has ever failed, and thus whether it is discriminating. (bowes_how_2017 p. 3L)
-- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `RP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
+- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `WP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
 - A module containing errno codes, other internal return codes, and exit codes. Could make a derived type with the number and a message.
@@ -272,8 +265,7 @@ Later:
 - `nmllog`
     - When nvfortran supports writing namelists to internal variables, support adding a custom namelist to the output. Then you can have custom variables in `nmllog` output.
 - Add linters.
-    - Flinter
-        - Add directory for flinter in tests to make sure that Flinter actually flags bad code. Have one test for good code too which should not be flagged.
+    - Add directory for flinter in tests to make sure that Flinter actually flags bad code. Have one test for good code too which should not be flagged.
     - Camfort
     - <http://simconglobal.com/fpt_summary.html>
     - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
@@ -289,8 +281,6 @@ Later:
 - How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type?
 - Along side fmutate, make a simple test case reduction program for Fortran (freduce?). Just delete lines to reduce test cases.
     - <https://gcc.gnu.org/pipermail/fortran/2009-October/030302.html>
-- Remove underscores in module and program names for consistency.
-    - `unittest` to `unit_test`?
 - dataplot-like approach to ease adding tests (but use namelists instead of a single CSV file)
 - Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
 - Verify checksums of all generated images that have them (PNG, for example).
@@ -333,3 +323,7 @@ Later:
         - `NaN`
         - `Infinity`
 - Make nmllog.f90 optionally not print the time and/or level to stdout.
+- purerng.f90 low priority:
+    - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
+    - Change `I10` to `INT64` to work with xoshiro256**.
+    - Test that `INT64` has enough precision for the `lecuyer` RNG.
