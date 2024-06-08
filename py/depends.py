@@ -62,6 +62,7 @@ module_name_mismatch = canonicalize_paths(config['depends']['module_name_mismatc
 skip_indexing        = canonicalize_paths(config['depends']['skip_indexing'])
 depends_file         = canonicalize_path(config['depends']['depends_file'])
 before_file          = canonicalize_path(config['depends']['before_file'])
+allsrc_raw           = canonicalize_path(config['depends']['allsrc']).split(' ')
 
 fail = False
 
@@ -71,12 +72,26 @@ for directory in sorted(directories):
     directory = os.path.relpath(directory)
     
     if not os.path.isdir(directory):
-        print("ERROR: {} is not a directory.")
+        print("ERROR: {} in directories is not a directory.")
         fail = True
     else:
         for filename in sorted(os.listdir(directory)):
             if filename.endswith(".f90"):
                 filepaths.append(os.path.join(directory, filename))
+
+all_source = set()
+for filename in sorted(os.listdir("mk")):
+    all_source.add(filename)
+
+for filepath in sorted(allsrc_raw):
+    # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
+    filepath = os.path.relpath(filepath)
+    
+    if not os.path.isfile(filepath):
+        print("ERROR: {} in allsrc is not a file.")
+        fail = True
+    
+    all_source.add(filepath)
 
 if fail:
     print("Error(s) encountered, stopping.")
@@ -84,7 +99,6 @@ if fail:
 
 depstructs = []
 all_dependencies = set()
-all_source = set()
 for filepath in sorted(filepaths):
     if filepath in skip_indexing:
         continue
