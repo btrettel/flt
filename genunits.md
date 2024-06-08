@@ -89,7 +89,7 @@ Units to be rejected, that is, not included in the unit system.
 ## Reducing the number of types to just those required
 
 - Limit number of units, number of total interfaces
-- Fewer base units
+- Fewer base units (For example, instead of MLT, just LT, which could be possible if using kinematic pressure p_k = p/rho instead of pressure in Navier-Stokes or a stream function-vorticity formulation.)
 - Limited exponent range
 - Smaller denominator
 - Remove units which have no associated operators or functions.

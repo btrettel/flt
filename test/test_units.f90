@@ -75,6 +75,10 @@ call tests%exit_code_ne("make test_units_fail_1", 0, &
 call tests%exit_code_ne("make test_units_fail_2", 0, &
                             "compile-time error for physical dimension mismatch, 2", "test_units_fail_2.txt")
 
+! If this compiles, then I can use constructors nicely.
+! TODO: Doesn't work with nvfortran. File a bug report.
+! v = length(1.0_WP) / time(1.0_WP)
+
 call tests%end_tests()
 call logger%close()
 

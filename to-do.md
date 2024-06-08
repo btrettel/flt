@@ -6,57 +6,25 @@ Priorities:
     - Test `sqrt`
     - Add comparison operators
 - depends.py
-    - Return an error for circular dependencies in general.
-- port.f90
-    - Get all tests to pass on Windows.
-    - Wrapper for `execute_command_line` that handles `./` on \*nix vs. nothing on Windows and file extension (nothing vs. `.exe`).
-    - Differences between Windows and \*nix
-        - `rm_cmd`: `del /q` vs. `rm`
-        - `rmdir_cmd`: `rmdir /s /q` vs. `rmdir`
-        - `cd_cmd`: `cd` vs. `cd`
-        - `mv_cmd`: `move` vs. `mv`
-        - `cp_cmd`: `copy` vs. `cp`
-        - `mkdir_cmd`: `mkdir` vs. `mkdir`
-        - `cmd_separator`: `&` vs. `;`
-        - `dir_separator`: `\` vs. `/`
-        - `binext`: `.exe` vs. ``
-        - `run`: nothing vs. `./`
-        - `cmp`: `fc` vs. `cmp`
-    - Note: Would be faster to detect platform at compile-time, but more convoluted. Given that I probably won't be calling these commands in a way that will impact performance much, I'm not worried about it.
-- Build system improvements:
-    - Replace PDPmakefile with POSIXmakefile that is strictly POSIX (has no `include` or any other non-POSIX things) and should work on IBM AIX make too. This file can be constructed from the other files via `make POSIXmakefile`. Don't set `FC` and whatnot, instead set those via the command line or defaults?
-    - Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all` (`SFLAGS`?)
-    - `PFLAGS` make macro to switch between GPU and CPU for ifx, nvfortran, etc.
+    - Add files listed in `include` lines to depends.mk output.
 - gitrev.py:
-    - generates src/revision.f90 containing `REVISION` (not `GIT_REVISION` as it could come from something other than Git)
-    - `git rev-parse --short HEAD`
-    - `git show --no-patch --format=%ci HEAD`
-    - `include` this line in the `build` module
+    - Test revision.f90.
     - Modify genunits to print `REVISION`, `DEBUG`, compiler info (compiler, flags).
-- f90lint:
-    - Add tests for remaining modules which aren't passing.
-    - Check for modules which don't have tests.
-    - Measure `TODO` density and have bound on it to keep them current.
-    - Identify untested procedures by looking at `use` lines in tests. This won't work for type-bound procedures, though.
-    - Require that all functions be `pure`.
-    - Output checking:
-        - Presence of files that should not be there: `fort.*`, `FORT.*`
-        - Fortran format overflow: `*` in ifort/gfortran/crayftn/nvfortran
-        - `forrtl: error`
-        - `NaN`
-        - `Infinity`
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
-    - For all array procedures, have tests with non-default array lower bounds.
+    - For all array procedures, have tests with non-default array lower bounds to check if array bounds are preserved.
+        - Make `unittest` subroutine similar to `assert_dimension` that takes two `class(*)` arrays of various sizes and fails if the bounds/dimensions don't match.
 - grad.f90: gradient descent
     - Cubic line search, test if local minimum
     - <https://www.tensorflow.org/guide/core/optimizers_core>
         - Help plan interface to gradient descent
     - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only. Make gradient descent include robust optimization by default, taking into account the uncertainty.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
+    - Derived-type output
+        - metcalf_modern_2018 pp. 261--264
+        - `read(formatted)` and `read(unformatted)`
     - Remove dependency on nmllog so that this can be separated out more easily.
         - This will also help to compile genunits with lfortran, though it's not sufficient as `is_close` won't compile with lfortran due to `spacing`.
-    - Do constructors like `length(1.0)` work?
     - Break `write_module` into multiple modules to help organization and make testing parts easier.
     - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
     - Add `test_unit` to genunits_io.f90 to write to test file.
@@ -64,13 +32,11 @@ Priorities:
     - `units.f90`
         - Comparison operators.
         - Elementary functions which have same units for input and output.
-        - Custom intrinsics which have unitless input and output (like `sin`, `cos`, `log`, etc.).
+        - `custom` functions which have unitless input and output (like `sin`, `cos`, `log`, etc.). Include possible `use` line in namelist group.
         - `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
         - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each unit)
         - function to format type to string with units or dimensions
-        - derived type I/O for printing?
         - Add assertions to the generated module (if appropriate), and have the option to enable or disable assertions.
-        - Generic `assert_dimension` for all combinations of units.
     - Unit tests for all procedures.
     - Characterization test comparing against known valid `units.f90`.
     - Test exponentiation functions.
@@ -105,9 +71,25 @@ Priorities:
         - `&template file="file.f90" /`
         - Example: `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
     - Have a section listing what various error messages shown by various compilers mean. Some of these error messages are not particularly clear and that harms debugging. Also note which compilers have more useful error messages for genunits.
-- Make nmllog.f90 optionally not print the time and/or level to stdout.
+    - absolute vs. offset vs. relative units
 - `make install` to install genunits.
 - Option to disable automatic differentiation in Makefile for speed.
+- port.f90
+    - Get all tests to pass on Windows.
+    - Wrapper for `execute_command_line` that handles `./` on \*nix vs. nothing on Windows and file extension (nothing vs. `.exe`).
+    - Differences between Windows and \*nix
+        - `rm_cmd`: `del /q` vs. `rm`
+        - `rmdir_cmd`: `rmdir /s /q` vs. `rmdir`
+        - `cd_cmd`: `cd` vs. `cd`
+        - `mv_cmd`: `move` vs. `mv`
+        - `cp_cmd`: `copy` vs. `cp`
+        - `mkdir_cmd`: `mkdir` vs. `mkdir`
+        - `cmd_separator`: `&` vs. `;`
+        - `dir_separator`: `\` vs. `/`
+        - `binext`: `.exe` vs. ``
+        - `run`: nothing vs. `./`
+        - `cmp`: `fc` vs. `cmp`
+    - Note: Would be faster to detect platform at compile-time, but more convoluted. Given that I probably won't be calling these commands in a way that will impact performance much, I'm not worried about it.
 
 Later:
 
@@ -190,6 +172,10 @@ Later:
     - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
     - Use `pure` logging for this?
+- Have Python script to insert probes into (instrument) Fortran code, particularly for Monte Carlo arithmetic.
+    - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
+        - > SPAG is able to insert calls to probes at various points in your code (see below).
+    - Don't insert probes into `pure` and `elemental` procedures.
 - nmlfuzz.f90: namelist fuzz tester
     - Make depend on ga.f90
         - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
@@ -309,9 +295,6 @@ Later:
     - <https://gcc.gnu.org/pipermail/fortran/2009-October/030302.html>
 - Remove underscores in module and program names for consistency.
     - `unittest` to `unit_test`?
-- Have module to insert probes into Fortran code.
-    - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
-        - > SPAG is able to insert calls to probes at various points in your code (see below).
 - dataplot-like approach to ease adding tests (but use namelists instead of a single CSV file)
 - Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
 - Verify checksums of all generated images that have them (PNG, for example).
@@ -337,3 +320,20 @@ Later:
     - <http://www.acorvid.com/2017/12/13/what-i-miss-when-writing-fortran/>
         - > Constrained reals; for example, absolute mass, pressure, or temperature variables which throw an exception if they become negative. This is a first-class feature of types in Ada (constrained subtype)
     - Can be done with a derived type with custom operators.
+- Build system improvements:
+    - Replace PDPmakefile with POSIXmakefile that is strictly POSIX (has no `include` or any other non-POSIX things) and should work on IBM AIX make too. This file can be constructed from the other files via `make POSIXmakefile`. Don't set `FC` and whatnot, instead set those via the command line or defaults?
+    - Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all` (`SFLAGS`?)
+    - `PFLAGS` make macro to switch between GPU and CPU for ifx, nvfortran, etc.
+- f90lint:
+    - Add tests for remaining modules which aren't passing.
+    - Check for modules which don't have tests.
+    - Measure `TODO` density and have bound on it to keep them current.
+    - Identify untested procedures by looking at `use` lines in tests. This won't work for type-bound procedures, though.
+    - Require that all functions be `pure`.
+    - Output checking:
+        - Presence of files that should not be there: `fort.*`, `FORT.*`
+        - Fortran format overflow: `*` in ifort/gfortran/crayftn/nvfortran
+        - `forrtl: error`
+        - `NaN`
+        - `Infinity`
+- Make nmllog.f90 optionally not print the time and/or level to stdout.

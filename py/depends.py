@@ -12,6 +12,7 @@ class dependency_structure:
         self.module       = module
         self.name         = name
         self.dependencies = dependencies
+        #self.includes     = includes
 
 def get_program_name_from_program(line):
     start_index = line.find("program") + 8
@@ -112,16 +113,20 @@ for filepath in sorted(filepaths):
             print("{} contains both a program and a module. depends.py assumes that a file contains one or the other, not both.".format(filepath))
             fail = True
         
-        if os.path.basename(filepath) != name + ".f90":
-            print("{} contains module or program {}, when I require that the two have the same name.".format(filepath, name))
-            fail = True
+        if not name is None:
+            if os.path.basename(filepath) != name + ".f90":
+                print("{} contains module or program {}, when I require that the two have the same name.".format(filepath, name))
+                fail = True
         
         if module:
             if os.path.split(filepath)[0] != "src":
                 print("{} contains a module which is not in the src directory. All modules must be in the src directory.".format(filepath))
                 fail = True
         
-        depstructs.append(dependency_structure(filepath, program, module, name, dependencies))
+        if (program or module):
+            depstructs.append(dependency_structure(filepath, program, module, name, dependencies))
+        else:
+            assert name is None, "name should not be set for something which is not a program or module"
 
 for dependency in sorted(all_dependencies):
     if dependency in no_existence_check:

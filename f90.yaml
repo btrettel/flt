@@ -250,6 +250,7 @@ regexp-rules:
   not-recommended-use-include:
     message: include is discouraged, prefer use.
     regexp: ^\s*include\b
+    active: false # Include is how I get Git information into the code.
 
   # Some rules from <https://pypi.org/project/flinter/>:
 
@@ -672,7 +673,7 @@ syntax:
     - format
     - go\sto
     - goto
-    - include
+    #- include # Include is how I get Git information into the code.
     #- nullify
     - pause
     - sequence
