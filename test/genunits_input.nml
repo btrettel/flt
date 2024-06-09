@@ -1,6 +1,6 @@
 &config
 output_file     = "src/units.f90"
-base_units      = "kg", "m", "s"
+base_units      = "m", "kg", "s"
 type_definition = "real(kind=WP)"
 !type_definition = "type(ad)"
 use_line        = "use prec, only: WP"

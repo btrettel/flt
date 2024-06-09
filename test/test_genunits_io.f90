@@ -47,8 +47,8 @@ call tests%real_eq(config%min_exponents(3), -1.0_WP, "read_config_namelist, conf
 call tests%real_eq(config%max_exponents(1), 3.0_WP, "read_config_namelist, config%max_exponents(1)")
 call tests%real_eq(config%max_exponents(2), 0.0_WP, "read_config_namelist, config%max_exponents(2)")
 call tests%real_eq(config%max_exponents(3), 1.0_WP, "read_config_namelist, config%max_exponents(3)")
-call tests%character_eq(config%base_units(1), "kg", "read_config_namelist, config%base_units(1)")
-call tests%character_eq(config%base_units(2), "m", "read_config_namelist, config%base_units(2)")
+call tests%character_eq(config%base_units(1), "m", "read_config_namelist, config%base_units(1)")
+call tests%character_eq(config%base_units(2), "kg", "read_config_namelist, config%base_units(2)")
 call tests%character_eq(config%base_units(3), "s", "read_config_namelist, config%base_units(3)")
 call tests%integer_eq(rc, 0, "read_config_namelist, rc")
 
