@@ -154,9 +154,9 @@ subroutine read_config_namelist(config_out, filename, rc)
                                         "min_exponents is not set properly?", n_failures)
         call config_out%logger%check(.not. is_close(max_exponents(i_base_unit), huge(1.0_WP)), &
                                         "max_exponents is not set properly?", n_failures)
+        call config_out%logger%check(min_exponents(i_base_unit) <= max_exponents(i_base_unit), &
+                                        "a minimum exponent is larger than a maximum exponent", n_failures)
     end do
-    
-    ! TODO: min_exponents <= max_exponents
     
     call config_out%logger%check(config_out%max_n_units > 0, "max_n_units must be 1 or greater.", n_failures)
     
@@ -276,6 +276,16 @@ subroutine read_seed_unit_namelists(config, filename, rc)
                                             "In seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                             // trim(config%seed_labels(i_seed_unit)) &
                                             // '", exponent #' // trim(i_base_unit_string) // " has not been set.", n_failures)
+            call config%logger%check(config%seed_units(i_seed_unit)%e(i_base_unit) >= config%min_exponents(i_base_unit), &
+                                            "In seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
+                                            // trim(config%seed_labels(i_seed_unit)) &
+                                            // '", exponent #' // trim(i_base_unit_string) // " is below the minimum exponent.", &
+                                            n_failures)
+            call config%logger%check(config%seed_units(i_seed_unit)%e(i_base_unit) <= config%max_exponents(i_base_unit), &
+                                            "In seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
+                                            // trim(config%seed_labels(i_seed_unit)) &
+                                            // '", exponent #' // trim(i_base_unit_string) // " is above the maximum exponent.", &
+                                            n_failures)
         end do
     end do
     close(unit=nml_unit)

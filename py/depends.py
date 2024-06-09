@@ -72,7 +72,7 @@ for directory in sorted(directories):
     directory = os.path.relpath(directory)
     
     if not os.path.isdir(directory):
-        print("ERROR: {} in directories is not a directory.")
+        print("ERROR: {} in directories is not a directory.".format(directory))
         fail = True
     else:
         for filename in sorted(os.listdir(directory)):
@@ -83,15 +83,16 @@ all_source = set()
 for filename in sorted(os.listdir("mk")):
     all_source.add(os.path.join("mk", filename))
 
-for filepath in sorted(allsrc_raw):
-    # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
-    filepath = os.path.relpath(filepath)
-    
-    if not os.path.isfile(filepath):
-        print("ERROR: {} in allsrc is not a file.")
-        fail = True
-    
-    all_source.add(filepath)
+if not ((len(allsrc_raw) == 1) and (allsrc_raw[0] == "")):
+    for filepath in sorted(allsrc_raw):
+        # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
+        filepath = os.path.relpath(filepath)
+        
+        if not os.path.isfile(filepath):
+            print("ERROR: {} in allsrc is not a file.".format(filepath))
+            fail = True
+        
+        all_source.add(filepath)
 
 if fail:
     print("Error(s) encountered, stopping.")
