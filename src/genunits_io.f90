@@ -249,6 +249,12 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         
         call config%logger%check(len(trim(label)) /= 0, &
                                         "seed_unit #" // trim(i_seed_unit_string) // " has an empty label.", n_failures)
+        
+        call config%logger%check(index(trim(label), " ") == 0, &
+                                        "seed_unit #" // trim(i_seed_unit_string) // " with label '" // trim(label) // &
+                                        "' has spaces in its label. " // &
+                                        "Replace spaces with underscores or something else that can be in a Fortran type name", &
+                                        n_failures)
 
         do j_seed_unit = 1, i_seed_unit - 1 ! SERIAL
             write(unit=j_seed_unit_string, fmt="(i0)") j_seed_unit
@@ -794,7 +800,9 @@ subroutine write_module(config, unit_system, file_unit, rc)
         write(unit=file_unit, fmt="(2a)") "public :: square"
     end if
     
-    write(unit=file_unit, fmt="(a)") ""
+    if (use_sqrt .or. use_cbrt .or. use_square) then
+        write(unit=file_unit, fmt="(a)") ""
+    end if
     
     ! Write `use` lines as comments.
     if (size(config%seed_labels) > 0) then
