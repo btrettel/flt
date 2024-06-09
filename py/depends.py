@@ -184,18 +184,19 @@ if fail:
     exit(1)
 
 for depstruct in depstructs:
-    # For programs, I need the entire recursive dependency structure.
+    # For programs, I need the entire recursive dependency structure (both modules and `include`s).
     if depstruct.program:
         num_dependencies_prev = 0
-        num_dependencies      = len(depstruct.dependencies)
+        num_dependencies      = len(depstruct.dependencies) + len(depstruct.includes)
         
         while (num_dependencies > num_dependencies_prev):
             for sub_depstruct in depstructs:
                 if sub_depstruct.name in depstruct.dependencies:
                     depstruct.dependencies = depstruct.dependencies.union(sub_depstruct.dependencies)
+                    depstruct.includes     = depstruct.includes.union(sub_depstruct.includes)
             
             num_dependencies_prev = num_dependencies
-            num_dependencies      = len(depstruct.dependencies)
+            num_dependencies      = len(depstruct.dependencies) + len(depstruct.includes)
         
         print("Complete {} program dependencies: {}".format(depstruct.name, depstruct.dependencies))
 
@@ -250,6 +251,8 @@ with open(depends_file, "w") as output_handler:
                     dependency_string = dependency_string + " src$(DIR_SEP)$(BUILD).$(OBJEXT)"
             
             output_handler.write(dependency_string)
+            for include in sorted(depstruct.includes):
+                output_handler.write(" src$(DIR_SEP){}".format(include))
             output_handler.write(" {}$(DIR_SEP){}.f90\n".format(directory, depstruct.name))
             output_handler.write("\t$(FC) $(OFLAG) $@ $(FFLAGS) {} {}$(DIR_SEP){}.f90\n\n".format(dependency_string.strip(), directory, depstruct.name))
             
