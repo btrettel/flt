@@ -2,8 +2,22 @@
 
 Priorities:
 
-- autodiff.f90
-    - Add comparison operators
+- port.f90
+    - Get all tests to pass on Windows.
+    - Wrapper for `execute_command_line` that handles `./` on \*nix vs. nothing on Windows and file extension (nothing vs. `.exe`).
+    - Differences between Windows and \*nix
+        - `rm_cmd`: `del /q` vs. `rm`
+        - `rmdir_cmd`: `rmdir /s /q` vs. `rmdir`
+        - `cd_cmd`: `cd` vs. `cd`
+        - `mv_cmd`: `move` vs. `mv`
+        - `cp_cmd`: `copy` vs. `cp`
+        - `mkdir_cmd`: `mkdir` vs. `mkdir`
+        - `cmd_separator`: `&` vs. `;`
+        - `dir_separator`: `\` vs. `/`
+        - `binext`: `.exe` vs. ``
+        - `run`: nothing vs. `./`
+        - `cmp`: `fc` vs. `cmp`
+    - Note: Would be faster to detect platform at compile-time, but more convoluted. Given that I probably won't be calling these commands in a way that will impact performance much, I'm not worried about it.
 - Common issue in my Fortran code: not using `lbound` and `ubound`
     - Do arrays passed into procedures maintain these index bounds?
     - For all array procedures, have tests with non-default array lower bounds to check if array bounds are preserved.
@@ -68,22 +82,6 @@ Priorities:
     - absolute vs. offset vs. relative units
 - `make install` to install genunits.
 - Option to disable automatic differentiation in Makefile for speed.
-- port.f90
-    - Get all tests to pass on Windows.
-    - Wrapper for `execute_command_line` that handles `./` on \*nix vs. nothing on Windows and file extension (nothing vs. `.exe`).
-    - Differences between Windows and \*nix
-        - `rm_cmd`: `del /q` vs. `rm`
-        - `rmdir_cmd`: `rmdir /s /q` vs. `rmdir`
-        - `cd_cmd`: `cd` vs. `cd`
-        - `mv_cmd`: `move` vs. `mv`
-        - `cp_cmd`: `copy` vs. `cp`
-        - `mkdir_cmd`: `mkdir` vs. `mkdir`
-        - `cmd_separator`: `&` vs. `;`
-        - `dir_separator`: `\` vs. `/`
-        - `binext`: `.exe` vs. ``
-        - `run`: nothing vs. `./`
-        - `cmp`: `fc` vs. `cmp`
-    - Note: Would be faster to detect platform at compile-time, but more convoluted. Given that I probably won't be calling these commands in a way that will impact performance much, I'm not worried about it.
 
 Later:
 
@@ -261,6 +259,7 @@ Later:
 - autodiff.f90
     - Modify your AD to use SIMD vectorization. Use `do concurrent` with OpenMP or OpenACC directives? See personal notes on automatic differentiation for other speed ideas too.
     - Can declare certain derivatives as "active" or "inactive to easily enable or disable (respectively) differentiation with respect to particular variables at compile or run time for speed. Not yet sure how to pick `dv` indices in this case. With allocatable `dv`, this can be done at run time.
+    - Add comparison operators
 - To-do routine in code to cause compilation to fail.
 - `nmllog`
     - When nvfortran supports writing namelists to internal variables, support adding a custom namelist to the output. Then you can have custom variables in `nmllog` output.
