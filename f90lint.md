@@ -2,7 +2,7 @@
 
 This script does some static analysis not done by other static analyzers I have access to. The cutoffs listed below are somewhat arbitrary and are not the result of detailed analysis.
 
-- Assertion density ≥ 3.0% per file and globally[^1]. `call assert`, `error stop` and `call [...]%check` count as assertions.
+- Assertion density ≥ 4.0% per file and globally[^1]. `call assert`, `error stop` and `call [...]%check` count as assertions.
 - Ratio of source lines of test code to source lines of code > 0.5 per file and globally.
 - In test files, all subroutines starting with `test_` must be `call`ed.
 

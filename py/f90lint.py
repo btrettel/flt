@@ -5,7 +5,7 @@ import os
 import argparse
 import configparser
 
-ASSERTION_DENSITY_LOWER_LIMIT = 3.0
+ASSERTION_DENSITY_LOWER_LIMIT = 4.0
 TEST_RATIO_LOWER_LIMIT        = 0.5
 
 class file_stats_class:

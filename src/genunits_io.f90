@@ -58,7 +58,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     use genunits_data, only: MAX_BASE_UNITS, BASE_UNIT_LEN
     
     use prec, only: CL
-    use checks, only: is_close
+    use checks, only: assert, is_close
     use nmllog, only: INFO_LEVEL
     
     class(config_type), intent(out) :: config_out
@@ -118,6 +118,7 @@ subroutine read_config_namelist(config_out, filename, rc)
             n_base_units = n_base_units + 1
         end if
     end do
+    call assert(n_base_units <= MAX_BASE_UNITS, "genunits_io (read_config_namelist): n_base_units is too high")
     
     config_out%output_file     = trim(output_file)
     config_out%type_definition = trim(type_definition)
@@ -190,6 +191,8 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     namelist /seed_unit/ label, e
     
     call assert(allocated(config%base_units), "genunits_io (read_seed_unit_namelists): base units must be allocated")
+    call assert(.not. allocated(config%seed_units), "genunits_io (read_seed_unit_namelists): seed units must not be allocated")
+    call assert(.not. allocated(config%seed_labels), "genunits_io (read_seed_unit_namelists): seed labels must not be allocated")
     
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
     
@@ -436,10 +439,13 @@ subroutine generate_system(config, unit_system)
             if (rc /= 0) exit genunit_loop
         end do
         
-        if ((iter > config%max_iter) .or. (n_units == n_units_prev)) then
+        if ((iter > (config%max_iter - 1)) .or. (n_units == n_units_prev)) then
             exit genunit_loop
         end if
     end do genunit_loop
+    
+    call assert(iter <= config%max_iter, "genunits_io (generate_system): too many iterations")
+    call assert(n_units <= config%max_n_units, "genunits_io (generate_system): too many units")
     
     write(unit=*, fmt="(a, i0, a, i0)") "FINAL iter=", iter, " n_units=", n_units
     

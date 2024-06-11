@@ -56,6 +56,7 @@ pure function label(unit)
         end if
         write(unit=label, fmt="(a, a, a, i0." // exponent_len_string // ")") trim(label), "_", exponent_sign, &
                                                         nint(10.0_WP**(EXPONENT_LEN - 1) * abs(unit%e(i_base_unit)))
+        call assert(len(trim(adjustl(label))) < CL, "genunits_data (label): overflow, too much to write in the string")
     end do
     
     ! Ensure that the `unit_label` won't be too long to be valid in Fortran 2003.
