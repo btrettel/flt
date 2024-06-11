@@ -3,7 +3,6 @@
 Priorities:
 
 - f90lint:
-    - Checks that all test subroutines are called in each test file.
     - No programs in source, no modules in app or test.
     - List longest subroutines
 - Setting environment variable `F90` or `FC` doesn't pick the compiler?

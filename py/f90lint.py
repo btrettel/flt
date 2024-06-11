@@ -9,11 +9,13 @@ ASSERTION_DENSITY_LOWER_LIMIT = 2.0
 TEST_RATIO_LOWER_LIMIT        = 0.5
 
 class file_stats_class:
-    def __init__(self, filename, assertion_density, lines):
-        self.filename          = filename
-        self.assertion_density = assertion_density
-        self.lines             = lines
-        self.test_ratio        = 0.0
+    def __init__(self, filename, assertion_density, lines, test_subroutine_calls, test_subroutine_definitions):
+        self.filename                    = filename
+        self.assertion_density           = assertion_density
+        self.lines                       = lines
+        self.test_ratio                  = 0.0
+        self.test_subroutine_calls       = test_subroutine_calls
+        self.test_subroutine_definitions = test_subroutine_definitions
 
 def is_empty_or_comment(line):
     line_clean = line.split("!")[0].strip()
@@ -92,6 +94,8 @@ for filename in sorted(filepaths):
             local_num_lines_tests         = 0
             local_num_assertions          = 0
             line_no                       = 0
+            test_subroutine_calls         = set()
+            test_subroutine_definitions   = set()
             for line in file_handler.readlines():
                 line_no = line_no + 1
                 
@@ -133,9 +137,16 @@ for filename in sorted(filepaths):
                     else:
                         global_num_lines_tests = global_num_lines_tests + 1
                         
-                        #if line_no_comments.startswith("subroutine test") or line_no_comments.startswith("impure subroutine test"):
+                        if line_no_comments.startswith("call test_") and not "%" in line_no_comments:
+                            start_index = line.find(" test_") + 1
+                            end_index   = line.find("(")
+                            test_subroutine_calls.add(line[start_index:end_index])
+                        elif line_no_comments.startswith("subroutine test_"):
+                            start_index = line.find(" test_") + 1
+                            end_index   = line.find("(")
+                            test_subroutine_definitions.add(line[start_index:end_index])
             
-            file_stats.append(file_stats_class(filename, 100.0 * local_num_assertions / local_num_lines_code_or_tests, local_num_lines_code_or_tests))
+            file_stats.append(file_stats_class(filename, 100.0 * local_num_assertions / local_num_lines_code_or_tests, local_num_lines_code_or_tests, test_subroutine_calls, test_subroutine_definitions))
             assert(global_num_assertions < global_num_lines_code)
 
 assert(num_files_analyzed > 0)
@@ -169,6 +180,15 @@ global_test_ratio = global_num_lines_tests / global_num_lines_code
 if (global_test_ratio < TEST_RATIO_LOWER_LIMIT):
     print("Global lines-of-tests to lines-of-code ratio is {:.2f} (<{:.2f}).".format(global_test_ratio, TEST_RATIO_LOWER_LIMIT))
     exit_code = 1
+
+for file_stat in file_stats:
+    if file_stat.filename.startswith("test"):
+        if len(file_stat.test_subroutine_definitions - file_stat.test_subroutine_calls) > 0:
+            print("{}: Missing test subroutine call(s): {}".format(file_stat.filename, file_stat.test_subroutine_definitions - file_stat.test_subroutine_calls))
+            exit_code = 1
+        elif len(file_stat.test_subroutine_calls - file_stat.test_subroutine_definitions) > 0:
+            print("{}: Missing test subroutine definition(s): {}".format(file_stat.filename, file_stat.test_subroutine_calls - file_stat.test_subroutine_definitions))
+            exit_code = 1
 
 print("\n==============")
 print("= Statistics =")
