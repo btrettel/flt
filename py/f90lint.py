@@ -56,8 +56,10 @@ for directory in sorted(directories):
     else:
         for filename in os.listdir(directory):
             # Exclude symlinks as those presumably are linted elsewhere.
-            if os.path.isfile(filename) and filename.endswith(".f90"):
-                filepaths.append(os.path.join(directory, filename))
+            if os.path.isfile(os.path.join(directory, filename)) and filename.endswith(".f90"):
+                    filepaths.append(os.path.join(directory, filename))
+
+assert(len(filepaths) > 0)
 
 if fail:
     print("Error(s) encountered, stopping.")
@@ -68,10 +70,13 @@ exit_code = 0
 global_num_lines_code  = 0
 global_num_lines_tests = 0
 global_num_assertions  = 0
+num_files_analyzed     = 0
 file_stats = []
 for filename in sorted(filepaths):
     if filename in skip_indexing:
         continue
+    
+    num_files_analyzed = num_files_analyzed + 1
     
     with open(filename, "r") as file_handler:
         contains_executable_code = False
@@ -127,8 +132,14 @@ for filename in sorted(filepaths):
                             # exit_code = 1
                     else:
                         global_num_lines_tests = global_num_lines_tests + 1
+                        
+                        #if line_no_comments.startswith("subroutine test") or line_no_comments.startswith("impure subroutine test"):
             
             file_stats.append(file_stats_class(filename, 100.0 * local_num_assertions / local_num_lines_code_or_tests, local_num_lines_code_or_tests))
+            assert(global_num_assertions < global_num_lines_code)
+
+assert(num_files_analyzed > 0)
+assert(global_num_lines_code > 0)
 
 # Calculate `test_ratio`s.
 for file_stat in file_stats:
@@ -162,6 +173,7 @@ if (global_test_ratio < TEST_RATIO_LOWER_LIMIT):
 print("\n==============")
 print("= Statistics =")
 print("==============")
+print("Number of source files analyzed: {}".format(num_files_analyzed))
 print("Global assertion density: {:.2f}%".format(global_assertion_density))
 print("Global lines-of-tests to lines-of-code ratio: {:.2f}".format(global_test_ratio))
 
