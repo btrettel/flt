@@ -5,7 +5,6 @@ Priorities:
 - f90lint:
     - No programs in source, no modules in app or test.
     - List longest subroutines
-- Setting environment variable `F90` or `FC` doesn't pick the compiler?
 - port.f90
     - Get all tests to pass on Windows.
     - Wrapper for `execute_command_line` that handles `./` on \*nix vs. nothing on Windows and file extension (nothing vs. `.exe`).

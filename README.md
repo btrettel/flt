@@ -5,7 +5,7 @@ Misc. Fortran libraries and tools (all at various stages of development), intend
 - autodiff.f90: Module for forward-mode automatic differentiation.
 - checks.f90: Module for procedures used for run-time checks.
 - depends.py: Python script to generate Makefile dependencies for Fortran modules.
-- f90lint.py: Python script to do some static analysis not done by the other linters I have.
+- [f90lint.py](f90lint.md): Python script to do some static analysis not done by the other linters I have.
 - nmllog.f90: Module for structured logging in namelist files. Also includes logger which can be used in `pure` procedures where the actual writing is done outside of the pure procedure.
 - genunits.f90: Program to generate a module `units` which allows for compile-time physical dimension consistency checking. (Under active development.)
 - prec.f90: Module to set precisions, lengths, and mathematical constants. Uses common convention of `WP` for real precision.
