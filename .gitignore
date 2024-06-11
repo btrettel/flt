@@ -206,6 +206,7 @@ cython_debug/
 
 *.gcda
 *.gcno
+*.lst
 modtable.txt
 *.nml
 !genunits_input.nml
@@ -214,3 +215,4 @@ test_*
 genunits
 src/revision.f90
 src/units.f90
+missed.txt
