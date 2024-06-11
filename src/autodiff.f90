@@ -47,7 +47,7 @@ contains
 ! ---------------------
 
 elemental subroutine init(x, v, n, n_dv)
-    use checks, only: assert
+    use checks, only: assert, is_close
     
     class(ad), intent(in out) :: x    ! `class` can't be `intent(out)` and `pure`?!?
     real(kind=WP), intent(in) :: v    ! value of variable to set
@@ -56,9 +56,9 @@ elemental subroutine init(x, v, n, n_dv)
 
     integer :: i_dv ! loop index
     
-    call assert(n_dv >= 1, "autodiff.f90 (init): n_dv must be one or more")
-    call assert(n >= 1, "autodiff.f90 (init): n must be 1 or more")
-    call assert(n <= n_dv, "autodiff.f90 (init): n must be n_dv or less")
+    call assert(n_dv >= 1, "autodiff (init): n_dv must be one or more")
+    call assert(n >= 1, "autodiff (init): n must be 1 or more")
+    call assert(n <= n_dv, "autodiff (init): n must be n_dv or less")
     
     x%v = v
     
@@ -66,6 +66,8 @@ elemental subroutine init(x, v, n, n_dv)
     do concurrent (i_dv = 1:n_dv)
         x%dv(i_dv) = merge(1.0_WP, 0.0_WP, i_dv == n)
     end do
+    call assert(any(is_close(x%dv, 1.0_WP)), "autodiff (init): at least one derivative set")
+    call assert(any(is_close(x%dv, 0.0_WP)), "autodiff (init): at least one derivative not set")
 end subroutine init
 
 elemental subroutine init_const(x, v, n_dv)
@@ -75,7 +77,7 @@ elemental subroutine init_const(x, v, n_dv)
     real(kind=WP), intent(in) :: v    ! value of constant to set
     integer, intent(in)       :: n_dv ! total number of differentiable variables
     
-    call assert(n_dv >= 1, "autodiff.f90 (init): n_dv must be one or more")
+    call assert(n_dv >= 1, "autodiff (init): n_dv must be one or more")
     
     allocate(x%dv(n_dv))
 

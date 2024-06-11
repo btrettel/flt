@@ -81,12 +81,13 @@ pure function readable(unit, unit_system)
     do i_base_unit = 1, unit_system%n_base_units ! SERIAL
         write(unit=readable, fmt="(4a, f0." // exponent_len_string // ")") trim(readable), " ", &
                                                     trim(unit_system%base_units(i_base_unit)), "^", unit%e(i_base_unit)
+        call assert(len(trim(adjustl(readable))) < CL, "genunits_data (readable): overflow, too much to write in the string")
     end do
     readable = adjustl(readable)
 end function readable
 
 pure function is_in(unit, units)
-    use checks, only: all_close
+    use checks, only: assert, all_close
     
     class(unit_type), intent(in) :: unit
     type(unit_type), intent(in)  :: units(:)
@@ -101,6 +102,7 @@ pure function is_in(unit, units)
             is_in = .true.
             exit
         end if
+        call assert(.not. is_in, "genunits_data (is_in): did not exit at the right time")
     end do
 end function is_in
 
