@@ -166,12 +166,12 @@ elemental subroutine lecuyer(rng, harvest)
     call assert(size(rng%seed) == 2, "purerng (lecuyer): seed array is the wrong size")
     
     ! lecuyer_efficient_1988 p. 747R
-    call assert(rng%seed(1) >= 1_I10, "purerng (lecuyer): seed(1) >= 1, see lecuyer_efficient_1988 p. 747R (in)")
+    call assert(rng%seed(1) >= 1_I10, "purerng (lecuyer): seed(1) >= 1, see lecuyer_efficient_1988 p. 747R")
     call assert(rng%seed(1) <= LECUYER_M(1) - 1_I10, "purerng (lecuyer): seed(1) <= LECUYER_M(1) - 1, " // &
-                                                        "see lecuyer_efficient_1988 p. 747R (in)")
-    call assert(rng%seed(2) >= 1_I10, "purerng (lecuyer): seed(2) >= 1, lecuyer_efficient_1988 p. 747R (in)")
+                                                        "see lecuyer_efficient_1988 p. 747R")
+    call assert(rng%seed(2) >= 1_I10, "purerng (lecuyer): seed(2) >= 1, lecuyer_efficient_1988 p. 747R")
     call assert(rng%seed(2) <= LECUYER_M(2) - 1_I10, "purerng (lecuyer): seed(2) <= LECUYER_M(2) - 1, " // &
-                                                        "see lecuyer_efficient_1988 p. 747R (in)")
+                                                        "see lecuyer_efficient_1988 p. 747R")
     
     k        = rng%seed / LECUYER_Q
     rng%seed = LECUYER_A * (rng%seed - k * LECUYER_Q) - k * LECUYER_R
@@ -196,12 +196,12 @@ elemental subroutine lecuyer(rng, harvest)
     call assert(z < LECUYER_M(1), "purerng (lecuyer): z >= LECUYER_M(1)")
     
     ! Same `seed` bounds as before.
-    call assert(rng%seed(1) >= 1_I10, "purerng (lecuyer): seed(1) >= 1, see lecuyer_efficient_1988 p. 747R (in)")
+    call assert(rng%seed(1) >= 1_I10, "purerng (lecuyer): seed(1) >= 1, see lecuyer_efficient_1988 p. 747R")
     call assert(rng%seed(1) <= LECUYER_M(1) - 1_I10, "purerng (lecuyer): seed(1) <= LECUYER_M(1) - 1, " // &
-                                                        "see lecuyer_efficient_1988 p. 747R (in)")
-    call assert(rng%seed(2) >= 1_I10, "purerng (lecuyer): seed(2) >= 1, lecuyer_efficient_1988 p. 747R (in)")
+                                                        "see lecuyer_efficient_1988 p. 747R")
+    call assert(rng%seed(2) >= 1_I10, "purerng (lecuyer): seed(2) >= 1, lecuyer_efficient_1988 p. 747R")
     call assert(rng%seed(2) <= LECUYER_M(2) - 1_I10, "purerng (lecuyer): seed(2) <= LECUYER_M(2) - 1, " // &
-                                                        "see lecuyer_efficient_1988 p. 747R (in)")
+                                                        "see lecuyer_efficient_1988 p. 747R")
 end subroutine lecuyer
 
 elemental subroutine determ(rng, harvest)

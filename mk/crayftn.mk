@@ -1,5 +1,5 @@
 FFLAGS = -hlist=l -herror_on_warning -ec
-DFLAGS = -G0 -O0 -hfo0 -Rbcdps -M1077
+DFLAGS = -G0 -O0 -hfp0 -Rbcdps -M1077
 RFLAGS = -hlist=m -hconcurrent -O2 -hfp3
 
 # What is `-h thread_do_concurrent`?

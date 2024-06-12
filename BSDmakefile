@@ -42,6 +42,8 @@ BUILD = debug
 .include <mk/lfortran.mk>
 .elif $(FC) == crayftn
 .include <mk/crayftn.mk>
+.elif $(FC) == ftn
+.include <mk/crayftn.mk>
 #.else
 #.error Invalid FC: $(FC)
 .endif

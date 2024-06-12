@@ -43,6 +43,8 @@ else ifeq ($(FC),lfortran)
 include mk/lfortran.mk
 else ifeq ($(FC),crayftn)
 include mk/crayftn.mk
+else ifeq ($(FC),ftn)
+include mk/crayftn.mk
 #else
 #$(error Invalid FC: $(FC))
 endif

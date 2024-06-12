@@ -789,7 +789,8 @@ subroutine validate_timestamp(tests, timestamp, message)
 !            call tests%integer_le(milliseconds, 999, message // ", milliseconds upper bound")
         end if
         
-        call tests%character_eq(timestamp(24:24), "-", message // ", timestamp(24)")
+        !call tests%character_eq(timestamp(24:24), "-", message // ", timestamp(24)")
+        call tests%logical_true((timestamp(24:24) == "-") .or. (timestamp(24:24) == "+"), message // ", timestamp(24)")
         
         read(timestamp(25:26), "(i2)", iostat=rc_read) timezone_hour
         call tests%integer_eq(rc_read, 0, message // ", timezone_hour is numeric")
