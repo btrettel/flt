@@ -324,7 +324,6 @@ Later:
         - `forrtl: error`
         - `NaN`
         - `Infinity`
-- Make nmllog.f90 optionally not print the time and/or level to stdout.
 - purerng.f90 low priority:
     - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
     - Change `I10` to `INT64` to work with xoshiro256**.

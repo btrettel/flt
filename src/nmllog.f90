@@ -40,9 +40,10 @@ character(len=*), public, parameter :: CRITICAL_STRING = "critical"
 
 type, public :: log_type
     character(len=:), allocatable :: filename
-    integer :: unit         = UNIT_CLOSED
-    integer :: file_level   = WARNING_LEVEL
-    integer :: stdout_level = WARNING_LEVEL
+    integer :: unit          = UNIT_CLOSED
+    integer :: file_level    = WARNING_LEVEL
+    integer :: stdout_level  = WARNING_LEVEL
+    logical :: stdout_prefix = .true.
 contains
     procedure :: open => log_open
     procedure :: close => log_close
@@ -218,7 +219,11 @@ subroutine log_writer(this, message_in, level_code)
     end if
     
     if (level_code >= this%stdout_level) then
-        write(unit=print_unit, fmt="(a, a, a, a, a)") timestamp, " [", level, "] ", message
+        if (this%stdout_prefix) then
+            write(unit=print_unit, fmt="(5a)") timestamp, " [", level, "] ", message
+        else
+            write(unit=print_unit, fmt="(a)") message
+        end if
     end if
     
     call assert(this%file_level >= 0, "nmllog (log_writer): file_level is negative")

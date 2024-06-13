@@ -14,12 +14,13 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests
 
-character(len=*), parameter :: TEST_FILENAME    = "test.nml"
-character(len=*), parameter :: DEBUG_MESSAGE    = "Debug level test"
-character(len=*), parameter :: INFO_MESSAGE     = "Info level test"
-character(len=*), parameter :: WARNING_MESSAGE  = "Warning level test"
-character(len=*), parameter :: ERROR_MESSAGE    = "Error level test"
-character(len=*), parameter :: CRITICAL_MESSAGE = "Critical level test"
+character(len=*), parameter :: TEST_FILENAME     = "test.nml"
+character(len=*), parameter :: DEBUG_MESSAGE     = "Debug level test"
+character(len=*), parameter :: INFO_MESSAGE      = "Info level test"
+character(len=*), parameter :: WARNING_MESSAGE   = "Warning level test"
+character(len=*), parameter :: ERROR_MESSAGE     = "Error level test"
+character(len=*), parameter :: CRITICAL_MESSAGE  = "Critical level test"
+character(len=*), parameter :: NO_PREFIX_MESSAGE = "No prefix test"
 
 call logger%open("nmllog.nml")
 call tests%start_tests(logger)
@@ -29,6 +30,7 @@ call test_log_subroutines(tests)
 call test_log_debug_info(tests)
 call test_pure_log(tests)
 call test_check(tests)
+call test_stdout_prefix()
 
 call tests%end_tests()
 call logger%close()
@@ -398,5 +400,20 @@ subroutine test_check(tests)
     call pure_logger%close()
     call impure_logger%close()
 end subroutine test_check
+
+subroutine test_stdout_prefix()
+    ! LATER: Check that stdout doesn't have the prefix. Right now I do that manually.
+    
+    use nmllog, only: log_type
+    
+    type(log_type) :: test_logger
+    
+    call test_logger%open(TEST_FILENAME)
+
+    test_logger%stdout_prefix = .false.
+    call test_logger%warning(NO_PREFIX_MESSAGE)
+    
+    call test_logger%close()
+end subroutine test_stdout_prefix
 
 end program test_nmllog
