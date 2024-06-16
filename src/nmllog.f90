@@ -10,7 +10,6 @@
 
 module nmllog
 
-use prec, only: WP, CL
 implicit none
 private
 
