@@ -7,7 +7,7 @@
 
 module unittest
 
-use prec, only: WP, CL
+use prec, only: WP
 use nmllog, only: log_type, now, TIMESTAMP_LEN, DEBUG_LEVEL
 use timer, only: timer_type
 use checks, only: assert
