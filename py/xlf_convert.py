@@ -12,6 +12,9 @@ parser.add_argument("--undo", action="store_true", help="undo changes (with Git)
 args = parser.parse_args()
 
 directories = ["app", "src", "test"]
+skip_files  = [os.path.join("src", "revision.f90"), os.path.join("src", "units.f90")]
+
+exit_code = 0
 
 filepaths = []
 for directory in sorted(directories):
@@ -19,10 +22,13 @@ for directory in sorted(directories):
     directory = os.path.relpath(directory)
     
     if not os.path.isdir(directory):
-        print("{} is not a directory.".format(directory))
-        fail = True
+        print("ERROR: {} in directories is not a directory.".format(directory))
+        exit_code = 1
     else:
         for filename in os.listdir(directory):
+            if filename in skip_files:
+                continue
+            
             if filename.endswith(".f90"):
                 filepaths.append(os.path.join(directory, filename))
 
@@ -34,6 +40,7 @@ for filepath in sorted(filepaths):
         result = run(["git", "checkout", filepath], capture_output=True, text=True)
         if result.returncode != 0:
             print("ERROR: Changes to {} could not be undone.".format(filepath), file=sys.stderr)
+            exit_code = 1
     else:
         with fileinput.input(filepath, inplace=True) as file:
             for line in file:
@@ -44,12 +51,13 @@ for filepath in sorted(filepaths):
 
 # Comment out a test which will fail due to my assertions now not having messages.
 # Seems that I also need to comment out the `execute_command_line` parts as they fail for some reason? Not clear to me why.
-filepath = [os.path.join("test", "test_checks.f90"), os.path.join("test", "test_units.f90"), os.path.join("test", "test_unittest.f90")]
+filepaths = [os.path.join("test", "test_checks.f90"), os.path.join("test", "test_units.f90"), os.path.join("test", "test_unittest.f90")]
 for filepath in sorted(filepaths):
     if args.undo:
         result = run(["git", "checkout", filepath], capture_output=True, text=True)
         if result.returncode != 0:
             print("ERROR: Changes to {} could not be undone.".format(filepath), file=sys.stderr)
+            exit_code = 1
     else:
         commenting_out = False
         with fileinput.input(filepath, inplace=True) as file:
@@ -66,3 +74,5 @@ for filepath in sorted(filepaths):
                 #if "ASSERTION FAILED. Custom message." in line:
                 if "! IBM XLF comment end" in line:
                     commenting_out = False
+
+exit(exit_code)
