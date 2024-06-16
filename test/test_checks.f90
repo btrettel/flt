@@ -156,7 +156,7 @@ call assert_dimension(a1, b1) ! rank 1
 call assert_dimension(a2, b2) ! rank 2
 call assert_dimension(a3, b3) ! rank 3
 
-if (DEBUG) then
+if (DEBUG) then ! IBM XLF comment start
     ! Check that `assert_dimension` terminates with a non-zero exit code for debug mode.
     call tests%exit_code_ne("./test_assert_dimension_false_1", 0, &
                                 "assert_dimension, real, rank 1, .false., exit code", ASSERT_FALSE_OUTPUT)
@@ -172,7 +172,7 @@ else
                                 "assert_dimension, real, rank 2, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
     call tests%exit_code_eq("./test_assert_dimension_false_3", 0, &
                                 "assert_dimension, real, rank 3, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
-end if
+end if ! IBM XLF comment end
 
 call tests%end_tests()
 call logger%close()
