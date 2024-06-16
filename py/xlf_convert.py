@@ -26,7 +26,7 @@ for directory in sorted(directories):
         exit_code = 1
     else:
         for filename in os.listdir(directory):
-            if filename in skip_files:
+            if os.path.join(directory, filename) in skip_files:
                 continue
             
             if filename.endswith(".f90"):
