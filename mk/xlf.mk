@@ -1,5 +1,5 @@
 FFLAGS = -qlanglvl=2008pure -qwarn64 -qinfo=all -qsuppress=1512-045:1521-004:1516-329
-DFLAGS = -g2 -qcheck=all -qflttrap=inexact:invalid:overflow:underflow:zerodivide
+DFLAGS = -g2 -qcheck=all -qflttrap=invalid:overflow:underflow:zerodivide
 RFLAGS = -O2 -qreport=hotlist -qarch=qauto
 
 # `-qsuppress` explanations:
@@ -10,3 +10,4 @@ RFLAGS = -O2 -qreport=hotlist -qarch=qauto
 # `-qfree=f90`: free form, default for xlf2008
 # `-qsmp=omp`: Will this enable parallelization for `do concurrent`?
 # `-qhalt=i`: I would like to include this, but reducing the level to even `-qhalt=e` causes FLT to not compile despite not printing any messages!?!
+# `-qflttrap=inexact`: Removed as this is hard to avoid.
