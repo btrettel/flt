@@ -33,7 +33,7 @@ for filepath in sorted(filepaths):
     if args.undo:
         result = run(["git", "checkout", filepath], capture_output=True, text=True)
         if result.returncode != 0:
-            print("ERROR: Changes to {} could not be undone.", file=sys.stderr)
+            print("ERROR: Changes to {} could not be undone.".format(filepath), file=sys.stderr)
     else:
         with fileinput.input(filepath, inplace=True) as file:
             for line in file:
@@ -48,7 +48,7 @@ filepath = os.path.join("test", "test_checks.f90")
 if args.undo:
     result = run(["git", "checkout", filepath], capture_output=True, text=True)
     if result.returncode != 0:
-        print("ERROR: Changes to {} could not be undone.", file=sys.stderr)
+        print("ERROR: Changes to {} could not be undone.".format(filepath), file=sys.stderr)
 else:
     commenting_out = False
     with fileinput.input(filepath, inplace=True) as file:
@@ -57,11 +57,11 @@ else:
             if "! IBM XLF comment start" in line:
                 commenting_out = True
             
-            #if "ASSERTION FAILED. Custom message." in line:
-            if "! IBM XLF comment end" in line:
-                commenting_out = False
-            
             if commenting_out:
                 print("!" + line, end="")
             else:
                 print(line, end="")
+            
+            #if "ASSERTION FAILED. Custom message." in line:
+            if "! IBM XLF comment end" in line:
+                commenting_out = False
