@@ -50,3 +50,9 @@ lfortran:
 	#$(MAKE) FC=lfortran src/timer.o
 	#$(MAKE) FC=lfortran src/unittest.o
 	#$(MAKE) FC=lfortran genunits
+
+.PHONY: xlf
+xlf:
+	$(PYTHON) py$(DIR_SEP)xlf_convert.py
+	$(MAKE) FC=xlf2008 BUILD=debug PYTHON=python3.11 test
+	$(PYTHON) py$(DIR_SEP)xlf_convert.py --undo

@@ -43,7 +43,7 @@ call tests%logical_false(wtime%active, "timer_type, active after restart")
 
 timeit_duration_seconds = timeit(timeit_test, number=10)
 call tests%real_gt(timeit_duration_seconds, 0.1_WP, "timeit, minimum")
-call tests%real_eq(timeit_duration_seconds, 0.1_WP, "timeit", abs_tol=0.01_WP)
+call tests%real_eq(timeit_duration_seconds, 0.1_WP, "timeit (absolute)", abs_tol=0.01_WP)
 
 call tests%end_tests()
 call logger%close()
