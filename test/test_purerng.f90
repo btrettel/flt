@@ -138,7 +138,7 @@ subroutine test_determ(tests)
 end subroutine test_determ
 
 subroutine test_unique(tests)
-    use purerng, only: rng_type, RNG_DETERM, RNG_LECUYER
+    use purerng, only: RNG_DETERM, RNG_LECUYER
     
     type(test_results_type), intent(in out) :: tests
     

@@ -745,7 +745,6 @@ subroutine write_exponentiation_function(config, unit_system, file_unit, unit, o
 end subroutine write_exponentiation_function
 
 subroutine write_module(config, unit_system, file_unit, rc)
-    use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
     class(config_type), intent(in)      :: config
