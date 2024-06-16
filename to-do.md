@@ -338,3 +338,8 @@ Later:
     - <https://fortran-lang.discourse.group/t/are-namelists-portable/1212/10>
     - <https://github.com/urbanjost/M_CLI?tab=readme-ov-file>
     - <https://fortranwiki.org/fortran/show/get_namelist>
+- Multidimensional Newton solver
+    - <https://web.mit.edu/18.06/www/Spring17/Multidimensional-Newton.pdf>
+        - <https://gcc.gnu.org/onlinedocs/gfortran/NORM2.html>
+    - <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.newton.html>
+    - <https://people.sc.fsu.edu/~jburkardt/f_src/newton_rc/newton_rc.html>

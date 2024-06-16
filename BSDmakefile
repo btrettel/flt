@@ -46,6 +46,8 @@ BUILD = debug
 .include <mk/crayftn.mk>
 .elif $(FC) == xlf2008
 .include <mk/xlf.mk>
+.elif $(FC) == nagfor
+.include <mk/nagfor.mk>
 #.else
 #.error Invalid FC: $(FC)
 .endif

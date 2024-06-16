@@ -23,10 +23,11 @@ Other files:
 - Correctness: All libraries and tools are planned to be thoroughly tested. I will fall short of this goal, but intend to approach it asymptotically in time.
 - Portability: A subset of Fortran 2018 will be used to increase portability. Multiple compilers will be tested to ensure portability. Not all Fortran features have been implemented properly in some compilers (for example, parameterized derived types), so those features will be avoided.
     - The following compilers are used at present:
-        - gfortran 9.4.0 (to be updated soon to a more recent version)
-        - ifx 2024.1.0
+        - gfortran 13.2.0
+        - ifx 2024.1.2
         - ifort 2021.12.0
-        - nvfortran 24.3-0
+        - nvfortran 24.5-1
+        - xlf2008 17.1.1 (Linux on Power, in QEMU)
 - Simplicity: No convoluted or opaque build system or algorithms. The simplest approach that works is usually what I'll pick.
 - Familiarity: Interfaces to flt modules should be based on interfaces for other successful modules/packages, or standard Fortran if the module is intended to replace existing Fortran functionality.
 
