@@ -44,6 +44,8 @@ BUILD = debug
 .include <mk/crayftn.mk>
 .elif $(FC) == ftn
 .include <mk/crayftn.mk>
+.elif $(FC) == xlf2008
+.include <mk/xlf.mk>
 #.else
 #.error Invalid FC: $(FC)
 .endif

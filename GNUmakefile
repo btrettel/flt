@@ -45,6 +45,8 @@ else ifeq ($(FC),crayftn)
 include mk/crayftn.mk
 else ifeq ($(FC),ftn)
 include mk/crayftn.mk
+else ifeq ($(FC),xlf2008)
+include mk/xlf.mk
 #else
 #$(error Invalid FC: $(FC))
 endif

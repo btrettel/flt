@@ -31,9 +31,10 @@ Priorities:
         - Help plan interface to gradient descent
     - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only. Make gradient descent include robust optimization by default, taking into account the uncertainty.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
-    - Derived-type output
+    - Derived-type I/O
         - metcalf_modern_2018 pp. 261--264
-        - `read(formatted)` and `read(unformatted)`
+        - `write(formatted)`
+        - `write(formatted)` and `read(formatted)` for namelists (`iotype == "namelist"`)? Then I could have units or uncertainty in a namelist!
     - Remove dependency on nmllog so that this can be separated out more easily.
         - This will also help to compile genunits with lfortran, though it's not sufficient as `is_close` won't compile with lfortran due to `spacing`.
     - Break `write_module` into multiple modules to help organization and make testing parts easier.
@@ -164,12 +165,14 @@ Later:
     - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
     - Use `pure` logging for this?
+    - Upper and lower bounds for each variable.
 - Have Python script to insert probes into (instrument) Fortran code, particularly for Monte Carlo arithmetic.
     - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
         - > SPAG is able to insert calls to probes at various points in your code (see below).
     - <https://docs.cypress.io/guides/tooling/code-coverage>
     - Don't insert probes into `pure` and `elemental` procedures.
 - nmlfuzz.f90: namelist fuzz tester
+    - Intentionally pick inputs which pass input validation but cause the program to fail.
     - Make depend on ga.f90
         - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
     - Use metaprogramming to make work since Fortran can't really do that well at present?
@@ -328,3 +331,10 @@ Later:
     - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
     - Change `I10` to `INT64` to work with xoshiro256**.
     - Test that `INT64` has enough precision for the `lecuyer` RNG.
+- nmlcli.f90
+    - Could modify `get_namelist` approach to make CLI use more typical `--` flags. `--flag` could also be converted to `flag=.true.` for `logical`s.
+    - `--version`: integrates with revision.f90
+    - How can I get descriptions of each option in `--help`? Manually? Parsing comments in the namelist file that is included?
+    - <https://fortran-lang.discourse.group/t/are-namelists-portable/1212/10>
+    - <https://github.com/urbanjost/M_CLI?tab=readme-ov-file>
+    - <https://fortranwiki.org/fortran/show/get_namelist>
