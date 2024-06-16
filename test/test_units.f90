@@ -70,10 +70,12 @@ x%v = 1.0_WP
 y   = -x
 call tests%real_eq(y%v, -1.0_WP, "units value, unary negative")
 
+! IBM XLF comment start
 call tests%exit_code_ne("make test_units_fail_1", 0, &
                             "compile-time error for physical dimension mismatch, 1", "test_units_fail_1.txt")
 call tests%exit_code_ne("make test_units_fail_2", 0, &
                             "compile-time error for physical dimension mismatch, 2", "test_units_fail_2.txt")
+! IBM XLF comment end
 
 ! If this compiles, then I can use constructors nicely.
 ! TODO: Doesn't work with nvfortran. File a bug report.
