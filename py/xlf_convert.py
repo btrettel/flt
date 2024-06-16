@@ -43,6 +43,7 @@ for filepath in sorted(filepaths):
                     print(line, end="")
 
 # Comment out a test which will fail due to my assertions now not having messages.
+# Seems that I also need to comment out the `execute_command_line` parts as they fail for some reason? Not clear to me why.
 filepath = os.path.join("test", "test_checks.f90")
 if args.undo:
     result = run(["git", "checkout", filepath], capture_output=True, text=True)
@@ -52,10 +53,12 @@ else:
     commenting_out = False
     with fileinput.input(filepath, inplace=True) as file:
         for line in file:
-            if "Test assertion failure message." in line:
+            #if "Test assertion failure message." in line:
+            if "! IBM XLF comment start" in line:
                 commenting_out = True
             
-            if "ASSERTION FAILED. Custom message." in line:
+            #if "ASSERTION FAILED. Custom message." in line:
+            if "! IBM XLF comment end" in line:
                 commenting_out = False
             
             if commenting_out:

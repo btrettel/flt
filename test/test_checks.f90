@@ -129,7 +129,7 @@ call assert(.true., "assert(.true.) test failed?")
 ! The test passed if execution reaches here, so manually increment the test counters.
 tests%n_tests = tests%n_tests + 1
 
-if (DEBUG) then
+if (DEBUG) then ! IBM XLF comment start
     ! Check that `assert(.false., "Custom message.")` has the correct message.
     call tests%exit_code_ne("./test_assert_false", 0, "assert, .false., message, exit code", &
                                 ASSERT_FALSE_OUTPUT, keep_file=.true.)
@@ -148,7 +148,7 @@ if (DEBUG) then
 else
     ! Check that `assert(.false.)` does not terminate with a non-zero exit code for release mode.
     call tests%exit_code_eq("./test_assert_false", 0, "assert, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
-end if
+end if ! IBM XLF comment end
 
 ! `assert_dimension`
 
