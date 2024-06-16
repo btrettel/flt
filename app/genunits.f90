@@ -20,7 +20,7 @@ type(unit_system_type)        :: unit_system
 
 call get_command_argument(1, length=arg_len)
 allocate(character(len=arg_len) :: input_file)
-call get_command_argument(1, value=input_file)
+call get_command_argument(1, input_file)
 
 if (len(input_file) == 0) then
     write(unit=*, fmt="(a)") "Usage: genunits FILENAME"

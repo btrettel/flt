@@ -94,6 +94,7 @@ call tests%integer_le(2_I10, 2_I10, "integer_le, equal, I10")
 
 call tests%integer_le(1, 2, "integer_ne, equal")
 
+! IBM XLF comment start
 ! TODO: This assumes *nix.
 call tests%exit_code_ne("false", 0, "exit_code_ne, success, no file", EXIT_CODE_FILE)
 
@@ -112,6 +113,7 @@ if (exit_code_file_exists) then
     open(newunit=exit_code_file_unit, file=EXIT_CODE_FILE, status="old", action="read")
     close(unit=exit_code_file_unit, status="delete")
 end if
+! IBM XLF comment end
 
 ! tests which should fail
 
@@ -146,6 +148,7 @@ call failing_tests%character_eq("a", "b", "character_eq, failure (greater)")
 
 call failing_tests%character_eq("b", "a", "character_eq, failure (less)")
 
+! IBM XLF comment start
 ! TODO: This assumes *nix.
 call failing_tests%exit_code_eq("true", 1, "exit_code_eq, failure, with file", EXIT_CODE_FILE)
 
@@ -158,6 +161,7 @@ if (exit_code_file_exists) then
     open(newunit=exit_code_file_unit, file=EXIT_CODE_FILE, status="old", action="read")
     close(unit=exit_code_file_unit, status="delete")
 end if
+! IBM XLF comment end
 
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 

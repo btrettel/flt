@@ -44,7 +44,7 @@ for filepath in sorted(filepaths):
 
 # Comment out a test which will fail due to my assertions now not having messages.
 # Seems that I also need to comment out the `execute_command_line` parts as they fail for some reason? Not clear to me why.
-filepath = [os.path.join("test", "test_checks.f90"), os.path.join("test", "test_units.f90")]
+filepath = [os.path.join("test", "test_checks.f90"), os.path.join("test", "test_units.f90"), os.path.join("test", "test_unittest.f90")]
 for filepath in sorted(filepaths):
     if args.undo:
         result = run(["git", "checkout", filepath], capture_output=True, text=True)
