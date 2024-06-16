@@ -28,6 +28,7 @@ Other files:
         - ifort 2021.12.0
         - nvfortran 24.5-1
         - xlf2008 17.1.1 (Linux on Power, in QEMU)
+        - nagfor 7.2
 - Simplicity: No convoluted or opaque build system or algorithms. The simplest approach that works is usually what I'll pick.
 - Familiarity: Interfaces to flt modules should be based on interfaces for other successful modules/packages, or standard Fortran if the module is intended to replace existing Fortran functionality.
 
