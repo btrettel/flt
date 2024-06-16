@@ -12,3 +12,7 @@ RFLAGS = -O2 -qreport=hotlist -qarch=qauto
 # `-qfree=f90`: free form, default for xlf2008
 # `-qsmp=omp`: Will this enable parallelization for `do concurrent`?
 # `-qhalt=i`: I would like to include this, but reducing the level to even `-qhalt=e` causes FLT to not compile despite not printing any messages!?!
+
+# Some complaints IBM XL Fortran has that I don't think are valid:
+# > "app/genunits.f90", line 23.30: 1518-378 (L) The presence of dummy argument value corresponding to this actual argument might differ from the presence specified by the Fortran 2008 standard.
+# Based on my reading of [this IBM forum post](https://community.ibm.com/community/user/power/blogs/archive-user/2013/10/18/using-qxlf2008-to-conform-to-fortran-2008-standard-on-dummy-argument-presence-checking), my usage here is okay.

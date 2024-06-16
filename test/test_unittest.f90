@@ -161,7 +161,6 @@ if (exit_code_file_exists) then
     open(newunit=exit_code_file_unit, file=EXIT_CODE_FILE, status="old", action="read")
     close(unit=exit_code_file_unit, status="delete")
 end if
-! IBM XLF comment end
 
 ! Now check that the expected number of tests that should fail did in fact fail, and update the total number of tests appropriately.
 
@@ -169,6 +168,7 @@ call tests%integer_eq(failing_tests%n_tests, N_FAILING, "correct number of tests
 
 call tests%integer_eq(failing_tests%n_failures, N_FAILING, &
                                 "correct number of tests expected to fail that fail")
+! IBM XLF comment end
 
 tests%n_tests    = tests%n_tests + failing_tests%n_tests
 tests%n_failures = tests%n_failures + (failing_tests%n_tests - failing_tests%n_failures)
