@@ -63,3 +63,9 @@ include mk/before.mk
 include mk/common.mk
 include mk/depends.mk
 include mk/linux_2.mk
+
+.PHONY: xlf
+xlf:
+	$(PYTHON) py$(DIR_SEP)xlf_convert.py
+	make FC=xlf2008 BUILD=debug PYTHON=python3.11 test
+	$(PYTHON) py$(DIR_SEP)xlf_convert.py --undo

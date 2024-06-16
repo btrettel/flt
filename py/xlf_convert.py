@@ -3,9 +3,12 @@
 
 import os
 import argparse
+from subprocess import run
+import sys
+import fileinput
 
 parser = argparse.ArgumentParser(description="Converts all files to a form that should be compatible with IBM XL Fortran, and pass all tests.")
-parser.add_argument("--undo", action="store_true", help="undo changes", default=False)
+parser.add_argument("--undo", action="store_true", help="undo changes (with Git)", default=False)
 args = parser.parse_args()
 
 directories = ["app", "src", "test"]
@@ -25,12 +28,37 @@ for directory in sorted(directories):
 
 assert(len(filepaths) > 0)
 
-# TODO: `error stop` doesn't allow for character codes.
-for filename in sorted(filepaths):
-    with open(filename, "r") as file_handler:
-        for line in file_handler.readlines():
-            if line.strip().startswith("error stop"):
-                print(filename)
-            
+# IBM XL Fortran's `error stop` doesn't allow for character codes. So change to just `error stop 1`.
+for filepath in sorted(filepaths):
+    if args.undo:
+        result = run(["git", "checkout", filepath], capture_output=True, text=True)
+        if result.returncode != 0:
+            print("ERROR: Changes to {} could not be undone.", file=sys.stderr)
+    else:
+        with fileinput.input(filepath, inplace=True) as file:
+            for line in file:
+                if line.strip().startswith("error stop"):
+                    print("error stop 1")
+                else:
+                    print(line, end="")
 
-# TODO: Disable `! Test assertion failure message.`
+# Comment out a test which will fail due to my assertions now not having messages.
+filepath = os.path.join("test", "test_checks.f90")
+if args.undo:
+    result = run(["git", "checkout", filepath], capture_output=True, text=True)
+    if result.returncode != 0:
+        print("ERROR: Changes to {} could not be undone.", file=sys.stderr)
+else:
+    commenting_out = False
+    with fileinput.input(filepath, inplace=True) as file:
+        for line in file:
+            if "Test assertion failure message." in line:
+                commenting_out = True
+            
+            if "ASSERTION FAILED. Custom message." in line:
+                commenting_out = False
+            
+            if commenting_out:
+                print("!" + line, end="")
+            else:
+                print(line, end="")
