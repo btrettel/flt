@@ -53,13 +53,13 @@ for directory in sorted(directories):
     directory = os.path.relpath(directory)
     
     if not os.path.isdir(directory):
-        print("{} is not a directory.".format(directory))
+        print("ERROR: {} in directories is not a directory.".format(directory))
         fail = True
     else:
         for filename in os.listdir(directory):
             # Exclude symlinks as those presumably are linted elsewhere.
             if os.path.isfile(os.path.join(directory, filename)) and filename.endswith(".f90"):
-                    filepaths.append(os.path.join(directory, filename))
+                filepaths.append(os.path.join(directory, filename))
 
 assert(len(filepaths) > 0)
 

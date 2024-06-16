@@ -137,7 +137,7 @@ if (DEBUG) then
     inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
     call tests%logical_true(test_assert_false_exists, "assert, .false., message, output saved")
 
-    ! Test default assertion failure message.
+    ! Test assertion failure message.
     open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
     read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
     read(unit=test_assert_false_unit, fmt="(a)") assert_false_line
