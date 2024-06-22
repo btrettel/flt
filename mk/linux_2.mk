@@ -1,6 +1,6 @@
 # Why run `make check-valgrind` here? As it uses gfortran and is more strict.
 # LATER: Enable FC=lfortran for `make all`, particularly for the style suggestions
-.PHONY: check-allfc
+.PHONY: check-fc
 all:
 	$(MAKE) lint
 	$(MAKE) check-valgrind # gfortran
