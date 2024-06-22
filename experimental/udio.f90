@@ -40,47 +40,44 @@ subroutine meter_rf(dtv, unit, iotype, vlist, iostat, iomsg)
     character(len=*), intent(in out) :: iomsg
     
     character(len=128) :: full_input, value_char, unit_char
-    integer            :: space_index
+    integer            :: underscore_index
     
-    read(unit, fmt="(a)", iostat=iostat) full_input
+    read(unit, fmt="(a)", iostat=iostat, iomsg=iomsg) full_input
     
     ! Needed for ifx namelist input.
     full_input = adjustl(full_input)
     
-    space_index = index(full_input, " ")
+    ! Spaces are namelist "value separators" in the standard, so the separators should be something else.
+    underscore_index = index(full_input, "_")
     
-    value_char = full_input(1:space_index-1)
+    value_char = full_input(1:underscore_index-1)
     read(unit=value_char, fmt=*, iostat=iostat) dtv%v
     
-    unit_char = full_input(space_index+1:)
-    
-    print *, trim(unit_char)
+    unit_char = full_input(underscore_index+1:)
     
     if (len(trim(unit_char)) == 0) then
-        iostat = -1
+        iostat = 1
         iomsg = "Unit expected, none appeared: " // trim(full_input)
         return
     end if
     
     if (trim(unit_char) /= "m") then
-        iostat = -2
+        iostat = 2
         iomsg = "Unit mismatch: m expected, " // trim(unit_char) // " appeared."
         return
     end if
     
-    if (iotype /= "DT") then
-        iostat = -3
+    if ((iotype /= "DT") .and. (iotype /= "NAMELIST")) then
+        iostat = 3
         iomsg = 'Only iotype="DT" is implemented for read. iotype=' // iotype
         return
     end if
     
     if (size(vlist) > 0) then
-        iostat = -4
+        iostat = 4
         iomsg = "vlist must be not specified for read."
         return
     end if
-    
-    iomsg = ""
 end subroutine meter_rf
 
 end module udio_mod
@@ -114,28 +111,32 @@ write(*, fmt="(dt'g0')") x ! Workaround for gfortran not accepting widths of 0.
 write(*, fmt=*) x
 
 ! nvfortran can't do these. nvfortran does seem to have problems `read`ing from internal variables.
+rmsg= ""
 mchar = "12.345 m"
 read(mchar, fmt="(dt)", iostat=rc, iomsg=rmsg) x
 write(*, fmt="(dt'f'(6,3))") x
-write(*, *) rc, rmsg
+write(*, *) rc, trim(rmsg)
 
+rmsg= ""
 mchar = "21.543"
 read(mchar, fmt="(dt)", iostat=rc, iomsg=rmsg) x
 write(*, fmt="(dt'f'(6,3))") x
-write(*, *) rc, rmsg
+write(*, *) rc, trim(rmsg)
 
+rmsg= ""
 mchar = "32.154 s"
 read(mchar, fmt="(dt)", iostat=rc, iomsg=rmsg) x
 write(*, fmt="(dt'f'(6,3))") x
-write(*, *) rc, rmsg
+write(*, *) rc, trim(rmsg)
 
 ! Namelist `read`s work on nvfortran. But `iostat` and `iomsg` seem to be broken.
-open(newunit=nml_unit, file="x.nml", status="old", action="read", iostat=rc, iomsg=rmsg)
-!open(newunit=nml_unit, file="x.nml", status="old", action="read")
-read(unit=nml_unit, nml=list)
+rmsg= ""
+open(newunit=nml_unit, file="x.nml", status="old", action="read")
+read(unit=nml_unit, nml=list, iostat=rc, iomsg=rmsg)
+!read(unit=nml_unit, nml=list)
 close(nml_unit)
 
 write(*, fmt="(dt'f'(6,3))") x
-write(*, *) rc, rmsg
+write(*, *) rc, trim(rmsg)
 
 end program udio
