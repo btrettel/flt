@@ -2,11 +2,6 @@
 
 Priorities:
 
-- Change the Make targets to be more typical.
-    - `make all` is the recommended default target to build all parts of the program.
-    - `make all` to `make check-allfc`
-    - `make test` to `make check`
-    - `make valgrind` to `make check-valgrind`
 - f90lint:
     - No programs in source, no modules in app or test.
     - List longest subroutines

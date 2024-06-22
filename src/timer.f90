@@ -43,7 +43,7 @@ end type timer_type
 
 abstract interface
     subroutine timeit_subroutine()
-    end subroutine
+    end subroutine timeit_subroutine
 end interface
 
 contains

@@ -134,6 +134,23 @@ for filename in sorted(filepaths):
                         # if line_no_comments.startswith("subroutine "):
                             # print("{}:{}: subroutines must be marked as pure, elemental, or impure". format(filename, line_no))
                             # exit_code = 1
+                        
+                        if line_no_comments == "end type":
+                            print("{}:{}: end type lacks name". format(filename, line_no))
+                            exit_code = 1
+                        
+                        # Not all `interface` blocks have names.
+                        # if line_no_comments == "end interface":
+                            # print("{}:{}: end interface lacks name". format(filename, line_no))
+                            # exit_code = 1
+                        
+                        if line_no_comments == "end function":
+                            print("{}:{}: end function lacks name". format(filename, line_no))
+                            exit_code = 1
+                        
+                        if line_no_comments == "end subroutine":
+                            print("{}:{}: end subroutine lacks name". format(filename, line_no))
+                            exit_code = 1
                     else:
                         global_num_lines_tests = global_num_lines_tests + 1
                         
