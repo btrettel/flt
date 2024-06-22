@@ -14,8 +14,8 @@
 .f90.$(OBJEXT):
 	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $<
 
-.PHONY: test
-test: $(TESTNML)
+.PHONY: check
+check: $(TESTNML)
 	@echo =====================
 	@echo = All tests passed. =
 	@echo =====================

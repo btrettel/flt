@@ -78,7 +78,9 @@ call tests%exit_code_ne("make test_units_fail_2", 0, &
 ! IBM XLF comment end
 
 ! If this compiles, then I can use constructors nicely.
-! TODO: Doesn't work with nvfortran. File a bug report.
+v = velocity(1.0_WP)
+
+! TODO: The next one doesn't work with nvfortran. File a bug report.
 ! v = length(1.0_WP) / time(1.0_WP)
 
 call tests%end_tests()

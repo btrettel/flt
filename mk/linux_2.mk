@@ -1,9 +1,9 @@
-# Why run `make valgrind` here? As it uses gfortran and is more strict.
+# Why run `make check-valgrind` here? As it uses gfortran and is more strict.
 # LATER: Enable FC=lfortran for `make all`, particularly for the style suggestions
-.PHONY: all
+.PHONY: check-allfc
 all:
 	$(MAKE) lint
-	$(MAKE) valgrind # gfortran
+	$(MAKE) check-valgrind # gfortran
 	$(MAKE) clean
 	$(MAKE) FC=ifx
 	$(MAKE) clean
@@ -17,8 +17,8 @@ all:
 	@echo = All tests passed for all compilers. =
 	@echo =======================================
 
-.PHONY: valgrind
-valgrind:
+.PHONY: check-valgrind
+check-valgrind:
 	$(MAKE) test RUN='valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 --show-reachable=no ./'
 
 # TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
