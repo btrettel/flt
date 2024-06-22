@@ -4,7 +4,7 @@
 import xml.etree.ElementTree as ET
 import sys
 import argparse
-from subprocess import run
+from subprocess import run, PIPE
 
 #rule_ids_to_ignore = set()
 # COM.PRES.Indent: I don't indent in their expected style.
@@ -57,7 +57,7 @@ args = parser.parse_args()
 command = ['icode']
 command.extend(args.file)
 
-result = run(command, capture_output=True, text=True)
+result = run(command, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
 root = ET.fromstring(result.stderr)
 
@@ -85,7 +85,7 @@ for analysisRules in root.findall('analysisRule'):
 for f90_file in args.file:
     command = ["flint", "lint", "--flintrc", "f90.yaml", f90_file]
     
-    result = run(command, capture_output=True, text=True)
+    result = run(command, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     
     if len(result.stdout) > 0:
         warnings_found = warnings_found + 1

@@ -2,6 +2,11 @@
 
 Priorities:
 
+- Change the Make targets to be more typical.
+    - `make all` is the recommended default target to build all parts of the program.
+    - `make all` to `make check-allfc`
+    - `make test` to `make check`
+    - `make valgrind` to `make check-valgrind`
 - f90lint:
     - No programs in source, no modules in app or test.
     - List longest subroutines
@@ -42,7 +47,7 @@ Priorities:
     - Add `test_unit` to genunits_io.f90 to write to test file.
     - As comments, print number of types and interfaces at the end of the generated file, along with genunits git revision information, and the namelist file used to generate the file.
     - `units.f90`
-        - Comparison operators.
+        - Comparison operators. Must be same units on both sides.
         - Elementary functions which have same units for input and output.
         - `custom` functions which have unitless input and output (like `sin`, `cos`, `log`, etc.). Include possible `use` line in namelist group.
         - `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
@@ -165,12 +170,15 @@ Later:
     - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
     - Use `pure` logging for this?
-    - Upper and lower bounds for each variable.
+    - Upper and lower bounds for each variable, report violations.
 - Have Python script to insert probes into (instrument) Fortran code, particularly for Monte Carlo arithmetic.
     - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
         - > SPAG is able to insert calls to probes at various points in your code (see below).
     - <https://docs.cypress.io/guides/tooling/code-coverage>
-    - Don't insert probes into `pure` and `elemental` procedures.
+    - Don't insert probes into `pure` and `elemental` procedures?
+    - Use `pure` logging for this so that it'll work in `pure` procedures?
+    - <https://flibs.sourceforge.net/checking.html>
+        - <https://sourceforge.net/p/flibs/svncode/HEAD/tree/trunk/src/checking/>
 - nmlfuzz.f90: namelist fuzz tester
     - Intentionally pick inputs which pass input validation but cause the program to fail.
     - Make depend on ga.f90
@@ -182,7 +190,7 @@ Later:
     - I guess the objective function includes the code coverage and whether or not an assertion violation occurred.
     - For speed, incentivize causing assertion failures as quickly as possible. The objective function is a function of both whether the code ran successfully or not and how quickly it failed if it did fail.
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
-    - Enforce some Power of 10 rules, particularly procedure lengths.
+    - Enforce some Power of 10 rules. Procedure lengths?
     - Measure and enforce code comment density? Assertions count towards this.
         - <https://dirkriehle.com/2009/02/04/the-sweet-spot-of-code-commenting-in-open-source/comment-page-1/>
     - Require construct names for nested `do` loops and `if` statements.

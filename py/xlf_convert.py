@@ -37,7 +37,7 @@ assert(len(filepaths) > 0)
 # IBM XL Fortran's `error stop` doesn't allow for character codes. So change to just `error stop 1`.
 for filepath in sorted(filepaths):
     if args.undo:
-        result = run(["git", "checkout", filepath], capture_output=True, text=True)
+        result = run(["git", "checkout", filepath])
         if result.returncode != 0:
             print("ERROR: Changes to {} could not be undone.".format(filepath), file=sys.stderr)
             exit_code = 1
@@ -54,7 +54,7 @@ for filepath in sorted(filepaths):
 filepaths = [os.path.join("test", "test_checks.f90"), os.path.join("test", "test_units.f90"), os.path.join("test", "test_unittest.f90")]
 for filepath in sorted(filepaths):
     if args.undo:
-        result = run(["git", "checkout", filepath], capture_output=True, text=True)
+        result = run(["git", "checkout", filepath])
         if result.returncode != 0:
             print("ERROR: Changes to {} could not be undone.".format(filepath), file=sys.stderr)
             exit_code = 1
