@@ -19,7 +19,7 @@ check-fc:
 
 .PHONY: check-valgrind
 check-valgrind:
-	$(MAKE) test RUN='valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 --show-reachable=no ./'
+	$(MAKE) check RUN='valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 --show-reachable=no ./'
 
 # TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
 .PHONY: lint

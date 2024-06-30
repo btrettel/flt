@@ -35,6 +35,7 @@ Priorities:
         - metcalf_modern_2018 pp. 261--264
         - `write(formatted)`
         - `write(formatted)` and `read(formatted)` for namelists (`iotype == "namelist"`)? Then I could have units or uncertainty in a namelist!
+            - Need to standardize input units. For example: `m1s0` is simplified to `m`. Use this in the code printout too.
     - Remove dependency on nmllog so that this can be separated out more easily.
         - This will also help to compile genunits with lfortran, though it's not sufficient as `is_close` won't compile with lfortran due to `spacing`.
     - Break `write_module` into multiple modules to help organization and make testing parts easier.
