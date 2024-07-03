@@ -2,6 +2,49 @@
 
 Priorities:
 
+- grad.f90: gradient descent
+    - Turn off derivative calculation in backtracking line search by making the `dv` member variables have zero length.
+    - <https://www.tensorflow.org/guide/core/optimizers_core>
+        - Help plan interface to gradient descent
+    - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only.
+    - Works with units.f90? Might be more trouble than it's worth, but give it a shot.
+- genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
+    - `units.f90`
+        - Comparison operators. Must be same units on both sides.
+        - functions to return unit and format type to string with units or dimensions
+    - How to handle physical dimensions with AD?
+        - `diff(f, x)`: Different return types depending on `x` and `y`.
+        - Link `x` to the index of the `dv` member variable by making the only non-zero `dv` member variable the one to differentiate with respect to.
+    - Test with AD.
+    - Namelist group `template` which will read in a template and create versions of the procedure for all units and the proper interface block. Until Fortran has good generics, this is the only way to get a generic procedure.
+        - `&template file="file.f90" /`
+        - Examples:
+            - `is_close`
+            - `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
+- `make dist`
+    - compiles for more generic architecture (not `-march=native` in gfortran, etc.) for portability.
+    - static linking
+        - Intel: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/static-002.html>
+        - gfortran:
+            - <https://gcc.gnu.org/onlinedocs/gfortran/Link-Options.html>
+            - <https://fortran-lang.discourse.group/t/problems-with-build-of-static-exe/8228/5>
+            - <https://fortran-lang.discourse.group/t/makefile-errors-using-gfortran-static-option/3491>
+    - lists hashes
+- Build testing
+    - FreeBSD in QEMU
+        - <https://cyber.dabamos.de/programming/modernfortran/fortran-compilers.html>
+    - Windows in QEMU
+        - GNU Make
+            - <https://stackoverflow.com/a/73862277/1124489>
+                - Windows 10+: `winget install ezwinports.make`
+        - Jom
+            - <https://wiki.qt.io/Jom>
+        - <https://fortran-lang.org/learn/os_setup/install_gfortran/#windows>
+        - <https://gcc.gnu.org/wiki/GFortranBinaries#Windows>
+    - Mac OS
+
+Later:
+
 - f90lint:
     - No programs in source, no modules in app or test.
     - List longest subroutines
@@ -25,31 +68,24 @@ Priorities:
     - Do arrays passed into procedures maintain these index bounds?
     - For all array procedures, have tests with non-default array lower bounds to check if array bounds are preserved.
         - Make `unittest` subroutine similar to `assert_dimension` that takes two `class(*)` arrays of various sizes and fails if the bounds/dimensions don't match.
-- grad.f90: gradient descent
-    - Cubic line search, test if local minimum
-    - <https://www.tensorflow.org/guide/core/optimizers_core>
-        - Help plan interface to gradient descent
-    - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only. Make gradient descent include robust optimization by default, taking into account the uncertainty.
-- genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
+- `make install` to install genunits.
+- Option to disable automatic differentiation in Makefile for speed.
+- genunits
     - Derived-type I/O
         - metcalf_modern_2018 pp. 261--264
         - `write(formatted)`
         - `write(formatted)` and `read(formatted)` for namelists (`iotype == "namelist"`)? Then I could have units or uncertainty in a namelist!
             - Need to standardize input units. For example: `m1s0` is simplified to `m`. Use this in the code printout too.
+    - `same_unit` function which have same units for input and output: `abs`, `maxval`, `minval`, etc.
+        - `max` and `min` would be hard as they take an arbitrary number of arguments.
+    - `unitless` functions which have unitless input and output (like `sin`, `cos`, `log`, `exp`, `gamma`, etc.). Include possible `use` line in namelist group.
+    - `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
+    - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each unit)
+    - Add assertions to the generated module (if appropriate), and have the option to enable or disable assertions.
     - Remove dependency on nmllog so that this can be separated out more easily.
         - This will also help to compile genunits with lfortran, though it's not sufficient as `is_close` won't compile with lfortran due to `spacing`.
     - Break `write_module` into multiple modules to help organization and make testing parts easier.
     - `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
-    - Add `test_unit` to genunits_io.f90 to write to test file.
-    - As comments, print number of types and interfaces at the end of the generated file, along with genunits git revision information, and the namelist file used to generate the file.
-    - `units.f90`
-        - Comparison operators. Must be same units on both sides.
-        - Elementary functions which have same units for input and output.
-        - `custom` functions which have unitless input and output (like `sin`, `cos`, `log`, etc.). Include possible `use` line in namelist group.
-        - `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
-        - `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each unit)
-        - function to format type to string with units or dimensions
-        - Add assertions to the generated module (if appropriate), and have the option to enable or disable assertions.
     - Unit tests for all procedures.
     - Characterization test comparing against known valid `units.f90`.
     - Test exponentiation functions.
@@ -59,14 +95,9 @@ Priorities:
         - Type names which lead to good error messages are best. Example error messages:
             - gfortran: `Error: Cannot convert TYPE(unit_p10000_p00000_m10000) to TYPE(unit_p10000_p00000_p00000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
             - ifx: `error #6197: An assignment of different structure types is invalid.` (So ifx doesn't say what the types are.)
-    - How to handle physical dimensions with AD?
-        - `diff(f, x)`: Different return types depending on `x` and `y`.
-        - But how can I link `x` to the index of the `dv` member variable? I could try something like `diff(f, x, 1)` where `1` is the index.
-        - Alternatively, for `diff(f, x)`, since `x` doesn't actually correspond to the *numerical value* of `x`, `x` could be a variable with the same type and a value `x%v` which corresponds to the index to differentiate with respect to.
-        - I could make `x` a different type than whatever its physical dimensions would imply. This different type would be a differential version which could contain the index instead of the value.
-    - Test with AD.
+    - Add `test_unit` to genunits_io.f90 to write to test file.
+    - As comments, print number of types and interfaces at the end of the generated file, along with genunits git revision information, and the namelist file used to generate the file.
     - Test with arrays instead of scalars.
-    - Recursion to handle arbitrary numbers of exponents.
     - `real(...)` to convert `unitless` to `real(kind=WP)` for when an intrinsic or something else that expects a `real(kind=WP)` isn't available. Also: `int`.
     - Table with times for various compilers on the same computer, as a function of number of units generated:
         - Running genunits
@@ -77,19 +108,11 @@ Priorities:
         - Running test_real.f90 without units (otherwise identical, to show effect on run-time performance)
     - Compare error messages in different compilers for units.f90
         - If necessary, request that lfortran type error message be similar to gfortran to be as useful as possible for units.f90.
+        - Have a documentation section listing what various error messages shown by various compilers mean. Some of these error messages are not particularly clear and that harms debugging. Also note which compilers have more useful error messages for genunits.
     - units test with operations on 3 or more different units to make sure the output is correct
     - Check for spaces at the end of lines.
     - Lint the generated file units.f90.
-    - Namelist group `template` which will read in a template and create versions of the procedure for all units and the proper interface block. Until Fortran has good generics, this is the only way to get a generic procedure
-        - `&template file="file.f90" /`
-        - Example: `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
-    - Have a section listing what various error messages shown by various compilers mean. Some of these error messages are not particularly clear and that harms debugging. Also note which compilers have more useful error messages for genunits.
     - absolute vs. offset vs. relative units
-- `make install` to install genunits.
-- Option to disable automatic differentiation in Makefile for speed.
-
-Later:
-
 - add names to deeply nested `if`s and `do`s in unittest
 - Search for `TODO` and finish those tasks.
 - fmutate.f90:
@@ -152,13 +175,6 @@ Later:
 - compiler_tests.f90: Tests for intrinsics used in these libraries.
     - How can I identify all the intrinsics used here?
     - accuracy of important intrinsics
-- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
-    - Make ga.f90 use rngmod.f90.
-    - herrera_tackling_1998
-    - Have multiple outputs.
-        - `chromo%f`
-        - `chromo%f_set`
-        - `chromo%out(:)` (for non-objective function outputs that may be of interest)
 - debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
     - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
         - parker_monte_1997-1
@@ -287,7 +303,6 @@ Later:
         - Post on Fortran Discourse.
         - Create Fortran Wiki page on "Physical units" and list it there.
 - Bayesian inference Fortran module, to solve basic problems like the probabity of actually having breast cancer in Yudkowsky's "intyutive explanation" or whodunits. Use log probability or whatever is appropriate internally.
-- How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type?
 - Along side fmutate, make a simple test case reduction program for Fortran (freduce?). Just delete lines to reduce test cases.
     - <https://gcc.gnu.org/pipermail/fortran/2009-October/030302.html>
 - dataplot-like approach to ease adding tests (but use namelists instead of a single CSV file)
@@ -347,3 +362,11 @@ Later:
         - <https://gcc.gnu.org/onlinedocs/gfortran/NORM2.html>
     - <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.newton.html>
     - <https://people.sc.fsu.edu/~jburkardt/f_src/newton_rc/newton_rc.html>
+- How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type? So I need a thread-safe seed generator first.
+- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
+    - Make ga.f90 use rngmod.f90.
+    - herrera_tackling_1998
+    - Have multiple outputs.
+        - `chromo%f`
+        - `chromo%f_set`
+        - `chromo%out(:)` (for non-objective function outputs that may be of interest)
