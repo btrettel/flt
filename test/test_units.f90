@@ -30,7 +30,10 @@ type(volume)   :: vol
 call logger%open("units.nml")
 call tests%start_tests(logger)
 
-call tests%character_eq(unit(v), "m/s", "unit function")
+call tests%character_eq(unit(x), "m", "unit function (m)")
+call tests%character_eq(unit(t), "s", "unit function (s)")
+call tests%character_eq(unit(a), "m2", "unit function (m2)")
+call tests%character_eq(unit(vol), "m3", "unit function (m3)")
 
 x%v = 1.0_WP
 y%v = -1.0_WP

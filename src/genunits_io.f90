@@ -16,7 +16,7 @@ private
 public :: in_exponent_bounds, denominator_matches, &
             write_as_operators, write_md_operators, write_binary_operator, &
             write_unary_operator, &
-            write_unit_interfaces, write_unit_function, &
+            write_unit_function, &
             write_exponentiation_interfaces, write_exponentiation_function, &
             write_module
 
@@ -458,6 +458,7 @@ end subroutine generate_system
 ! output
 
 subroutine write_type(config, file_unit, i_unit, unit_system)
+    use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
     
     class(config_type), intent(in)     :: config
@@ -466,6 +467,10 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     
     integer         :: j_unit
     type(unit_type) :: trial_unit
+    logical         :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_type): file_unit must be open")
     
     write(unit=file_unit, fmt="(2a)") "type, public :: ", trim(unit_system%units(i_unit)%label())
     write(unit=file_unit, fmt="(2a)") "    ! unit: ", trim(unit_system%units(i_unit)%readable(unit_system))
@@ -520,11 +525,17 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
 end subroutine write_type
 
 subroutine write_as_operators(unit_system, file_unit, unit)
+    use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
     
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     type(unit_type), intent(in)        :: unit
+    
+    logical :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_as_operators): file_unit must be open")
     
     ! add
     call write_binary_operator(unit_system, file_unit, unit, unit, unit, "+")
@@ -534,6 +545,7 @@ subroutine write_as_operators(unit_system, file_unit, unit)
 end subroutine write_as_operators
 
 subroutine write_md_operators(unit_system, file_unit, unit_left, unit_right, n_interfaces)
+    use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
     
     type(unit_system_type), intent(in) :: unit_system
@@ -542,6 +554,10 @@ subroutine write_md_operators(unit_system, file_unit, unit_left, unit_right, n_i
     integer, intent(in out)            :: n_interfaces
     
     type(unit_type) :: unit_m, unit_d
+    logical         :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_md_operators): file_unit must be open")
     
     ! multiply
     unit_m = m_unit(unit_left, unit_right)
@@ -569,6 +585,10 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     
     character(len=1)              :: op_label
     character(len=:), allocatable :: binary_operator_procedure
+    logical                       :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_binary_operator): file_unit must be open")
     
     select case (op)
         case ("+")
@@ -617,6 +637,10 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
     
     character(len=1)              :: op_label
     character(len=:), allocatable :: unary_operator_procedure
+    logical                       :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_unary_operator): file_unit must be open")
     
     select case (op)
         case ("+")
@@ -645,44 +669,39 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
     write(unit=file_unit, fmt="(3a)") "end function ", unary_operator_procedure, new_line("a")
 end subroutine write_unary_operator
 
-subroutine write_unit_function(unit_system, file_unit, unit)
+subroutine write_unit_function(unit_system, file_unit)
+    use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
-    
-    type(unit_system_type), intent(in) :: unit_system
-    integer, intent(in)                :: file_unit
-    type(unit_type), intent(in)        :: unit
-    
-    character(len=:), allocatable :: unit_function
-    
-    unit_function = "unit_" // trim(unit%label())
-    
-    write(unit=file_unit, fmt="(3a)") "elemental function ", unit_function, "(arg)"
-    
-    write(unit=file_unit, fmt="(3a)") "    type(", trim(unit%label()), "), intent(in) :: arg"
-    
-    write(unit=file_unit, fmt="(2a)") "    character(len=32) :: ", unit_function
-    
-    write(unit=file_unit, fmt="(5a)") "    ", unit_function, ' = "', trim(unit%readable(unit_system)), '"'
-    
-    write(unit=file_unit, fmt="(3a)") "end function ", unit_function, new_line("a")
-end subroutine write_unit_function
-
-subroutine write_unit_interfaces(unit_system, file_unit)
-    use genunits_data, only: unit_system_type
     
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     
     integer :: i_unit
+    logical :: file_unit_open
     
-    write(unit=file_unit, fmt="(a)") "interface unit"
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_unit_function): file_unit must be open")
+    
+    write(unit=file_unit, fmt="(a)") "elemental function unit(arg)"
+    
+    write(unit=file_unit, fmt="(a)") "    class(*), intent(in) :: arg"
+    
+    write(unit=file_unit, fmt="(a)") "    character(len=32) :: unit"
+    
+    write(unit=file_unit, fmt="(a)") "    select type (arg)"
+    
     do i_unit = 1, size(unit_system%units) ! SERIAL
-        write(unit=file_unit, fmt="(2a)") "    module procedure unit_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(3a)") "    type is (", trim(unit_system%units(i_unit)%label()), ")"
+        write(unit=file_unit, fmt="(3a)") '        unit = "', trim(unit_system%units(i_unit)%readable(unit_system)), '"'
     end do
-    write(unit=file_unit, fmt="(2a)") "end interface unit", new_line("a")
-end subroutine write_unit_interfaces
+    
+    write(unit=file_unit, fmt="(a)") "end select"
+    
+    write(unit=file_unit, fmt="(a)") "end function unit", new_line("a")
+end subroutine write_unit_function
 
 subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
+    use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
     logical, intent(in)                :: use_sqrt, use_cbrt, use_square
@@ -691,6 +710,10 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
     
     integer         :: i_unit
     type(unit_type) :: trial_unit
+    logical         :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_exponentiation_interfaces): file_unit must be open")
     
     if (use_sqrt) then
         write(unit=file_unit, fmt="(a)") "interface sqrt"
@@ -733,6 +756,7 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
 end subroutine write_exponentiation_interfaces
 
 subroutine write_exponentiation_function(config, unit_system, file_unit, unit, op)
+    use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
     type(config_type), intent(in)      :: config
@@ -743,6 +767,10 @@ subroutine write_exponentiation_function(config, unit_system, file_unit, unit, o
     
     type(unit_type)               :: unit_result
     character(len=:), allocatable :: op_pre, op_post, exponentiation_function
+    logical                       :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_exponentiation_function): file_unit must be open")
     
     select case (op)
         case ("sqrt")
@@ -926,13 +954,14 @@ subroutine write_module(config, unit_system, file_unit, rc)
         call config%write_type(file_unit, i_unit, unit_system)
     end do
     
-    call write_unit_interfaces(unit_system, file_unit)
-    
     call write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
     
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
     
     n_interfaces = 0
+    
+    call write_unit_function(unit_system, file_unit)
+    n_interfaces = n_interfaces + 1
     
     do i_unit = 1, size(unit_system%units) ! SERIAL
         call write_as_operators(unit_system, file_unit, unit_system%units(i_unit))
@@ -943,9 +972,6 @@ subroutine write_module(config, unit_system, file_unit, rc)
             call write_unary_operator(unit_system, file_unit, unit_system%units(i_unit), "-")
             n_interfaces = n_interfaces + 2
         end if
-        
-        call write_unit_function(unit_system, file_unit, unit_system%units(i_unit))
-        n_interfaces = n_interfaces + 1
     end do
     
     do i_unit = 1, size(unit_system%units) ! SERIAL
