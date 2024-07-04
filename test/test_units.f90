@@ -12,7 +12,7 @@ use units, only: length   => unit_p10000_p00000_p00000, &
                  velocity => unit_p10000_p00000_m10000, &
                  area     => unit_p20000_p00000_p00000, &
                  volume   => unit_p30000_p00000_p00000, &
-                 sqrt, cbrt, square
+                 unit, sqrt, cbrt, square
 use prec, only: WP
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -29,6 +29,8 @@ type(volume)   :: vol
 
 call logger%open("units.nml")
 call tests%start_tests(logger)
+
+call tests%character_eq(unit(v), "m/s", "unit function")
 
 x%v = 1.0_WP
 y%v = -1.0_WP

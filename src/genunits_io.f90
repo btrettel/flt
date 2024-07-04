@@ -16,6 +16,7 @@ private
 public :: in_exponent_bounds, denominator_matches, &
             write_as_operators, write_md_operators, write_binary_operator, &
             write_unary_operator, &
+            write_unit_interfaces, write_unit_function, &
             write_exponentiation_interfaces, write_exponentiation_function, &
             write_module
 
@@ -644,6 +645,43 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
     write(unit=file_unit, fmt="(3a)") "end function ", unary_operator_procedure, new_line("a")
 end subroutine write_unary_operator
 
+subroutine write_unit_function(unit_system, file_unit, unit)
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit
+    
+    character(len=:), allocatable :: unit_function
+    
+    unit_function = "unit_" // trim(unit%label())
+    
+    write(unit=file_unit, fmt="(3a)") "elemental function ", unit_function, "(arg)"
+    
+    write(unit=file_unit, fmt="(3a)") "    type(", trim(unit%label()), "), intent(in) :: arg"
+    
+    write(unit=file_unit, fmt="(2a)") "    character(len=32) :: ", unit_function
+    
+    write(unit=file_unit, fmt="(5a)") "    ", unit_function, ' = "', trim(unit%readable(unit_system)), '"'
+    
+    write(unit=file_unit, fmt="(3a)") "end function ", unit_function, new_line("a")
+end subroutine write_unit_function
+
+subroutine write_unit_interfaces(unit_system, file_unit)
+    use genunits_data, only: unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    
+    integer :: i_unit
+    
+    write(unit=file_unit, fmt="(a)") "interface unit"
+    do i_unit = 1, size(unit_system%units) ! SERIAL
+        write(unit=file_unit, fmt="(2a)") "    module procedure unit_", trim(unit_system%units(i_unit)%label())
+    end do
+    write(unit=file_unit, fmt="(2a)") "end interface unit", new_line("a")
+end subroutine write_unit_interfaces
+
 subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
@@ -803,16 +841,18 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end do
     end if
     
+    write(unit=file_unit, fmt="(a)") "public :: unit"
+    
     if (use_sqrt) then
-        write(unit=file_unit, fmt="(2a)") "public :: sqrt"
+        write(unit=file_unit, fmt="(a)") "public :: sqrt"
     end if
     
     if (use_cbrt) then
-        write(unit=file_unit, fmt="(2a)") "public :: cbrt"
+        write(unit=file_unit, fmt="(a)") "public :: cbrt"
     end if
     
     if (use_square) then
-        write(unit=file_unit, fmt="(2a)") "public :: square"
+        write(unit=file_unit, fmt="(a)") "public :: square"
     end if
     
     if (use_sqrt .or. use_cbrt .or. use_square) then
@@ -886,6 +926,8 @@ subroutine write_module(config, unit_system, file_unit, rc)
         call config%write_type(file_unit, i_unit, unit_system)
     end do
     
+    call write_unit_interfaces(unit_system, file_unit)
+    
     call write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
     
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
@@ -901,6 +943,9 @@ subroutine write_module(config, unit_system, file_unit, rc)
             call write_unary_operator(unit_system, file_unit, unit_system%units(i_unit), "-")
             n_interfaces = n_interfaces + 2
         end if
+        
+        call write_unit_function(unit_system, file_unit, unit_system%units(i_unit))
+        n_interfaces = n_interfaces + 1
     end do
     
     do i_unit = 1, size(unit_system%units) ! SERIAL
