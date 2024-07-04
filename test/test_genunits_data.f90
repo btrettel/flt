@@ -44,7 +44,27 @@ unit1%e(2) = 1.5_WP
 unit1%e(3) = -2.0_WP
 
 call tests%character_eq(unit1%label(), "unit_p10000_p15000_m20000", "unit%label")
-call tests%character_eq(unit1%readable(unit_system), "kg.m3/2.s-2", "unit%readable")
+call tests%character_eq(unit1%readable(unit_system), "kg.m(3/2)/s2", "unit%readable (1)")
+
+unit1%e(1) = 0.0_WP
+unit1%e(2) = 1.0_WP
+unit1%e(3) = -1.0_WP
+call tests%character_eq(unit1%readable(unit_system), "m/s", "unit%readable (2)")
+
+unit1%e(1) = 1.0_WP
+unit1%e(2) = 0.0_WP
+unit1%e(3) = -1.0_WP
+call tests%character_eq(unit1%readable(unit_system), "kg/s", "unit%readable (3)")
+
+unit1%e(1) = 0.0_WP
+unit1%e(2) = 0.0_WP
+unit1%e(3) = 0.0_WP
+call tests%character_eq(unit1%readable(unit_system), "1", "unit%readable (3)")
+
+unit1%e(1) = 2.0_WP
+unit1%e(2) = 0.0_WP
+unit1%e(3) = 1.0_WP
+call tests%character_eq(unit1%readable(unit_system), "kg2.s", "unit%readable (3)")
 
 ! `is_in`
 
@@ -138,7 +158,7 @@ subroutine test_rational_string(tests)
     call tests%character_eq(string, "1", "rational_string, 1")
     
     string = rational_string(1, 2)
-    call tests%character_eq(string, "1/2", "rational_string, 1/2")
+    call tests%character_eq(string, "(1/2)", "rational_string, 1/2")
 end subroutine test_rational_string
 
 end program test_genunits_data

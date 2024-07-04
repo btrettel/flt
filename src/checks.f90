@@ -20,6 +20,11 @@ public :: is_close, all_close
 public :: assert
 public :: assert_dimension
 
+interface all_close
+    module procedure all_close_rank_1
+    module procedure all_close_rank_1_rank_0
+end interface all_close
+
 interface assert_dimension
     ! LATER: nvfortran doesn't seem to properly support "assumed-rank" arrays, so I made 3 different subroutines.
     ! nvfortran will compile, but the run-time behavior will be wrong.
@@ -81,13 +86,13 @@ elemental function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     end if
 end function is_close
 
-pure function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
+pure function all_close_rank_1(input_real_1, input_real_2, rel_tol, abs_tol)
     ! like <https://numpy.org/doc/stable/reference/generated/numpy.allclose.html>
     
     real(kind=WP), intent(in)           :: input_real_1(:), input_real_2(:)
     real(kind=WP), intent(in), optional :: rel_tol, abs_tol
     
-    logical :: all_close
+    logical :: all_close_rank_1
     
     integer :: i, n_match
     
@@ -107,7 +112,7 @@ pure function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
     
     call assert_dimension(input_real_1, input_real_2)
     
-    all_close = .false.
+    all_close_rank_1 = .false.
     n_match = 0
     ! TODO: Convert this to use a reduction when that's possible in all compilers.
     do i = lbound(input_real_1, dim=1), ubound(input_real_1, dim=1) ! SERIAL
@@ -117,11 +122,49 @@ pure function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
     end do
     
     if (n_match == size(input_real_1)) then
-        all_close = .true.
+        all_close_rank_1 = .true.
     else
-        all_close = .false.
+        all_close_rank_1 = .false.
     end if
-end function all_close
+end function all_close_rank_1
+
+pure function all_close_rank_1_rank_0(input_real_1, input_real_2, rel_tol, abs_tol)
+    real(kind=WP), intent(in)           :: input_real_1(:), input_real_2
+    real(kind=WP), intent(in), optional :: rel_tol, abs_tol
+    
+    logical :: all_close_rank_1_rank_0
+    
+    integer :: i, n_match
+    
+    real(kind=WP) :: rel_tol_, abs_tol_
+    
+    if (present(rel_tol)) then
+        rel_tol_ = rel_tol
+    else
+        rel_tol_ = 0.0_WP
+    end if
+    
+    if (present(abs_tol)) then
+        abs_tol_ = abs_tol
+    else
+        abs_tol_ = abs_tolerance(maxval(abs(input_real_1)), abs(input_real_2))
+    end if
+    
+    all_close_rank_1_rank_0 = .false.
+    n_match = 0
+    ! TODO: Convert this to use a reduction when that's possible in all compilers.
+    do i = lbound(input_real_1, dim=1), ubound(input_real_1, dim=1) ! SERIAL
+        if (is_close(input_real_1(i), input_real_2, rel_tol=rel_tol_, abs_tol=abs_tol_)) then
+            n_match = n_match + 1
+        end if
+    end do
+    
+    if (n_match == size(input_real_1)) then
+        all_close_rank_1_rank_0 = .true.
+    else
+        all_close_rank_1_rank_0 = .false.
+    end if
+end function all_close_rank_1_rank_0
 
 pure subroutine assert(condition, message)
     use build, only: DEBUG

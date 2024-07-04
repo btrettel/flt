@@ -64,7 +64,7 @@ pure function label(unit)
 end function label
 
 pure function readable(unit, unit_system)
-    use checks, only: assert
+    use checks, only: assert, is_close, all_close
     use prec, only: CL
     
     ! I'm not using `/` to eliminate negative unit exponents.
@@ -76,31 +76,56 @@ pure function readable(unit, unit_system)
     class(unit_system_type), intent(in) :: unit_system
     
     character(len=CL) :: readable
-    character(len=CL) :: exponent_string
     
-    integer :: i_base_unit, numerator, denominator, rc
+    character(len=CL) :: exponent_string
+    character(len=1)  :: operator_string
+    integer           :: i_base_unit, numerator, denominator, rc
+    logical           :: previous_skipped
     
     call assert(size(unit%e) == unit_system%n_base_units, "genunits_data (readable): inconsistent number of base units")
     
+    if (all_close(unit%e, 0.0_WP)) then
+        readable = "1"
+        return
+    end if
+    
     readable = ""
+    previous_skipped = .false.
     do i_base_unit = 1, unit_system%n_base_units ! SERIAL
-        call real_to_rational(unit%e(i_base_unit), numerator, denominator, rc)
-        
-        call assert(rc == 0, "genunits_data (readable): real_to_rational failed")
-        
-        exponent_string = rational_string(numerator, denominator)
-        
-        if (trim(exponent_string) == "1") then
-            exponent_string = ""
+        if (.not. is_close(unit%e(i_base_unit), 0.0_WP)) then
+            call real_to_rational(unit%e(i_base_unit), numerator, denominator, rc)
+            
+            call assert(rc == 0, "genunits_data (readable): real_to_rational failed")
+            
+            exponent_string = rational_string(numerator, denominator)
+            
+            if (exponent_string(1:1) == "-") then
+                exponent_string = exponent_string(2:)
+                operator_string = "/"
+            else
+                if (previous_skipped) then
+                    operator_string = ""
+                else
+                    operator_string = "."
+                end if
+            end if
+            
+            if (trim(exponent_string) == "1") then
+                exponent_string = ""
+            end if
+            
+            if (i_base_unit > 1) then
+                write(unit=readable, fmt="(2a)") trim(readable), trim(operator_string)
+            end if
+            
+            write(unit=readable, fmt="(3a)") trim(readable), trim(unit_system%base_units(i_base_unit)), trim(exponent_string)
+            
+            call assert(len(trim(adjustl(readable))) < CL, "genunits_data (readable): overflow, too much to write in the string")
+            
+            previous_skipped = .false.
+        else
+            previous_skipped = .true.
         end if
-        
-        if (i_base_unit > 1) then
-            write(unit=readable, fmt="(2a)") trim(readable), "."
-        end if
-        
-        write(unit=readable, fmt="(3a)") trim(readable), trim(unit_system%base_units(i_base_unit)), trim(exponent_string)
-        
-        call assert(len(trim(adjustl(readable))) < CL, "genunits_data (readable): overflow, too much to write in the string")
     end do
     readable = adjustl(readable)
 end function readable
@@ -144,7 +169,7 @@ pure function rational_string(numerator, denominator)
     if (denominator == 1) then
         write(unit=rational_string, fmt="(i0)") numerator
     else
-        write(unit=rational_string, fmt="(i0, a, i0)") numerator, "/", denominator
+        write(unit=rational_string, fmt="(a, i0, a, i0, a)") "(", numerator, "/", denominator, ")"
     end if
     
     call assert(denominator > 0, "genunits_data (rational_string): denominator is zero or negative")

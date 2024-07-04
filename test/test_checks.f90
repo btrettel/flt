@@ -121,8 +121,10 @@ call tests%logical_false(is_close_array(1), "is_close, elemental (3, index 1)")
 call tests%logical_true(is_close_array(2), "is_close, elemental (3, index 2)")
 
 ! TODO: More tests for `all_close`.
-call tests%logical_true(all_close([1.0_WP, 2.0_WP], [1.0_WP, 2.0_WP]), "all_close, .true.")
-call tests%logical_false(all_close([1.0_WP, 2.0_WP], [-1.0_WP, 2.0_WP]), "all_close, .false.")
+call tests%logical_true(all_close([1.0_WP, 2.0_WP], [1.0_WP, 2.0_WP]), "all_close (rank 1), .true.")
+call tests%logical_false(all_close([1.0_WP, 2.0_WP], [-1.0_WP, 2.0_WP]), "all_close (rank 1), .false.")
+call tests%logical_true(all_close([1.0_WP, 1.0_WP], 1.0_WP), "all_close (rank 1, rank 0), .true.")
+call tests%logical_false(all_close([1.0_WP, 2.0_WP], 0.0_WP), "all_close (rank 1, rank 0), .false.")
 
 ! `assert(.true.)` does not terminate the program (no direct test performed)
 call assert(.true., "assert(.true.) test failed?")

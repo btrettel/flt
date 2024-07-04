@@ -467,7 +467,7 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     type(unit_type) :: trial_unit
     
     write(unit=file_unit, fmt="(2a)") "type, public :: ", trim(unit_system%units(i_unit)%label())
-    write(unit=file_unit, fmt="(2a)") "    ! ", trim(unit_system%units(i_unit)%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! unit: ", trim(unit_system%units(i_unit)%readable(unit_system))
     write(unit=file_unit, fmt="(3a)") "    ", config%type_definition, " :: v"
     write(unit=file_unit, fmt="(a)") "contains"
     
