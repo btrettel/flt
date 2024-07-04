@@ -13,7 +13,7 @@ use units, only: length   => unit_p10000_p00000_p00000, &
                  area     => unit_p20000_p00000_p00000, &
                  volume   => unit_p30000_p00000_p00000, &
                  unit, sqrt, cbrt, square
-use prec, only: WP
+use prec, only: WP, CL
 use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
@@ -27,6 +27,8 @@ type(velocity) :: v
 type(area)     :: a
 type(volume)   :: vol
 
+character(len=CL) :: quantity_string
+
 call logger%open("units.nml")
 call tests%start_tests(logger)
 
@@ -34,6 +36,10 @@ call tests%character_eq(unit(x), "m", "unit function (m)")
 call tests%character_eq(unit(t), "s", "unit function (s)")
 call tests%character_eq(unit(a), "m2", "unit function (m2)")
 call tests%character_eq(unit(vol), "m3", "unit function (m3)")
+
+vol%v = 12.345_WP
+write(unit=quantity_string, fmt="(dt'f'(6, 3))") vol
+call tests%character_eq(quantity_string, "12.345 m3", "derived type write")
 
 x%v = 1.0_WP
 y%v = -1.0_WP

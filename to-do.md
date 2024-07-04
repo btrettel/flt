@@ -11,7 +11,6 @@ Priorities:
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
     - `units.f90`
         - Comparison operators. Must be same units on both sides.
-        - DTIO to format type to string with units or dimensions
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
         - Link `x` to the index of the `dv` member variable by making the only non-zero `dv` member variable the one to differentiate with respect to.

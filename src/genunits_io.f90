@@ -16,7 +16,7 @@ private
 public :: in_exponent_bounds, denominator_matches, &
             write_as_operators, write_md_operators, write_binary_operator, &
             write_unary_operator, &
-            write_unit_function, &
+            write_unit_function, write_unit_wf, &
             write_exponentiation_interfaces, write_exponentiation_function, &
             write_module
 
@@ -521,6 +521,9 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
         end if
     end do
     
+    write(unit=file_unit, fmt="(2a)") "    procedure :: wf_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(2a)") "    generic   :: write(formatted) => wf_", trim(unit_system%units(i_unit)%label())
+    
     write(unit=file_unit, fmt="(3a)") "end type ", trim(unit_system%units(i_unit)%label()), new_line("a")
 end subroutine write_type
 
@@ -658,8 +661,8 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", unary_operator_procedure, "(arg)"
     
-    write(unit=file_unit, fmt="(2a)") "    ! argument: ", trim(unit%readable(unit_system))
-    write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! argument unit: ", trim(unit%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! result unit: ", trim(unit%readable(unit_system))
     
     write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: arg"
     write(unit=file_unit, fmt="(4a)") "    type(", trim(unit%label()), ") :: ", unary_operator_procedure
@@ -671,7 +674,7 @@ end subroutine write_unary_operator
 
 subroutine write_unit_function(unit_system, file_unit)
     use checks, only: assert
-    use genunits_data, only: unit_type, unit_system_type
+    use genunits_data, only: unit_system_type
     
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
@@ -699,6 +702,45 @@ subroutine write_unit_function(unit_system, file_unit)
     
     write(unit=file_unit, fmt="(a)") "end function unit", new_line("a")
 end subroutine write_unit_function
+
+subroutine write_unit_wf(unit_system, file_unit, unit)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit
+    
+    character(len=:), allocatable :: wf_procedure
+    logical                       :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_unit_wf): file_unit must be open")
+    
+    wf_procedure = "wf_" // trim(unit%label())
+    
+    write(unit=file_unit, fmt="(3a)") "subroutine ", wf_procedure, "(dtv, unit, iotype, vlist, iostat, iomsg)"
+    
+    write(unit=file_unit, fmt="(2a)") "    ! unit: ", trim(unit%readable(unit_system))
+    
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: dtv"
+    write(unit=file_unit, fmt="(a)") "    integer, intent(in) :: unit"
+    write(unit=file_unit, fmt="(a)") "    character(len=*), intent(in) :: iotype"
+    write(unit=file_unit, fmt="(a)") "    integer, intent(in) :: vlist(:)"
+    write(unit=file_unit, fmt="(a)") "    integer, intent(out) :: iostat"
+    write(unit=file_unit, fmt="(a)") "    character(len=*), intent(in out) :: iomsg"
+    write(unit=file_unit, fmt="(a)") "    character(len=16) :: pfmt"
+    write(unit=file_unit, fmt="(a)") '    if (iotype == "LISTDIRECTED" .or. iotype == "DTg0") then'
+    write(unit=file_unit, fmt="(a)") '        pfmt = "(g0, a)"'
+    write(unit=file_unit, fmt="(a)") "    else"
+    write(unit=file_unit, fmt="(a)") '        write(pfmt, "(2a, i0, a, i0, a)") "(", iotype(3:), vlist(1), ".", vlist(2), ", a)"'
+    write(unit=file_unit, fmt="(a)") "    end if"
+    
+    write(unit=file_unit, fmt="(3a)") '    write(unit, fmt=trim(pfmt), iostat=iostat, iomsg=iomsg) dtv%v, " ', &
+                                        trim(unit%readable(unit_system)), '"'
+    
+    write(unit=file_unit, fmt="(3a)") "end subroutine ", wf_procedure, new_line("a")
+end subroutine write_unit_wf
 
 subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
     use checks, only: assert
@@ -964,6 +1006,9 @@ subroutine write_module(config, unit_system, file_unit, rc)
     n_interfaces = n_interfaces + 1
     
     do i_unit = 1, size(unit_system%units) ! SERIAL
+        call write_unit_wf(unit_system, file_unit, unit_system%units(i_unit))
+        n_interfaces = n_interfaces + 1
+        
         call write_as_operators(unit_system, file_unit, unit_system%units(i_unit))
         n_interfaces = n_interfaces + 2
         
