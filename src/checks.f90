@@ -109,7 +109,8 @@ pure function all_close(input_real_1, input_real_2, rel_tol, abs_tol)
     
     all_close = .false.
     n_match = 0
-    do concurrent (i = lbound(input_real_1, dim=1):ubound(input_real_1, dim=1))
+    ! TODO: Convert this to use a reduction when that's possible in all compilers.
+    do i = lbound(input_real_1, dim=1), ubound(input_real_1, dim=1) ! SERIAL
         if (is_close(input_real_1(i), input_real_2(i), rel_tol=rel_tol_, abs_tol=abs_tol_)) then
             n_match = n_match + 1
         end if

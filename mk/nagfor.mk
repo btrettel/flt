@@ -1,6 +1,8 @@
 FFLAGS = -Error=Any_Warning -f2018 -info -quiet -I src -w=ques
 DFLAGS = -g
-RFLAGS = -O2 -openmp -target=native
+RFLAGS = -O2 -openmp
+AFLAGS = 
+NFLAGS = -target=native
 
 # `-I src`: Required because unlike other compilers, nagfor won't look for `include`d files in the same directory as the source code calling it.
 

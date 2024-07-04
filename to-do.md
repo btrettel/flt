@@ -23,6 +23,8 @@ Priorities:
             - `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
 - `make dist`
     - compiles for more generic architecture (not `-march=native` in gfortran, etc.) for portability.
+        - Intel: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/arch.html>
+        - gfortran: <https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html>
     - static linking
         - Intel: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/static-002.html>
         - gfortran:

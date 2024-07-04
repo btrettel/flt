@@ -10,3 +10,4 @@ MISSED   = missed.txt
 CLEAN    = *.nml *.mod src$(DIR_SEP)*.$(OBJEXT) $(MISSED) src$(DIR_SEP)revision.f90 src$(DIR_SEP)units.f90 *.gcda *.gcno *.lst test_* *.dbg src$(DIR_SEP)*.gcda src$(DIR_SEP)*.gcno src$(DIR_SEP)*.lst src$(DIR_SEP)*.optrpt *.optrpt *.log *.opt.yaml $(COV) html-cov$(DIR_SEP) genunits$(BINEXT)
 CMP      = cmp
 PYTHON   = python3
+ARCH     = 

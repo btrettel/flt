@@ -3,8 +3,11 @@
 
 FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays -standard-semantics
 DFLAGS = -O0 -g -traceback -debug full -check all,nouninit -fpe0
-RFLAGS = -O2 -qopt-report -fiopenmp -xHost
+RFLAGS = -O2 -qopt-report -fiopenmp
+AFLAGS = 
+NFLAGS = -xHost
 
 # TODO: Ask question about `do concurrent` on Intel Fortran forum. What's the right compiler flag? `-parallel` isn't for ifx contrary to what was said there. Update this afterward.
 
 # Removed: `-diag-error-limit=1`
+# `-xHost`: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/xhost-qxhost.html>

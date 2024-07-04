@@ -63,10 +63,14 @@ include mk/nagfor.mk
 #$(error Invalid FC: $(FC))
 endif
 
+ifeq ($(ARCH),native)
+AFLAGS = $(NFLAGS)
+endif
+
 ifeq ($(BUILD),debug)
-FFLAGS += $(DFLAGS)
+FFLAGS += $(DFLAGS) $(AFLAGS)
 else ifeq ($(BUILD),release)
-FFLAGS += $(RFLAGS)
+FFLAGS += $(RFLAGS) $(AFLAGS)
 else
 $(error Set BUILD to either debug or release. BUILD=$(BUILD))
 endif

@@ -25,10 +25,14 @@ BUILD = debug
 !error Invalid FC: $(FC)
 !endif
 
+!if "$(ARCH)" == "native"
+AFLAGS = $(NFLAGS)
+!endif
+
 !if "$(BUILD)" == "debug"
-FFLAGS = $(FFLAGS) $(DFLAGS)
+FFLAGS = $(FFLAGS) $(DFLAGS) $(AFLAGS)
 !elseif "$(BUILD)" == "release"
-FFLAGS = $(FFLAGS) $(RFLAGS)
+FFLAGS = $(FFLAGS) $(RFLAGS) $(AFLAGS)
 !else
 !error Set BUILD to either debug or release. BUILD=$(BUILD)
 !endif

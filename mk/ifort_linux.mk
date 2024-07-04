@@ -3,6 +3,8 @@
 
 FFLAGS = -diag-disable=10448 -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand f18 -standard-semantics
 DFLAGS = -O0 -g -traceback -debug full -check all -fpe0
-RFLAGS = -O2 -qopenmp -parallel -xHost
+RFLAGS = -O2 -qopenmp -parallel
+AFLAGS = 
+NFLAGS = -xHost
 
 # Removed: `-diag-error-limit=1`

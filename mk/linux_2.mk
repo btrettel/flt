@@ -3,7 +3,7 @@
 .PHONY: check-fc
 check-fc:
 	$(MAKE) lint
-	$(MAKE) check-valgrind # gfortran
+	$(MAKE) check-valgrind
 	$(MAKE) clean
 	$(MAKE) FC=ifx
 	$(MAKE) clean
@@ -35,21 +35,21 @@ html-cov/index.html: $(TESTNML)
 coverage: html-cov/index.html
 
 # Most of these won't compile due to gaps in lfortran, but some will.
+#$(MAKE) FC=lfortran src/autodiff.o
+#$(MAKE) FC=lfortran src/checks.o
+#$(MAKE) FC=lfortran src/genunits_data.o
+#$(MAKE) FC=lfortran src/genunits_io.o
+#$(MAKE) FC=lfortran src/nmllog.o
+#$(MAKE) FC=lfortran src/port.o
+#$(MAKE) FC=lfortran src/purerng.o
+#$(MAKE) FC=lfortran src/timer.o
+#$(MAKE) FC=lfortran src/unittest.o
+#$(MAKE) FC=lfortran genunits
 .PHONY: lfortran
 lfortran:
-	#$(MAKE) FC=lfortran src/autodiff.o
-	#$(MAKE) FC=lfortran src/checks.o
 	$(MAKE) FC=lfortran src/debug.o
-	#$(MAKE) FC=lfortran src/genunits_data.o
-	#$(MAKE) FC=lfortran src/genunits_io.o
-	#$(MAKE) FC=lfortran src/nmllog.o
 	$(MAKE) FC=lfortran src/prec.o
-	#$(MAKE) FC=lfortran src/port.o
-	#$(MAKE) FC=lfortran src/purerng.o
 	$(MAKE) FC=lfortran src/release.o
-	#$(MAKE) FC=lfortran src/timer.o
-	#$(MAKE) FC=lfortran src/unittest.o
-	#$(MAKE) FC=lfortran genunits
 
 # Try `make xlf` on OpenSUSE.
 .PHONY: xlf

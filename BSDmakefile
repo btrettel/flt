@@ -52,10 +52,14 @@ BUILD = debug
 #.error Invalid FC: $(FC)
 .endif
 
+.if $(ARCH) == native
+AFLAGS = $(NFLAGS)
+.endif
+
 .if $(BUILD) == debug
-FFLAGS += $(DFLAGS)
+FFLAGS += $(DFLAGS) $(AFLAGS)
 .elif $(BUILD) == release
-FFLAGS += $(RFLAGS)
+FFLAGS += $(RFLAGS) $(AFLAGS)
 .else
 .error Set BUILD to either debug or release. BUILD=$(BUILD)
 .endif
