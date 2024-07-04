@@ -11,9 +11,9 @@ use prec, only: WP
 implicit none
 private
 
-public :: m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
+public :: m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit, real_to_rational
 
-character(len=*), parameter :: UNIT_PREFIX = "unit"
+character(len=*), parameter :: UNIT_PREFIX    = "unit"
 integer, public, parameter  :: MAX_BASE_UNITS = 10, &
                                MAX_LABEL_LEN  = 63, &
                                BASE_UNIT_LEN  = 10, &
@@ -86,6 +86,34 @@ pure function readable(unit, unit_system)
     end do
     readable = adjustl(readable)
 end function readable
+
+pure subroutine real_to_rational(x, numerator, denominator, rc)
+    use checks, only: is_close, assert
+    
+    real(kind=WP), intent(in) :: x
+    integer, intent(out)      :: numerator, denominator, rc
+    
+    integer, parameter :: MAX_ITERATIONS = 10
+    
+    denominator = 0
+    rc          = 0
+    do ! SERIAL
+        denominator = denominator + 1
+        
+        numerator = nint(x * real(denominator, WP))
+        
+        if (is_close(x, real(numerator, WP) / real(denominator, WP))) then
+            exit
+        end if
+        
+        if (denominator >= MAX_ITERATIONS) then
+            rc = 1
+            exit
+        end if
+    end do
+    
+    call assert(denominator > 0, "genunits_data (real_to_rational): denominator is zero or negative")
+end subroutine real_to_rational
 
 pure function is_in(unit, units)
     use checks, only: assert, all_close

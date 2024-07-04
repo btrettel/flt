@@ -92,7 +92,37 @@ call tests%real_eq(unit_out%e(1), 2.0_WP, "square_unit, index 1")
 call tests%real_eq(unit_out%e(2), 3.0_WP, "square_unit, index 2")
 call tests%real_eq(unit_out%e(3), -4.0_WP, "square_unit, index 3")
 
+call test_real_to_rational(tests)
+
 call tests%end_tests()
 call logger%close()
+
+contains
+
+subroutine test_real_to_rational(tests)
+    use genunits_data, only: real_to_rational
+    use prec, only: PI
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    real(kind=WP) :: x
+    integer       :: numerator, denominator, rc
+    
+    x = 1.0_WP
+    call real_to_rational(x, numerator, denominator, rc)
+    call tests%integer_eq(numerator, 1, "real_to_rational, 1.0, numerator")
+    call tests%integer_eq(denominator, 1, "real_to_rational, 1.0, denominator")
+    call tests%integer_eq(rc, 0, "real_to_rational, 1.0, rc")
+    
+    x = 1.5_WP
+    call real_to_rational(x, numerator, denominator, rc)
+    call tests%integer_eq(numerator, 3, "real_to_rational, 1.5, numerator")
+    call tests%integer_eq(denominator, 2, "real_to_rational, 1.5, denominator")
+    call tests%integer_eq(rc, 0, "real_to_rational, 1.5, rc")
+    
+    x = PI
+    call real_to_rational(x, numerator, denominator, rc)
+    call tests%integer_eq(rc, 1, "real_to_rational, PI, rc")
+end subroutine test_real_to_rational
 
 end program test_genunits_data
