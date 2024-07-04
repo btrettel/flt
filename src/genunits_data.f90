@@ -80,7 +80,7 @@ pure function readable(unit, unit_system)
     character(len=CL) :: exponent_string
     character(len=1)  :: operator_string
     integer           :: i_base_unit, numerator, denominator, rc
-    logical           :: previous_skipped
+    logical           :: anything_printed_yet
     
     call assert(size(unit%e) == unit_system%n_base_units, "genunits_data (readable): inconsistent number of base units")
     
@@ -90,7 +90,7 @@ pure function readable(unit, unit_system)
     end if
     
     readable = ""
-    previous_skipped = .false.
+    anything_printed_yet = .false.
     do i_base_unit = 1, unit_system%n_base_units ! SERIAL
         if (.not. is_close(unit%e(i_base_unit), 0.0_WP)) then
             call real_to_rational(unit%e(i_base_unit), numerator, denominator, rc)
@@ -103,18 +103,14 @@ pure function readable(unit, unit_system)
                 exponent_string = exponent_string(2:)
                 operator_string = "/"
             else
-                if (previous_skipped) then
-                    operator_string = ""
-                else
-                    operator_string = "."
-                end if
+                operator_string = "."
             end if
             
             if (trim(exponent_string) == "1") then
                 exponent_string = ""
             end if
             
-            if (i_base_unit > 1) then
+            if (anything_printed_yet) then
                 write(unit=readable, fmt="(2a)") trim(readable), trim(operator_string)
             end if
             
@@ -122,9 +118,7 @@ pure function readable(unit, unit_system)
             
             call assert(len(trim(adjustl(readable))) < CL, "genunits_data (readable): overflow, too much to write in the string")
             
-            previous_skipped = .false.
-        else
-            previous_skipped = .true.
+            anything_printed_yet = .true.
         end if
     end do
     readable = adjustl(readable)

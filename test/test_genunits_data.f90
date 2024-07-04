@@ -64,7 +64,17 @@ call tests%character_eq(unit1%readable(unit_system), "1", "unit%readable (3)")
 unit1%e(1) = 2.0_WP
 unit1%e(2) = 0.0_WP
 unit1%e(3) = 1.0_WP
-call tests%character_eq(unit1%readable(unit_system), "kg2.s", "unit%readable (3)")
+call tests%character_eq(unit1%readable(unit_system), "kg2.s", "unit%readable (4)")
+
+unit1%e(1) = 2.0_WP
+unit1%e(2) = 0.0_WP
+unit1%e(3) = -1.0_WP
+call tests%character_eq(unit1%readable(unit_system), "kg2/s", "unit%readable (5)")
+
+unit1%e(1) = 1.0_WP
+unit1%e(2) = 0.0_WP
+unit1%e(3) = 0.0_WP
+call tests%character_eq(unit1%readable(unit_system), "kg", "unit%readable (6)")
 
 ! `is_in`
 
