@@ -11,7 +11,7 @@ use prec, only: WP
 implicit none
 private
 
-public :: m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit, real_to_rational
+public :: m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit, real_to_rational, rational_string
 
 character(len=*), parameter :: UNIT_PREFIX    = "unit"
 integer, public, parameter  :: MAX_BASE_UNITS = 10, &
@@ -67,21 +67,39 @@ pure function readable(unit, unit_system)
     use checks, only: assert
     use prec, only: CL
     
+    ! I'm not using `/` to eliminate negative unit exponents.
+    ! Reason: Units like `kg.m3/2.s-2` seem more clear than `kg.m3/2/s2`.
+    ! Unfortunately, UCUM assumes all exponents are integers:
+    ! <https://ucum.org/ucum>: > The exponent is an integer number
+    
     class(unit_type), intent(in)        :: unit
     class(unit_system_type), intent(in) :: unit_system
     
     character(len=CL) :: readable
+    character(len=CL) :: exponent_string
     
-    integer          :: i_base_unit
-    character(len=1) :: exponent_len_string
+    integer :: i_base_unit, numerator, denominator, rc
     
     call assert(size(unit%e) == unit_system%n_base_units, "genunits_data (readable): inconsistent number of base units")
     
     readable = ""
-    write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN - 1
     do i_base_unit = 1, unit_system%n_base_units ! SERIAL
-        write(unit=readable, fmt="(4a, f0." // exponent_len_string // ")") trim(readable), " ", &
-                                                    trim(unit_system%base_units(i_base_unit)), "^", unit%e(i_base_unit)
+        call real_to_rational(unit%e(i_base_unit), numerator, denominator, rc)
+        
+        call assert(rc == 0, "genunits_data (readable): real_to_rational failed")
+        
+        exponent_string = rational_string(numerator, denominator)
+        
+        if (trim(exponent_string) == "1") then
+            exponent_string = ""
+        end if
+        
+        if (i_base_unit > 1) then
+            write(unit=readable, fmt="(2a)") trim(readable), "."
+        end if
+        
+        write(unit=readable, fmt="(3a)") trim(readable), trim(unit_system%base_units(i_base_unit)), trim(exponent_string)
+        
         call assert(len(trim(adjustl(readable))) < CL, "genunits_data (readable): overflow, too much to write in the string")
     end do
     readable = adjustl(readable)
@@ -93,7 +111,7 @@ pure subroutine real_to_rational(x, numerator, denominator, rc)
     real(kind=WP), intent(in) :: x
     integer, intent(out)      :: numerator, denominator, rc
     
-    integer, parameter :: MAX_ITERATIONS = 10
+    integer, parameter :: MAX_ITERATIONS = 64
     
     denominator = 0
     rc          = 0
@@ -114,6 +132,23 @@ pure subroutine real_to_rational(x, numerator, denominator, rc)
     
     call assert(denominator > 0, "genunits_data (real_to_rational): denominator is zero or negative")
 end subroutine real_to_rational
+
+pure function rational_string(numerator, denominator)
+    use checks, only: assert
+    use prec, only: CL
+    
+    integer, intent(in) :: numerator, denominator
+    
+    character(len=CL) :: rational_string
+    
+    if (denominator == 1) then
+        write(unit=rational_string, fmt="(i0)") numerator
+    else
+        write(unit=rational_string, fmt="(i0, a, i0)") numerator, "/", denominator
+    end if
+    
+    call assert(denominator > 0, "genunits_data (rational_string): denominator is zero or negative")
+end function rational_string
 
 pure function is_in(unit, units)
     use checks, only: assert, all_close

@@ -44,7 +44,7 @@ unit1%e(2) = 1.5_WP
 unit1%e(3) = -2.0_WP
 
 call tests%character_eq(unit1%label(), "unit_p10000_p15000_m20000", "unit%label")
-call tests%character_eq(unit1%readable(unit_system), "kg^1.0000 m^1.5000 s^-2.0000", "unit%readable")
+call tests%character_eq(unit1%readable(unit_system), "kg.m3/2.s-2", "unit%readable")
 
 ! `is_in`
 
@@ -93,6 +93,7 @@ call tests%real_eq(unit_out%e(2), 3.0_WP, "square_unit, index 2")
 call tests%real_eq(unit_out%e(3), -4.0_WP, "square_unit, index 3")
 
 call test_real_to_rational(tests)
+call test_rational_string(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -124,5 +125,20 @@ subroutine test_real_to_rational(tests)
     call real_to_rational(x, numerator, denominator, rc)
     call tests%integer_eq(rc, 1, "real_to_rational, PI, rc")
 end subroutine test_real_to_rational
+
+subroutine test_rational_string(tests)
+    use genunits_data, only: rational_string
+    use prec, only: CL
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    character(len=CL) :: string
+    
+    string = rational_string(1, 1)
+    call tests%character_eq(string, "1", "rational_string, 1")
+    
+    string = rational_string(1, 2)
+    call tests%character_eq(string, "1/2", "rational_string, 1/2")
+end subroutine test_rational_string
 
 end program test_genunits_data

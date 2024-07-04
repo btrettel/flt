@@ -174,6 +174,8 @@ subroutine test_concurrent(tests)
     do i_rng = 1, N_RNGS ! SERIAL
         call tests%real_gt(harvest(i_rng), 0.0_WP, "test_concurrent, greater than zero")
     end do
+    ! TODO: Seems that this can fail if called at about the start of the hour due to the random seed initialization.
+    ! Investigate later. Might be fixed by proper "jump"/"splitting" setup for the RNG.
 end subroutine test_concurrent
 
 end program test_purerng
