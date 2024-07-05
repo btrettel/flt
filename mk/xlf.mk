@@ -18,3 +18,7 @@ NFLAGS = -qarch=qauto
 # Some complaints IBM XL Fortran has that I don't think are valid:
 # > "app/genunits.f90", line 23.30: 1518-378 (L) The presence of dummy argument value corresponding to this actual argument might differ from the presence specified by the Fortran 2008 standard.
 # Based on my reading of [this IBM forum post](https://community.ibm.com/community/user/power/blogs/archive-user/2013/10/18/using-qxlf2008-to-conform-to-fortran-2008-standard-on-dummy-argument-presence-checking), my usage here is okay.
+
+# TODO: static linking
+# <https://www.ibm.com/docs/en/openxl-fortran-aix/17.1.2?topic=programs-dynamic-static-linking>
+# > You can use `-b` linker options on the compiler command line to create statically linked object files:

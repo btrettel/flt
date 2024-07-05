@@ -10,3 +10,5 @@ NFLAGS =
 # TODO: `-stdpar=gpu` (or `-stdpar`) for GPUs
 # TODO: `-gpu=ccnative`
 # TODO: `-gpu=debug`
+
+# <https://docs.nvidia.com/hpc-sdk//compilers/hpc-compilers-user-guide/index.html#deploy-app-linux>

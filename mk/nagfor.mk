@@ -1,6 +1,6 @@
 FFLAGS = -Error=Any_Warning -f2018 -info -quiet -I src -w=ques
 DFLAGS = -g
-RFLAGS = -O2 -openmp
+RFLAGS = -O2 -openmp -Bstatic
 AFLAGS = 
 NFLAGS = -target=native
 

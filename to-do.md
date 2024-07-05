@@ -19,16 +19,9 @@ Priorities:
             - `is_close`
             - `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
 - `make dist`
-    - compiles for more generic architecture (not `-march=native` in gfortran, etc.) for portability.
-        - Intel: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/arch.html>
-        - gfortran: <https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html>
-    - static linking
-        - Intel: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/static-002.html>
-        - gfortran:
-            - <https://gcc.gnu.org/onlinedocs/gfortran/Link-Options.html>
-            - <https://fortran-lang.discourse.group/t/problems-with-build-of-static-exe/8228/5>
-            - <https://fortran-lang.discourse.group/t/makefile-errors-using-gfortran-static-option/3491>
+    - create tgz and/or zip file
     - lists hashes
+- Add `PFLAGS` to enable or disable parallelization for debug and release. OpenMP and other libraries can't be statically linked, so they might lead to portability issues if they aren't used but are dynamically linked and aren't available.
 - Build testing
     - FreeBSD in QEMU
         - <https://cyber.dabamos.de/programming/modernfortran/fortran-compilers.html>
@@ -161,6 +154,7 @@ Later:
         - moving parentheses (common mistake)
     - When complete, add here: <https://fortranwiki.org/fortran/show/Mutation+testing+frameworks>
 - `purerng`:
+    - RNG splitting
     - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
     - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
         - lecuyer_implementing_1991
