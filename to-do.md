@@ -9,8 +9,6 @@ Priorities:
     - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only.
     - Works with units.f90? Might be more trouble than it's worth, but give it a shot.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
-    - `units.f90`
-        - Comparison operators. Must be same units on both sides.
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
         - Link `x` to the index of the `dv` member variable by making the only non-zero `dv` member variable the one to differentiate with respect to.

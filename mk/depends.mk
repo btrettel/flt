@@ -119,6 +119,9 @@ test_units_fail_1$(BINEXT): src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJ
 test_units_fail_2$(BINEXT): src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJEXT) test$(DIR_SEP)test_units_fail_2.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJEXT) test$(DIR_SEP)test_units_fail_2.f90
 
+test_units_fail_3$(BINEXT): src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJEXT) test$(DIR_SEP)test_units_fail_3.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)units.$(OBJEXT) test$(DIR_SEP)test_units_fail_3.f90
+
 test_unittest$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) src$(DIR_SEP)revision.f90 test$(DIR_SEP)test_unittest.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_unittest.f90
 

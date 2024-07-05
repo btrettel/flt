@@ -85,11 +85,25 @@ x%v = 1.0_WP
 y   = -x
 call tests%real_eq(y%v, -1.0_WP, "units value, unary negative")
 
+x%v = 0.0_WP
+y%v = 1.0_WP
+call tests%logical_true(x < y, "units, <, true")
+call tests%logical_false(y < x, "units, <, false")
+call tests%logical_true(x <= y, "units, <=, true")
+call tests%logical_false(y <= x, "units, <=, false")
+call tests%logical_true(y > x, "units, >, true")
+call tests%logical_false(x > y, "units, >, false")
+call tests%logical_true(y >= x, "units, >=, true")
+call tests%logical_false(x >= y, "units, >=, false")
+
 ! IBM XLF comment start
+! It appears that recursive Make causes the right compiler to be used here!
 call tests%exit_code_ne("make test_units_fail_1", 0, &
                             "compile-time error for physical dimension mismatch, 1", "test_units_fail_1.txt")
 call tests%exit_code_ne("make test_units_fail_2", 0, &
                             "compile-time error for physical dimension mismatch, 2", "test_units_fail_2.txt")
+call tests%exit_code_ne("make test_units_fail_3", 0, &
+                            "compile-time error for physical dimension mismatch, 3", "test_units_fail_3.txt")
 ! IBM XLF comment end
 
 ! If this compiles, then I can use constructors nicely.

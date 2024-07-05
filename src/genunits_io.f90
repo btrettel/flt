@@ -14,7 +14,7 @@ implicit none
 private
 
 public :: in_exponent_bounds, denominator_matches, &
-            write_as_operators, write_md_operators, write_binary_operator, &
+            write_as_operators, write_conditional_operators, write_md_operators, write_binary_operator, &
             write_unary_operator, &
             write_unit_function, write_unit_wf, &
             write_exponentiation_interfaces, write_exponentiation_function, &
@@ -487,6 +487,26 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     
+    write(unit=file_unit, fmt="(4a)") "    procedure, private :: lt_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(<) => lt_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    
+    write(unit=file_unit, fmt="(4a)") "    procedure, private :: le_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(<=) => le_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    
+    write(unit=file_unit, fmt="(4a)") "    procedure, private :: gt_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(>) => gt_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    
+    write(unit=file_unit, fmt="(4a)") "    procedure, private :: ge_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(>=) => ge_", &
+        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    
     if (config%unary) then
         write(unit=file_unit, fmt="(2a)") "    procedure, private :: a_", trim(unit_system%units(i_unit)%label())
         write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(+) => a_", trim(unit_system%units(i_unit)%label())
@@ -547,6 +567,25 @@ subroutine write_as_operators(unit_system, file_unit, unit)
     call write_binary_operator(unit_system, file_unit, unit, unit, unit, "-")
 end subroutine write_as_operators
 
+subroutine write_conditional_operators(unit_system, file_unit, unit)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit
+    
+    logical :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_conditional_operators): file_unit must be open")
+    
+    call write_binary_operator(unit_system, file_unit, unit, unit, unit, "<")
+    call write_binary_operator(unit_system, file_unit, unit, unit, unit, "<=")
+    call write_binary_operator(unit_system, file_unit, unit, unit, unit, ">")
+    call write_binary_operator(unit_system, file_unit, unit, unit, unit, ">=")
+end subroutine write_conditional_operators
+
 subroutine write_md_operators(unit_system, file_unit, unit_left, unit_right, n_interfaces)
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
@@ -586,9 +625,9 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     type(unit_type), intent(in)        :: unit_left, unit_right, unit_result
     character(len=*), intent(in)       :: op
     
-    character(len=1)              :: op_label
+    character(len=2)              :: op_label
     character(len=:), allocatable :: binary_operator_procedure
-    logical                       :: file_unit_open
+    logical                       :: file_unit_open, conditional
     
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_binary_operator): file_unit must be open")
@@ -596,19 +635,36 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     select case (op)
         case ("+")
             op_label = "a"
+            conditional = .false.
         case ("-")
             op_label = "s"
+            conditional = .false.
         case ("*")
             op_label = "m"
+            conditional = .false.
         case ("/")
             op_label = "d"
+            conditional = .false.
 !        case ("**")
 !            op_label = "e"
+!            conditional = .false.
+        case ("<")
+            op_label = "lt"
+            conditional = .true.
+        case ("<=")
+            op_label = "le"
+            conditional = .true.
+        case (">")
+            op_label = "gt"
+            conditional = .true.
+        case (">=")
+            op_label = "ge"
+            conditional = .true.
         case default
             error stop "write_binary_operator: invalid op"
     end select
     
-    binary_operator_procedure = op_label // "_" // trim(unit_left%label()) // "_" &
+    binary_operator_procedure = trim(op_label) // "_" // trim(unit_left%label()) // "_" &
                                     // trim(unit_right%label())
     
     call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_binary_operator): " // &
@@ -618,13 +674,20 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
     
     write(unit=file_unit, fmt="(2a)") "    ! left unit: ", trim(unit_left%readable(unit_system))
     write(unit=file_unit, fmt="(2a)") "    ! right unit: ", trim(unit_right%readable(unit_system))
-    write(unit=file_unit, fmt="(2a)") "    ! result unit: ", trim(unit_result%readable(unit_system))
+    if (.not. conditional) then
+        write(unit=file_unit, fmt="(2a)") "    ! result unit: ", trim(unit_result%readable(unit_system))
+    end if
     
     write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_left%label()), "), intent(in) :: left"
     write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_right%label()), "), intent(in) :: right"
-    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", binary_operator_procedure
     
-    write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left%v ", op, " right%v"
+    if (conditional) then
+        write(unit=file_unit, fmt="(2a)") "    logical :: ", binary_operator_procedure
+        write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, " = left%v ", op, " right%v"
+    else
+        write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", binary_operator_procedure
+        write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left%v ", op, " right%v"
+    end if
     
     write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
 end subroutine write_binary_operator
@@ -1011,6 +1074,9 @@ subroutine write_module(config, unit_system, file_unit, rc)
         
         call write_as_operators(unit_system, file_unit, unit_system%units(i_unit))
         n_interfaces = n_interfaces + 2
+        
+        call write_conditional_operators(unit_system, file_unit, unit_system%units(i_unit))
+        n_interfaces = n_interfaces + 4
         
         if (config%unary) then
             call write_unary_operator(unit_system, file_unit, unit_system%units(i_unit), "+")
