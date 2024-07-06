@@ -856,6 +856,17 @@ subroutine write_unit_rf(unit_system, file_unit, unit)
     write(unit=file_unit, fmt="(a)") "    if (iostat /= 0) then"
     write(unit=file_unit, fmt="(a)") "        return"
     write(unit=file_unit, fmt="(a)") "    end if"
+    write(unit=file_unit, fmt="(a)") "    if (len(trim(unit_char)) == 0) then"
+    write(unit=file_unit, fmt="(a)") "        iostat = 1"
+    write(unit=file_unit, fmt="(a)") '        iomsg = "Unit expected, none appeared: " // trim(full_input)'
+    write(unit=file_unit, fmt="(a)") "        return"
+    write(unit=file_unit, fmt="(a)") "    end if"
+    write(unit=file_unit, fmt="(a)") '    if (trim(unit_char) /= "' // trim(unit%readable(unit_system)) // '") then'
+    write(unit=file_unit, fmt="(a)") "        iostat = 2"
+    write(unit=file_unit, fmt="(a)") '        iomsg = "Unit mismatch: ' // trim(unit%readable(unit_system)) // &
+                                        ' expected, " // trim(unit_char) // " appeared."'
+    write(unit=file_unit, fmt="(a)") "        return"
+    write(unit=file_unit, fmt="(a)") "    end if"
     write(unit=file_unit, fmt="(a)") '    if ((iotype /= "DT") .and. (iotype /= "NAMELIST")) then'
     write(unit=file_unit, fmt="(a)") "        iostat = 3"
     write(unit=file_unit, fmt="(a)") "        iomsg = 'Only iotype=" // '"' // "DT" // '"' // " and iotype=" // '"' // &

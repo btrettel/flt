@@ -116,7 +116,7 @@ subroutine test_dtio(tests)
     type(test_results_type), intent(in out) :: tests
     
     type(volume) :: vol
-    integer      :: nml_unit
+    integer      :: nml_unit, rc_nml
     
     namelist /dtio/ vol
     
@@ -137,10 +137,13 @@ subroutine test_dtio(tests)
     ! Make sure that the test doesn't just look at the old value.
     vol%v = 0.0_WP
     
+    rc_nml = 0
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote")
-    read(unit=nml_unit, nml=dtio)
+    read(unit=nml_unit, nml=dtio, iostat=rc_nml)
     close(nml_unit)
     
+    !print *, rc_nml
+    !call tests%logical_true((rc_nml == IOSTAT_END) .or. (rc_nml == IOSTAT_EOR) .or. (rc_nml == 0), "units namelist read, rc")
     call tests%real_eq(vol%v, 12.345_WP, "units namelist write and read cycle")
 end subroutine test_dtio
 
