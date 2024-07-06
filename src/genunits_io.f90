@@ -793,13 +793,20 @@ subroutine write_unit_wf(unit_system, file_unit, unit)
     write(unit=file_unit, fmt="(a)") "    integer, intent(out) :: iostat"
     write(unit=file_unit, fmt="(a)") "    character(len=*), intent(in out) :: iomsg"
     write(unit=file_unit, fmt="(a)") "    character(len=16) :: pfmt"
-    write(unit=file_unit, fmt="(a)") '    if (iotype == "LISTDIRECTED" .or. iotype == "DTg0") then'
-    write(unit=file_unit, fmt="(a)") '        pfmt = "(g0, a)"'
+    write(unit=file_unit, fmt="(a)") "    character(len=1)  :: space"
+    write(unit=file_unit, fmt="(a)") '    if (iotype == "LISTDIRECTED" .or. iotype == "DTg0" .or. iotype == "NAMELIST") then'
+    write(unit=file_unit, fmt="(a)") '        pfmt = "(g0, a, a)"'
     write(unit=file_unit, fmt="(a)") "    else"
-    write(unit=file_unit, fmt="(a)") '        write(pfmt, "(2a, i0, a, i0, a)") "(", iotype(3:), vlist(1), ".", vlist(2), ", a)"'
+    write(unit=file_unit, fmt="(a, a)") '        write(pfmt, "(2a, i0, a, i0, a)") ', &
+                                            '"(", iotype(3:), vlist(1), ".", vlist(2), ", a, a)"'
+    write(unit=file_unit, fmt="(a)") "    end if"
+    write(unit=file_unit, fmt="(a)") '    if (iotype == "NAMELIST") then'
+    write(unit=file_unit, fmt="(a)") '        space = "_"'
+    write(unit=file_unit, fmt="(a)") "    else"
+    write(unit=file_unit, fmt="(a)") '        space = " "'
     write(unit=file_unit, fmt="(a)") "    end if"
     
-    write(unit=file_unit, fmt="(3a)") '    write(unit, fmt=trim(pfmt), iostat=iostat, iomsg=iomsg) dtv%v, " ', &
+    write(unit=file_unit, fmt="(3a)") '    write(unit, fmt=trim(pfmt), iostat=iostat, iomsg=iomsg) dtv%v, space, "', &
                                         trim(unit%readable(unit_system)), '"'
     
     write(unit=file_unit, fmt="(3a)") "end subroutine ", wf_procedure, new_line("a")

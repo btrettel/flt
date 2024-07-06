@@ -2,6 +2,21 @@
 
 Priorities:
 
+- Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).
+- `make install` to install everything in `app`.
+    - `DESTDIR` and `PREFIX` variables
+    - <https://nullprogram.com/blog/2017/08/20/>
+    - <https://www.gnu.org/software/make/manual/html_node/Directory-Variables.html>
+    - <https://www.gnu.org/software/make/manual/html_node/DESTDIR.html>
+- `make dist`
+    - create tgz and/or zip file of `DESTDIR`
+    - lists hashes
+- Add `PFLAGS` to enable or disable parallelization for debug and release. OpenMP and other libraries can't be statically linked, so they might lead to portability issues if they aren't used but are dynamically linked and aren't available.
+- nmllog.f90
+    - `check_bounds(x, rc, lower, upper)`
+        - Both `lower` and `upper` are optional, but at least one of the two must be `present`.
+        - `integer` version can optionally use `<=`, etc.
+- Try on updated nagfor for derived type input and the remainder.
 - grad.f90: gradient descent
     - Turn off derivative calculation in backtracking line search by making the `dv` member variables have zero length.
     - <https://www.tensorflow.org/guide/core/optimizers_core>
@@ -9,6 +24,11 @@ Priorities:
     - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only.
     - Works with units.f90? Might be more trouble than it's worth, but give it a shot.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
+    - Derived type output
+        - Different namelist output which has an underscore instead of a space.
+    - Derived type input
+        - Different namelist input which has an underscore instead of a space.
+        - Allow for prefixes like `m`, `c`, `k` on each unit?
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
         - Link `x` to the index of the `dv` member variable by making the only non-zero `dv` member variable the one to differentiate with respect to.
@@ -18,10 +38,6 @@ Priorities:
         - Examples:
             - `is_close`
             - `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
-- `make dist`
-    - create tgz and/or zip file
-    - lists hashes
-- Add `PFLAGS` to enable or disable parallelization for debug and release. OpenMP and other libraries can't be statically linked, so they might lead to portability issues if they aren't used but are dynamically linked and aren't available.
 - Build testing
     - FreeBSD in QEMU
         - <https://cyber.dabamos.de/programming/modernfortran/fortran-compilers.html>
@@ -60,7 +76,6 @@ Later:
     - Do arrays passed into procedures maintain these index bounds?
     - For all array procedures, have tests with non-default array lower bounds to check if array bounds are preserved.
         - Make `unittest` subroutine similar to `assert_dimension` that takes two `class(*)` arrays of various sizes and fails if the bounds/dimensions don't match.
-- `make install` to install genunits.
 - Option to disable automatic differentiation in Makefile for speed.
 - genunits
     - Derived-type I/O

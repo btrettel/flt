@@ -22,13 +22,21 @@ subroutine meter_wf(dtv, unit, iotype, vlist, iostat, iomsg)
     character(len=*), intent(in out) :: iomsg
     
     character(len=16) :: pfmt
+    character(len=1)  :: space
     
     if (iotype == "LISTDIRECTED" .or. iotype == "DTg0") then
-        pfmt = "(g0, a)"
+        pfmt = "(g0, a, a)"
     else
-        write(pfmt, "(2a, i0, a, i0, a)") "(", iotype(3:), vlist(1), ".", vlist(2), ", a)"
+        write(pfmt, "(2a, i0, a, i0, a)") "(", iotype(3:), vlist(1), ".", vlist(2), ", a, a)"
     end if
-    write(unit, fmt=trim(pfmt), iostat=iostat, iomsg=iomsg) dtv%v, " m"
+    
+    if (iotype == "NAMELIST") then
+        space = "_"
+    else
+        space = " "
+    end if
+    
+    write(unit, fmt=trim(pfmt), iostat=iostat, iomsg=iomsg) dtv%v, space, "m"
 end subroutine meter_wf
 
 subroutine meter_rf(dtv, unit, iotype, vlist, iostat, iomsg)
@@ -69,7 +77,7 @@ subroutine meter_rf(dtv, unit, iotype, vlist, iostat, iomsg)
     
     if ((iotype /= "DT") .and. (iotype /= "NAMELIST")) then
         iostat = 3
-        iomsg = 'Only iotype="DT" is implemented for read. iotype=' // iotype
+        iomsg = 'Only iotype="DT" and iotype="NAMELIST" is implemented for read. iotype=' // iotype
         return
     end if
     
