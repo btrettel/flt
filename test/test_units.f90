@@ -122,9 +122,10 @@ subroutine test_dtio(tests)
     
     character(len=*), parameter :: TEST_FILENAME = "dtio_test.nml"
     
+    vol%v = 12.345_WP
+    
     ! TODO: Commented out for nvfortran due to a bug in nvfortran's derived type I/O for internal variables.
     if (index(compiler_version(), "nvfortran") == 0) then
-        vol%v = 12.345_WP
         write(unit=quantity_string, fmt="(dt'f'(6, 3))") vol
         call tests%character_eq(quantity_string, "12.345 m3", "derived type write")
     end if
@@ -133,14 +134,14 @@ subroutine test_dtio(tests)
     write(unit=nml_unit, nml=dtio)
     close(nml_unit)
     
-!    ! Make sure that the test doesn't just look at the old value.
-!    vol%v = 0.0_WP
+    ! Make sure that the test doesn't just look at the old value.
+    vol%v = 0.0_WP
     
-!    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote")
-!    read(unit=nml_unit, nml=dtio)
-!    close(nml_unit)
+    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote")
+    read(unit=nml_unit, nml=dtio)
+    close(nml_unit)
     
-!    print *, vol
+    call tests%real_eq(vol%v, 12.345_WP, "units namelist write and read cycle")
 end subroutine test_dtio
 
 end program test_units

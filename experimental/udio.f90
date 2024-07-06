@@ -58,26 +58,36 @@ subroutine meter_rf(dtv, unit, iotype, vlist, iostat, iomsg)
     ! Spaces are namelist "value separators" in the standard, so the separators should be something else.
     underscore_index = index(full_input, "_")
     
+    if (underscore_index == 0) then
+        ! If the unit isn't present, read the number anyway.
+        underscore_index = len(trim(full_input)) + 1
+        unit_char = ""
+    else
+        unit_char = full_input(underscore_index+1:)
+    end if
+    
     value_char = full_input(1:underscore_index-1)
     read(unit=value_char, fmt=*, iostat=iostat) dtv%v
     
-    unit_char = full_input(underscore_index+1:)
-    
-    if (len(trim(unit_char)) == 0) then
-        iostat = 1
-        iomsg = "Unit expected, none appeared: " // trim(full_input)
+    if (iostat /= 0) then
         return
     end if
     
-    if (trim(unit_char) /= "m") then
-        iostat = 2
-        iomsg = "Unit mismatch: m expected, " // trim(unit_char) // " appeared."
-        return
-    end if
+!    if (len(trim(unit_char)) == 0) then
+!        iostat = 1
+!        iomsg = "Unit expected, none appeared: " // trim(full_input)
+!        return
+!    end if
+    
+!    if (trim(unit_char) /= "m") then
+!        iostat = 2
+!        iomsg = "Unit mismatch: m expected, " // trim(unit_char) // " appeared."
+!        return
+!    end if
     
     if ((iotype /= "DT") .and. (iotype /= "NAMELIST")) then
         iostat = 3
-        iomsg = 'Only iotype="DT" and iotype="NAMELIST" is implemented for read. iotype=' // iotype
+        iomsg = 'Only iotype="DT" and iotype="NAMELIST" are implemented for read. iotype=' // iotype
         return
     end if
     
@@ -136,6 +146,8 @@ mchar = "32.154 s"
 read(mchar, fmt="(dt)", iostat=rc, iomsg=rmsg) x
 write(*, fmt="(dt'f'(6,3))") x
 write(*, *) rc, trim(rmsg)
+
+print *, "Reading namelist..."
 
 ! Namelist `read`s work on nvfortran. But `iostat` and `iomsg` seem to be broken.
 rmsg= ""

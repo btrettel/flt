@@ -572,7 +572,7 @@ syntax:
     - INTERFACE
     - INTRINSIC
     - MODULE
-    #- NAMELIST
+    #- NAMELIST # Capitalized NAMELIST can appear in derived-type I/O code
     - NONE
     - NULLIFY
     - ONLY

@@ -16,7 +16,6 @@ Priorities:
     - `check_bounds(x, rc, lower, upper)`
         - Both `lower` and `upper` are optional, but at least one of the two must be `present`.
         - `integer` version can optionally use `<=`, etc.
-- Try on updated nagfor for derived type input and the remainder.
 - grad.f90: gradient descent
     - Turn off derivative calculation in backtracking line search by making the `dv` member variables have zero length.
     - <https://www.tensorflow.org/guide/core/optimizers_core>

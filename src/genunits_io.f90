@@ -16,7 +16,7 @@ private
 public :: in_exponent_bounds, denominator_matches, &
             write_as_operators, write_conditional_operators, write_md_operators, write_binary_operator, &
             write_unary_operator, &
-            write_unit_function, write_unit_wf, &
+            write_unit_function, write_unit_wf, write_unit_rf, &
             write_exponentiation_interfaces, write_exponentiation_function, &
             write_module
 
@@ -543,6 +543,8 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     
     write(unit=file_unit, fmt="(2a)") "    procedure :: wf_", trim(unit_system%units(i_unit)%label())
     write(unit=file_unit, fmt="(2a)") "    generic   :: write(formatted) => wf_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(2a)") "    procedure :: rf_", trim(unit_system%units(i_unit)%label())
+    write(unit=file_unit, fmt="(2a)") "    generic   :: read(formatted) => rf_", trim(unit_system%units(i_unit)%label())
     
     write(unit=file_unit, fmt="(3a)") "end type ", trim(unit_system%units(i_unit)%label()), new_line("a")
 end subroutine write_type
@@ -786,7 +788,7 @@ subroutine write_unit_wf(unit_system, file_unit, unit)
     
     write(unit=file_unit, fmt="(2a)") "    ! unit: ", trim(unit%readable(unit_system))
     
-    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: dtv"
+    write(unit=file_unit, fmt="(3a)") "    class(", trim(unit%label()), "), intent(in) :: dtv"
     write(unit=file_unit, fmt="(a)") "    integer, intent(in) :: unit"
     write(unit=file_unit, fmt="(a)") "    character(len=*), intent(in) :: iotype"
     write(unit=file_unit, fmt="(a)") "    integer, intent(in) :: vlist(:)"
@@ -811,6 +813,62 @@ subroutine write_unit_wf(unit_system, file_unit, unit)
     
     write(unit=file_unit, fmt="(3a)") "end subroutine ", wf_procedure, new_line("a")
 end subroutine write_unit_wf
+
+subroutine write_unit_rf(unit_system, file_unit, unit)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    type(unit_type), intent(in)        :: unit
+    
+    character(len=:), allocatable :: rf_procedure
+    logical                       :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_unit_rf): file_unit must be open")
+    
+    rf_procedure = "rf_" // trim(unit%label())
+    
+    write(unit=file_unit, fmt="(3a)") "subroutine ", rf_procedure, "(dtv, unit, iotype, vlist, iostat, iomsg)"
+    
+    write(unit=file_unit, fmt="(2a)") "    ! unit: ", trim(unit%readable(unit_system))
+    
+    write(unit=file_unit, fmt="(3a)") "    class(", trim(unit%label()), "), intent(in out) :: dtv"
+    write(unit=file_unit, fmt="(a)") "    integer, intent(in) :: unit"
+    write(unit=file_unit, fmt="(a)") "    character(len=*), intent(in) :: iotype"
+    write(unit=file_unit, fmt="(a)") "    integer, intent(in) :: vlist(:)"
+    write(unit=file_unit, fmt="(a)") "    integer, intent(out) :: iostat"
+    write(unit=file_unit, fmt="(a)") "    character(len=*), intent(in out) :: iomsg"
+    write(unit=file_unit, fmt="(a)") "    character(len=128) :: full_input, value_char, unit_char"
+    write(unit=file_unit, fmt="(a)") "    integer            :: underscore_index"
+    write(unit=file_unit, fmt="(a)") '    read(unit, fmt="(a)", iostat=iostat, iomsg=iomsg) full_input'
+    write(unit=file_unit, fmt="(a)") "    full_input = adjustl(full_input)"
+    write(unit=file_unit, fmt="(a)") '    underscore_index = index(full_input, "_")'
+    write(unit=file_unit, fmt="(a)") "    if (underscore_index == 0) then"
+    write(unit=file_unit, fmt="(a)") "        underscore_index = len(trim(full_input)) + 1"
+    write(unit=file_unit, fmt="(a)") '        unit_char = ""'
+    write(unit=file_unit, fmt="(a)") "    else"
+    write(unit=file_unit, fmt="(a)") "        unit_char = full_input(underscore_index+1:)"
+    write(unit=file_unit, fmt="(a)") "    end if"
+    write(unit=file_unit, fmt="(a)") "    value_char = full_input(1:underscore_index-1)"
+    write(unit=file_unit, fmt="(a)") "    read(unit=value_char, fmt=*, iostat=iostat, iomsg=iomsg) dtv%v"
+    write(unit=file_unit, fmt="(a)") "    if (iostat /= 0) then"
+    write(unit=file_unit, fmt="(a)") "        return"
+    write(unit=file_unit, fmt="(a)") "    end if"
+    write(unit=file_unit, fmt="(a)") '    if ((iotype /= "DT") .and. (iotype /= "NAMELIST")) then'
+    write(unit=file_unit, fmt="(a)") "        iostat = 3"
+    write(unit=file_unit, fmt="(a)") "        iomsg = 'Only iotype=" // '"' // "DT" // '"' // " and iotype=" // '"' // &
+                                        "NAMELIST" // '"' // " are implemented for read. iotype=' // iotype"
+    write(unit=file_unit, fmt="(a)") "        return"
+    write(unit=file_unit, fmt="(a)") "    end if"
+    write(unit=file_unit, fmt="(a)") "    if (size(vlist) > 0) then"
+    write(unit=file_unit, fmt="(a)") "        iostat = 4"
+    write(unit=file_unit, fmt="(a)") '        iomsg = "vlist must be not specified for read."'
+    write(unit=file_unit, fmt="(a)") "        return"
+    write(unit=file_unit, fmt="(a)") "    end if"
+    write(unit=file_unit, fmt="(3a)") "end subroutine ", rf_procedure, new_line("a")
+end subroutine write_unit_rf
 
 subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
     use checks, only: assert
@@ -1077,7 +1135,8 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     do i_unit = 1, size(unit_system%units) ! SERIAL
         call write_unit_wf(unit_system, file_unit, unit_system%units(i_unit))
-        n_interfaces = n_interfaces + 1
+        call write_unit_rf(unit_system, file_unit, unit_system%units(i_unit))
+        n_interfaces = n_interfaces + 2
         
         call write_as_operators(unit_system, file_unit, unit_system%units(i_unit))
         n_interfaces = n_interfaces + 2
