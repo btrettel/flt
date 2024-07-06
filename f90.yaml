@@ -151,6 +151,7 @@ regexp-rules:
     message: Use new syntax TYPE(kind)
     regexp: ({types})\*(\w+)
     replacement: \1(\2)
+    active: false
 
   one-space-before-comment:
     message: At least one space before comment
@@ -362,7 +363,7 @@ regexp-rules:
     regexp: \b({elf90-f-prohibited-procedures})\s*\(
     active: true
   
-  redundant-procedure:
+  specific-type-procedure:
     message: This procedure is for a specific type. Instead use the generic form of the procedure. See Metcalf pp. 472-474.
     regexp: \b({redundant-procedures})\s*\(
     active: true

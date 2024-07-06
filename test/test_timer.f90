@@ -13,7 +13,7 @@ use unittest, only: test_results_type
 use timer, only: timer_type, timeit, sleep
 implicit none
 
-type(log_type)          :: logger
+type(log_type), target  :: logger
 type(test_results_type) :: tests
 type(timer_type)        :: wtime
 real(kind=WP)           :: duration_seconds, timeit_duration_seconds

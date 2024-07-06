@@ -16,7 +16,7 @@ use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type)          :: logger
+type(log_type), target  :: logger
 type(test_results_type) :: tests
 type(config_type)       :: config
 integer                 :: rc

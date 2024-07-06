@@ -13,7 +13,7 @@ use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type)          :: logger
+type(log_type), target  :: logger
 type(test_results_type) :: tests
 type(unit_type)         :: unit1, unit2, unit_out
 type(unit_system_type)  :: unit_system

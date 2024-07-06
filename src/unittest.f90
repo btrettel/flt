@@ -19,10 +19,10 @@ public :: validate_timestamp
 character(len=70), parameter :: LONG_LINE = "----------------------------------------------------------------------"
 
 type, public :: test_results_type
-    integer          :: n_failures = 0
-    integer          :: n_tests    = 0
-    type(timer_type) :: wtime
-    type(log_type)   :: logger
+    integer                 :: n_failures = 0
+    integer                 :: n_tests    = 0
+    type(timer_type)        :: wtime
+    type(log_type), pointer :: logger => null()
 contains
     procedure :: logical_true => logical_true
     procedure :: logical_false => logical_false
@@ -666,32 +666,43 @@ subroutine character_eq(tests, returned_character_in, compared_character_in, mes
 end subroutine character_eq
 
 subroutine start_tests(tests, logger)
+    use checks, only: assert
     use nmllog, only: DEBUG_LEVEL
     
     class(test_results_type), intent(out) :: tests
     
-    type(log_type), intent(in) :: logger
+    type(log_type), intent(in), target :: logger
+    
+    logical :: unit_open
+    
+    inquire(unit=logger%unit, opened=unit_open)
+    call assert(unit_open, "unittest (start_tests): logger unit must be open to start tests")
     
     call tests%wtime%start()
     
-    tests%logger              = logger
-    tests%logger%stdout_level = DEBUG_LEVEL
-    tests%logger%file_level   = DEBUG_LEVEL
+    tests%logger              => logger
+    tests%logger%stdout_level =  DEBUG_LEVEL
+    tests%logger%file_level   =  DEBUG_LEVEL
 end subroutine start_tests
 
 subroutine end_tests(tests)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    use checks, only: assert
     
     class(test_results_type), intent(in out) :: tests
     
     integer       :: n_tests, n_failures
     real(kind=WP) :: duration ! in seconds
+    logical       :: unit_open
     
     namelist /tests_summary/ n_tests, n_failures, duration
     
     call assert(tests%n_tests >= 0, "unittest (end_tests): negative number of tests")
     call assert(tests%n_failures >= 0, "unittest (end_tests): negative number of failures")
     call assert(tests%n_failures <= tests%n_tests, "unittest (end_tests): number of failures exceeds number of tests")
+    call assert(associated(tests%logger), "unittest (end_tests): logger is not associated")
+    inquire(unit=tests%logger%unit, opened=unit_open)
+    call assert(unit_open, "unittest (end_tests): logger unit must be open to end tests")
     
     call tests%wtime%stop()
     duration      = tests%wtime%read()
@@ -711,6 +722,8 @@ subroutine end_tests(tests)
         write(unit=*, fmt="(a)") "OK"
         write(unit=*, fmt="(a)") LONG_LINE
     end if
+    
+    nullify(tests%logger)
 end subroutine end_tests
 
 subroutine validate_timestamp(tests, timestamp, message)

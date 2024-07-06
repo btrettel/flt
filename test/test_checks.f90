@@ -16,7 +16,7 @@ implicit none
 
 character(len=*), parameter :: ASSERT_FALSE_OUTPUT = "test_assert_false.txt"
 
-type(log_type)          :: logger
+type(log_type), target  :: logger
 type(test_results_type) :: tests
 integer                 :: test_assert_false_unit
 logical                 :: is_close_array(2), test_assert_false_exists

@@ -167,6 +167,8 @@ subroutine log_close(this)
     
     close(unit=this%unit)
     this%unit = UNIT_CLOSED
+    
+    deallocate(this%filename)
 end subroutine log_close
 
 subroutine log_writer(this, message_in, level_code)

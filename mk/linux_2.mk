@@ -3,7 +3,7 @@
 .PHONY: check-fc
 check-fc:
 	$(MAKE) lint
-	$(MAKE) check-valgrind
+	$(MAKE) FC=gfortran
 	$(MAKE) clean
 	$(MAKE) FC=ifx
 	$(MAKE) clean
@@ -17,9 +17,13 @@ check-fc:
 	@echo = All tests passed for all compilers. =
 	@echo =======================================
 
+# 2024-07-06: Seems to have a lot of false positives. Might be best to use only for debugging.
+# <https://community.intel.com/t5/Intel-Fortran-Compiler/Valgrind-error-with-very-simple-program/m-p/1107465#M128481>
+# > Yes, you are correct. You have implicitly opened a file, which requires allocated memory. The file is not closed, so that memory remains allocated at the end of the program. Even if the file is closed (and there is an implicit close when the program exits, not all of the bookkeeping memory may be deallocated. valgrind doesn't understand Fortran.
+# > You may not be able to get rid of all of the valgrind complaints.
 .PHONY: check-valgrind
 check-valgrind:
-	$(MAKE) check RUN='valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 --show-reachable=no ./'
+	$(MAKE) check RUN='valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all --error-exitcode=1 --show-reachable=no ./'
 
 # TODO: <https://github.com/camfort/camfort/wiki/Sanity-Checks>
 .PHONY: lint

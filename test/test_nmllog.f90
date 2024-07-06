@@ -11,7 +11,7 @@ use nmllog, only: log_type, UNIT_CLOSED, WARNING_LEVEL, TIMESTAMP_LEN
 use unittest, only: test_results_type
 implicit none
 
-type(log_type)          :: logger
+type(log_type), target  :: logger
 type(test_results_type) :: tests
 
 character(len=*), parameter :: TEST_FILENAME     = "test.nml"
