@@ -113,6 +113,8 @@ call logger%close()
 contains
 
 subroutine test_dtio(tests)
+    !use, intrinsic :: iso_fortran_env, only: IOSTAT_END, IOSTAT_EOR
+    
     type(test_results_type), intent(in out) :: tests
     
     type(volume) :: vol
@@ -128,23 +130,46 @@ subroutine test_dtio(tests)
     if (index(compiler_version(), "nvfortran") == 0) then
         write(unit=quantity_string, fmt="(dt'f'(6, 3))") vol
         call tests%character_eq(quantity_string, "12.345 m3", "derived type write")
+        
+        ! TODO: The remainder of this is disabled for nvfortran due to iostat being wrong for nvfortran.
+        
+        open(newunit=nml_unit, action="write", status="replace", position="rewind", file=TEST_FILENAME, delim="quote")
+        write(unit=nml_unit, nml=dtio)
+        close(nml_unit)
+        
+        ! Make sure that the test doesn't just look at the old value.
+        vol%v = 0.0_WP
+        
+        rc_nml = 0
+        open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote")
+        read(unit=nml_unit, nml=dtio, iostat=rc_nml)
+        close(nml_unit)
+        
+        call tests%integer_eq(rc_nml, 0, "units namelist read (1), rc")
+        ! `iomsg` will not be changed unless `rc_nml` changes, so it'll print a bunch of gibberish by default.
+        !call tests%character_eq(msg, "", "units namelist read, msg")
+        call tests%real_eq(vol%v, 12.345_WP, "units namelist write and read cycle")
+        
+        ! TODO: Update this so that it runs on Windows.
+        vol%v = 0.0_WP
+        rc_nml = 0
+        open(newunit=nml_unit, file="test/dtio_1.nml", status="old", action="read", delim="quote")
+        read(unit=nml_unit, nml=dtio, iostat=rc_nml)
+        close(nml_unit)
+        
+        call tests%integer_eq(rc_nml, 0, "units namelist read (2), rc")
+        call tests%real_eq(vol%v, 6.789_WP, "units namelist read")
+        
+        ! TODO: Update this so that it runs on Windows.
+        vol%v = 0.0_WP
+        rc_nml = 0
+        open(newunit=nml_unit, file="test/dtio_2.nml", status="old", action="read", delim="quote")
+        read(unit=nml_unit, nml=dtio, iostat=rc_nml)
+        close(nml_unit)
+        
+        call tests%integer_eq(rc_nml, 2, "units namelist read (2), rc")
+        call tests%real_eq(vol%v, 34.56_WP, "units namelist read")
     end if
-    
-    open(newunit=nml_unit, action="write", status="replace", position="rewind", file=TEST_FILENAME, delim="quote")
-    write(unit=nml_unit, nml=dtio)
-    close(nml_unit)
-    
-    ! Make sure that the test doesn't just look at the old value.
-    vol%v = 0.0_WP
-    
-    rc_nml = 0
-    open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote")
-    read(unit=nml_unit, nml=dtio, iostat=rc_nml)
-    close(nml_unit)
-    
-    !print *, rc_nml
-    !call tests%logical_true((rc_nml == IOSTAT_END) .or. (rc_nml == IOSTAT_EOR) .or. (rc_nml == 0), "units namelist read, rc")
-    call tests%real_eq(vol%v, 12.345_WP, "units namelist write and read cycle")
 end subroutine test_dtio
 
 end program test_units

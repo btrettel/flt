@@ -2,7 +2,7 @@
 # <https://community.intel.com/t5/Intel-Fortran-Compiler/Known-bug-with-check-all-or-check-uninit-in-ifx-2024-0-0-for/m-p/1545825>
 
 FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays -standard-semantics
-DFLAGS = -O0 -g -traceback -debug full -check all,nouninit -fpe0
+DFLAGS = -O0 -g -traceback -debug full -check all,nouninit,noudio_iostat -fpe0
 RFLAGS = -O2 -static -qopt-report -fiopenmp
 AFLAGS = 
 NFLAGS = -xHost

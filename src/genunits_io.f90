@@ -832,6 +832,7 @@ subroutine write_unit_rf(unit_system, file_unit, unit)
     
     write(unit=file_unit, fmt="(3a)") "subroutine ", rf_procedure, "(dtv, unit, iotype, vlist, iostat, iomsg)"
     
+    write(unit=file_unit, fmt="(a)") "    use, intrinsic :: iso_fortran_env, only: IOSTAT_END, IOSTAT_EOR"
     write(unit=file_unit, fmt="(2a)") "    ! unit: ", trim(unit%readable(unit_system))
     
     write(unit=file_unit, fmt="(3a)") "    class(", trim(unit%label()), "), intent(in out) :: dtv"
@@ -840,20 +841,32 @@ subroutine write_unit_rf(unit_system, file_unit, unit)
     write(unit=file_unit, fmt="(a)") "    integer, intent(in) :: vlist(:)"
     write(unit=file_unit, fmt="(a)") "    integer, intent(out) :: iostat"
     write(unit=file_unit, fmt="(a)") "    character(len=*), intent(in out) :: iomsg"
-    write(unit=file_unit, fmt="(a)") "    character(len=128) :: full_input, value_char, unit_char"
-    write(unit=file_unit, fmt="(a)") "    integer            :: underscore_index"
-    write(unit=file_unit, fmt="(a)") '    read(unit, fmt="(a)", iostat=iostat, iomsg=iomsg) full_input'
+    write(unit=file_unit, fmt="(a)") "    character(len=2048) :: full_input, value_char, msg"
+    write(unit=file_unit, fmt="(a)") "    character(len=64) :: unit_char"
+    write(unit=file_unit, fmt="(a)") "    integer :: underscore_index, end_index"
+    write(unit=file_unit, fmt="(a)") '    read(unit, fmt="(a)", iostat=iostat, iomsg=msg) full_input'
+    write(unit=file_unit, fmt="(a)") "    if ((iostat == IOSTAT_END) .or. (iostat == IOSTAT_EOR)) then"
+    write(unit=file_unit, fmt="(a)") "        iostat = 0"
+    write(unit=file_unit, fmt="(a)") '        msg = ""'
+    write(unit=file_unit, fmt="(a)") "    end if"
+    ! Needed for ifx namelist input.
     write(unit=file_unit, fmt="(a)") "    full_input = adjustl(full_input)"
+    ! Spaces are namelist "value separators" in the standard, so the separators should be something else.
     write(unit=file_unit, fmt="(a)") '    underscore_index = index(full_input, "_")'
+    ! The next line will handle buggy compilers that include the `/` in `full_input`.
+    write(unit=file_unit, fmt="(a)") "    end_index = min(len(trim(full_input)), " // & 
+                                        'max(index(full_input, "/"), len(trim(full_input))))'
     write(unit=file_unit, fmt="(a)") "    if (underscore_index == 0) then"
-    write(unit=file_unit, fmt="(a)") "        underscore_index = len(trim(full_input)) + 1"
+    ! If the unit isn't present, read the number anyway.
+    write(unit=file_unit, fmt="(a)") "        underscore_index = end_index + 1"
     write(unit=file_unit, fmt="(a)") '        unit_char = ""'
     write(unit=file_unit, fmt="(a)") "    else"
     write(unit=file_unit, fmt="(a)") "        unit_char = full_input(underscore_index+1:)"
     write(unit=file_unit, fmt="(a)") "    end if"
     write(unit=file_unit, fmt="(a)") "    value_char = full_input(1:underscore_index-1)"
-    write(unit=file_unit, fmt="(a)") "    read(unit=value_char, fmt=*, iostat=iostat, iomsg=iomsg) dtv%v"
+    write(unit=file_unit, fmt="(a)") "    read(unit=value_char, fmt=*, iostat=iostat, iomsg=msg) dtv%v"
     write(unit=file_unit, fmt="(a)") "    if (iostat /= 0) then"
+    write(unit=file_unit, fmt="(a)") "        iomsg = trim(msg)"
     write(unit=file_unit, fmt="(a)") "        return"
     write(unit=file_unit, fmt="(a)") "    end if"
     write(unit=file_unit, fmt="(a)") "    if (len(trim(unit_char)) == 0) then"
