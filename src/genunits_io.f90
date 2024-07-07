@@ -788,6 +788,7 @@ subroutine write_unit_wf(unit_system, file_unit, unit)
     
     write(unit=file_unit, fmt="(2a)") "    ! unit: ", trim(unit%readable(unit_system))
     
+    write(unit=file_unit, fmt="(a)") "    use, intrinsic :: iso_fortran_env, only: compiler_version"
     write(unit=file_unit, fmt="(3a)") "    class(", trim(unit%label()), "), intent(in) :: dtv"
     write(unit=file_unit, fmt="(a)") "    integer, intent(in) :: unit"
     write(unit=file_unit, fmt="(a)") "    character(len=*), intent(in) :: iotype"
@@ -797,7 +798,11 @@ subroutine write_unit_wf(unit_system, file_unit, unit)
     write(unit=file_unit, fmt="(a)") "    character(len=16) :: pfmt"
     write(unit=file_unit, fmt="(a)") "    character(len=1)  :: space"
     write(unit=file_unit, fmt="(a)") '    if (iotype == "LISTDIRECTED" .or. iotype == "DTg0" .or. iotype == "NAMELIST") then'
-    write(unit=file_unit, fmt="(a)") '        pfmt = "(g0, a, a)"'
+    write(unit=file_unit, fmt="(a)") '        if (index(compiler_version(), "XL Fortran") == 0) then'
+    write(unit=file_unit, fmt="(a)") '            pfmt = "(g0, a, a)"'
+    write(unit=file_unit, fmt="(a)") "        else"
+    write(unit=file_unit, fmt="(a)") '            pfmt = "(f0.6, a, a)"'
+    write(unit=file_unit, fmt="(a)") "        end if"
     write(unit=file_unit, fmt="(a)") "    else"
     write(unit=file_unit, fmt="(a, a)") '        write(pfmt, "(2a, i0, a, i0, a)") ', &
                                             '"(", iotype(3:), vlist(1), ".", vlist(2), ", a, a)"'

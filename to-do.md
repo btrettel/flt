@@ -2,6 +2,10 @@
 
 Priorities:
 
+- A module containing errno codes, other internal return codes, and exit codes.
+    - Make a table of iostat values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
+- xlf doesn't like my derived type writing?
+    - > "test/test_units.f90", line 138: 1525-205 The user-defined derived type I/O procedure set the IOSTAT variable to 58.  The program will stop.
 - Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).
 - `make install` to install everything in `app`.
     - `DESTDIR` and `PREFIX` variables
@@ -269,7 +273,6 @@ Later:
 - Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `WP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
-- A module containing errno codes, other internal return codes, and exit codes. Could make a derived type with the number and a message.
 - Detect if certain compilers are present and don't run those in `make all` if they are not present. This will allow your Makefile to work on all your different computers.
 - Make an assertion which takes an array to help avoid the problem of only the first failing assertion
     - `check` helps with this too, but an `assert_all` would be convenient if I simply want to check a bunch of things at once.
