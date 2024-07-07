@@ -854,8 +854,11 @@ subroutine write_unit_rf(unit_system, file_unit, unit)
     ! Spaces are namelist "value separators" in the standard, so the separators should be something else.
     write(unit=file_unit, fmt="(a)") '    underscore_index = index(full_input, "_")'
     ! The next line will handle buggy compilers that include the `/` in `full_input`.
-    write(unit=file_unit, fmt="(a)") "    end_index = min(len(trim(full_input)), " // & 
-                                        'max(index(full_input, "/")-1, len(trim(full_input))))'
+    write(unit=file_unit, fmt="(a)") '    if (index(full_input, "/") > 0) then'
+    write(unit=file_unit, fmt="(a)") '        end_index = index(full_input, "/") - 1'
+    write(unit=file_unit, fmt="(a)") '    else'
+    write(unit=file_unit, fmt="(a)") '        end_index = len(trim(full_input))'
+    write(unit=file_unit, fmt="(a)") '    end if'
     write(unit=file_unit, fmt="(a)") "    if (underscore_index == 0) then"
     ! If the unit isn't present, read the number anyway.
     write(unit=file_unit, fmt="(a)") "        underscore_index = end_index + 1"
