@@ -59,5 +59,5 @@ lfortran:
 .PHONY: xlf
 xlf:
 	$(PYTHON) py$(DIR_SEP)xlf_convert.py
-	$(MAKE) FC=xlf2008 test
+	$(MAKE) FC=xlf2008 check
 	$(PYTHON) py$(DIR_SEP)xlf_convert.py --undo

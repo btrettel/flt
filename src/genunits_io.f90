@@ -864,7 +864,7 @@ subroutine write_unit_rf(unit_system, file_unit, unit)
     write(unit=file_unit, fmt="(a)") "        underscore_index = end_index + 1"
     write(unit=file_unit, fmt="(a)") '        unit_char = ""'
     write(unit=file_unit, fmt="(a)") "    else"
-    write(unit=file_unit, fmt="(a)") "        unit_char = full_input(underscore_index+1:)"
+    write(unit=file_unit, fmt="(a)") "        unit_char = full_input(underscore_index+1:end_index)"
     write(unit=file_unit, fmt="(a)") "    end if"
     write(unit=file_unit, fmt="(a)") "    value_char = full_input(1:underscore_index-1)"
     write(unit=file_unit, fmt="(a)") "    read(unit=value_char, fmt=*, iostat=iostat, iomsg=msg) dtv%v"
