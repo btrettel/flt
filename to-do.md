@@ -2,9 +2,8 @@
 
 Priorities:
 
-- autodiff.f90
-    - Add `tanh` and `log` to autodiff.f90
-    - autodiff.f90 => fmad.f90
+- fmad.f90
+    - Add `tanh` and `log` to fmad.f90
     - `type(ad)` => `type(fmad)`
 - A module containing errno codes, other internal return codes, and exit codes.
     - Make a table of iostat values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.

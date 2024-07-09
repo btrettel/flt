@@ -5,7 +5,7 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-module autodiff
+module fmad
 
 use prec, only: WP
 implicit none
@@ -290,4 +290,4 @@ pure function f(x, y)
     f = (2.0_WP * x * y - x**2) / y + y
 end function f
 
-end module autodiff
+end module fmad

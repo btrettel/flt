@@ -5,12 +5,12 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_autodiff
+program test_fmad
 
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
-use autodiff, only: ad
+use fmad, only: ad
 implicit none
 
 type(log_type), target  :: logger
@@ -18,7 +18,7 @@ type(test_results_type) :: tests
 
 integer, parameter :: N_DV = 2
 
-call logger%open("autodiff.nml")
+call logger%open("fmad.nml")
 call tests%start_tests(logger)
 
 call test_scalars(tests)
@@ -33,7 +33,7 @@ print *, "2"
 contains
 
 subroutine test_scalars(tests)
-    use autodiff, only: f
+    use fmad, only: f
     
     type(test_results_type), intent(in out) :: tests
     
@@ -193,7 +193,7 @@ subroutine test_arrays(tests)
 end subroutine test_arrays
 
 subroutine test_sqrt(tests)
-    use autodiff, only: sqrt
+    use fmad, only: sqrt
     
     type(test_results_type), intent(in out) :: tests
     
@@ -209,4 +209,4 @@ subroutine test_sqrt(tests)
     call tests%real_eq(y%dv(2), 0.0_WP, "rd_var sqrt, derivative (dv 2)")
 end subroutine test_sqrt
 
-end program test_autodiff
+end program test_fmad
