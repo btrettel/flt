@@ -2,10 +2,17 @@
 
 Priorities:
 
+- autodiff.f90
+    - Add `tanh` and `log` to autodiff.f90
+    - autodiff.f90 => fmad.f90
+    - `type(ad)` => `type(fmad)`
 - A module containing errno codes, other internal return codes, and exit codes.
     - Make a table of iostat values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
-- xlf doesn't like my derived type writing?
-    - > "test/test_units.f90", line 138: 1525-205 The user-defined derived type I/O procedure set the IOSTAT variable to 58.  The program will stop.
+        - <https://fortranwiki.org/fortran/show/iso_fortran_env>
+            - `iostat_end`, `iostat_eor`
+        - <https://www.scivision.dev/oneapi-fortran-iostat-codes/>
+        - <https://www.ibm.com/docs/en/xl-fortran-linux/16.1.1?topic=inputoutput-conditions-iostat-values>
+        - <https://groups.google.com/g/comp.lang.fortran/c/l8UJoI-x9PM>
 - Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).
 - `make install` to install everything in `app`.
     - `DESTDIR` and `PREFIX` variables
@@ -28,10 +35,13 @@ Priorities:
     - Works with units.f90? Might be more trouble than it's worth, but give it a shot.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
     - Derived type output
-        - Different namelist output which has an underscore instead of a space.
+        - Negative first exponent should not use /? Reorder?
     - Derived type input
-        - Different namelist input which has an underscore instead of a space.
-        - Allow for prefixes like `m`, `c`, `k` on each unit?
+        - Make derived type input end at a ` `, `,`, or `/`. See NAG email.
+        - Allow for prefixes like `m`, `c`, `k` on each unit? A base unit can be defined by a base symbol and a base prefix. So the base unit `kg` is constructed from the base symbol `g` and the base prefix `k`.
+            - <https://ucum.org/ucum#baseunits>
+            - <https://en.wikipedia.org/wiki/Unit_prefix>
+        - Use `vlist` for something else. `size(vlist)` seems to cause problems with nvfortran. See 2024-07-06 log.
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
         - Link `x` to the index of the `dv` member variable by making the only non-zero `dv` member variable the one to differentiate with respect to.
@@ -45,14 +55,21 @@ Priorities:
     - FreeBSD in QEMU
         - <https://cyber.dabamos.de/programming/modernfortran/fortran-compilers.html>
     - Windows in QEMU
-        - GNU Make
-            - <https://stackoverflow.com/a/73862277/1124489>
-                - Windows 10+: `winget install ezwinports.make`
-        - Jom
-            - <https://wiki.qt.io/Jom>
-        - <https://fortran-lang.org/learn/os_setup/install_gfortran/#windows>
-        - <https://gcc.gnu.org/wiki/GFortranBinaries#Windows>
+        - Build systems
+            - GNU Make
+                - <https://stackoverflow.com/a/73862277/1124489>
+                    - Windows 10+: `winget install ezwinports.make`
+            - Jom
+                - <https://wiki.qt.io/Jom>
+        - Compilers
+            - gfortran
+                - <https://fortran-lang.org/learn/os_setup/install_gfortran/#windows>
+                - <https://gcc.gnu.org/wiki/GFortranBinaries#Windows>
+                - FTN95
+                - ifort/ifx
     - Mac OS
+- Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
+- Count test_units.f90 towards test_genunitsio.f90?
 
 Later:
 
@@ -82,10 +99,7 @@ Later:
 - Option to disable automatic differentiation in Makefile for speed.
 - genunits
     - Derived-type I/O
-        - metcalf_modern_2018 pp. 261--264
-        - `write(formatted)`
-        - `write(formatted)` and `read(formatted)` for namelists (`iotype == "namelist"`)? Then I could have units or uncertainty in a namelist!
-            - Need to standardize input units. For example: `m1s0` is simplified to `m`. Use this in the code printout too.
+        - read/write number with uncertainty
     - `same_unit` function which have same units for input and output: `abs`, `maxval`, `minval`, etc.
         - `max` and `min` would be hard as they take an arbitrary number of arguments.
     - `unitless` functions which have unitless input and output (like `sin`, `cos`, `log`, `exp`, `gamma`, etc.). Include possible `use` line in namelist group.
@@ -372,6 +386,9 @@ Later:
         - <https://gcc.gnu.org/onlinedocs/gfortran/NORM2.html>
     - <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.newton.html>
     - <https://people.sc.fsu.edu/~jburkardt/f_src/newton_rc/newton_rc.html>
+    - Newton solver using AD taking a callback.
+    - Would be advantageous to only have needed derivatives for the iteration and add additional derivatives for the final run.
+    - Can return solutions for arbitrary arrays.
 - How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type? So I need a thread-safe seed generator first.
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
     - Make ga.f90 use rngmod.f90.
@@ -380,3 +397,6 @@ Later:
         - `chromo%f`
         - `chromo%f_set`
         - `chromo%out(:)` (for non-objective function outputs that may be of interest)
+- `CMP` based tests
+- Smart pointers
+    - Develop smart pointer before reverse mode AD
