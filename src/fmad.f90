@@ -11,7 +11,7 @@ use prec, only: WP
 implicit none
 private
 
-public :: sqrt
+public :: sqrt, tanh, log
 public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
@@ -40,6 +40,14 @@ end type ad
 interface sqrt
     module procedure :: ad_sqrt
 end interface sqrt
+
+interface tanh
+    module procedure :: ad_tanh
+end interface tanh
+
+interface log
+    module procedure :: ad_log
+end interface log
 
 contains
 
@@ -279,6 +287,28 @@ elemental function ad_sqrt(ad_in)
     ad_sqrt%v  = sqrt(ad_in%v)
     ad_sqrt%dv = ad_in%dv/(2.0_WP * sqrt(ad_in%v))
 end function ad_sqrt
+
+elemental function ad_tanh(ad_in)
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_tanh
+    
+    ad_tanh%v  = tanh(ad_in%v)
+    ad_tanh%dv = ad_in%dv*(1.0_WP - tanh(ad_in%v)**2)
+end function ad_tanh
+
+elemental function ad_log(ad_in)
+    use checks, only: assert
+    
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_log
+    
+    call assert(ad_in%v > 0.0_WP, "autodiff (ad_log): argument is zero or negative")
+    
+    ad_log%v  = log(ad_in%v)
+    ad_log%dv = ad_in%dv/ad_in%v
+end function ad_log
 
 pure function f(x, y)
     ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.

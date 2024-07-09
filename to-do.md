@@ -2,9 +2,6 @@
 
 Priorities:
 
-- fmad.f90
-    - Add `tanh` and `log` to fmad.f90
-    - `type(ad)` => `type(fmad)`
 - A module containing errno codes, other internal return codes, and exit codes.
     - Make a table of iostat values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
         - <https://fortranwiki.org/fortran/show/iso_fortran_env>

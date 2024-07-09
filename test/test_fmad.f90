@@ -24,11 +24,11 @@ call tests%start_tests(logger)
 call test_scalars(tests)
 call test_arrays(tests)
 call test_sqrt(tests)
+call test_tanh(tests)
+call test_log(tests)
 
 call tests%end_tests()
-print *, "1"
 call logger%close()
-print *, "2"
 
 contains
 
@@ -48,9 +48,9 @@ subroutine test_scalars(tests)
     call y%init(1.5_WP, 2, N_DV)
     call z%init_const(-3.3_WP, N_DV)
 
-    call tests%real_eq(x%v, 5.0_WP, "rd_var, value")
-    call tests%real_eq(x%dv(1), 1.0_WP, "rd_var, derivative (dv 1)")
-    call tests%real_eq(x%dv(2), 0.0_WP, "rd_var, derivative (dv 2)")
+    call tests%real_eq(x%v, 5.0_WP, "ad, value")
+    call tests%real_eq(x%dv(1), 1.0_WP, "ad, derivative (dv 1)")
+    call tests%real_eq(x%dv(2), 0.0_WP, "ad, derivative (dv 2)")
 
     call tests%real_eq(z%v, -3.3_WP, "rd_const, value")
     call tests%real_eq(z%dv(1), 0.0_WP, "rd_const, derivative (dv 1)")
@@ -178,12 +178,12 @@ subroutine test_arrays(tests)
 
     w = u + 2.0_WP * v
 
-    call tests%real_eq(w(1)%v, 1.0_WP, "rd_var array, 1, value")
-    call tests%real_eq(w(1)%dv(1), 1.0_WP, "rd_var, 1, derivative (dv 1)")
-    call tests%real_eq(w(1)%dv(2), 0.0_WP, "rd_var, 1, derivative (dv 2)")
-    call tests%real_eq(w(2)%v, 7.0_WP, "rd_var array, 2, value")
-    call tests%real_eq(w(2)%dv(1), 0.0_WP, "rd_var, 2, derivative (dv 1)")
-    call tests%real_eq(w(2)%dv(2), 1.0_WP, "rd_var, 2, derivative (dv 2)")
+    call tests%real_eq(w(1)%v, 1.0_WP, "ad array, 1, value")
+    call tests%real_eq(w(1)%dv(1), 1.0_WP, "ad, 1, derivative (dv 1)")
+    call tests%real_eq(w(1)%dv(2), 0.0_WP, "ad, 1, derivative (dv 2)")
+    call tests%real_eq(w(2)%v, 7.0_WP, "ad array, 2, value")
+    call tests%real_eq(w(2)%dv(1), 0.0_WP, "ad, 2, derivative (dv 1)")
+    call tests%real_eq(w(2)%dv(2), 1.0_WP, "ad, 2, derivative (dv 2)")
 
     ! Make sure that `assert_dimension` works for `ad`.
 
@@ -204,9 +204,43 @@ subroutine test_sqrt(tests)
     call x%init(2.0_WP, 1, N_DV)
     y = sqrt(4.0_WP * x)
 
-    call tests%real_eq(y%v, sqrt(8.0_WP), "rd_var sqrt, value")
-    call tests%real_eq(y%dv(1), 1.0_WP / sqrt(2.0_WP), "rd_var sqrt, derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "rd_var sqrt, derivative (dv 2)")
+    call tests%real_eq(y%v, sqrt(8.0_WP), "ad sqrt, value")
+    call tests%real_eq(y%dv(1), 1.0_WP / sqrt(2.0_WP), "ad sqrt, derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad sqrt, derivative (dv 2)")
 end subroutine test_sqrt
+
+subroutine test_tanh(tests)
+    use fmad, only: tanh
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y
+
+    ! `tanh`
+
+    call x%init(1.0_WP, 1, N_DV)
+    y = tanh(2.0_WP * x)
+
+    call tests%real_eq(y%v, tanh(2.0_WP), "ad tanh, value")
+    call tests%real_eq(y%dv(1), 2.0_WP * (1 - tanh(2.0_WP)**2), "ad tanh, derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad tanh, derivative (dv 2)")
+end subroutine test_tanh
+
+subroutine test_log(tests)
+    use fmad, only: log
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y
+
+    ! `log`
+
+    call x%init(1.0_WP, 1, N_DV)
+    y = 4.0_WP * log(2.0_WP * x)
+
+    call tests%real_eq(y%v, 4.0_WP * log(2.0_WP), "ad log, value")
+    call tests%real_eq(y%dv(1), 4.0_WP, "ad log, derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad log, derivative (dv 2)")
+end subroutine test_log
 
 end program test_fmad
