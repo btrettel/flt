@@ -2,8 +2,8 @@
 
 Priorities:
 
-- A module containing errno codes, other internal return codes, and exit codes.
-    - Make a table of iostat values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
+- returncodes.f90: A module containing `errno` codes, other internal return codes.
+    - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
         - <https://fortranwiki.org/fortran/show/iso_fortran_env>
             - `iostat_end`, `iostat_eor`
         - <https://www.scivision.dev/oneapi-fortran-iostat-codes/>

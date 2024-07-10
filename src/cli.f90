@@ -18,7 +18,7 @@ subroutine get_input_file_name_from_cli(prog, input_file_name)
     use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version, error_unit
     use build, only: DEBUG, TAG, REVISION_DATE, MODIFIED
     use checks, only: assert
-    use sysexits, only: EX_OK, EX_NOINPUT
+    use stopcodes, only: EX_OK, EX_NOINPUT
 
     character(len=*), intent(in)               :: prog
     character(len=:), intent(out), allocatable :: input_file_name

@@ -1,11 +1,11 @@
-! Module to set program exit codes.
+! Module to set program stop (exit) codes.
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-module sysexits
+module stopcodes
 
 implicit none
 
@@ -44,4 +44,4 @@ integer, parameter :: EX_CONFIG = 78
 
 ! Later I may add exit codes not from the sysexits standard below. These will be chosen to not conflict.
 
-end module sysexits
+end module stopcodes
