@@ -26,6 +26,7 @@ call test_arrays(tests)
 call test_sqrt(tests)
 call test_tanh(tests)
 call test_log(tests)
+call test_exp(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -242,5 +243,22 @@ subroutine test_log(tests)
     call tests%real_eq(y%dv(1), 4.0_WP, "ad log, derivative (dv 1)")
     call tests%real_eq(y%dv(2), 0.0_WP, "ad log, derivative (dv 2)")
 end subroutine test_log
+
+subroutine test_exp(tests)
+    use fmad, only: exp
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y
+
+    ! `exp`
+
+    call x%init(1.0_WP, 1, N_DV)
+    y = 7.0_WP * exp(0.5_WP * x)
+
+    call tests%real_eq(y%v, 7.0_WP*exp(0.5_WP), "ad exp, value")
+    call tests%real_eq(y%dv(1), 3.5_WP * exp(0.5_WP), "ad exp, derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad exp, derivative (dv 2)")
+end subroutine test_exp
 
 end program test_fmad

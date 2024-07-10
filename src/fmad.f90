@@ -11,7 +11,7 @@ use prec, only: WP
 implicit none
 private
 
-public :: sqrt, tanh, log
+public :: sqrt, tanh, log, exp
 public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
@@ -48,6 +48,10 @@ end interface tanh
 interface log
     module procedure :: ad_log
 end interface log
+
+interface exp
+    module procedure :: ad_exp
+end interface exp
 
 contains
 
@@ -249,11 +253,16 @@ end function real_ad_divide
 
 elemental function ad_real_exponentiate(ad_in, real_in)
     ! Exponentiates an `ad` by a `real`.
-
+    
+    use checks, only: assert
+    
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
     
     type(ad) :: ad_real_exponentiate
+    
+    call assert((abs(ad_in%v) > 0.0_WP) .and. (real_in >= 0), &
+                    "autodiff (ad_real_exponentiate): exponent is negative and argument is zero")
 
     ad_real_exponentiate%v  = ad_in%v**real_in
     ad_real_exponentiate%dv = real_in*(ad_in%v**(real_in - 1.0_WP))*ad_in%dv
@@ -261,11 +270,16 @@ end function ad_real_exponentiate
 
 elemental function ad_integer_exponentiate(ad_in, integer_in)
     ! Exponentiates an `ad` by an `integer`.
-
+    
+    use checks, only: assert
+    
     class(ad), intent(in) :: ad_in
     integer, intent(in)   :: integer_in
     
     type(ad) :: ad_integer_exponentiate
+    
+    call assert((abs(ad_in%v) > 0.0_WP) .and. (integer_in >= 0), &
+                    "autodiff (ad_integer_exponentiate): exponent is negative and argument is zero")
 
     ad_integer_exponentiate%v  = ad_in%v**integer_in
     ad_integer_exponentiate%dv = real(integer_in, WP)*(ad_in%v**(integer_in - 1))*ad_in%dv
@@ -309,6 +323,15 @@ elemental function ad_log(ad_in)
     ad_log%v  = log(ad_in%v)
     ad_log%dv = ad_in%dv/ad_in%v
 end function ad_log
+
+elemental function ad_exp(ad_in)
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_exp
+    
+    ad_exp%v  = exp(ad_in%v)
+    ad_exp%dv = ad_in%dv*exp(ad_in%v)
+end function ad_exp
 
 pure function f(x, y)
     ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.
