@@ -21,3 +21,5 @@ with open(os.path.join("src", "revision.f90"), "w") as output_handler:
         output_handler.write(".true.\n")
     else:
         output_handler.write(".false.\n")
+    
+    output_handler.write("character(len=*), public, parameter :: TAG = REVISION")

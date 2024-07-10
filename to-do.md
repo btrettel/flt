@@ -372,6 +372,7 @@ Later:
     - Test that `INT64` has enough precision for the `lecuyer` RNG.
 - nmlcli.f90
     - Could modify `get_namelist` approach to make CLI use more typical `--` flags. `--flag` could also be converted to `flag=.true.` for `logical`s.
+    - Wouldn't work on nvfortran as nvfortran can't `read` namelists from internal variables?
     - `--version`: integrates with revision.f90
     - How can I get descriptions of each option in `--help`? Manually? Parsing comments in the namelist file that is included?
     - <https://fortran-lang.discourse.group/t/are-namelists-portable/1212/10>

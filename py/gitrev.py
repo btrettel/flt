@@ -7,7 +7,8 @@ from subprocess import run, PIPE
 with open(os.path.join("src", "revision.f90"), "w") as output_handler:
     output_handler.write("character(len=*), public, parameter :: REVISION = \"")
     result = run(["git", "rev-parse", "--short", "HEAD"], stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    output_handler.write(result.stdout.strip())
+    revision = result.stdout.strip()
+    output_handler.write(revision)
     output_handler.write("\"\n")
     
     output_handler.write("character(len=*), public, parameter :: REVISION_DATE = \"")
@@ -21,3 +22,12 @@ with open(os.path.join("src", "revision.f90"), "w") as output_handler:
         output_handler.write(".false.\n")
     else:
         output_handler.write(".true.\n")
+    
+    output_handler.write("character(len=*), public, parameter :: TAG = \"")
+    result = run(["git", "describe", "--tags"], stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    tag = result.stdout.strip()
+    if result.returncode == 0:
+        output_handler.write(tag)
+    else:
+        output_handler.write(revision)
+    output_handler.write("\"\n")
