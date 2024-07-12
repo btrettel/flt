@@ -2,6 +2,12 @@
 
 Priorities:
 
+- depends.py:
+    - Generates a list of executables from `app` in before.mk, add them to `CLEAN`.
+- Add Valgrind back to check-fc. Suppress namelist derived-type input problem in Valgrind.
+    - <https://valgrind.org/docs/manual/manual-core.html#manual-core.suppress>
+    - <https://stackoverflow.com/a/23897854/1124489>
+    - Old: Selectively use Valgrind for all code that you're confident will not have false positives. Add a list of tests that fail Valgrind to config.ini (`no_valgrind`) and make depends.py generate the associated Makefile components.
 - returncodes.f90: A module containing `errno` codes, other internal return codes.
     - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
         - <https://fortranwiki.org/fortran/show/iso_fortran_env>
@@ -386,6 +392,7 @@ Later:
     - Newton solver using AD taking a callback.
     - Would be advantageous to only have needed derivatives for the iteration and add additional derivatives for the final run.
     - Can return solutions for arbitrary arrays.
+    - <https://twitter.com/chenna1985/status/1802660023010513012>
 - How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type? So I need a thread-safe seed generator first.
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
     - Make ga.f90 use rngmod.f90.

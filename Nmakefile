@@ -39,4 +39,5 @@ FFLAGS = $(FFLAGS) $(RFLAGS) $(AFLAGS)
 
 !include mk\before.mk
 !include mk\common.mk
+!include mk\manual.mk
 !include mk\depends.mk

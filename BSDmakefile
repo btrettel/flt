@@ -66,5 +66,6 @@ FFLAGS += $(RFLAGS) $(AFLAGS)
 
 .include <mk/before.mk>
 .include <mk/common.mk>
+.include <mk/manual.mk>
 .include <mk/depends.mk>
 .include <mk/linux_2.mk>

@@ -77,5 +77,6 @@ endif
 
 include mk/before.mk
 include mk/common.mk
+include mk/manual.mk
 include mk/depends.mk
 include mk/$(OS_FILENAME)_2.mk
