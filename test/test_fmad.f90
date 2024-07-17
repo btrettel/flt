@@ -27,6 +27,10 @@ call test_sqrt(tests)
 call test_tanh(tests)
 call test_log(tests)
 call test_exp(tests)
+call test_merge(tests)
+call test_max(tests)
+call test_min(tests)
+call test_abs(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -200,8 +204,6 @@ subroutine test_sqrt(tests)
     
     type(ad) :: x, y
 
-    ! `sqrt`
-
     call x%init(2.0_WP, 1, N_DV)
     y = sqrt(4.0_WP * x)
 
@@ -216,8 +218,6 @@ subroutine test_tanh(tests)
     type(test_results_type), intent(in out) :: tests
     
     type(ad) :: x, y
-
-    ! `tanh`
 
     call x%init(1.0_WP, 1, N_DV)
     y = tanh(2.0_WP * x)
@@ -234,8 +234,6 @@ subroutine test_log(tests)
     
     type(ad) :: x, y
 
-    ! `log`
-
     call x%init(1.0_WP, 1, N_DV)
     y = 4.0_WP * log(2.0_WP * x)
 
@@ -251,8 +249,6 @@ subroutine test_exp(tests)
     
     type(ad) :: x, y
 
-    ! `exp`
-
     call x%init(1.0_WP, 1, N_DV)
     y = 7.0_WP * exp(0.5_WP * x)
 
@@ -260,5 +256,144 @@ subroutine test_exp(tests)
     call tests%real_eq(y%dv(1), 3.5_WP * exp(0.5_WP), "ad exp, derivative (dv 1)")
     call tests%real_eq(y%dv(2), 0.0_WP, "ad exp, derivative (dv 2)")
 end subroutine test_exp
+
+subroutine test_merge(tests)
+    use fmad, only: merge
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y, z
+
+    call x%init(1.0_WP, 1, N_DV)
+    call y%init(-1.0_WP, 2, N_DV)
+    
+    z = merge(x, y, .true.)
+    call tests%real_eq(z%v, 1.0_WP, "ad merge, .true., value")
+    call tests%real_eq(z%dv(1), 1.0_WP, "ad merge, .true., derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad merge, .true., derivative (dv 2)")
+    
+    z = merge(x, y, .false.)
+    call tests%real_eq(z%v, -1.0_WP, "ad merge, .false., value")
+    call tests%real_eq(z%dv(1), 0.0_WP, "ad merge, .false., derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 1.0_WP, "ad merge, .false., derivative (dv 2)")
+end subroutine test_merge
+
+subroutine test_max(tests)
+    use fmad, only: max
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y, z
+
+    call x%init(1.0_WP, 1, N_DV)
+    call y%init(-1.0_WP, 2, N_DV)
+    
+    z = max(x, y)
+    call tests%real_eq(z%v, 1.0_WP, "ad max (1), value")
+    call tests%real_eq(z%dv(1), 1.0_WP, "ad max (1), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad max (1), derivative (dv 2)")
+    
+    deallocate(y%dv)
+    call y%init(2.0_WP, 2, N_DV)
+    z = max(x, y)
+    call tests%real_eq(z%v, 2.0_WP, "ad max (2), value")
+    call tests%real_eq(z%dv(1), 0.0_WP, "ad max (2), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 1.0_WP, "ad max (2), derivative (dv 2)")
+    
+    z = max(0.0_WP, x)
+    call tests%real_eq(z%v, 1.0_WP, "ad max (3), value")
+    call tests%real_eq(z%dv(1), 1.0_WP, "ad max (3), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad max (3), derivative (dv 2)")
+    
+    deallocate(x%dv)
+    call x%init(-1.0_WP, 2, N_DV)
+    z = max(0.0_WP, x)
+    call tests%real_eq(z%v, 0.0_WP, "ad max (4), value")
+    call tests%real_eq(z%dv(1), 0.0_WP, "ad max (4), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad max (4), derivative (dv 2)")
+    
+    ! test at the switching point
+    ! The first argument is used.
+    deallocate(x%dv, y%dv)
+    call x%init(1.0_WP, 1, N_DV)
+    call y%init(1.0_WP, 2, N_DV)
+    z = max(x, y)
+    call tests%real_eq(z%v, 1.0_WP, "ad max (5), value")
+    call tests%real_eq(z%dv(1), 1.0_WP, "ad max (5), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad max (5), derivative (dv 2)")
+end subroutine test_max
+
+subroutine test_min(tests)
+    use fmad, only: min
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y, z
+
+    call x%init(1.0_WP, 1, N_DV)
+    call y%init(-1.0_WP, 2, N_DV)
+    
+    z = min(x, y)
+    call tests%real_eq(z%v, -1.0_WP, "ad min (1), value")
+    call tests%real_eq(z%dv(1), 0.0_WP, "ad min (1), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 1.0_WP, "ad min (1), derivative (dv 2)")
+    
+    deallocate(x%dv)
+    call x%init(-2.0_WP, 1, N_DV)
+    z = min(x, y)
+    call tests%real_eq(z%v, -2.0_WP, "ad min (2), value")
+    call tests%real_eq(z%dv(1), 1.0_WP, "ad min (2), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad min (2), derivative (dv 2)")
+    
+    z = min(0.0_WP, x)
+    call tests%real_eq(z%v, -2.0_WP, "ad min (3), value")
+    call tests%real_eq(z%dv(1), 1.0_WP, "ad min (3), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad min (3), derivative (dv 2)")
+    
+    deallocate(x%dv)
+    call x%init(1.0_WP, 2, N_DV)
+    z = min(0.0_WP, x)
+    call tests%real_eq(z%v, 0.0_WP, "ad min (4), value")
+    call tests%real_eq(z%dv(1), 0.0_WP, "ad min (4), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad min (4), derivative (dv 2)")
+    
+    ! test at the switching point
+    ! The first argument is used.
+    deallocate(x%dv, y%dv)
+    call x%init(1.0_WP, 1, N_DV)
+    call y%init(1.0_WP, 2, N_DV)
+    z = min(x, y)
+    call tests%real_eq(z%v, 1.0_WP, "ad min (5), value")
+    call tests%real_eq(z%dv(1), 1.0_WP, "ad min (5), derivative (dv 1)")
+    call tests%real_eq(z%dv(2), 0.0_WP, "ad min (5), derivative (dv 2)")
+end subroutine test_min
+
+subroutine test_abs(tests)
+    use fmad, only: abs
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y
+
+    call x%init(2.0_WP, 1, N_DV)
+    y = abs(x)
+    call tests%real_eq(y%v, 2.0_WP, "ad abs (positive), value")
+    call tests%real_eq(y%dv(1), 1.0_WP, "ad abs (positive), derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad abs (positive), derivative (dv 2)")
+
+    deallocate(x%dv)
+    call x%init(-4.0_WP, 2, N_DV)
+    y = abs(x)
+    call tests%real_eq(y%v, 4.0_WP, "ad abs (negative), value")
+    call tests%real_eq(y%dv(1), 0.0_WP, "ad abs (negative), derivative (dv 1)")
+    call tests%real_eq(y%dv(2), -1.0_WP, "ad abs (negative), derivative (dv 2)")
+
+    deallocate(x%dv)
+    call x%init(0.0_WP, 1, N_DV)
+    y = abs(x)
+    call tests%real_eq(y%v, 0.0_WP, "ad abs (zero), value")
+    call tests%real_eq(y%dv(1), 0.0_WP, "ad abs (zero), derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad abs (zero), derivative (dv 2)")
+end subroutine test_abs
 
 end program test_fmad

@@ -11,7 +11,7 @@ use prec, only: WP
 implicit none
 private
 
-public :: sqrt, tanh, log, exp
+public :: sqrt, tanh, log, exp, merge, max, min, abs
 public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
@@ -52,6 +52,24 @@ end interface log
 interface exp
     module procedure :: ad_exp
 end interface exp
+
+interface merge
+    module procedure :: ad_ad_merge
+end interface merge
+
+interface max
+    module procedure :: ad_ad_max_2
+    module procedure :: real_ad_max_2
+end interface max
+
+interface min
+    module procedure :: ad_ad_min_2
+    module procedure :: real_ad_min_2
+end interface min
+
+interface abs
+    module procedure :: ad_abs
+end interface abs
 
 contains
 
@@ -333,12 +351,88 @@ elemental function ad_exp(ad_in)
     ad_exp%dv = ad_in%dv*exp(ad_in%v)
 end function ad_exp
 
+function ad_ad_merge(ad_1, ad_2, mask)
+    class(ad), intent(in) :: ad_1, ad_2
+    logical, intent(in)   :: mask
+    
+    type(ad) :: ad_ad_merge
+    
+    if (mask) then
+        ad_ad_merge = ad_1
+    else
+        ad_ad_merge = ad_2
+    end if
+end function ad_ad_merge
+
+function ad_ad_max_2(ad_1, ad_2)
+    class(ad), intent(in) :: ad_1, ad_2
+    
+    type(ad) :: ad_ad_max_2
+    
+    ad_ad_max_2 = ad_ad_merge(ad_1, ad_2, ad_1%v >= ad_2%v)
+end function ad_ad_max_2
+
+function real_ad_max_2(real_1, ad_2)
+    ! Related: <https://en.wikipedia.org/wiki/Rectifier_(neural_networks)>
+    
+    real(kind=WP), intent(in) :: real_1
+    class(ad), intent(in)     :: ad_2
+    
+    type(ad) :: real_ad_max_2
+    
+    type(ad) :: ad_1
+    
+    call ad_1%init_const(real_1, size(ad_2%dv))
+    real_ad_max_2 = ad_ad_max_2(ad_1, ad_2)
+end function real_ad_max_2
+
+function ad_ad_min_2(ad_1, ad_2)
+    class(ad), intent(in) :: ad_1, ad_2
+    
+    type(ad) :: ad_ad_min_2
+    
+    ad_ad_min_2 = ad_ad_merge(ad_1, ad_2, ad_1%v <= ad_2%v)
+end function ad_ad_min_2
+
+function real_ad_min_2(real_1, ad_2)
+    real(kind=WP), intent(in) :: real_1
+    class(ad), intent(in)     :: ad_2
+    
+    type(ad) :: real_ad_min_2
+    
+    type(ad) :: ad_1
+    
+    call ad_1%init_const(real_1, size(ad_2%dv))
+    real_ad_min_2 = ad_ad_min_2(ad_1, ad_2)
+end function real_ad_min_2
+
+elemental function ad_abs(ad_in)
+    use checks, only: assert, is_close
+    
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_abs
+    
+    if (.not. is_close(ad_in%v, 0.0_WP)) then
+        ad_abs%v  = abs(ad_in%v)
+        ad_abs%dv = ad_in%dv*(ad_in%v/abs(ad_in%v))
+    else
+        call ad_abs%init_const(0.0_WP, size(ad_in%dv))
+    end if
+    
+    call assert(ad_abs%v >= 0.0_WP, "autodiff (ad_abs): value is negative")
+end function ad_abs
+
 pure function f(x, y)
+    use checks, only: assert
+    
     ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.
     
     type(ad), intent(in) :: x, y
     
     type(ad) :: f
+    
+    call assert(y%v > 0.0_WP, "autodiff (f): y is zero")
     
     f = (2.0_WP * x * y - x**2) / y + y
 end function f

@@ -2,6 +2,12 @@
 
 Priorities:
 
+- Make test_concurrent more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
+    - ```./test_purerng
+    real returned = -3999.7052
+           > real = .0000000
+    fail: test_concurrent, greater than zero```
+- transient.py: Repeatedly run tests looking for transient failures, saving results when a transient failure is encountered.
 - depends.py:
     - Generates a list of executables from `app` in before.mk, add them to `CLEAN`.
 - Add Valgrind back to check-fc. Suppress namelist derived-type input problem in Valgrind.
@@ -25,6 +31,7 @@ Priorities:
     - create tgz and/or zip file of `DESTDIR`
     - lists hashes
 - Add `PFLAGS` to enable or disable parallelization for debug and release. OpenMP and other libraries can't be statically linked, so they might lead to portability issues if they aren't used but are dynamically linked and aren't available.
+- `ARCH=gpu` for ifx and nvfortran. `GFLAGS` for GPU flags?
 - nmllog.f90
     - `check_bounds(x, rc, lower, upper)`
         - Both `lower` and `upper` are optional, but at least one of the two must be `present`.
@@ -72,6 +79,7 @@ Priorities:
     - Mac OS
 - Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
 - Count test_units.f90 towards test_genunitsio.f90?
+- When work has ifx 2024.2, change `assert` to eliminate `full_message` by putting the message directly on the `error stop` line. Also see [compiler-bugs report0002](https://github.com/btrettel/compiler-bugs/tree/main/report0002).
 
 Later:
 

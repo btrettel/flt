@@ -1,8 +1,8 @@
 # `-check uninit` has false positives with namelists for the moment.
 # <https://community.intel.com/t5/Intel-Fortran-Compiler/Known-bug-with-check-all-or-check-uninit-in-ifx-2024-0-0-for/m-p/1545825>
 
-FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays -standard-semantics
-DFLAGS = -O0 -g -traceback -debug full -check all,nouninit -fpe0
+FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays
+DFLAGS = -O0 -g -traceback -debug full -check all,nouninit -fpe0 -standard-semantics
 RFLAGS = -O2 -static -qopt-report -fiopenmp
 AFLAGS = 
 NFLAGS = -xHost
@@ -14,3 +14,6 @@ NFLAGS = -xHost
 # `-xHost`: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/xhost-qxhost.html>
 
 # static linking: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/static-002.html>
+
+# `-standard-semantics` is only used for BUILD=debug due to a potential performance reduction.
+# <https://github.com/fortran-lang/fpm/issues/868#issuecomment-1720960031>
