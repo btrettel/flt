@@ -24,10 +24,11 @@ character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
 integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the most the ifx will compile as of 2024-05-12.
                               DEFAULT_MAX_ITER    = 50, &
-                              DEFAULT_DENOMINATOR = 1
+                              DEFAULT_DENOMINATOR = 1, &
+                              MAX_USE_LINES       = 10
 
 type, public :: config_type
-    character(len=:), allocatable :: output_file, type_definition, use_line, kind_parameter
+    character(len=:), allocatable :: output_file, type_definition, use_line, kind_parameter, module_name
     real(kind=WP), allocatable    :: min_exponents(:), &
                                      max_exponents(:)
     integer, allocatable          :: denominators(:)
@@ -66,21 +67,23 @@ subroutine read_config_namelist(config_out, filename, rc)
     character(len=*), intent(in)    :: filename
     integer, intent(out)            :: rc
     
-    integer           :: i_base_unit, nml_unit, rc_nml, n_failures, n_base_units
+    integer           :: i_base_unit, nml_unit, rc_nml, n_failures, n_base_units, n_use_lines
     character(len=CL) :: nml_error_message
     
     ! `config` namelist group
-    character(len=CL)            :: output_file, type_definition, use_line, kind_parameter
+    character(len=CL)            :: output_file, type_definition, use_line, kind_parameter, module_name
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
     integer                      :: denominators(MAX_BASE_UNITS), max_n_units, max_iter
     logical                      :: tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
-    namelist /config/ output_file, base_units, type_definition, use_line, kind_parameter, &
+    namelist /config/ output_file, base_units, type_definition, use_line, kind_parameter, module_name, &
                         min_exponents, max_exponents, denominators, &
                         max_n_units, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
+    
+    n_failures = 0
     
     do concurrent (i_base_unit = 1:MAX_BASE_UNITS)
         base_units(i_base_unit) = ""
@@ -90,6 +93,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     type_definition = "real(kind=WP)"
     use_line        = "use prec, only: WP"
     kind_parameter  = ""
+    module_name     = "units"
     min_exponents   = -huge(1.0_WP)
     max_exponents   = huge(1.0_WP)
     denominators    = DEFAULT_DENOMINATOR
@@ -122,6 +126,25 @@ subroutine read_config_namelist(config_out, filename, rc)
     end do
     call assert(n_base_units <= MAX_BASE_UNITS, "genunits_io (read_config_namelist): n_base_units is too high")
     
+    ! Replace semicolons with new lines in the `use_line` variable so that multiple `use` lines can be written.
+    n_use_lines = 0
+    do ! SERIAL
+        n_use_lines = n_use_lines + 1
+        
+        if (index(use_line, ";") > 0) then
+            use_line(index(use_line, ";"):index(use_line, ";")) = new_line("a")
+        end if
+        
+        if (index(use_line, ";") == 0) then
+            exit
+        end if
+        
+        if (n_use_lines > MAX_USE_LINES) then
+            exit
+        end if
+    end do
+    call config_out%logger%check(index(use_line, ";") == 0, "use_line contains too many semicolons.", n_failures)
+    
     config_out%output_file     = trim(output_file)
     config_out%type_definition = trim(type_definition)
     config_out%use_line        = trim(use_line)
@@ -131,6 +154,8 @@ subroutine read_config_namelist(config_out, filename, rc)
     else
         config_out%kind_parameter = "_" // trim(kind_parameter)
     end if
+    
+    config_out%module_name     = trim(module_name)
     
     config_out%min_exponents   = min_exponents(1:n_base_units)
     config_out%max_exponents   = max_exponents(1:n_base_units)
@@ -146,8 +171,6 @@ subroutine read_config_namelist(config_out, filename, rc)
     config_out%square          = square
     config_out%intrinsics      = intrinsics
     config_out%dtio            = dtio
-    
-    n_failures = 0
     
     call config_out%logger%check(n_base_units > 0, "base_units must have 1 or more members", n_failures)
     call config_out%logger%check(len(type_definition) > 0, "type_definition must have 1 or more characters", n_failures)
@@ -771,7 +794,7 @@ subroutine write_unit_function(config, unit_system, file_unit)
     end do
     
     write(unit=file_unit, fmt="(a)") "        class default"
-    write(unit=file_unit, fmt="(3a)") '            error stop "', config%output_file, ' (unit): invalid type"'
+    write(unit=file_unit, fmt="(3a)") '            error stop "', config%module_name, ' (unit): invalid type"'
     
     write(unit=file_unit, fmt="(a)") "    end select"
     
@@ -1030,7 +1053,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     integer, intent(in)                 :: file_unit
     integer, intent(out)                :: rc
     
-    integer           :: i_seed_unit, i_unit, j_unit, max_label_len, n_interfaces
+    integer           :: i_seed_unit, i_unit, j_unit, max_label_len, n_interfaces, i_space
     character(len=10) :: n_char
     character(len=20) :: use_format
     type(unit_type)   :: trial_unit
@@ -1042,7 +1065,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     ! Now actually write the module.
     
     write(unit=file_unit, fmt="(3a)") "! Automatically generated by genunits.", new_line("a"), new_line("a")
-    write(unit=file_unit, fmt="(2a)") "module units", new_line("a")
+    write(unit=file_unit, fmt="(3a)") "module ", config%module_name, new_line("a")
     write(unit=file_unit, fmt="(2a)") config%use_line, new_line("a")
     write(unit=file_unit, fmt="(2a)") "implicit none"
     write(unit=file_unit, fmt="(2a)") "private", new_line("a")
@@ -1102,7 +1125,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     ! Write `use` lines as comments.
     if (size(config%seed_labels) > 0) then
-        write(unit=file_unit, fmt="(a)", advance="no") "!use units, only: "
+        write(unit=file_unit, fmt="(3a)", advance="no") "!use ", config%module_name, ", only: "
         
         max_label_len = 0
         do i_seed_unit = 1, size(config%seed_labels) ! SERIAL
@@ -1111,7 +1134,10 @@ subroutine write_module(config, unit_system, file_unit, rc)
         
         do i_seed_unit = 1, size(config%seed_labels) ! SERIAL
             if (i_seed_unit /= 1) then
-                write(unit=file_unit, fmt="(a)", advance="no") "!                 "
+                write(unit=file_unit, fmt="(a)", advance="no") "!"
+                do i_space = 1, 12 + len(config%module_name) ! SERIAL
+                    write(unit=file_unit, fmt="(a)", advance="no") " "
+                end do
             end if
             
             ! Align the `=>` and left-justify the labels.
@@ -1133,7 +1159,10 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end do
         
         if (use_sqrt .or. use_cbrt .or. use_square) then
-            write(unit=file_unit, fmt="(a)", advance="no") "!                 "
+            write(unit=file_unit, fmt="(a)", advance="no") "!"
+            do i_space = 1, 12 + len(config%module_name) ! SERIAL
+                write(unit=file_unit, fmt="(a)", advance="no") " "
+            end do
         end if
         
         if (use_sqrt) then
@@ -1232,7 +1261,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end do
     end if
     
-    write(unit=file_unit, fmt="(a)") "end module units"
+    write(unit=file_unit, fmt="(2a)") "end module ", config%module_name
     
     write(unit=n_char, fmt="(i0)") n_interfaces
     call config%logger%info("Generated " // trim(n_char) // " interfaces.")

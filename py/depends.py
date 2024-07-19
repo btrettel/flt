@@ -62,7 +62,8 @@ module_name_mismatch = canonicalize_paths(config['depends']['module_name_mismatc
 skip_indexing        = canonicalize_paths(config['depends']['skip_indexing'])
 depends_file         = canonicalize_path(config['depends']['depends_file'])
 before_file          = canonicalize_path(config['depends']['before_file'])
-allsrc_raw           = canonicalize_path(config['depends']['allsrc']).split(' ')
+allsrc_raw           = config['depends']['allsrc'].split(' ')
+not_allsrc_raw       = config['depends']['not_allsrc'].split(' ')
 
 fail = False
 
@@ -94,6 +95,19 @@ if not ((len(allsrc_raw) == 1) and (allsrc_raw[0] == "")):
         
         all_source.add(filepath)
 
+not_all_source = set()
+if not ((len(not_allsrc_raw) == 1) and (not_allsrc_raw[0] == "")):
+    for filepath in sorted(not_allsrc_raw):
+        # Canonicalize the filepath, so that (for example), this works if `.\` is in front of the path, like PowerShell does.
+        filepath = os.path.relpath(filepath)
+        
+        if not os.path.isfile(filepath):
+            print("ERROR: {} in not_allsrc is not a file.".format(filepath))
+            fail = True
+        
+        print("not", filepath)
+        not_all_source.add(filepath)
+
 if fail:
     print("Error(s) encountered, stopping.")
     exit(1)
@@ -104,7 +118,8 @@ for filepath in sorted(filepaths):
     if filepath in skip_indexing:
         continue
     
-    all_source.add(filepath)
+    if (not filepath in not_all_source):
+        all_source.add(filepath)
     
     with open(filepath, "r") as file_handler:
         program      = False

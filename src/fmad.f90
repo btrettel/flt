@@ -21,12 +21,12 @@ type, public :: ad
 contains
     procedure :: init
     procedure :: init_const
-    procedure, private :: ad_ad_add, ad_real_add
+    procedure, private :: ad_ad_add, ad_real_add, ad_add_unary
     procedure, private, pass(ad_in) :: real_ad_add
-    generic, public :: operator(+) => ad_ad_add, ad_real_add, real_ad_add
-    procedure, private :: ad_ad_subtract, ad_real_subtract, ad_unary_minus
+    generic, public :: operator(+) => ad_ad_add, ad_real_add, real_ad_add, ad_add_unary
+    procedure, private :: ad_ad_subtract, ad_real_subtract, ad_subtract_unary
     procedure, private, pass(ad_in) :: real_ad_subtract
-    generic, public :: operator(-) => ad_ad_subtract, ad_real_subtract, real_ad_subtract, ad_unary_minus
+    generic, public :: operator(-) => ad_ad_subtract, ad_real_subtract, real_ad_subtract, ad_subtract_unary
     procedure, private :: ad_ad_multiply, ad_real_multiply
     procedure, private, pass(ad_in) :: real_ad_multiply
     generic, public :: operator(*) => ad_ad_multiply, ad_real_multiply, real_ad_multiply
@@ -196,16 +196,27 @@ elemental function real_ad_subtract(real_in, ad_in)
     real_ad_subtract%dv = -ad_in%dv
 end function real_ad_subtract
 
-elemental function ad_unary_minus(ad_in)
+elemental function ad_subtract_unary(ad_in)
     ! Returns `-rd`.
 
     class(ad), intent(in) :: ad_in
     
-    type(ad) :: ad_unary_minus
+    type(ad) :: ad_subtract_unary
 
-    ad_unary_minus%v  = -ad_in%v
-    ad_unary_minus%dv = -ad_in%dv
-end function ad_unary_minus
+    ad_subtract_unary%v  = -ad_in%v
+    ad_subtract_unary%dv = -ad_in%dv
+end function ad_subtract_unary
+
+elemental function ad_add_unary(ad_in)
+    ! Returns `+rd`.
+
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_add_unary
+
+    ad_add_unary%v  = ad_in%v
+    ad_add_unary%dv = ad_in%dv
+end function ad_add_unary
 
 elemental function ad_ad_multiply(ad_1, ad_2)
     ! Multiplies two `ad`s.

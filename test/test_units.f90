@@ -1,4 +1,4 @@
-! tests for the generated unitss module
+! tests for the generated units module
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)

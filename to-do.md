@@ -9,6 +9,7 @@ Priorities:
     fail: test_concurrent, greater than zero```
 - transient.py: Repeatedly run tests looking for transient failures, saving results when a transient failure is encountered.
 - depends.py:
+    - Figure out a way to add object file dependencies for modules that have `skip_indexing` set. Extra field in config.ini?
     - Generates a list of executables from `app` in before.mk, add them to `CLEAN`.
 - Add Valgrind back to check-fc. Suppress namelist derived-type input problem in Valgrind.
     - <https://valgrind.org/docs/manual/manual-core.html#manual-core.suppress>
@@ -81,6 +82,8 @@ Priorities:
 - Count test_units.f90 towards test_genunitsio.f90?
 - When work has ifx 2024.2, change `assert` to eliminate `full_message` by putting the message directly on the `error stop` line. Also see [compiler-bugs report0002](https://github.com/btrettel/compiler-bugs/tree/main/report0002).
 - f90lint.py: Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
+- test_fmad.f90
+    - `rd` to `ad`
 - fmad.f90 and units.f90
     - `is_close`
 

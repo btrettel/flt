@@ -375,8 +375,9 @@ regexp-rules:
   
   elf90-f-no-statement-separator:
     message: ELF90 and F prohibit multiple statements per line
-    regexp: ;
+    regexp: ;\s
     active: true
+    # This is set up so that only semicolons with a space afterward match to avoid false positives from semicolons used by themselves in strings.
   
   elf90-no-typing-on-function-statement:
     message: ELF90 prohibits typing on function statements; set the type in the variable declaration
@@ -523,7 +524,7 @@ syntax:
   punctuations:
     - ','
     #- '\)'
-    - ';'
+    #- ';' # False positive from semicolon in a string.
 
   namespace_blocks:
     - program
