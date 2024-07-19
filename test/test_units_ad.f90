@@ -25,10 +25,14 @@ integer, parameter :: N_DV = 2
 call logger%open("units_ad.nml")
 call tests%start_tests(logger)
 
-call u%v%init_const(1.0_WP, N_DV)
+call u%v%init_const(2.0_WP, N_DV)
 call x%v%init_const(1.0_WP, N_DV)
 
-call tests%logical_true(.true., "placeholder")
+! TODO: Won't work yet: x = 2.0_WP*x
+! TODO: Won't work yet due to AD: x = unitless(2.0_WP)*x
+
+x = u*x
+call tests%real_eq(x%v%v, 2.0_WP, "units value, u*x")
 
 call tests%end_tests()
 call logger%close()

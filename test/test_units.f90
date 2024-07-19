@@ -111,6 +111,12 @@ v = velocity(1.0_WP)
 ! TODO: The next one doesn't work with nvfortran. File a bug report.
 ! v = length(1.0_WP) / time(1.0_WP)
 
+! TODO: Won't work yet: x = 2.0_WP*x
+
+x%v = 1.0_WP
+x = unitless(2.0_WP)*x
+call tests%real_eq(x%v, 2.0_WP, "units value, multiplied by unitless")
+
 call test_dtio(tests)
 
 call tests%end_tests()

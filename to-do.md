@@ -2,6 +2,7 @@
 
 Priorities:
 
+- Better constructors for AD. I should be able to get a constant by using `ad` directly.
 - Make test_concurrent more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
     - ```./test_purerng
     real returned = -3999.7052
