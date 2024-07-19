@@ -483,7 +483,7 @@ end subroutine generate_system
 ! output
 
 subroutine write_type(config, file_unit, i_unit, unit_system)
-    use checks, only: assert
+    use checks, only: assert, all_close
     use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
     
     class(config_type), intent(in)     :: config
@@ -546,24 +546,32 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
         ! multiply
         trial_unit = m_unit(unit_system%units(i_unit), unit_system%units(j_unit))
         if (trial_unit%is_in(unit_system%units)) then
-            write(unit=file_unit, fmt="(5a)") "    procedure, private :: m_", &
+            write(unit=file_unit, fmt="(4a)") "    procedure, private :: m_", &
                 trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
-            write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(*) => m_", &
+            write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(*) => m_", &
                 trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
         else
-            write(unit=file_unit, fmt="(5a)") "    ! excluded: m_", &
+            write(unit=file_unit, fmt="(4a)") "    ! excluded: m_", &
                 trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
+        end if
+        
+        ! Allow using `real`s as unitless in some situations.
+        if (all_close(unit_system%units(j_unit)%e, 0.0_WP) .and. (.not. all_close(unit_system%units(i_unit)%e, 0.0_WP))) then
+            write(unit=file_unit, fmt="(3a)") "    procedure, private, pass(left) :: m_", &
+                trim(unit_system%units(i_unit)%label()), "_real"
+            write(unit=file_unit, fmt="(3a)") "    generic, public :: operator(*) => m_", &
+                trim(unit_system%units(i_unit)%label()), "_real"
         end if
         
         ! divide
         trial_unit = d_unit(unit_system%units(i_unit), unit_system%units(j_unit))
         if (trial_unit%is_in(unit_system%units)) then
-            write(unit=file_unit, fmt="(5a)") "    procedure, private :: d_", &
+            write(unit=file_unit, fmt="(4a)") "    procedure, private :: d_", &
                 trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
-            write(unit=file_unit, fmt="(5a)") "    generic, public :: operator(/) => d_", &
+            write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(/) => d_", &
                 trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
         else
-            write(unit=file_unit, fmt="(5a)") "    ! excluded: d_", &
+            write(unit=file_unit, fmt="(4a)") "    ! excluded: d_", &
                 trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
         end if
     end do
@@ -620,7 +628,7 @@ subroutine write_comparison_operators(config, unit_system, file_unit, unit)
 end subroutine write_comparison_operators
 
 subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_right, n_interfaces)
-    use checks, only: assert
+    use checks, only: assert, all_close
     use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
     
     class(config_type), intent(in)     :: config
@@ -640,6 +648,11 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
     if (unit_m%is_in(unit_system%units)) then
         call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*")
         n_interfaces = n_interfaces + 1
+        
+        if (all_close(unit_right%e, 0.0_WP) .and. (.not. all_close(unit_left%e, 0.0_WP))) then
+            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*", unitless_is_real=.true.)
+            n_interfaces = n_interfaces + 1
+        end if
     end if
     
     ! divide
@@ -707,8 +720,13 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
             error stop "write_binary_operator: invalid op"
     end select
     
-    binary_operator_procedure = trim(op_label) // "_" // trim(unit_left%label()) // "_" &
-                                    // trim(unit_right%label())
+    if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_) then
+        binary_operator_procedure = trim(op_label) // "_real_" // trim(unit_right%label())
+    else if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_) then
+        binary_operator_procedure = trim(op_label) // "_" // trim(unit_left%label()) // "_real"
+    else
+        binary_operator_procedure = trim(op_label) // "_" // trim(unit_left%label()) // "_" // trim(unit_right%label())
+    end if
     
     call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_binary_operator): " // &
                         "binary_operator_procedure name is too long and won't meet the Fortran 2003 standard")
@@ -722,13 +740,13 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
     end if
     
     if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_) then
-        write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter, "), intent(in) :: left"
+        write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter(2:), "), intent(in) :: left"
     else
         write(unit=file_unit, fmt="(3a)") "    class(", trim(unit_left%label()), "), intent(in) :: left"
     end if
     
     if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_) then
-        write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter, "), intent(in) :: right"
+        write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter(2:), "), intent(in) :: right"
     else
         write(unit=file_unit, fmt="(3a)") "    type(", trim(unit_right%label()), "), intent(in) :: right"
     end if
@@ -738,7 +756,14 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
         write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, " = left%v ", op, " right%v"
     else
         write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", binary_operator_procedure
-        write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left%v ", op, " right%v"
+        
+        if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_) then
+            write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left ", op, " right%v"
+        else if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_) then
+            write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left%v ", op, " right"
+        else
+            write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left%v ", op, " right%v"
+        end if
     end if
     
     write(unit=file_unit, fmt="(3a)") "end function ", binary_operator_procedure, new_line("a")
