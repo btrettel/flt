@@ -574,6 +574,14 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
             write(unit=file_unit, fmt="(4a)") "    ! excluded: d_", &
                 trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(j_unit)%label())
         end if
+        
+        ! Allow using `real`s as unitless in some situations.
+        if (all_close(unit_system%units(j_unit)%e, 0.0_WP) .and. (.not. all_close(unit_system%units(i_unit)%e, 0.0_WP))) then
+            write(unit=file_unit, fmt="(3a)") "    procedure, private, pass(left) :: d_", &
+                trim(unit_system%units(i_unit)%label()), "_real"
+            write(unit=file_unit, fmt="(3a)") "    generic, public :: operator(/) => d_", &
+                trim(unit_system%units(i_unit)%label()), "_real"
+        end if
     end do
     
     if (config%dtio) then
@@ -660,6 +668,11 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
     if (unit_d%is_in(unit_system%units)) then
         call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/")
         n_interfaces = n_interfaces + 1
+        
+        if (all_close(unit_right%e, 0.0_WP) .and. (.not. all_close(unit_left%e, 0.0_WP))) then
+            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "/", unitless_is_real=.true.)
+            n_interfaces = n_interfaces + 1
+        end if
     end if
 end subroutine write_md_operators
 
