@@ -80,6 +80,7 @@ Priorities:
 - Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
 - Count test_units.f90 towards test_genunitsio.f90?
 - When work has ifx 2024.2, change `assert` to eliminate `full_message` by putting the message directly on the `error stop` line. Also see [compiler-bugs report0002](https://github.com/btrettel/compiler-bugs/tree/main/report0002).
+- f90lint.py: Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
 
 Later:
 
@@ -316,10 +317,11 @@ Later:
     - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
     - <https://github.com/perazz/fortran-regex>
     - Fork, add asserts and tests? Or just use as-is to get started faster?
-- autodiff.f90
+- fmad.f90
     - Modify your AD to use SIMD vectorization. Use `do concurrent` with OpenMP or OpenACC directives? See personal notes on automatic differentiation for other speed ideas too.
     - Can declare certain derivatives as "active" or "inactive to easily enable or disable (respectively) differentiation with respect to particular variables at compile or run time for speed. Not yet sure how to pick `dv` indices in this case. With allocatable `dv`, this can be done at run time.
     - Add comparison operators
+    - `real(kind=WP)` exponentiation (`**`) operation
 - To-do routine in code to cause compilation to fail.
 - `nmllog`
     - When nvfortran supports writing namelists to internal variables, support adding a custom namelist to the output. Then you can have custom variables in `nmllog` output.

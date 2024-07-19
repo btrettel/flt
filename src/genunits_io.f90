@@ -14,7 +14,7 @@ implicit none
 private
 
 public :: in_exponent_bounds, denominator_matches, &
-            write_as_operators, write_conditional_operators, write_md_operators, write_binary_operator, &
+            write_as_operators, write_comparison_operators, write_md_operators, write_binary_operator, &
             write_unary_operator, &
             write_unit_function, write_unit_wf, write_unit_rf, &
             write_exponentiation_interfaces, write_exponentiation_function, &
@@ -33,7 +33,7 @@ type, public :: config_type
     integer, allocatable          :: denominators(:)
     
     integer :: max_n_units, max_iter !, max_n_interfaces
-    logical :: tests, comparison, unary, sqrt, cbrt, square, intrinsics
+    logical :: tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     type(log_type) :: logger
     
@@ -74,11 +74,11 @@ subroutine read_config_namelist(config_out, filename, rc)
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
     integer                      :: denominators(MAX_BASE_UNITS), max_n_units, max_iter
-    logical                      :: tests, comparison, unary, sqrt, cbrt, square, intrinsics
+    logical                      :: tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     namelist /config/ output_file, base_units, type_definition, use_line, kind_parameter, &
                         min_exponents, max_exponents, denominators, &
-                        max_n_units, tests, comparison, unary, sqrt, cbrt, square, intrinsics
+                        max_n_units, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
     
@@ -102,6 +102,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     cbrt            = .true.
     square          = .true.
     intrinsics      = .true.
+    dtio            = .false.
     
     open(newunit=nml_unit, file=filename, status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
@@ -144,6 +145,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     config_out%cbrt            = cbrt
     config_out%square          = square
     config_out%intrinsics      = intrinsics
+    config_out%dtio            = dtio
     
     n_failures = 0
     
@@ -487,25 +489,27 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     
-    write(unit=file_unit, fmt="(4a)") "    procedure, private :: lt_", &
-        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
-    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(<) => lt_", &
-        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
-    
-    write(unit=file_unit, fmt="(4a)") "    procedure, private :: le_", &
-        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
-    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(<=) => le_", &
-        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
-    
-    write(unit=file_unit, fmt="(4a)") "    procedure, private :: gt_", &
-        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
-    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(>) => gt_", &
-        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
-    
-    write(unit=file_unit, fmt="(4a)") "    procedure, private :: ge_", &
-        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
-    write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(>=) => ge_", &
-        trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    if (config%comparison) then
+        write(unit=file_unit, fmt="(4a)") "    procedure, private :: lt_", &
+            trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(<) => lt_", &
+            trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+        
+        write(unit=file_unit, fmt="(4a)") "    procedure, private :: le_", &
+            trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(<=) => le_", &
+            trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+        
+        write(unit=file_unit, fmt="(4a)") "    procedure, private :: gt_", &
+            trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(>) => gt_", &
+            trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+        
+        write(unit=file_unit, fmt="(4a)") "    procedure, private :: ge_", &
+            trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(>=) => ge_", &
+            trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    end if
     
     if (config%unary) then
         write(unit=file_unit, fmt="(2a)") "    procedure, private :: a_", trim(unit_system%units(i_unit)%label())
@@ -541,10 +545,12 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
         end if
     end do
     
-    write(unit=file_unit, fmt="(2a)") "    procedure :: wf_", trim(unit_system%units(i_unit)%label())
-    write(unit=file_unit, fmt="(2a)") "    generic   :: write(formatted) => wf_", trim(unit_system%units(i_unit)%label())
-    write(unit=file_unit, fmt="(2a)") "    procedure :: rf_", trim(unit_system%units(i_unit)%label())
-    write(unit=file_unit, fmt="(2a)") "    generic   :: read(formatted) => rf_", trim(unit_system%units(i_unit)%label())
+    if (config%dtio) then
+        write(unit=file_unit, fmt="(2a)") "    procedure :: wf_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(2a)") "    generic   :: write(formatted) => wf_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(2a)") "    procedure :: rf_", trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(2a)") "    generic   :: read(formatted) => rf_", trim(unit_system%units(i_unit)%label())
+    end if
     
     write(unit=file_unit, fmt="(3a)") "end type ", trim(unit_system%units(i_unit)%label()), new_line("a")
 end subroutine write_type
@@ -569,7 +575,7 @@ subroutine write_as_operators(unit_system, file_unit, unit)
     call write_binary_operator(unit_system, file_unit, unit, unit, unit, "-")
 end subroutine write_as_operators
 
-subroutine write_conditional_operators(unit_system, file_unit, unit)
+subroutine write_comparison_operators(unit_system, file_unit, unit)
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
     
@@ -580,13 +586,13 @@ subroutine write_conditional_operators(unit_system, file_unit, unit)
     logical :: file_unit_open
     
     inquire(unit=file_unit, opened=file_unit_open)
-    call assert(file_unit_open, "genunits_io (write_conditional_operators): file_unit must be open")
+    call assert(file_unit_open, "genunits_io (write_comparison_operators): file_unit must be open")
     
     call write_binary_operator(unit_system, file_unit, unit, unit, unit, "<")
     call write_binary_operator(unit_system, file_unit, unit, unit, unit, "<=")
     call write_binary_operator(unit_system, file_unit, unit, unit, unit, ">")
     call write_binary_operator(unit_system, file_unit, unit, unit, unit, ">=")
-end subroutine write_conditional_operators
+end subroutine write_comparison_operators
 
 subroutine write_md_operators(unit_system, file_unit, unit_left, unit_right, n_interfaces)
     use checks, only: assert
@@ -737,10 +743,11 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
     write(unit=file_unit, fmt="(3a)") "end function ", unary_operator_procedure, new_line("a")
 end subroutine write_unary_operator
 
-subroutine write_unit_function(unit_system, file_unit)
+subroutine write_unit_function(config, unit_system, file_unit)
     use checks, only: assert
     use genunits_data, only: unit_system_type
     
+    class(config_type), intent(in)     :: config
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     
@@ -759,13 +766,16 @@ subroutine write_unit_function(unit_system, file_unit)
     write(unit=file_unit, fmt="(a)") "    select type (arg)"
     
     do i_unit = 1, size(unit_system%units) ! SERIAL
-        write(unit=file_unit, fmt="(3a)") "    type is (", trim(unit_system%units(i_unit)%label()), ")"
-        write(unit=file_unit, fmt="(3a)") '        unit = "', trim(unit_system%units(i_unit)%readable(unit_system)), '"'
+        write(unit=file_unit, fmt="(3a)") "        type is (", trim(unit_system%units(i_unit)%label()), ")"
+        write(unit=file_unit, fmt="(3a)") '            unit = "', trim(unit_system%units(i_unit)%readable(unit_system)), '"'
     end do
     
-    write(unit=file_unit, fmt="(a)") "end select"
+    write(unit=file_unit, fmt="(a)") "        class default"
+    write(unit=file_unit, fmt="(3a)") '            error stop "', config%output_file, ' (unit): invalid type"'
     
-    write(unit=file_unit, fmt="(a)") "end function unit", new_line("a")
+    write(unit=file_unit, fmt="(a)") "    end select"
+    
+    write(unit=file_unit, fmt="(2a)") "end function unit", new_line("a")
 end subroutine write_unit_function
 
 subroutine write_unit_wf(unit_system, file_unit, unit)
@@ -1031,6 +1041,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     ! Now actually write the module.
     
+    write(unit=file_unit, fmt="(3a)") "! Automatically generated by genunits.", new_line("a"), new_line("a")
     write(unit=file_unit, fmt="(2a)") "module units", new_line("a")
     write(unit=file_unit, fmt="(2a)") config%use_line, new_line("a")
     write(unit=file_unit, fmt="(2a)") "implicit none"
@@ -1162,19 +1173,23 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     n_interfaces = 0
     
-    call write_unit_function(unit_system, file_unit)
+    call write_unit_function(config, unit_system, file_unit)
     n_interfaces = n_interfaces + 1
     
     do i_unit = 1, size(unit_system%units) ! SERIAL
-        call write_unit_wf(unit_system, file_unit, unit_system%units(i_unit))
-        call write_unit_rf(unit_system, file_unit, unit_system%units(i_unit))
-        n_interfaces = n_interfaces + 2
+        if (config%dtio) then
+            call write_unit_wf(unit_system, file_unit, unit_system%units(i_unit))
+            call write_unit_rf(unit_system, file_unit, unit_system%units(i_unit))
+            n_interfaces = n_interfaces + 2
+        end if
         
         call write_as_operators(unit_system, file_unit, unit_system%units(i_unit))
         n_interfaces = n_interfaces + 2
         
-        call write_conditional_operators(unit_system, file_unit, unit_system%units(i_unit))
-        n_interfaces = n_interfaces + 4
+        if (config%comparison) then
+            call write_comparison_operators(unit_system, file_unit, unit_system%units(i_unit))
+            n_interfaces = n_interfaces + 4
+        end if
         
         if (config%unary) then
             call write_unary_operator(unit_system, file_unit, unit_system%units(i_unit), "+")

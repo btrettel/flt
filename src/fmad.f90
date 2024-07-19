@@ -86,9 +86,9 @@ elemental subroutine init(x, v, n, n_dv)
 
     integer :: i_dv ! loop index
     
-    call assert(n_dv >= 1, "autodiff (init): n_dv must be one or more")
-    call assert(n >= 1, "autodiff (init): n must be 1 or more")
-    call assert(n <= n_dv, "autodiff (init): n must be n_dv or less")
+    call assert(n_dv >= 1, "fmad (init): n_dv must be one or more")
+    call assert(n >= 1, "fmad (init): n must be 1 or more")
+    call assert(n <= n_dv, "fmad (init): n must be n_dv or less")
     
     x%v = v
     
@@ -96,8 +96,8 @@ elemental subroutine init(x, v, n, n_dv)
     do concurrent (i_dv = 1:n_dv)
         x%dv(i_dv) = merge(1.0_WP, 0.0_WP, i_dv == n)
     end do
-    call assert(any(is_close(x%dv, 1.0_WP)), "autodiff (init): at least one derivative set")
-    call assert(any(is_close(x%dv, 0.0_WP)), "autodiff (init): at least one derivative not set")
+    call assert(any(is_close(x%dv, 1.0_WP)), "fmad (init): at least one derivative set")
+    call assert(any(is_close(x%dv, 0.0_WP)), "fmad (init): at least one derivative not set")
 end subroutine init
 
 elemental subroutine init_const(x, v, n_dv)
@@ -107,7 +107,7 @@ elemental subroutine init_const(x, v, n_dv)
     real(kind=WP), intent(in) :: v    ! value of constant to set
     integer, intent(in)       :: n_dv ! total number of differentiable variables
     
-    call assert(n_dv >= 1, "autodiff (init): n_dv must be one or more")
+    call assert(n_dv >= 1, "fmad (init): n_dv must be one or more")
     
     allocate(x%dv(n_dv))
 
@@ -280,7 +280,7 @@ elemental function ad_real_exponentiate(ad_in, real_in)
     type(ad) :: ad_real_exponentiate
     
     call assert((abs(ad_in%v) > 0.0_WP) .and. (real_in >= 0), &
-                    "autodiff (ad_real_exponentiate): exponent is negative and argument is zero")
+                    "fmad (ad_real_exponentiate): exponent is negative and argument is zero")
 
     ad_real_exponentiate%v  = ad_in%v**real_in
     ad_real_exponentiate%dv = real_in*(ad_in%v**(real_in - 1.0_WP))*ad_in%dv
@@ -297,7 +297,7 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
     type(ad) :: ad_integer_exponentiate
     
     call assert((abs(ad_in%v) > 0.0_WP) .and. (integer_in >= 0), &
-                    "autodiff (ad_integer_exponentiate): exponent is negative and argument is zero")
+                    "fmad (ad_integer_exponentiate): exponent is negative and argument is zero")
 
     ad_integer_exponentiate%v  = ad_in%v**integer_in
     ad_integer_exponentiate%dv = real(integer_in, WP)*(ad_in%v**(integer_in - 1))*ad_in%dv
@@ -314,7 +314,7 @@ elemental function ad_sqrt(ad_in)
     
     type(ad) :: ad_sqrt
     
-    call assert(ad_in%v > 0.0_WP, "autodiff (ad_sqrt): argument is zero or negative")
+    call assert(ad_in%v > 0.0_WP, "fmad (ad_sqrt): argument is zero or negative")
     
     ad_sqrt%v  = sqrt(ad_in%v)
     ad_sqrt%dv = ad_in%dv/(2.0_WP * sqrt(ad_in%v))
@@ -336,7 +336,7 @@ elemental function ad_log(ad_in)
     
     type(ad) :: ad_log
     
-    call assert(ad_in%v > 0.0_WP, "autodiff (ad_log): argument is zero or negative")
+    call assert(ad_in%v > 0.0_WP, "fmad (ad_log): argument is zero or negative")
     
     ad_log%v  = log(ad_in%v)
     ad_log%dv = ad_in%dv/ad_in%v
@@ -420,7 +420,7 @@ elemental function ad_abs(ad_in)
         call ad_abs%init_const(0.0_WP, size(ad_in%dv))
     end if
     
-    call assert(ad_abs%v >= 0.0_WP, "autodiff (ad_abs): value is negative")
+    call assert(ad_abs%v >= 0.0_WP, "fmad (ad_abs): value is negative")
 end function ad_abs
 
 pure function f(x, y)
@@ -432,7 +432,7 @@ pure function f(x, y)
     
     type(ad) :: f
     
-    call assert(y%v > 0.0_WP, "autodiff (f): y is zero")
+    call assert(y%v > 0.0_WP, "fmad (f): y is zero")
     
     f = (2.0_WP * x * y - x**2) / y + y
 end function f

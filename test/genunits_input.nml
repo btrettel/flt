@@ -10,6 +10,8 @@ max_n_units     = 10
 min_exponents = 0.0, 0.0, -1.0
 max_exponents = 3.0, 0.0, 1.0
 denominators  = 2, 1, 2
+
+dtio = .true.
 /
 
 &seed_unit
