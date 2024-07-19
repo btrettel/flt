@@ -7,11 +7,16 @@ use_line        = "use prec, only: WP"
 kind_parameter  = "WP"
 max_n_units     = 10
 
-min_exponents = 0.0, 0.0, -1.0
-max_exponents = 3.0, 0.0, 1.0
+min_exponents = -3.0, 0.0, -1.0
+max_exponents = 3.0, 1.0, 1.0
 denominators  = 2, 1, 2
 
 dtio = .true.
+/
+
+&seed_unit
+label = "unitless"
+e = 0.0, 0.0, 0.0
 /
 
 &seed_unit
@@ -37,4 +42,9 @@ e = 2.0, 0.0, 0.0
 &seed_unit
 label = "volume"
 e = 3.0, 0.0, 0.0
+/
+
+&seed_unit
+label = "density"
+e = -3.0, 1.0, 0.0
 /

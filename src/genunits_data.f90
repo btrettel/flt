@@ -77,10 +77,10 @@ pure function readable(unit, unit_system)
     
     character(len=CL) :: readable
     
-    character(len=CL) :: exponent_string
+    character(len=CL) :: exponent_string, positive_string, negative_string
     character(len=1)  :: operator_string
     integer           :: i_base_unit, numerator, denominator, rc
-    logical           :: anything_printed_yet
+    logical           :: positive_printed_yet
     
     call assert(size(unit%e) == unit_system%n_base_units, "genunits_data (readable): inconsistent number of base units")
     
@@ -89,8 +89,9 @@ pure function readable(unit, unit_system)
         return
     end if
     
-    readable = ""
-    anything_printed_yet = .false.
+    positive_string = ""
+    negative_string = ""
+    positive_printed_yet = .false.
     do i_base_unit = 1, unit_system%n_base_units ! SERIAL
         if (.not. is_close(unit%e(i_base_unit), 0.0_WP)) then
             call real_to_rational(unit%e(i_base_unit), numerator, denominator, rc)
@@ -110,18 +111,28 @@ pure function readable(unit, unit_system)
                 exponent_string = ""
             end if
             
-            if (anything_printed_yet) then
-                write(unit=readable, fmt="(2a)") trim(readable), trim(operator_string)
+            if (unit%e(i_base_unit) > 0.0_WP) then
+                if (positive_printed_yet) then
+                    write(unit=positive_string, fmt="(2a)") trim(positive_string), trim(operator_string)
+                end if
+                
+                write(unit=positive_string, fmt="(3a)") trim(positive_string), trim(unit_system%base_units(i_base_unit)), &
+                                                            trim(exponent_string)
+                positive_printed_yet = .true.
+            else
+                write(unit=negative_string, fmt="(4a)") trim(negative_string), trim(operator_string), &
+                                                            trim(unit_system%base_units(i_base_unit)), &
+                                                            trim(exponent_string)
             end if
             
-            write(unit=readable, fmt="(3a)") trim(readable), trim(unit_system%base_units(i_base_unit)), trim(exponent_string)
+            call assert(len(trim(adjustl(positive_string))) < CL, &
+                            "genunits_data (readable): overflow, too much to write in positive_string")
             
-            call assert(len(trim(adjustl(readable))) < CL, "genunits_data (readable): overflow, too much to write in the string")
-            
-            anything_printed_yet = .true.
+            call assert(len(trim(adjustl(negative_string))) < CL, &
+                            "genunits_data (readable): overflow, too much to write in negative_string")
         end if
     end do
-    readable = adjustl(readable)
+    readable = trim(adjustl(positive_string)) // trim(adjustl(negative_string))
 end function readable
 
 pure subroutine real_to_rational(x, numerator, denominator, rc)
