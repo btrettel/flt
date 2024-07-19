@@ -578,10 +578,11 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     write(unit=file_unit, fmt="(3a)") "end type ", trim(unit_system%units(i_unit)%label()), new_line("a")
 end subroutine write_type
 
-subroutine write_as_operators(unit_system, file_unit, unit)
+subroutine write_as_operators(config, unit_system, file_unit, unit)
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
     
+    class(config_type), intent(in)     :: config
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     type(unit_type), intent(in)        :: unit
@@ -592,16 +593,17 @@ subroutine write_as_operators(unit_system, file_unit, unit)
     call assert(file_unit_open, "genunits_io (write_as_operators): file_unit must be open")
     
     ! add
-    call write_binary_operator(unit_system, file_unit, unit, unit, unit, "+")
+    call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "+")
     
     ! subtract
-    call write_binary_operator(unit_system, file_unit, unit, unit, unit, "-")
+    call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "-")
 end subroutine write_as_operators
 
-subroutine write_comparison_operators(unit_system, file_unit, unit)
+subroutine write_comparison_operators(config, unit_system, file_unit, unit)
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
     
+    class(config_type), intent(in)     :: config
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     type(unit_type), intent(in)        :: unit
@@ -611,16 +613,17 @@ subroutine write_comparison_operators(unit_system, file_unit, unit)
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_comparison_operators): file_unit must be open")
     
-    call write_binary_operator(unit_system, file_unit, unit, unit, unit, "<")
-    call write_binary_operator(unit_system, file_unit, unit, unit, unit, "<=")
-    call write_binary_operator(unit_system, file_unit, unit, unit, unit, ">")
-    call write_binary_operator(unit_system, file_unit, unit, unit, unit, ">=")
+    call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "<")
+    call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "<=")
+    call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, ">")
+    call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, ">=")
 end subroutine write_comparison_operators
 
-subroutine write_md_operators(unit_system, file_unit, unit_left, unit_right, n_interfaces)
+subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_right, n_interfaces)
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit
     
+    class(config_type), intent(in)     :: config
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     type(unit_type), intent(in)        :: unit_left, unit_right
@@ -635,33 +638,42 @@ subroutine write_md_operators(unit_system, file_unit, unit_left, unit_right, n_i
     ! multiply
     unit_m = m_unit(unit_left, unit_right)
     if (unit_m%is_in(unit_system%units)) then
-        call write_binary_operator(unit_system, file_unit, unit_left, unit_right, unit_m, "*")
+        call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*")
         n_interfaces = n_interfaces + 1
     end if
     
     ! divide
     unit_d = d_unit(unit_left, unit_right)
     if (unit_d%is_in(unit_system%units)) then
-        call write_binary_operator(unit_system, file_unit, unit_left, unit_right, unit_d, "/")
+        call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/")
         n_interfaces = n_interfaces + 1
     end if
 end subroutine write_md_operators
 
-subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, unit_result, op)
-    use checks, only: assert
+subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_result, op, unitless_is_real)
+    use checks, only: assert, all_close
     use genunits_data, only: unit_type, unit_system_type
     
+    type(config_type), intent(in)      :: config
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     type(unit_type), intent(in)        :: unit_left, unit_right, unit_result
     character(len=*), intent(in)       :: op
     
+    logical, intent(in), optional :: unitless_is_real
+    
     character(len=2)              :: op_label
     character(len=:), allocatable :: binary_operator_procedure
-    logical                       :: file_unit_open, conditional
+    logical                       :: file_unit_open, conditional, unitless_is_real_
     
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_binary_operator): file_unit must be open")
+    
+    if (present(unitless_is_real)) then
+        unitless_is_real_ = unitless_is_real
+    else
+        unitless_is_real_ = .false.
+    end if
     
     select case (op)
         case ("+")
@@ -709,8 +721,17 @@ subroutine write_binary_operator(unit_system, file_unit, unit_left, unit_right, 
         write(unit=file_unit, fmt="(2a)") "    ! result unit: ", trim(unit_result%readable(unit_system))
     end if
     
-    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_left%label()), "), intent(in) :: left"
-    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_right%label()), "), intent(in) :: right"
+    if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_) then
+        write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter, "), intent(in) :: left"
+    else
+        write(unit=file_unit, fmt="(3a)") "    class(", trim(unit_left%label()), "), intent(in) :: left"
+    end if
+    
+    if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_) then
+        write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter, "), intent(in) :: right"
+    else
+        write(unit=file_unit, fmt="(3a)") "    type(", trim(unit_right%label()), "), intent(in) :: right"
+    end if
     
     if (conditional) then
         write(unit=file_unit, fmt="(2a)") "    logical :: ", binary_operator_procedure
@@ -1212,11 +1233,11 @@ subroutine write_module(config, unit_system, file_unit, rc)
             n_interfaces = n_interfaces + 2
         end if
         
-        call write_as_operators(unit_system, file_unit, unit_system%units(i_unit))
+        call write_as_operators(config, unit_system, file_unit, unit_system%units(i_unit))
         n_interfaces = n_interfaces + 2
         
         if (config%comparison) then
-            call write_comparison_operators(unit_system, file_unit, unit_system%units(i_unit))
+            call write_comparison_operators(config, unit_system, file_unit, unit_system%units(i_unit))
             n_interfaces = n_interfaces + 4
         end if
         
@@ -1229,7 +1250,8 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     do i_unit = 1, size(unit_system%units) ! SERIAL
         do j_unit = 1, size(unit_system%units) ! SERIAL
-            call write_md_operators(unit_system, file_unit, unit_system%units(i_unit), unit_system%units(j_unit), n_interfaces)
+            call write_md_operators(config, unit_system, file_unit, unit_system%units(i_unit), unit_system%units(j_unit), &
+                                    n_interfaces)
         end do
     end do
     
