@@ -35,6 +35,14 @@ contains
     generic, public :: operator(/) => ad_ad_divide, ad_real_divide, real_ad_divide
     procedure, private :: ad_real_exponentiate, ad_integer_exponentiate
     generic, public :: operator(**) => ad_real_exponentiate, ad_integer_exponentiate
+    procedure, private :: lt_ad
+    generic, public :: operator(<) => lt_ad
+    procedure, private :: le_ad
+    generic, public :: operator(<=) => le_ad
+    procedure, private :: gt_ad
+    generic, public :: operator(>) => gt_ad
+    procedure, private :: ge_ad
+    generic, public :: operator(>=) => ge_ad
 end type ad
 
 interface sqrt
@@ -167,8 +175,8 @@ end function ad_ad_subtract
 elemental function ad_real_subtract(ad_in, real_in)
     ! Subtracts a `real` from an `ad`.
 
-    class(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in)  :: real_in
+    class(ad), intent(in)     :: ad_in
+    real(kind=WP), intent(in) :: real_in
     
     type(ad) :: ad_real_subtract
 
@@ -179,8 +187,8 @@ end function ad_real_subtract
 elemental function real_ad_subtract(real_in, ad_in)
     ! Subtracts a `real` from an `ad`.
 
-    real(kind=WP), intent(in)  :: real_in
-    class(ad), intent(in)      :: ad_in
+    real(kind=WP), intent(in) :: real_in
+    class(ad), intent(in)     :: ad_in
     
     type(ad) :: real_ad_subtract
 
@@ -213,8 +221,8 @@ end function ad_ad_multiply
 elemental function ad_real_multiply(ad_in, real_in)
     ! Multiplies an `ad` by a `real`.
 
-    class(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in)  :: real_in
+    class(ad), intent(in)     :: ad_in
+    real(kind=WP), intent(in) :: real_in
     
     type(ad) :: ad_real_multiply
 
@@ -225,8 +233,8 @@ end function ad_real_multiply
 elemental function real_ad_multiply(real_in, ad_in)
     ! Multiplies a `real` by an `ad`.
 
-    class(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in)  :: real_in
+    class(ad), intent(in)     :: ad_in
+    real(kind=WP), intent(in) :: real_in
     
     type(ad) :: real_ad_multiply
 
@@ -248,8 +256,8 @@ end function ad_ad_divide
 elemental function ad_real_divide(ad_in, real_in)
     ! Divides an `ad` by a `real`.
 
-    class(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in)  :: real_in
+    class(ad), intent(in)     :: ad_in
+    real(kind=WP), intent(in) :: real_in
     
     type(ad) :: ad_real_divide
 
@@ -260,8 +268,8 @@ end function ad_real_divide
 elemental function real_ad_divide(real_in, ad_in)
     ! Divides a `real` by an `ad`.
 
-    class(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in)  :: real_in
+    class(ad), intent(in)     :: ad_in
+    real(kind=WP), intent(in) :: real_in
     
     type(ad) :: real_ad_divide
 
@@ -304,6 +312,62 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
 end function ad_integer_exponentiate
 
 ! No `rd**rd` as that's not likely to happen in CFD.
+
+elemental function lt_ad(ad_left, ad_right)
+    use checks, only: assert
+    
+    class(ad), intent(in) :: ad_left
+    type(ad), intent(in)  :: ad_right
+    
+    logical :: lt_ad
+    
+    lt_ad = ad_left%v < ad_right%v
+    
+    call assert(allocated(ad_left%dv), "fmad (lt_ad): ad_left%dv must be allocated")
+    call assert(allocated(ad_right%dv), "fmad (lt_ad): ad_right%dv must be allocated")
+end function lt_ad
+
+elemental function le_ad(ad_left, ad_right)
+    use checks, only: assert
+    
+    class(ad), intent(in) :: ad_left
+    type(ad), intent(in)  :: ad_right
+    
+    logical :: le_ad
+    
+    le_ad = ad_left%v <= ad_right%v
+    
+    call assert(allocated(ad_left%dv), "fmad (le_ad): ad_left%dv must be allocated")
+    call assert(allocated(ad_right%dv), "fmad (le_ad): ad_right%dv must be allocated")
+end function le_ad
+
+elemental function gt_ad(ad_left, ad_right)
+    use checks, only: assert
+    
+    class(ad), intent(in) :: ad_left
+    type(ad), intent(in)  :: ad_right
+    
+    logical :: gt_ad
+    
+    gt_ad = ad_left%v > ad_right%v
+    
+    call assert(allocated(ad_left%dv), "fmad (gt_ad): ad_left%dv must be allocated")
+    call assert(allocated(ad_right%dv), "fmad (gt_ad): ad_right%dv must be allocated")
+end function gt_ad
+
+elemental function ge_ad(ad_left, ad_right)
+    use checks, only: assert
+    
+    class(ad), intent(in) :: ad_left
+    type(ad), intent(in)  :: ad_right
+    
+    logical :: ge_ad
+    
+    ge_ad = ad_left%v >= ad_right%v
+    
+    call assert(allocated(ad_left%dv), "fmad (ge_ad): ad_left%dv must be allocated")
+    call assert(allocated(ad_right%dv), "fmad (ge_ad): ad_right%dv must be allocated")
+end function ge_ad
 
 elemental function ad_sqrt(ad_in)
     ! Takes the square root of an `ad`.

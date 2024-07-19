@@ -31,6 +31,7 @@ call test_merge(tests)
 call test_max(tests)
 call test_min(tests)
 call test_abs(tests)
+call test_comparison(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -395,5 +396,34 @@ subroutine test_abs(tests)
     call tests%real_eq(y%dv(1), 0.0_WP, "ad abs (zero), derivative (dv 1)")
     call tests%real_eq(y%dv(2), 0.0_WP, "ad abs (zero), derivative (dv 2)")
 end subroutine test_abs
+
+subroutine test_comparison(tests)
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y
+
+    call x%init(2.0_WP, 1, N_DV)
+    call y%init(1.0_WP, 2, N_DV)
+    call tests%logical_true(x > y, "ad > (1)")
+    call tests%logical_true(x >= y, "ad >= (1)")
+    call tests%logical_false(x < y, "ad < (1)")
+    call tests%logical_false(x <= y, "ad <= (1)")
+    
+    deallocate(x%dv, y%dv)
+    call x%init(2.0_WP, 1, N_DV)
+    call y%init(2.0_WP, 2, N_DV)
+    call tests%logical_false(x > y, "ad > (2)")
+    call tests%logical_true(x >= y, "ad >= (2)")
+    call tests%logical_false(x < y, "ad < (2)")
+    call tests%logical_true(x <= y, "ad <= (2)")
+    
+    deallocate(x%dv, y%dv)
+    call x%init(1.0_WP, 1, N_DV)
+    call y%init(2.0_WP, 2, N_DV)
+    call tests%logical_false(x > y, "ad > (3)")
+    call tests%logical_false(x >= y, "ad >= (3)")
+    call tests%logical_true(x < y, "ad < (3)")
+    call tests%logical_true(x <= y, "ad <= (3)")
+end subroutine test_comparison
 
 end program test_fmad
