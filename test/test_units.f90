@@ -108,14 +108,17 @@ call tests%exit_code_ne("make test_units_fail_3", 0, &
 ! If this compiles, then I can use constructors nicely.
 v = velocity(1.0_WP)
 
-! TODO: The next one doesn't work with nvfortran. File a bug report.
+! TODO: The next one doesn't compile with nvfortran. File a bug report.
 ! v = length(1.0_WP) / time(1.0_WP)
 
-! TODO: Won't work yet: x = 2.0_WP*x
+x%v = 2.0_WP
+x = -1.0_WP*x
+call tests%real_eq(x%v, -2.0_WP, "units value, -1.0_WP*x")
 
-x%v = 1.0_WP
-x = unitless(2.0_WP)*x
-call tests%real_eq(x%v, 2.0_WP, "units value, multiplied by unitless")
+! TODO: The next one doesn't compile with nvfortran. File a bug report.
+!x%v = 1.0_WP
+!x = unitless(2.0_WP)*x
+!call tests%real_eq(x%v, 2.0_WP, "units value, unitless(2.0_WP)*x")
 
 call test_dtio(tests)
 
