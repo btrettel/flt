@@ -83,11 +83,9 @@ Priorities:
                 - ifort/ifx
     - Mac OS
 - Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
-- Count test_units.f90 towards test_genunitsio.f90?
+- Count test_units.f90 and test_units_ad.f90 towards test_genunits_io.f90?
 - When work has ifx 2024.2, change `assert` to eliminate `full_message` by putting the message directly on the `error stop` line. Also see [compiler-bugs report0002](https://github.com/btrettel/compiler-bugs/tree/main/report0002).
 - f90lint.py: Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
-- test_fmad.f90
-    - `rd` to `ad`
 - fmad.f90 and units.f90
     - `is_close`
 
