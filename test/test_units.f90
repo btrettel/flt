@@ -8,13 +8,14 @@
 program test_units
 
 use, intrinsic :: iso_fortran_env, only: compiler_version
-use units, only: unitless => unit_p00000_p00000_p00000, &
-                 length   => unit_p10000_p00000_p00000, &
-                 time     => unit_p00000_p00000_p10000, &
-                 velocity => unit_p10000_p00000_m10000, &
-                 area     => unit_p20000_p00000_p00000, &
-                 volume   => unit_p30000_p00000_p00000, &
-                 density  => unit_m30000_p10000_p00000, &
+use units, only: unitless  => unit_p00000_p00000_p00000, &
+                 length    => unit_p10000_p00000_p00000, &
+                 time      => unit_p00000_p00000_p10000, &
+                 velocity  => unit_p10000_p00000_m10000, &
+                 area      => unit_p20000_p00000_p00000, &
+                 volume    => unit_p30000_p00000_p00000, &
+                 density   => unit_m30000_p10000_p00000, &
+                 frequency => unit_p00000_p00000_m10000, &
                  unit, sqrt, cbrt, square
 use prec, only: WP, CL
 use nmllog, only: log_type
@@ -24,13 +25,14 @@ implicit none
 type(log_type), target  :: logger
 type(test_results_type) :: tests
 
-type(unitless) :: u
-type(length)   :: x, y, z
-type(time)     :: t
-type(velocity) :: v
-type(area)     :: a
-type(volume)   :: vol
-type(density)  :: rho
+type(unitless)  :: u
+type(length)    :: x, y, z
+type(time)      :: t
+type(velocity)  :: v
+type(area)      :: a
+type(volume)    :: vol
+type(density)   :: rho
+type(frequency) :: f
 
 character(len=CL) :: quantity_string
 
@@ -43,6 +45,7 @@ call tests%character_eq(unit(t), "s", "unit function (s)")
 call tests%character_eq(unit(a), "m2", "unit function (m2)")
 call tests%character_eq(unit(vol), "m3", "unit function (m3)")
 call tests%character_eq(unit(rho), "kg/m3", "unit function (kg/m3)")
+call tests%character_eq(unit(f), "1/s", "unit function (1/s)")
 
 x%v = 1.0_WP
 y%v = -1.0_WP

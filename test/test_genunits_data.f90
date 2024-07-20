@@ -76,6 +76,8 @@ unit1%e(2) = 0.0_WP
 unit1%e(3) = 0.0_WP
 call tests%character_eq(unit1%readable(unit_system), "kg", "unit%readable (6)")
 
+! TODO: Add others in test_units.f90 for the `unit` function.
+
 ! `is_in`
 
 unit1 = unit_system%units(1)

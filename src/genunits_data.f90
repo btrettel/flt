@@ -132,6 +132,10 @@ pure function readable(unit, unit_system)
                             "genunits_data (readable): overflow, too much to write in negative_string")
         end if
     end do
+    if (len(trim(adjustl(positive_string))) == 0) then
+        positive_string = "1"
+    end if
+    
     readable = trim(adjustl(positive_string)) // trim(adjustl(negative_string))
 end function readable
 

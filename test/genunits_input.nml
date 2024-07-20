@@ -48,3 +48,8 @@ e = 3.0, 0.0, 0.0
 label = "density"
 e = -3.0, 1.0, 0.0
 /
+
+&seed_unit
+label = "frequency"
+e = 0.0, 0.0, -1.0
+/
