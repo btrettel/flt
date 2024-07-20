@@ -2,7 +2,10 @@
 
 Priorities:
 
-- genunits: Readable units like `/m` are possible. A 1 or something similar should be printed here.
+- Documentation for genunits
+    - Semicolon in `use_line`
+- genunits_io.f90: Change type-bound procedures for `config` to be normal procedures.
+- fmad.f90: Addition and subtraction for `reals`.
 - Better constructors for AD. I should be able to get a constant by using `ad` directly.
 - Constructors for units combined with AD. `length(1.0)` should give a constant.
 - Make test_concurrent more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
@@ -11,9 +14,7 @@ Priorities:
            > real = .0000000
     fail: test_concurrent, greater than zero```
 - transient.py: Repeatedly run tests looking for transient failures, saving results when a transient failure is encountered.
-- depends.py:
-    - Figure out a way to add object file dependencies for modules that have `skip_indexing` set. Extra field in config.ini?
-    - Generates a list of executables from `app` in before.mk, add them to `CLEAN`.
+- depends.py: Generates a list of executables from `app` in before.mk, add them to `CLEAN`.
 - Add Valgrind back to check-fc. Suppress namelist derived-type input problem in Valgrind.
     - <https://valgrind.org/docs/manual/manual-core.html#manual-core.suppress>
     - <https://stackoverflow.com/a/23897854/1124489>
