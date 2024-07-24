@@ -2,13 +2,15 @@
 
 Priorities:
 
+- Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
+- Make script to install FLT build system in a directory
 - Documentation for genunits
-    - Semicolon in `use_line`
+    - `use_line` creates a new line at semicolons, so that depends.py can see the dependency.
 - genunits_io.f90: Change type-bound procedures for `config` to be normal procedures.
 - fmad.f90: Addition and subtraction for `reals`.
 - Better constructors for AD. I should be able to get a constant by using `ad` directly.
 - Constructors for units combined with AD. `length(1.0)` should give a constant.
-- Make test_concurrent more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
+- Make `test_concurrent` more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
     - ```./test_purerng
     real returned = -3999.7052
            > real = .0000000
@@ -81,6 +83,7 @@ Priorities:
                 - <https://gcc.gnu.org/wiki/GFortranBinaries#Windows>
                 - FTN95
                 - ifort/ifx
+        - Other: MikTeX
     - Mac OS
 - Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
 - Count test_units.f90 and test_units_ad.f90 towards test_genunits_io.f90?
