@@ -2,6 +2,19 @@
 
 Priorities:
 
+- Make revision.f90 it's own module so that changes to any file does not cause everything depending on the build module to be rebuilt. At present, checks requires build, and probably everything requires checks, so changing any file in `ALLSRC` makes everything rebuild. This could lead to slow builds if not corrected. Few things need the revision data specifically so most of the problem can be avoided. Document the reason for the separation in gitrev.py and svnrev.py.
+- genunits
+    - Arbitrary unitless functions like `sin` and `cos` in input file.
+    - Look into inheritance for genunits to avoid the `%v%v` problem?
+    - Add `si_` prefix to type names. For example, change `length` to `si_length`.
+    - Better constructor for AD and genunits. Make default constructor set a constant, and have a separate subroutine to set the variable number of the derivatives? Example proposed syntax for combination of AD and genunits:
+        - ```type(si_length) :: x
+
+        x = si_length(1.0_WP) ! make a constant
+        call x%set_dv(1, N_DV) ! set this as variable number 1```
+- fmad.f90
+    - Add `sin`, `cos`, `tan`
+- `make lint` runs Python linters too.
 - Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
 - Make script to install FLT build system in a directory
 - Documentation for genunits
@@ -9,7 +22,7 @@ Priorities:
 - genunits_io.f90: Change type-bound procedures for `config` to be normal procedures.
 - fmad.f90: Addition and subtraction for `reals`.
 - Better constructors for AD. I should be able to get a constant by using `ad` directly.
-- Constructors for units combined with AD. `length(1.0)` should give a constant.
+- Constructors for units combined with AD. `length(1.0)` should give a constant, if possible.
 - Make `test_concurrent` more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
     - ```./test_purerng
     real returned = -3999.7052
@@ -50,8 +63,6 @@ Priorities:
     - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only.
     - Works with units.f90? Might be more trouble than it's worth, but give it a shot.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
-    - Derived type output
-        - Negative first exponent should not use /? Reorder?
     - Derived type input
         - Make derived type input end at a ` `, `,`, or `/`. See NAG email.
         - Allow for prefixes like `m`, `c`, `k` on each unit? A base unit can be defined by a base symbol and a base prefix. So the base unit `kg` is constructed from the base symbol `g` and the base prefix `k`.
@@ -61,12 +72,14 @@ Priorities:
     - How to handle physical dimensions with AD?
         - `diff(f, x)`: Different return types depending on `x` and `y`.
         - Link `x` to the index of the `dv` member variable by making the only non-zero `dv` member variable the one to differentiate with respect to.
-    - Test with AD.
     - Namelist group `template` which will read in a template and create versions of the procedure for all units and the proper interface block. Until Fortran has good generics, this is the only way to get a generic procedure.
         - `&template file="file.f90" /`
         - Examples:
             - `is_close`
             - `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
+    - Add feature to generate a module to allow for basic math on "vectors" where each row has a different unit. Implement "vectors" as derived types. Vector is probably not the right word.
+        - <https://github.com/arjenmarkus/handling-units/blob/main/src/handling_units_dimensions.tex>
+            - > If the feature does not support arrays whose elements have different dimensions/units of measure, then certain use patterns are not possible. That may or may not be a breaking requirement for the feature.
 - Build testing
     - FreeBSD in QEMU
         - <https://cyber.dabamos.de/programming/modernfortran/fortran-compilers.html>

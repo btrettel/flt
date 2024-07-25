@@ -854,7 +854,7 @@ subroutine write_unit_function(config, unit_system, file_unit)
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_unit_function): file_unit must be open")
     
-    write(unit=file_unit, fmt="(a)") "elemental function unit(arg)"
+    write(unit=file_unit, fmt="(a)") "pure function unit(arg)"
     
     write(unit=file_unit, fmt="(a)") "    class(*), intent(in) :: arg"
     
