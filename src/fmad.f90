@@ -11,7 +11,7 @@ use prec, only: WP
 implicit none
 private
 
-public :: sqrt, tanh, log, exp, merge, max, min, abs
+public :: sqrt, tanh, log, exp, merge, max, min, abs, sin, cos, tan
 public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
@@ -78,6 +78,18 @@ end interface min
 interface abs
     module procedure :: ad_abs
 end interface abs
+
+interface sin
+    module procedure :: ad_sin
+end interface sin
+
+interface cos
+    module procedure :: ad_cos
+end interface cos
+
+interface tan
+    module procedure :: ad_tan
+end interface tan
 
 contains
 
@@ -497,6 +509,33 @@ elemental function ad_abs(ad_in)
     
     call assert(ad_abs%v >= 0.0_WP, "fmad (ad_abs): value is negative")
 end function ad_abs
+
+elemental function ad_sin(ad_in)
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_sin
+    
+    ad_sin%v  = sin(ad_in%v)
+    ad_sin%dv = ad_in%dv*cos(ad_in%v)
+end function ad_sin
+
+elemental function ad_cos(ad_in)
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_cos
+    
+    ad_cos%v  = cos(ad_in%v)
+    ad_cos%dv = -ad_in%dv*sin(ad_in%v)
+end function ad_cos
+
+elemental function ad_tan(ad_in)
+    class(ad), intent(in) :: ad_in
+    
+    type(ad) :: ad_tan
+    
+    ad_tan%v  = tan(ad_in%v)
+    ad_tan%dv = ad_in%dv/(cos(ad_in%v)**2)
+end function ad_tan
 
 pure function f(x, y)
     use checks, only: assert

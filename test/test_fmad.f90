@@ -32,6 +32,7 @@ call test_max(tests)
 call test_min(tests)
 call test_abs(tests)
 call test_comparison(tests)
+call test_trig(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -413,5 +414,35 @@ subroutine test_comparison(tests)
     call tests%logical_true(x < y, "ad < (3)")
     call tests%logical_true(x <= y, "ad <= (3)")
 end subroutine test_comparison
+
+subroutine test_trig(tests)
+    use fmad, only: sin, cos, tan
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y
+
+    call x%init(0.0_WP, 1, N_DV)
+    y = 2.0_WP * sin(x)
+    call tests%real_eq(y%v, 0.0_WP, "ad sin, value")
+    call tests%real_eq(y%dv(1), 2.0_WP, "ad sin, derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad sin, derivative (dv 2)")
+    
+    deallocate(x%dv, y%dv)
+    call x%init(0.0_WP, 1, N_DV)
+    y = 3.0_WP*cos(x)
+    call tests%real_eq(y%v, 3.0_WP, "ad cos, value")
+    call tests%real_eq(y%dv(1), 0.0_WP, "ad cos, derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad cos, derivative (dv 2)")
+    
+    deallocate(x%dv, y%dv)
+    call x%init(0.0_WP, 1, N_DV)
+    y = -tan(x)
+    call tests%real_eq(y%v, 0.0_WP, "ad tan, value")
+    call tests%real_eq(y%dv(1), -1.0_WP, "ad tan, derivative (dv 1)")
+    call tests%real_eq(y%dv(2), 0.0_WP, "ad tan, derivative (dv 2)")
+    
+    ! TODO: Add more tests where the function value is known exactly.
+end subroutine test_trig
 
 end program test_fmad
