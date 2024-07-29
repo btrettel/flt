@@ -8,14 +8,14 @@
 program test_units
 
 use, intrinsic :: iso_fortran_env, only: compiler_version
-use units, only: unitless  => unit_p00000_p00000_p00000, &
-                 length    => unit_p10000_p00000_p00000, &
-                 time      => unit_p00000_p00000_p10000, &
-                 velocity  => unit_p10000_p00000_m10000, &
-                 area      => unit_p20000_p00000_p00000, &
-                 volume    => unit_p30000_p00000_p00000, &
-                 density   => unit_m30000_p10000_p00000, &
-                 frequency => unit_p00000_p00000_m10000, &
+use units, only: unitless     => unit_p00000_p00000_p00000, &
+                 si_length    => unit_p10000_p00000_p00000, &
+                 si_time      => unit_p00000_p00000_p10000, &
+                 si_velocity  => unit_p10000_p00000_m10000, &
+                 si_area      => unit_p20000_p00000_p00000, &
+                 si_volume    => unit_p30000_p00000_p00000, &
+                 si_density   => unit_m30000_p10000_p00000, &
+                 si_frequency => unit_p00000_p00000_m10000, &
                  unit, sqrt, cbrt, square
 use prec, only: WP, CL
 use nmllog, only: log_type
@@ -25,14 +25,14 @@ implicit none
 type(log_type), target  :: logger
 type(test_results_type) :: tests
 
-type(unitless)  :: u
-type(length)    :: x, y, z
-type(time)      :: t
-type(velocity)  :: v
-type(area)      :: a
-type(volume)    :: vol
-type(density)   :: rho
-type(frequency) :: f
+type(unitless)     :: u
+type(si_length)    :: x, y, z
+type(si_time)      :: t
+type(si_velocity)  :: v
+type(si_area)      :: a
+type(si_volume)    :: vol
+type(si_density)   :: rho
+type(si_frequency) :: f
 
 character(len=CL) :: quantity_string
 
@@ -109,10 +109,10 @@ call tests%exit_code_ne("make test_units_fail_3", 0, &
 ! IBM XLF comment end
 
 ! If this compiles, then I can use constructors nicely.
-v = velocity(1.0_WP)
+v = si_velocity(1.0_WP)
 
 ! TODO: The next one doesn't compile with nvfortran. File a bug report.
-! v = length(1.0_WP) / time(1.0_WP)
+! v = si_length(1.0_WP) / si_time(1.0_WP)
 
 x%v = 2.0_WP
 x = -1.0_WP*x
@@ -135,8 +135,8 @@ subroutine test_dtio(tests)
     
     type(test_results_type), intent(in out) :: tests
     
-    type(volume) :: vol
-    integer      :: nml_unit, rc_nml
+    type(si_volume) :: vol
+    integer         :: nml_unit, rc_nml
     character(len=2048) :: msg
     
     namelist /dtio/ vol

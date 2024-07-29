@@ -2,11 +2,15 @@
 
 Priorities:
 
+- convergence.f90: convergence testing framework
+    - grid/temporal convergence (set up the same: take a callback where one parameter is the delta to be varied)
+        - produce both error and order plots
+    - MC convergence
+    - Richardson extrapolation procedure
 - Make revision.f90 it's own module so that changes to any file does not cause everything depending on the build module to be rebuilt. At present, checks requires build, and probably everything requires checks, so changing any file in `ALLSRC` makes everything rebuild. This could lead to slow builds if not corrected. Few things need the revision data specifically so most of the problem can be avoided. Document the reason for the separation in gitrev.py and svnrev.py.
 - genunits
     - Arbitrary unitless functions like `sin` and `cos` in input file.
     - Look into inheritance for genunits to avoid the `%v%v` problem?
-    - Add `si_` prefix to type names. For example, change `length` to `si_length`.
     - Better constructor for AD and genunits. Make default constructor set a constant, and have a separate subroutine to set the variable number of the derivatives? Example proposed syntax for combination of AD and genunits:
         - ```type(si_length) :: x
 
@@ -285,10 +289,6 @@ Later:
     - Include in io.f90?
 - read and save CSV and Sqlite files:
     - regex validation field for CSV
-- convergence.f90: convergence testing framework
-    - grid convergence
-    - temporal convergence
-    - MC convergence
 - Add model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
 - Poisson solvers, using same or similar interface as FISHPACK
     - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>

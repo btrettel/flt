@@ -7,8 +7,8 @@
 
 program test_units_ad
 
-use units_ad, only: unitless => unit_p00000_p00000_p00000, &
-                    length   => unit_p10000_p00000_p00000
+use units_ad, only: unitless  => unit_p00000_p00000_p00000, &
+                    si_length => unit_p10000_p00000_p00000
 use nmllog, only: log_type
 use unittest, only: test_results_type
 use prec, only: WP
@@ -17,8 +17,8 @@ implicit none
 type(log_type), target  :: logger
 type(test_results_type) :: tests
 
-type(unitless) :: u
-type(length)   :: x
+type(unitless)  :: u
+type(si_length) :: x
 
 integer, parameter :: N_DV = 2
 

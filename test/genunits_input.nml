@@ -2,7 +2,6 @@
 output_file     = "src/units.f90"
 base_units      = "m", "kg", "s"
 type_definition = "real(kind=WP)"
-!type_definition = "type(ad)"
 use_line        = "use prec, only: WP"
 kind_parameter  = "WP"
 max_n_units     = 10
@@ -20,36 +19,36 @@ e = 0.0, 0.0, 0.0
 /
 
 &seed_unit
-label = "length"
+label = "si_length"
 e = 1.0, 0.0, 0.0
 /
 
 &seed_unit
-label = "time"
+label = "si_time"
 e = 0.0, 0.0, 1.0
 /
 
 &seed_unit
-label = "velocity"
+label = "si_velocity"
 e = 1.0, 0.0, -1.0
 /
 
 &seed_unit
-label = "area"
+label = "si_area"
 e = 2.0, 0.0, 0.0
 /
 
 &seed_unit
-label = "volume"
+label = "si_volume"
 e = 3.0, 0.0, 0.0
 /
 
 &seed_unit
-label = "density"
+label = "si_density"
 e = -3.0, 1.0, 0.0
 /
 
 &seed_unit
-label = "frequency"
+label = "si_frequency"
 e = 0.0, 0.0, -1.0
 /

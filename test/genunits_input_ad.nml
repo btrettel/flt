@@ -22,6 +22,6 @@ e = 0.0, 0.0, 0.0
 /
 
 &seed_unit
-label = "length"
+label = "si_length"
 e = 1.0, 0.0, 0.0
 /
