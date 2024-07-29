@@ -18,6 +18,7 @@ public :: in_exponent_bounds, denominator_matches, &
             write_unary_operator, &
             write_unit_function, write_unit_wf, write_unit_rf, &
             write_exponentiation_interfaces, write_exponentiation_function, &
+            write_intrinsic_1arg_interfaces, write_intrinsic_1arg_function, &
             write_module
 
 character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
@@ -1119,6 +1120,80 @@ subroutine write_exponentiation_function(config, unit_system, file_unit, unit, o
     write(unit=file_unit, fmt="(3a)") "end function ", exponentiation_function, new_line("a")
 end subroutine write_exponentiation_function
 
+subroutine write_intrinsic_1arg_interfaces(unit_system, file_unit)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    
+    logical :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_intrinsic_1arg_interfaces): file_unit must be open")
+    
+    call write_intrinsic_1arg_interface(unit_system, file_unit, "sin")
+    call write_intrinsic_1arg_interface(unit_system, file_unit, "cos")
+    call write_intrinsic_1arg_interface(unit_system, file_unit, "tan")
+    call write_intrinsic_1arg_interface(unit_system, file_unit, "exp")
+    call write_intrinsic_1arg_interface(unit_system, file_unit, "log")
+end subroutine write_intrinsic_1arg_interfaces
+
+subroutine write_intrinsic_1arg_interface(unit_system, file_unit, fun)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    character(len=*), intent(in)       :: fun
+    
+    type(unit_type) :: unit
+    logical         :: file_unit_open
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_intrinsic_1arg_interface): file_unit must be open")
+    
+    allocate(unit%e(unit_system%n_base_units))
+    unit%e = 0.0_WP
+    
+    write(unit=file_unit, fmt="(2a)") "interface ", fun
+    write(unit=file_unit, fmt="(4a)") "    module procedure ", fun, "_", trim(unit%label())
+    write(unit=file_unit, fmt="(3a)") "end interface ", fun, new_line("a")
+end subroutine write_intrinsic_1arg_interface
+
+subroutine write_intrinsic_1arg_function(unit_system, file_unit, fun)
+    use checks, only: assert
+    use genunits_data, only: unit_type, unit_system_type
+    
+    type(unit_system_type), intent(in) :: unit_system
+    integer, intent(in)                :: file_unit
+    character(len=*), intent(in)       :: fun
+    
+    character(len=:), allocatable :: intrinsic_1arg_function
+    logical                       :: file_unit_open
+    type(unit_type)               :: unit
+    
+    inquire(unit=file_unit, opened=file_unit_open)
+    call assert(file_unit_open, "genunits_io (write_intrinsic_1arg_function): file_unit must be open")
+    
+    allocate(unit%e(unit_system%n_base_units))
+    unit%e = 0.0_WP
+    
+    intrinsic_1arg_function = fun // "_" // trim(unit%label())
+    
+    write(unit=file_unit, fmt="(3a)") "elemental function ", intrinsic_1arg_function, "(arg)"
+    
+    write(unit=file_unit, fmt="(2a)") "    ! arg: ", trim(unit%readable(unit_system))
+    write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit%readable(unit_system))
+    
+    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: arg"
+    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit%label()), ") :: ", intrinsic_1arg_function
+    
+    write(unit=file_unit, fmt="(5a)") "    ", intrinsic_1arg_function, "%v = ", fun, "(arg%v)"
+    
+    write(unit=file_unit, fmt="(3a)") "end function ", intrinsic_1arg_function, new_line("a")
+end subroutine write_intrinsic_1arg_function
+
 subroutine write_module(config, unit_system, file_unit, rc)
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
@@ -1273,6 +1348,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     end do
     
     call write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
+    call write_intrinsic_1arg_interfaces(unit_system, file_unit)
     
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
     
@@ -1337,6 +1413,13 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end if
         end do
     end if
+    
+    call write_intrinsic_1arg_function(unit_system, file_unit, "sin")
+    call write_intrinsic_1arg_function(unit_system, file_unit, "cos")
+    call write_intrinsic_1arg_function(unit_system, file_unit, "tan")
+    call write_intrinsic_1arg_function(unit_system, file_unit, "exp")
+    call write_intrinsic_1arg_function(unit_system, file_unit, "log")
+    n_interfaces = n_interfaces + 5
     
     write(unit=file_unit, fmt="(2a)") "end module ", config%module_name
     

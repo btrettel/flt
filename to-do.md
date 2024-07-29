@@ -9,7 +9,8 @@ Priorities:
     - Richardson extrapolation procedure
 - Make revision.f90 it's own module so that changes to any file does not cause everything depending on the build module to be rebuilt. At present, checks requires build, and probably everything requires checks, so changing any file in `ALLSRC` makes everything rebuild. This could lead to slow builds if not corrected. Few things need the revision data specifically so most of the problem can be avoided. Document the reason for the separation in gitrev.py and svnrev.py.
 - genunits
-    - Arbitrary unitless functions like `sin` and `cos` in input file.
+    - Test unitless intrinsic `sin`, `cos`, `tan`, `exp`, `log`.
+    - Add more unitless intrinsics.
     - Look into inheritance for genunits to avoid the `%v%v` problem?
     - Better constructor for AD and genunits. Make default constructor set a constant, and have a separate subroutine to set the variable number of the derivatives? Example proposed syntax for combination of AD and genunits:
         - ```type(si_length) :: x
