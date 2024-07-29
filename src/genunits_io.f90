@@ -1258,6 +1258,10 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     write(unit=file_unit, fmt="(a)") "public :: unit"
     
+    if (config%intrinsics) then
+        write(unit=file_unit, fmt="(a)") "public :: sin, cos, tan, exp, log"
+    end if
+    
     if (use_sqrt) then
         write(unit=file_unit, fmt="(a)") "public :: sqrt"
     end if
@@ -1270,7 +1274,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
         write(unit=file_unit, fmt="(a)") "public :: square"
     end if
     
-    if (use_sqrt .or. use_cbrt .or. use_square) then
+    if (use_sqrt .or. use_cbrt .or. use_square .or. config%intrinsics) then
         write(unit=file_unit, fmt="(a)") ""
     end if
     
@@ -1309,11 +1313,19 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end if
         end do
         
-        if (use_sqrt .or. use_cbrt .or. use_square) then
+        if (use_sqrt .or. use_cbrt .or. use_square .or. config%intrinsics) then
             write(unit=file_unit, fmt="(a)", advance="no") "!"
             do i_space = 1, 12 + len(config%module_name) ! SERIAL
                 write(unit=file_unit, fmt="(a)", advance="no") " "
             end do
+        end if
+        
+        if (config%intrinsics) then
+            write(unit=file_unit, fmt="(a)", advance="no") "sin, cos, tan, exp, log"
+            
+            if (use_sqrt .or. use_cbrt .or. use_square) then
+                write(unit=file_unit, fmt="(a)", advance="no") ", "
+            end if
         end if
         
         if (use_sqrt) then
@@ -1336,7 +1348,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             write(unit=file_unit, fmt="(a)", advance="no") "square"
         end if
         
-        if (use_sqrt .or. use_cbrt .or. use_square) then
+        if (use_sqrt .or. use_cbrt .or. use_square .or. config%intrinsics) then
             write(unit=file_unit, fmt="(a)") ""
         end if
         
@@ -1348,7 +1360,9 @@ subroutine write_module(config, unit_system, file_unit, rc)
     end do
     
     call write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
-    call write_intrinsic_1arg_interfaces(unit_system, file_unit)
+    if (config%intrinsics) then
+        call write_intrinsic_1arg_interfaces(unit_system, file_unit)
+    end if
     
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
     
@@ -1414,12 +1428,14 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end do
     end if
     
-    call write_intrinsic_1arg_function(unit_system, file_unit, "sin")
-    call write_intrinsic_1arg_function(unit_system, file_unit, "cos")
-    call write_intrinsic_1arg_function(unit_system, file_unit, "tan")
-    call write_intrinsic_1arg_function(unit_system, file_unit, "exp")
-    call write_intrinsic_1arg_function(unit_system, file_unit, "log")
-    n_interfaces = n_interfaces + 5
+    if (config%intrinsics) then
+        call write_intrinsic_1arg_function(unit_system, file_unit, "sin")
+        call write_intrinsic_1arg_function(unit_system, file_unit, "cos")
+        call write_intrinsic_1arg_function(unit_system, file_unit, "tan")
+        call write_intrinsic_1arg_function(unit_system, file_unit, "exp")
+        call write_intrinsic_1arg_function(unit_system, file_unit, "log")
+        n_interfaces = n_interfaces + 5
+    end if
     
     write(unit=file_unit, fmt="(2a)") "end module ", config%module_name
     
