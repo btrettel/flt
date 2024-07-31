@@ -30,7 +30,7 @@ call tests%start_tests(logger)
 
 call test_basic(tests)
 call test_dtio(tests)
-call test_unitless_real()
+call test_unitless_real(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -203,25 +203,39 @@ subroutine test_dtio(tests)
     end if
 end subroutine test_dtio
 
-subroutine test_unitless_real()
+subroutine test_unitless_real(tests)
+    type(test_results_type), intent(in out) :: tests
+    
     type(si_time)      :: t1, t2
     type(si_frequency) :: f
-    ! TODO: type(unitless)     :: u1, u2
+    type(unitless)     :: u1, u2
     
     t1%v = 1.0_WP
-    ! TODO: u1%v = 1.0_WP
+    u1%v = 1.0_WP
     
-    ! TODO: u2 = 1.0_WP + u1
-    ! TODO: u2 = u1 + 1.0_WP
+    u2 = 1.0_WP + u1
+    call tests%real_eq(u2%v, 2.0_WP, "real + unitless")
     
-    ! TODO: u2 = 1.0_WP - u1
-    ! TODO: u2 = u1 - 1.0_WP
+    u2 = u1 + 2.0_WP
+    call tests%real_eq(u2%v, 3.0_WP, "unitless + real")
     
-    t2 = 1.0_WP * t1
-    t2 = t1 * 1.0_WP
+    u2 = -1.0_WP - u1
+    call tests%real_eq(u2%v, -2.0_WP, "real - unitless")
     
-    f  = 1.0_WP / t1
-    t2 = t1 / 1.0_WP
+    u2 = u1 - 1.0_WP
+    call tests%real_eq(u2%v, 0.0_WP, "unitless - real")
+    
+    t2 = 5.0_WP * t1
+    call tests%real_eq(t2%v, 5.0_WP, "real * unitless")
+    
+    t2 = t1 * (-4.0_WP)
+    call tests%real_eq(t2%v, -4.0_WP, "unitless * real")
+    
+    f = 2.0_WP / t1
+    call tests%real_eq(f%v, 2.0_WP, "real / unitless")
+    
+    t2 = t1 / 2.0_WP
+    call tests%real_eq(t2%v, 0.5_WP, "unitless / real")
 end subroutine test_unitless_real
 
 end program test_units

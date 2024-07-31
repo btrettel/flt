@@ -19,7 +19,6 @@ Priorities:
     - 2 argument `min` and `max`
     - Generic `linspace` and `linf_norm`
     - Test unitless intrinsics.
-    - Add addition and subtraction operations for `unitless` and `real`.
     - Add comparison operators, including `real` for `unitless`, with tests.
     - Look into inheritance for genunits to avoid the `%v%v` problem?
     - Better constructor for AD and genunits. Make default constructor set a constant, and have a separate subroutine to set the variable number of the derivatives? Example proposed syntax for combination of AD and genunits:

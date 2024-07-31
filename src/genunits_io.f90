@@ -508,24 +508,38 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(+) => a_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     
-!    ! Allow using `real`s as unitless in some situations.
-!    if all_close(unit_system%units(i_unit)%e, 0.0_WP) then
-!        write(unit=file_unit, fmt="(3a)") "    procedure, private, pass(left) :: a_", &
-!            trim(unit_system%units(i_unit)%label()), "_real"
-!        write(unit=file_unit, fmt="(3a)") "    generic, public :: operator(+) => a_", &
-!            trim(unit_system%units(i_unit)%label()), "_real"
+    ! Allow using `real`s as unitless in some situations.
+    if (all_close(unit_system%units(i_unit)%e, 0.0_WP)) then
+        write(unit=file_unit, fmt="(3a)") "    procedure, private, pass(left) :: a_", &
+            trim(unit_system%units(i_unit)%label()), "_real"
+        write(unit=file_unit, fmt="(3a)") "    generic, public :: operator(+) => a_", &
+            trim(unit_system%units(i_unit)%label()), "_real"
         
-!        ! The operations where the left is `real` won't have a corresponding type, so I put them here.
-!        write(unit=file_unit, fmt="(2a)") "    procedure, private, pass(right) :: a_real_", &
-!            trim(unit_system%units(i_unit)%label())
-!        write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(+) => a_real_", &
-!            trim(unit_system%units(i_unit)%label())
-!    end if
+        ! The operations where the left is `real` won't have a corresponding type, so I put them here.
+        write(unit=file_unit, fmt="(2a)") "    procedure, private, pass(right) :: a_real_", &
+            trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(+) => a_real_", &
+            trim(unit_system%units(i_unit)%label())
+    end if
     
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: s_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
+    
+    ! Allow using `real`s as unitless in some situations.
+    if (all_close(unit_system%units(i_unit)%e, 0.0_WP)) then
+        write(unit=file_unit, fmt="(3a)") "    procedure, private, pass(left) :: s_", &
+            trim(unit_system%units(i_unit)%label()), "_real"
+        write(unit=file_unit, fmt="(3a)") "    generic, public :: operator(-) => s_", &
+            trim(unit_system%units(i_unit)%label()), "_real"
+        
+        ! The operations where the left is `real` won't have a corresponding type, so I put them here.
+        write(unit=file_unit, fmt="(2a)") "    procedure, private, pass(right) :: s_real_", &
+            trim(unit_system%units(i_unit)%label())
+        write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(-) => s_real_", &
+            trim(unit_system%units(i_unit)%label())
+    end if
     
     if (config%comparison) then
         write(unit=file_unit, fmt="(4a)") "    procedure, private :: lt_", &
@@ -628,7 +642,7 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
 end subroutine write_type
 
 subroutine write_as_operators(config, unit_system, file_unit, unit)
-    use checks, only: assert
+    use checks, only: assert, all_close
     use genunits_data, only: unit_type, unit_system_type
     
     class(config_type), intent(in)     :: config
@@ -644,13 +658,18 @@ subroutine write_as_operators(config, unit_system, file_unit, unit)
     ! add
     call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "+")
     
-!    if (all_close(unit%e, 0.0_WP) then
-!        call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "+", unitless_is_real=.true.)
-!        n_interfaces = n_interfaces + 1
-!    end if
+    if (all_close(unit%e, 0.0_WP)) then
+        call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "+", unitless_is_real_left=.true.)
+        call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "+", unitless_is_real_right=.true.)
+    end if
     
     ! subtract
     call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "-")
+    
+    if (all_close(unit%e, 0.0_WP)) then
+        call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "-", unitless_is_real_left=.true.)
+        call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "-", unitless_is_real_right=.true.)
+    end if
 end subroutine write_as_operators
 
 subroutine write_comparison_operators(config, unit_system, file_unit, unit)
@@ -1246,6 +1265,7 @@ subroutine write_intrinsic_1arg_function(unit_system, file_unit, fun)
 end subroutine write_intrinsic_1arg_function
 
 subroutine write_module(config, unit_system, file_unit, rc)
+    use checks, only: all_close
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
     class(config_type), intent(in)      :: config
@@ -1431,6 +1451,10 @@ subroutine write_module(config, unit_system, file_unit, rc)
         
         call write_as_operators(config, unit_system, file_unit, unit_system%units(i_unit))
         n_interfaces = n_interfaces + 2
+        
+        if (all_close(unit_system%units(i_unit)%e, 0.0_WP)) then
+            n_interfaces = n_interfaces + 4
+        end if
         
         if (config%comparison) then
             call write_comparison_operators(config, unit_system, file_unit, unit_system%units(i_unit))
