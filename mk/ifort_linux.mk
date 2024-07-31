@@ -8,3 +8,5 @@ AFLAGS =
 NFLAGS = -xHost
 
 # Removed: `-diag-error-limit=1`
+
+# `-diag-disable=10448`: This is to avoid a warning about ifort being deprecated.

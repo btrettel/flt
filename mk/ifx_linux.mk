@@ -1,7 +1,7 @@
 # `-check uninit` has false positives with namelists for the moment.
 # <https://community.intel.com/t5/Intel-Fortran-Compiler/Known-bug-with-check-all-or-check-uninit-in-ifx-2024-0-0-for/m-p/1545825>
 
-FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays
+FFLAGS = -diag-disable=10440 -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays
 DFLAGS = -O0 -g -traceback -debug full -check all,nouninit -fpe0 -standard-semantics
 RFLAGS = -O2 -static -qopt-report -fiopenmp
 AFLAGS = 
@@ -17,3 +17,5 @@ NFLAGS = -xHost
 
 # `-standard-semantics` is only used for BUILD=debug due to a potential performance reduction.
 # <https://github.com/fortran-lang/fpm/issues/868#issuecomment-1720960031>
+
+# `-diag-disable=10440`: This is to avoid a warning about debug mode disabling optimizations. This warning might only appear on older versions of ifx.
