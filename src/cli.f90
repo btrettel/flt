@@ -16,7 +16,8 @@ contains
 
 subroutine get_input_file_name_from_cli(prog, input_file_name)
     use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version, error_unit
-    use build, only: DEBUG, TAG, REVISION_DATE, MODIFIED
+    use build, only: DEBUG
+    use rev, only: TAG, REVISION_DATE, MODIFIED
     use checks, only: assert
     use stopcodes, only: EX_OK, EX_NOINPUT
 
@@ -31,6 +32,7 @@ subroutine get_input_file_name_from_cli(prog, input_file_name)
     
     call get_command_argument(1, length=arg_len)
     allocate(character(len=arg_len) :: input_file_name)
+    call assert(arg_len >= 0, "cli (get_input_file_name_from_cli): arg_len is negative")
     call get_command_argument(1, value=input_file_name)
 
     if ((len(input_file_name) == 0) .or. &

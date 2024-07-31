@@ -13,7 +13,7 @@ Priorities:
     - MC convergence
         - Could simply design `convergence_rate` to handle this as well. Flag does sampling properly, etc.
     - Richardson extrapolation procedure
-- Make rev.f90 it's own module so that changes to any file does not cause everything depending on the build module to be rebuilt. At present, checks requires build, and probably everything requires checks, so changing any file in `ALLSRC` makes everything rebuild. This could lead to slow builds if not corrected. Few things need the revision data specifically so most of the problem can be avoided. Document the reason for the separation in gitrev.py and svnrev.py.
+- Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
 - genunits
     - Change `config%intrinsics` to `unitless_1arg_intrinsics` array in nml file that is looped over to minimize number of interfaces, reduce amount of hard coded things, and reduce number of places to change when adding unitless 1 argument intrinsics
     - 2 argument `min` and `max`
@@ -66,7 +66,7 @@ Priorities:
     - create tgz and/or zip file of `DESTDIR`
     - lists hashes
 - Add `PFLAGS` to enable or disable parallelization for debug and release. OpenMP and other libraries can't be statically linked, so they might lead to portability issues if they aren't used but are dynamically linked and aren't available.
-    - `MODE=serial` vs. `MODE=parallel`
+    - `THREADING=serial` vs. `THREADING=parallel`
 - `ARCH=gpu` for ifx and nvfortran. `GFLAGS` for GPU flags?
 - nmllog.f90
     - `check_bounds(x, rc, lower, upper)`
@@ -446,4 +446,5 @@ Later:
         - `chromo%out(:)` (for non-objective function outputs that may be of interest)
 - `CMP` based tests
 - Smart pointers
-    - Develop smart pointer before reverse mode AD
+    - Develop smart pointers before reverse mode AD.
+- Maybe: Remove units*.f90 and rev.f90 from `skip_indexing` for f90lint to lint those files. Make `make f90lint` depend on the generated files so that they are present for linting.

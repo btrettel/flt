@@ -4,7 +4,8 @@
 import os
 from subprocess import run, PIPE
 
-with open(os.path.join("src", "revision.f90"), "w") as output_handler:
+with open(os.path.join("src", "rev.f90"), "w") as output_handler:
+    output_handler.write("module rev\n")
     output_handler.write("character(len=*), public, parameter :: REVISION = \"")
     result = run(["git", "rev-parse", "--short", "HEAD"], stdout=PIPE, stderr=PIPE, universal_newlines=True)
     revision = result.stdout.strip()
@@ -31,3 +32,4 @@ with open(os.path.join("src", "revision.f90"), "w") as output_handler:
     else:
         output_handler.write(revision)
     output_handler.write("\"\n")
+    output_handler.write("end module rev")

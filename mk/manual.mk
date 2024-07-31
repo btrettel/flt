@@ -2,7 +2,7 @@
 # Manual dependencies #
 #######################
 
-src$(DIR_SEP)revision.f90: $(ALLSRC)
+src$(DIR_SEP)rev.f90: $(ALLSRC)
 	$(PYTHON) py$(DIR_SEP)gitrev.py
 
 depends: src$(DIR_SEP)units.f90 src$(DIR_SEP)units_ad.f90

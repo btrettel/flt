@@ -11,6 +11,5 @@ implicit none
 private
 
 logical, public, parameter :: DEBUG = .true.
-include "revision.f90"
 
 end module build

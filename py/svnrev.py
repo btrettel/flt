@@ -4,7 +4,8 @@
 import os
 from subprocess import run, PIPE
 
-with open(os.path.join("src", "revision.f90"), "w") as output_handler:
+with open(os.path.join("src", "rev.f90"), "w") as output_handler:
+    output_handler.write("module rev\n")
     output_handler.write("character(len=*), public, parameter :: REVISION = \"")
     result = run(["svn", "info", "--show-item", "revision"], stdout=PIPE, stderr=PIPE, universal_newlines=True)
     output_handler.write(result.stdout.strip())
@@ -23,3 +24,4 @@ with open(os.path.join("src", "revision.f90"), "w") as output_handler:
         output_handler.write(".false.\n")
     
     output_handler.write("character(len=*), public, parameter :: TAG = REVISION")
+    output_handler.write("end module rev")
