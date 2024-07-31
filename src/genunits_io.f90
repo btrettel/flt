@@ -508,6 +508,20 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(+) => a_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     
+!    ! Allow using `real`s as unitless in some situations.
+!    if all_close(unit_system%units(i_unit)%e, 0.0_WP) then
+!        write(unit=file_unit, fmt="(3a)") "    procedure, private, pass(left) :: a_", &
+!            trim(unit_system%units(i_unit)%label()), "_real"
+!        write(unit=file_unit, fmt="(3a)") "    generic, public :: operator(+) => a_", &
+!            trim(unit_system%units(i_unit)%label()), "_real"
+        
+!        ! The operations where the left is `real` won't have a corresponding type, so I put them here.
+!        write(unit=file_unit, fmt="(2a)") "    procedure, private, pass(right) :: a_real_", &
+!            trim(unit_system%units(i_unit)%label())
+!        write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(+) => a_real_", &
+!            trim(unit_system%units(i_unit)%label())
+!    end if
+    
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: s_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
@@ -630,6 +644,11 @@ subroutine write_as_operators(config, unit_system, file_unit, unit)
     ! add
     call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "+")
     
+!    if (all_close(unit%e, 0.0_WP) then
+!        call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "+", unitless_is_real=.true.)
+!        n_interfaces = n_interfaces + 1
+!    end if
+    
     ! subtract
     call write_binary_operator(config, unit_system, file_unit, unit, unit, unit, "-")
 end subroutine write_as_operators
@@ -676,9 +695,16 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
         call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*")
         n_interfaces = n_interfaces + 1
         
-        if ((all_close(unit_right%e, 0.0_WP) .and. (.not. all_close(unit_left%e, 0.0_WP))) &
-                .or. ((.not. all_close(unit_right%e, 0.0_WP)) .and. all_close(unit_left%e, 0.0_WP))) then
-            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*", unitless_is_real=.true.)
+        ! TODO: The conditionals here aren't right. All that are needed now is that left or right are unitless.
+        if (all_close(unit_left%e, 0.0_WP) .and. (.not. all_close(unit_right%e, 0.0_WP))) then
+            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*", &
+                                        unitless_is_real_left=.true.)
+            n_interfaces = n_interfaces + 1
+        end if
+        
+        if ((.not. all_close(unit_left%e, 0.0_WP)) .and. all_close(unit_right%e, 0.0_WP)) then
+            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*", &
+                                        unitless_is_real_right=.true.)
             n_interfaces = n_interfaces + 1
         end if
     end if
@@ -689,15 +715,22 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
         call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/")
         n_interfaces = n_interfaces + 1
         
-        if ((all_close(unit_right%e, 0.0_WP) .and. (.not. all_close(unit_left%e, 0.0_WP))) &
-                .or. ((.not. all_close(unit_right%e, 0.0_WP)) .and. all_close(unit_left%e, 0.0_WP))) then
-            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/", unitless_is_real=.true.)
+        if (all_close(unit_left%e, 0.0_WP) .and. (.not. all_close(unit_right%e, 0.0_WP))) then
+            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/", &
+                                        unitless_is_real_left=.true.)
+            n_interfaces = n_interfaces + 1
+        end if
+        
+        if ((.not. all_close(unit_left%e, 0.0_WP)) .and. all_close(unit_right%e, 0.0_WP)) then
+            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/", &
+                                        unitless_is_real_right=.true.)
             n_interfaces = n_interfaces + 1
         end if
     end if
 end subroutine write_md_operators
 
-subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_result, op, unitless_is_real)
+subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_result, op, &
+                                    unitless_is_real_left, unitless_is_real_right)
     use checks, only: assert, all_close
     use genunits_data, only: unit_type, unit_system_type
     
@@ -707,19 +740,25 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
     type(unit_type), intent(in)        :: unit_left, unit_right, unit_result
     character(len=*), intent(in)       :: op
     
-    logical, intent(in), optional :: unitless_is_real
+    logical, intent(in), optional :: unitless_is_real_left, unitless_is_real_right
     
     character(len=2)              :: op_label
     character(len=:), allocatable :: binary_operator_procedure
-    logical                       :: file_unit_open, conditional, unitless_is_real_
+    logical                       :: file_unit_open, conditional, unitless_is_real_left_, unitless_is_real_right_
     
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_binary_operator): file_unit must be open")
     
-    if (present(unitless_is_real)) then
-        unitless_is_real_ = unitless_is_real
+    if (present(unitless_is_real_left)) then
+        unitless_is_real_left_ = unitless_is_real_left
     else
-        unitless_is_real_ = .false.
+        unitless_is_real_left_ = .false.
+    end if
+    
+    if (present(unitless_is_real_right)) then
+        unitless_is_real_right_ = unitless_is_real_right
+    else
+        unitless_is_real_right_ = .false.
     end if
     
     select case (op)
@@ -754,14 +793,16 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
             error stop "write_binary_operator: invalid op"
     end select
     
-    call assert(.not. (all_close(unit_left%e, 0.0_WP) .and. &
-                all_close(unit_right%e, 0.0_WP) .and. &
-                unitless_is_real_), "genunits_io (write_binary_operator): " // &
-                "unitless reals for both arguments should not be possible")
+    call assert(.not. (unitless_is_real_left_ .and. unitless_is_real_right_), "genunits_io (write_binary_operator): " // &
+                    "can't have both sides be unitless reals")
+    call assert(.not. (unitless_is_real_left_ .and. (.not. all_close(unit_left%e, 0.0_WP))), &
+                    "genunits_io (write_binary_operator): unitless_is_real_left=.true., but left is not unitless")
+    call assert(.not. (unitless_is_real_right_ .and. (.not. all_close(unit_right%e, 0.0_WP))), &
+                    "genunits_io (write_binary_operator): unitless_is_real_right=.true., but right is not unitless")
     
-    if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_) then
+    if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_left_) then
         binary_operator_procedure = trim(op_label) // "_real_" // trim(unit_right%label())
-    else if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_) then
+    else if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_right_) then
         binary_operator_procedure = trim(op_label) // "_" // trim(unit_left%label()) // "_real"
     else
         binary_operator_procedure = trim(op_label) // "_" // trim(unit_left%label()) // "_" // trim(unit_right%label())
@@ -778,13 +819,13 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
         write(unit=file_unit, fmt="(2a)") "    ! result unit: ", trim(unit_result%readable(unit_system))
     end if
     
-    if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_) then
+    if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_left_) then
         write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter(2:), "), intent(in) :: left"
     else
         write(unit=file_unit, fmt="(3a)") "    class(", trim(unit_left%label()), "), intent(in) :: left"
     end if
     
-    if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_) then
+    if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_right_) then
         write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter(2:), "), intent(in) :: right"
     else
         write(unit=file_unit, fmt="(3a)") "    class(", trim(unit_right%label()), "), intent(in) :: right"
@@ -796,9 +837,9 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
     else
         write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_result%label()), ") :: ", binary_operator_procedure
         
-        if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_) then
+        if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_left_) then
             write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left ", op, " right%v"
-        else if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_) then
+        else if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_right_) then
             write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left%v ", op, " right"
         else
             write(unit=file_unit, fmt="(5a)") "    ", binary_operator_procedure, "%v = left%v ", op, " right%v"
