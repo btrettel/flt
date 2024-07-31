@@ -562,10 +562,15 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
                 trim(unit_system%units(i_unit)%label()), "_real"
             write(unit=file_unit, fmt="(3a)") "    generic, public :: operator(*) => m_", &
                 trim(unit_system%units(i_unit)%label()), "_real"
-            write(unit=file_unit, fmt="(2a)") "    procedure, private, pass(right) :: m_real_", &
-                trim(unit_system%units(i_unit)%label())
-            write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(*) => m_real_", &
-                trim(unit_system%units(i_unit)%label())
+            
+            ! The operations where the left is `real` won't have a corresponding type, so I put them here.
+            trial_unit = m_unit(unit_system%units(j_unit), unit_system%units(i_unit))
+            if (trial_unit%is_in(unit_system%units)) then
+                write(unit=file_unit, fmt="(2a)") "    procedure, private, pass(right) :: m_real_", &
+                    trim(unit_system%units(i_unit)%label())
+                write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(*) => m_real_", &
+                    trim(unit_system%units(i_unit)%label())
+            end if
         end if
         
         ! divide
@@ -586,10 +591,15 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
                 trim(unit_system%units(i_unit)%label()), "_real"
             write(unit=file_unit, fmt="(3a)") "    generic, public :: operator(/) => d_", &
                 trim(unit_system%units(i_unit)%label()), "_real"
-            write(unit=file_unit, fmt="(2a)") "    procedure, private, pass(right) :: d_real_", &
-                trim(unit_system%units(i_unit)%label())
-            write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(/) => d_real_", &
-                trim(unit_system%units(i_unit)%label())
+            
+            ! The operations where the left is `real` won't have a corresponding type, so I put them here.
+            trial_unit = d_unit(unit_system%units(j_unit), unit_system%units(i_unit))
+            if (trial_unit%is_in(unit_system%units)) then
+                write(unit=file_unit, fmt="(2a)") "    procedure, private, pass(right) :: d_real_", &
+                    trim(unit_system%units(i_unit)%label())
+                write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(/) => d_real_", &
+                    trim(unit_system%units(i_unit)%label())
+            end if
         end if
     end do
     
@@ -666,10 +676,10 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
         call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*")
         n_interfaces = n_interfaces + 1
         
-        if (all_close(unit_right%e, 0.0_WP) .and. (.not. all_close(unit_left%e, 0.0_WP))) then
+        if ((all_close(unit_right%e, 0.0_WP) .and. (.not. all_close(unit_left%e, 0.0_WP))) &
+                .or. ((.not. all_close(unit_right%e, 0.0_WP)) .and. all_close(unit_left%e, 0.0_WP))) then
             call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*", unitless_is_real=.true.)
-            call write_binary_operator(config, unit_system, file_unit, unit_right, unit_left, unit_m, "*", unitless_is_real=.true.)
-            n_interfaces = n_interfaces + 2
+            n_interfaces = n_interfaces + 1
         end if
     end if
     
@@ -679,10 +689,10 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
         call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/")
         n_interfaces = n_interfaces + 1
         
-        if (all_close(unit_right%e, 0.0_WP) .and. (.not. all_close(unit_left%e, 0.0_WP))) then
-            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "/", unitless_is_real=.true.)
-            call write_binary_operator(config, unit_system, file_unit, unit_right, unit_left, unit_m, "/", unitless_is_real=.true.)
-            n_interfaces = n_interfaces + 2
+        if ((all_close(unit_right%e, 0.0_WP) .and. (.not. all_close(unit_left%e, 0.0_WP))) &
+                .or. ((.not. all_close(unit_right%e, 0.0_WP)) .and. all_close(unit_left%e, 0.0_WP))) then
+            call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/", unitless_is_real=.true.)
+            n_interfaces = n_interfaces + 1
         end if
     end if
 end subroutine write_md_operators

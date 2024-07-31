@@ -5,12 +5,22 @@ Priorities:
 - convergence.f90: convergence testing framework
     - grid/temporal convergence (set up the same: take a callback where one parameter is the delta to be varied)
         - produce both error and order plots
+        - `convergence_rate(func, deltas, norm, outfile, expected_order, tol, actual_order, rc)`
+            - `norm` can be `NORM_POINTWISE` or `NORM_INFINITY`
+            - `actual_order` is `intent(out)`
+        - Convergence error plot assumes positive discretization error (or implicit norm of some sort), order plot does not
+        - `rc` can be used to catch issues like the criteria of nishikawa_pitfalls_2023 being unmet, etc.
     - MC convergence
+        - Could simply design `convergence_rate` to handle this as well. Flag does sampling properly, etc.
     - Richardson extrapolation procedure
-- Make revision.f90 it's own module so that changes to any file does not cause everything depending on the build module to be rebuilt. At present, checks requires build, and probably everything requires checks, so changing any file in `ALLSRC` makes everything rebuild. This could lead to slow builds if not corrected. Few things need the revision data specifically so most of the problem can be avoided. Document the reason for the separation in gitrev.py and svnrev.py.
+- Make rev.f90 it's own module so that changes to any file does not cause everything depending on the build module to be rebuilt. At present, checks requires build, and probably everything requires checks, so changing any file in `ALLSRC` makes everything rebuild. This could lead to slow builds if not corrected. Few things need the revision data specifically so most of the problem can be avoided. Document the reason for the separation in gitrev.py and svnrev.py.
 - genunits
-    - Test unitless intrinsic `sin`, `cos`, `tan`, `exp`, `log`.
-    - Add more unitless intrinsics.
+    - Change `config%intrinsics` to `unitless_1arg_intrinsics` array in nml file that is looped over to minimize number of interfaces, reduce amount of hard coded things, and reduce number of places to change when adding unitless 1 argument intrinsics
+    - 2 argument `min` and `max`
+    - Generic `linspace` and `linf_norm`
+    - Test unitless intrinsics.
+    - Add addition and subtraction operations for `unitless` and `real`.
+    - Add comparison operators, including `real` for `unitless`, with tests.
     - Look into inheritance for genunits to avoid the `%v%v` problem?
     - Better constructor for AD and genunits. Make default constructor set a constant, and have a separate subroutine to set the variable number of the derivatives? Example proposed syntax for combination of AD and genunits:
         - ```type(si_length) :: x
@@ -23,9 +33,11 @@ Priorities:
 - Documentation for genunits
     - `use_line` creates a new line at semicolons, so that depends.py can see the dependency.
 - genunits_io.f90: Change type-bound procedures for `config` to be normal procedures.
-- fmad.f90: Addition and subtraction for `reals`.
+- fmad.f90:
+    - Addition and subtraction for `real`s (with tests).
+    - Assert that `dv` of the output is allocated (via `assert`) and has correct size (via `assert_dimension`).
+    - comparison operators for reals, with tests
 - Better constructors for AD. I should be able to get a constant by using `ad` directly.
-- Constructors for units combined with AD. `length(1.0)` should give a constant, if possible.
 - Make `test_concurrent` more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
     - ```./test_purerng
     real returned = -3999.7052
@@ -54,6 +66,7 @@ Priorities:
     - create tgz and/or zip file of `DESTDIR`
     - lists hashes
 - Add `PFLAGS` to enable or disable parallelization for debug and release. OpenMP and other libraries can't be statically linked, so they might lead to portability issues if they aren't used but are dynamically linked and aren't available.
+    - `MODE=serial` vs. `MODE=parallel`
 - `ARCH=gpu` for ifx and nvfortran. `GFLAGS` for GPU flags?
 - nmllog.f90
     - `check_bounds(x, rc, lower, upper)`

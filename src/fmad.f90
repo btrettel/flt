@@ -438,7 +438,7 @@ elemental function ad_exp(ad_in)
     ad_exp%dv = ad_in%dv*exp(ad_in%v)
 end function ad_exp
 
-function ad_ad_merge(ad_1, ad_2, mask)
+pure function ad_ad_merge(ad_1, ad_2, mask)
     class(ad), intent(in) :: ad_1, ad_2
     logical, intent(in)   :: mask
     
@@ -451,7 +451,7 @@ function ad_ad_merge(ad_1, ad_2, mask)
     end if
 end function ad_ad_merge
 
-function ad_ad_max_2(ad_1, ad_2)
+pure function ad_ad_max_2(ad_1, ad_2)
     class(ad), intent(in) :: ad_1, ad_2
     
     type(ad) :: ad_ad_max_2
@@ -459,7 +459,7 @@ function ad_ad_max_2(ad_1, ad_2)
     ad_ad_max_2 = ad_ad_merge(ad_1, ad_2, ad_1%v >= ad_2%v)
 end function ad_ad_max_2
 
-function real_ad_max_2(real_1, ad_2)
+pure function real_ad_max_2(real_1, ad_2)
     ! Related: <https://en.wikipedia.org/wiki/Rectifier_(neural_networks)>
     
     real(kind=WP), intent(in) :: real_1
@@ -473,7 +473,7 @@ function real_ad_max_2(real_1, ad_2)
     real_ad_max_2 = ad_ad_max_2(ad_1, ad_2)
 end function real_ad_max_2
 
-function ad_ad_min_2(ad_1, ad_2)
+pure function ad_ad_min_2(ad_1, ad_2)
     class(ad), intent(in) :: ad_1, ad_2
     
     type(ad) :: ad_ad_min_2
@@ -481,7 +481,7 @@ function ad_ad_min_2(ad_1, ad_2)
     ad_ad_min_2 = ad_ad_merge(ad_1, ad_2, ad_1%v <= ad_2%v)
 end function ad_ad_min_2
 
-function real_ad_min_2(real_1, ad_2)
+pure function real_ad_min_2(real_1, ad_2)
     real(kind=WP), intent(in) :: real_1
     class(ad), intent(in)     :: ad_2
     
