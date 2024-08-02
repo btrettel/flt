@@ -140,15 +140,15 @@ end subroutine init_const
 ! Operator procedures
 ! -------------------
 
-elemental function ad_ad_add(ad_1, ad_2)
+elemental function ad_ad_add(ad_left, ad_right)
     ! Adds two `ad`s.
     
-    class(ad), intent(in) :: ad_1, ad_2
+    class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_add
 
-    ad_ad_add%v  = ad_1%v  + ad_2%v
-    ad_ad_add%dv = ad_1%dv + ad_2%dv
+    ad_ad_add%v  = ad_left%v  + ad_right%v
+    ad_ad_add%dv = ad_left%dv + ad_right%dv
 end function ad_ad_add
 
 elemental function ad_real_add(ad_in, real_in)
@@ -179,15 +179,15 @@ elemental function real_ad_add(real_in, ad_in)
     real_ad_add%dv = ad_in%dv
 end function real_ad_add
 
-elemental function ad_ad_subtract(ad_1, ad_2)
+elemental function ad_ad_subtract(ad_left, ad_right)
     ! Subtracts two `ad`s.
 
-    class(ad), intent(in) :: ad_1, ad_2
+    class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_subtract
 
-    ad_ad_subtract%v  = ad_1%v  - ad_2%v
-    ad_ad_subtract%dv = ad_1%dv - ad_2%dv
+    ad_ad_subtract%v  = ad_left%v  - ad_right%v
+    ad_ad_subtract%dv = ad_left%dv - ad_right%dv
 end function ad_ad_subtract
 
 elemental function ad_real_subtract(ad_in, real_in)
@@ -240,15 +240,15 @@ elemental function ad_add_unary(ad_in)
     ad_add_unary%dv = ad_in%dv
 end function ad_add_unary
 
-elemental function ad_ad_multiply(ad_1, ad_2)
+elemental function ad_ad_multiply(ad_left, ad_right)
     ! Multiplies two `ad`s.
 
-    class(ad), intent(in) :: ad_1, ad_2
+    class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_multiply
 
-    ad_ad_multiply%v  = ad_1%v * ad_2%v
-    ad_ad_multiply%dv = ad_1%dv * ad_2%v + ad_1%v * ad_2%dv
+    ad_ad_multiply%v  = ad_left%v * ad_right%v
+    ad_ad_multiply%dv = ad_left%dv * ad_right%v + ad_left%v * ad_right%dv
 end function ad_ad_multiply
 
 elemental function ad_real_multiply(ad_in, real_in)
@@ -279,15 +279,15 @@ elemental function real_ad_multiply(real_in, ad_in)
     real_ad_multiply%dv = real_in * ad_in%dv
 end function real_ad_multiply
 
-elemental function ad_ad_divide(ad_1, ad_2)
+elemental function ad_ad_divide(ad_left, ad_right)
     ! Divides two `ad`.
 
-    class(ad), intent(in) :: ad_1, ad_2
+    class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_divide
 
-    ad_ad_divide%v  = ad_1%v / ad_2%v
-    ad_ad_divide%dv = (ad_1%dv * ad_2%v - ad_1%v * ad_2%dv) / (ad_2%v**2)
+    ad_ad_divide%v  = ad_left%v / ad_right%v
+    ad_ad_divide%dv = (ad_left%dv * ad_right%v - ad_left%v * ad_right%dv) / (ad_right%v**2)
 end function ad_ad_divide
 
 elemental function ad_real_divide(ad_in, real_in)
@@ -462,63 +462,63 @@ elemental function ad_exp(ad_in)
     ad_exp%dv = ad_in%dv*exp(ad_in%v)
 end function ad_exp
 
-pure function ad_ad_merge(ad_1, ad_2, mask)
-    class(ad), intent(in) :: ad_1, ad_2
+pure function ad_ad_merge(ad_left, ad_right, mask)
+    class(ad), intent(in) :: ad_left, ad_right
     logical, intent(in)   :: mask
     
     type(ad) :: ad_ad_merge
     
     if (mask) then
-        ad_ad_merge = ad_1
+        ad_ad_merge = ad_left
     else
-        ad_ad_merge = ad_2
+        ad_ad_merge = ad_right
     end if
 end function ad_ad_merge
 
-pure function ad_ad_max_2(ad_1, ad_2)
-    class(ad), intent(in) :: ad_1, ad_2
+pure function ad_ad_max_2(ad_left, ad_right)
+    class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_max_2
     
-    ad_ad_max_2 = ad_ad_merge(ad_1, ad_2, ad_1%v >= ad_2%v)
+    ad_ad_max_2 = ad_ad_merge(ad_left, ad_right, ad_left%v >= ad_right%v)
 end function ad_ad_max_2
 
-pure function real_ad_max_2(real_1, ad_2)
+pure function real_ad_max_2(real_left, ad_right)
     ! Related: <https://en.wikipedia.org/wiki/Rectifier_(neural_networks)>
     
     use prec, only: WP
     
-    real(kind=WP), intent(in) :: real_1
-    class(ad), intent(in)     :: ad_2
+    real(kind=WP), intent(in) :: real_left
+    class(ad), intent(in)     :: ad_right
     
     type(ad) :: real_ad_max_2
     
-    type(ad) :: ad_1
+    type(ad) :: ad_left
     
-    call ad_1%init_const(real_1, size(ad_2%dv))
-    real_ad_max_2 = ad_ad_max_2(ad_1, ad_2)
+    call ad_left%init_const(real_left, size(ad_right%dv))
+    real_ad_max_2 = ad_ad_max_2(ad_left, ad_right)
 end function real_ad_max_2
 
-pure function ad_ad_min_2(ad_1, ad_2)
-    class(ad), intent(in) :: ad_1, ad_2
+pure function ad_ad_min_2(ad_left, ad_right)
+    class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_min_2
     
-    ad_ad_min_2 = ad_ad_merge(ad_1, ad_2, ad_1%v <= ad_2%v)
+    ad_ad_min_2 = ad_ad_merge(ad_left, ad_right, ad_left%v <= ad_right%v)
 end function ad_ad_min_2
 
-pure function real_ad_min_2(real_1, ad_2)
+pure function real_ad_min_2(real_left, ad_right)
     use prec, only: WP
     
-    real(kind=WP), intent(in) :: real_1
-    class(ad), intent(in)     :: ad_2
+    real(kind=WP), intent(in) :: real_left
+    class(ad), intent(in)     :: ad_right
     
     type(ad) :: real_ad_min_2
     
-    type(ad) :: ad_1
+    type(ad) :: ad_left
     
-    call ad_1%init_const(real_1, size(ad_2%dv))
-    real_ad_min_2 = ad_ad_min_2(ad_1, ad_2)
+    call ad_left%init_const(real_left, size(ad_right%dv))
+    real_ad_min_2 = ad_ad_min_2(ad_left, ad_right)
 end function real_ad_min_2
 
 elemental function ad_abs(ad_in)
