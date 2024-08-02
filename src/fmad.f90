@@ -98,6 +98,7 @@ contains
 
 elemental subroutine init(x, v, n, n_dv)
     use checks, only: assert, is_close
+    use prec, only: WP
     
     class(ad), intent(in out) :: x    ! `class` can't be `intent(out)` and `pure`?!?
     real(kind=WP), intent(in) :: v    ! value of variable to set
@@ -122,6 +123,7 @@ end subroutine init
 
 elemental subroutine init_const(x, v, n_dv)
     use checks, only: assert
+    use prec, only: WP
     
     class(ad), intent(in out) :: x ! `class` can't be `intent(out)` and `pure`?!?
     real(kind=WP), intent(in) :: v    ! value of constant to set
@@ -151,7 +153,9 @@ end function ad_ad_add
 
 elemental function ad_real_add(ad_in, real_in)
     ! Adds an `ad` and a `real`.
-
+    
+    use prec, only: WP
+    
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
     
@@ -163,7 +167,9 @@ end function ad_real_add
 
 elemental function real_ad_add(real_in, ad_in)
     ! Adds a `real` and an `ad`.
-
+    
+    use prec, only: WP
+    
     real(kind=WP), intent(in) :: real_in
     class(ad), intent(in)     :: ad_in
     
@@ -186,7 +192,9 @@ end function ad_ad_subtract
 
 elemental function ad_real_subtract(ad_in, real_in)
     ! Subtracts a `real` from an `ad`.
-
+    
+    use prec, only: WP
+    
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
     
@@ -199,6 +207,8 @@ end function ad_real_subtract
 elemental function real_ad_subtract(real_in, ad_in)
     ! Subtracts a `real` from an `ad`.
 
+    use prec, only: WP
+    
     real(kind=WP), intent(in) :: real_in
     class(ad), intent(in)     :: ad_in
     
@@ -243,7 +253,9 @@ end function ad_ad_multiply
 
 elemental function ad_real_multiply(ad_in, real_in)
     ! Multiplies an `ad` by a `real`.
-
+    
+    use prec, only: WP
+    
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
     
@@ -255,6 +267,8 @@ end function ad_real_multiply
 
 elemental function real_ad_multiply(real_in, ad_in)
     ! Multiplies a `real` by an `ad`.
+    
+    use prec, only: WP
 
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
@@ -278,6 +292,8 @@ end function ad_ad_divide
 
 elemental function ad_real_divide(ad_in, real_in)
     ! Divides an `ad` by a `real`.
+    
+    use prec, only: WP
 
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
@@ -290,6 +306,8 @@ end function ad_real_divide
 
 elemental function real_ad_divide(real_in, ad_in)
     ! Divides a `real` by an `ad`.
+    
+    use prec, only: WP
 
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
@@ -304,6 +322,7 @@ elemental function ad_real_exponentiate(ad_in, real_in)
     ! Exponentiates an `ad` by a `real`.
     
     use checks, only: assert
+    use prec, only: WP
     
     class(ad), intent(in)      :: ad_in
     real(kind=WP), intent(in)  :: real_in
@@ -321,6 +340,7 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
     ! Exponentiates an `ad` by an `integer`.
     
     use checks, only: assert
+    use prec, only: WP
     
     class(ad), intent(in) :: ad_in
     integer, intent(in)   :: integer_in
@@ -396,6 +416,7 @@ elemental function ad_sqrt(ad_in)
     ! Takes the square root of an `ad`.
     
     use checks, only: assert
+    use prec, only: WP
     
     class(ad), intent(in) :: ad_in
     
@@ -408,6 +429,8 @@ elemental function ad_sqrt(ad_in)
 end function ad_sqrt
 
 elemental function ad_tanh(ad_in)
+    use prec, only: WP
+    
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_tanh
@@ -418,6 +441,7 @@ end function ad_tanh
 
 elemental function ad_log(ad_in)
     use checks, only: assert
+    use prec, only: WP
     
     class(ad), intent(in) :: ad_in
     
@@ -462,6 +486,8 @@ end function ad_ad_max_2
 pure function real_ad_max_2(real_1, ad_2)
     ! Related: <https://en.wikipedia.org/wiki/Rectifier_(neural_networks)>
     
+    use prec, only: WP
+    
     real(kind=WP), intent(in) :: real_1
     class(ad), intent(in)     :: ad_2
     
@@ -482,6 +508,8 @@ pure function ad_ad_min_2(ad_1, ad_2)
 end function ad_ad_min_2
 
 pure function real_ad_min_2(real_1, ad_2)
+    use prec, only: WP
+    
     real(kind=WP), intent(in) :: real_1
     class(ad), intent(in)     :: ad_2
     
@@ -495,6 +523,7 @@ end function real_ad_min_2
 
 elemental function ad_abs(ad_in)
     use checks, only: assert, is_close
+    use prec, only: WP
     
     class(ad), intent(in) :: ad_in
     
@@ -539,6 +568,7 @@ end function ad_tan
 
 pure function f(x, y)
     use checks, only: assert
+    use prec, only: WP
     
     ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.
     

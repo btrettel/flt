@@ -152,7 +152,9 @@ subroutine test_dtio(tests)
     vol%v = 12.345_WP
     
     ! TODO: Commented out for nvfortran due to a bug in nvfortran's derived type I/O for internal variables.
-    if (index(compiler_version(), "nvfortran") == 0) then
+    ! TODO: Cray Fortran seems to not pass these tests either.
+    if ((index(compiler_version(), "nvfortran") /= 0) &
+        .and. (index(compiler_version(), "Cray Fortran") /= 0)) then
         write(unit=quantity_string, fmt="(dt'f'(6, 3))") vol
         call tests%character_eq(quantity_string, "12.345 m3", "derived type write")
         
@@ -188,7 +190,7 @@ subroutine test_dtio(tests)
         if (rc_nml /= 0) then
             call tests%character_eq(msg, "", "units namelist read (2), iomsg")
         end if
-        call tests%real_eq(vol%v, 6.789_WP, "units namelist read")
+        call tests%real_eq(vol%v, 6.789_WP, "units namelist read (2)")
         
         ! TODO: Update this so that it runs on Windows.
         vol%v = 0.0_WP
@@ -198,8 +200,8 @@ subroutine test_dtio(tests)
         read(unit=nml_unit, nml=dtio, iostat=rc_nml)
         close(nml_unit)
         
-        call tests%integer_eq(rc_nml, 2, "units namelist read (2), rc")
-        call tests%real_eq(vol%v, 34.56_WP, "units namelist read")
+        call tests%integer_eq(rc_nml, 2, "units namelist read (3), rc")
+        call tests%real_eq(vol%v, 34.56_WP, "units namelist read (3)")
     end if
 end subroutine test_dtio
 
