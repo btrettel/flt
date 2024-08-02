@@ -166,7 +166,7 @@ pure function all_close_rank_1_rank_0(input_real_1, input_real_2, rel_tol, abs_t
     end if
 end function all_close_rank_1_rank_0
 
-pure subroutine assert(condition, message)
+elemental subroutine assert(condition, message)
     use build, only: DEBUG
     
     logical, intent(in)          :: condition

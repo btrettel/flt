@@ -26,6 +26,7 @@ Priorities:
 
         x = si_length(1.0_WP) ! make a constant
         call x%set_dv(1, N_DV) ! set this as variable number 1```
+    - Add `%v%v` to linter (disabled for now) to help identify what to fix in the future...
 - `make lint` runs Python linters too.
 - Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
 - Make script to install FLT build system in a directory

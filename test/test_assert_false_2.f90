@@ -5,11 +5,11 @@
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_assert_false
+program test_assert_false_2
 
 use checks, only: assert
 implicit none
 
-call assert(.false., "Custom message.")
+call assert([.false., .true.], "Custom message.")
 
-end program test_assert_false
+end program test_assert_false_2

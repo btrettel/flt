@@ -128,12 +128,13 @@ call tests%logical_false(all_close([1.0_WP, 2.0_WP], 0.0_WP), "all_close (rank 1
 
 ! `assert(.true.)` does not terminate the program (no direct test performed)
 call assert(.true., "assert(.true.) test failed?")
+call assert([.true., .true.], "assert([.true., .true.]) test failed?")
 ! The test passed if execution reaches here, so manually increment the test counters.
-tests%n_tests = tests%n_tests + 1
+tests%n_tests = tests%n_tests + 2
 
 if (DEBUG) then ! IBM XLF comment start
     ! Check that `assert(.false., "Custom message.")` has the correct message.
-    call tests%exit_code_ne("./test_assert_false", 0, "assert, .false., message, exit code", &
+    call tests%exit_code_ne("./test_assert_false_1", 0, "assert, .false., message, exit code", &
                                 ASSERT_FALSE_OUTPUT, keep_file=.true.)
 
     inquire(file=ASSERT_FALSE_OUTPUT, exist=test_assert_false_exists)
@@ -146,6 +147,14 @@ if (DEBUG) then ! IBM XLF comment start
     call tests%character_eq(assert_false_line, "ASSERTION FAILED. Custom message.", "assert, .false., message, assertion message")
 
     ! Delete saved file.
+    close(unit=test_assert_false_unit, status="delete")
+    
+    ! Check that `assert(.false., "Custom message.")` has the correct message.
+    call tests%exit_code_ne("./test_assert_false_2", 0, "assert, array, .false., message, exit code", &
+                                ASSERT_FALSE_OUTPUT, keep_file=.true.)
+
+    ! Delete saved file.
+    open(newunit=test_assert_false_unit, file=ASSERT_FALSE_OUTPUT, status="old", action="read")
     close(unit=test_assert_false_unit, status="delete")
 else
     ! Check that `assert(.false.)` does not terminate with a non-zero exit code for release mode.
