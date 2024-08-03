@@ -5,13 +5,19 @@ import os
 import argparse
 import configparser
 
-ASSERTION_DENSITY_LOWER_LIMIT = 4.0
+# Branch statement density is a sort of poor man's cyclomatic complexity. But it's better in one sense, as I've heard that ["the McCabe cyclomatic complexity metric is no better than counting lines of code"](https://shape-of-code.com/2023/09/03/halstead-mccabe-metrics-the-wisdom-of-the-ancients/). This looks at the *density*, so it's not the same information as the total lines of code.
+
+ASSERTION_DENSITY_LOWER_LIMIT = 5.0  # percent
+BRANCH_DENSITY_UPPER_LIMIT    = 10.0 # percent (number is arbitrary for the moment)
+COMMENT_DENSITY_LOWER_LIMIT   = 5.0 # percent
 TEST_RATIO_LOWER_LIMIT        = 0.5
 
 class file_stats_class:
-    def __init__(self, filename, assertion_density, lines, test_subroutine_calls, test_subroutine_definitions):
+    def __init__(self, filename, assertion_density, branch_density, comment_density, lines, test_subroutine_calls, test_subroutine_definitions):
         self.filename                    = filename
         self.assertion_density           = assertion_density
+        self.branch_density              = branch_density
+        self.comment_density             = comment_density
         self.lines                       = lines
         self.test_ratio                  = 0.0
         self.test_subroutine_calls       = test_subroutine_calls
@@ -44,6 +50,8 @@ directories              = config['f90lint']['directories'].split(' ')
 skip_indexing            = canonicalize_paths(config['f90lint']['skip_indexing'])
 ignore_assertion_density = canonicalize_paths(config['f90lint']['ignore_assertion_density'])
 ignore_test_sloc_ratio   = canonicalize_paths(config['f90lint']['ignore_test_sloc_ratio'])
+ignore_branch_density    = [] # TODO: Add later
+ignore_comment_density   = [] # TODO: Add later
 
 fail = False
 
@@ -69,10 +77,12 @@ if fail:
 
 exit_code = 0
 
-global_num_lines_code  = 0
-global_num_lines_tests = 0
-global_num_assertions  = 0
-num_files_analyzed     = 0
+global_num_lines_code        = 0
+global_num_lines_tests       = 0
+global_num_assertions        = 0
+global_num_branch_statements = 0
+global_num_comments          = 0
+num_files_analyzed           = 0
 file_stats = []
 for filename in sorted(filepaths):
     if filename in skip_indexing:
@@ -87,12 +97,16 @@ for filename in sorted(filepaths):
                 contains_executable_code = True
                 break
         
+        file_handler.seek(0)
+        
         # Ignore files that don't contain executable code.
         if contains_executable_code:
             file_handler.seek(0)
             local_num_lines_code_or_tests = 0
             local_num_lines_tests         = 0
             local_num_assertions          = 0
+            local_num_branch_statements   = 0
+            local_num_comments            = 0
             line_no                       = 0
             test_subroutine_calls         = set()
             test_subroutine_definitions   = set()
@@ -100,7 +114,11 @@ for filename in sorted(filepaths):
                 line_no = line_no + 1
                 
                 # If the line isn't empty or only comments.
-                if not is_empty_or_comment(line):
+                if is_empty_or_comment(line):
+                    if "!" in line.strip():
+                        global_num_comments = global_num_comments + 1
+                        local_num_comments  = local_num_comments  + 1
+                else:
                     local_num_lines_code_or_tests = local_num_lines_code_or_tests + 1
                     
                     line_no_comments = line.split("!")[0].strip()
@@ -112,7 +130,11 @@ for filename in sorted(filepaths):
                         # `error stop` lines are for error termination, so they are like assertions. They are used where assertions aren't appropriate.
                         if (line.strip().startswith("call assert") or line.strip().startswith("error stop") or ("%check(" in line)):
                             global_num_assertions = global_num_assertions + 1
-                            local_num_assertions  = local_num_assertions + 1
+                            local_num_assertions  = local_num_assertions  + 1
+                        
+                        if (line.strip().startswith("if ") or line.strip().startswith("select case") or ("merge(" in line)):
+                            global_num_branch_statements = global_num_branch_statements + 1
+                            local_num_branch_statements  = local_num_branch_statements  + 1
                         
                         # Normal `do` loops return an error unless they have the pragma `! SERIAL` on the same line. The point of this is to encourage me to use `do concurrent` as much as possible to make sure that the code can be parallelized well.
                         if ":" in line_no_comments:
@@ -163,8 +185,16 @@ for filename in sorted(filepaths):
                             end_index   = line.find("(")
                             test_subroutine_definitions.add(line[start_index:end_index])
             
-            file_stats.append(file_stats_class(filename, 100.0 * local_num_assertions / local_num_lines_code_or_tests, local_num_lines_code_or_tests, test_subroutine_calls, test_subroutine_definitions))
+            file_stats.append(file_stats_class(
+                                filename, 
+                                100.0 * local_num_assertions / local_num_lines_code_or_tests,
+                                100.0 * local_num_branch_statements / local_num_lines_code_or_tests,
+                                100.0 * local_num_comments / (local_num_lines_code_or_tests + local_num_comments),
+                                local_num_lines_code_or_tests,
+                                test_subroutine_calls,
+                                test_subroutine_definitions))
             assert(global_num_assertions < global_num_lines_code)
+            assert(global_num_branch_statements < global_num_lines_code)
 
 assert(num_files_analyzed > 0)
 assert(global_num_lines_code > 0)
@@ -184,6 +214,14 @@ for file_stat in file_stats:
         print("{}: Assertion density is {:.2f}% (<{:.2f}%).".format(file_stat.filename, file_stat.assertion_density, ASSERTION_DENSITY_LOWER_LIMIT))
         exit_code = 1
     
+    if (file_stat.branch_density > BRANCH_DENSITY_UPPER_LIMIT) and (not file_stat.filename.startswith("test")) and (not file_stat.filename in ignore_branch_density):
+        print("{}: Branch density is {:.2f}% (>{:.2f}%).".format(file_stat.filename, file_stat.branch_density, BRANCH_DENSITY_UPPER_LIMIT))
+        exit_code = 1
+    
+    if (file_stat.comment_density < COMMENT_DENSITY_LOWER_LIMIT) and (not file_stat.filename.startswith("test")) and (not file_stat.filename in ignore_comment_density):
+        print("{}: Comment density is {:.2f}% (<{:.2f}%).".format(file_stat.filename, file_stat.comment_density, COMMENT_DENSITY_LOWER_LIMIT))
+        exit_code = 1
+    
     if (file_stat.test_ratio < TEST_RATIO_LOWER_LIMIT) and file_stat.filename.startswith("src") and (not file_stat.filename in ignore_test_sloc_ratio):
         print("{}: Lines-of-tests to lines-of-code ratio is {:.2f} (<{:.2f}).".format(file_stat.filename, file_stat.test_ratio, TEST_RATIO_LOWER_LIMIT))
         exit_code = 1
@@ -191,6 +229,16 @@ for file_stat in file_stats:
 global_assertion_density = 100.0 * global_num_assertions / global_num_lines_code
 if (global_assertion_density < ASSERTION_DENSITY_LOWER_LIMIT):
     print("Global assertion density is {:.2f}% (<{:.2f}%).".format(global_assertion_density, ASSERTION_DENSITY_LOWER_LIMIT))
+    exit_code = 1
+
+global_branch_density = 100.0 * global_num_branch_statements / global_num_lines_code
+if (global_branch_density > BRANCH_DENSITY_UPPER_LIMIT):
+    print("Global branch density is {:.2f}% (>{:.2f}%).".format(global_branch_density, BRANCH_DENSITY_UPPER_LIMIT))
+    exit_code = 1
+
+global_comment_density = 100.0 * global_num_comments / (global_num_lines_code + global_num_comments)
+if (global_comment_density < COMMENT_DENSITY_LOWER_LIMIT):
+    print("Global comment density is {:.2f}% (<{:.2f}%).".format(global_comment_density, COMMENT_DENSITY_LOWER_LIMIT))
     exit_code = 1
 
 global_test_ratio = global_num_lines_tests / global_num_lines_code
@@ -212,6 +260,8 @@ print("= Statistics =")
 print("==============")
 print("Number of source files analyzed: {}".format(num_files_analyzed))
 print("Global assertion density: {:.2f}%".format(global_assertion_density))
+print("Global branch density: {:.2f}%".format(global_branch_density))
+print("Global comment density: {:.2f}%".format(global_comment_density))
 print("Global lines-of-tests to lines-of-code ratio: {:.2f}".format(global_test_ratio))
 
 exit(exit_code)

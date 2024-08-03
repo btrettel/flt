@@ -213,7 +213,7 @@ modtable.txt
 test_*
 !test_*.f90
 genunits
-src/revision.f90
+src/rev.f90
 src/units.f90
 src/units_ad.f90
 missed.txt

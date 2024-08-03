@@ -25,7 +25,7 @@ character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
 integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the most the ifx will compile as of 2024-05-12.
                               DEFAULT_MAX_ITER    = 50, &
-                              DEFAULT_DENOMINATOR = 1, &
+                              DEFAULT_DENOMINATOR = 1,  &
                               MAX_USE_LINES       = 10
 
 type, public :: config_type
@@ -90,17 +90,18 @@ subroutine read_config_namelist(config_out, filename, rc)
         base_units(i_base_unit) = ""
     end do
     
+    ! Set the defaults.
     output_file     = ""
     type_definition = "real(kind=WP)"
     use_line        = "use prec, only: WP"
-    kind_parameter  = ""
+    kind_parameter  = "_WP"
     module_name     = "units"
     min_exponents   = -huge(1.0_WP)
     max_exponents   = huge(1.0_WP)
     denominators    = DEFAULT_DENOMINATOR
     max_n_units     = DEFAULT_MAX_N_UNITS
     max_iter        = DEFAULT_MAX_ITER
-    tests           = .true.
+    tests           = .false.
     comparison      = .true.
     unary           = .true.
     sqrt            = .true.
@@ -125,6 +126,7 @@ subroutine read_config_namelist(config_out, filename, rc)
             n_base_units = n_base_units + 1
         end if
     end do
+    ! A check that `n_base_units > 0` is done later.
     call assert(n_base_units <= MAX_BASE_UNITS, "genunits_io (read_config_namelist): n_base_units is too high")
     
     ! Replace semicolons with new lines in the `use_line` variable so that multiple `use` lines can be written.
@@ -144,8 +146,10 @@ subroutine read_config_namelist(config_out, filename, rc)
             exit
         end if
     end do
+    call assert(n_use_lines >= 0, "genunits_io (read_config_namelist): n_use_lines is negative")
     call config_out%logger%check(index(use_line, ";") == 0, "use_line contains too many semicolons.", n_failures)
     
+    ! Copy the data to the configuration type.
     config_out%output_file     = trim(output_file)
     config_out%type_definition = trim(type_definition)
     config_out%use_line        = trim(use_line)
@@ -158,24 +162,29 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     config_out%module_name     = trim(module_name)
     
-    config_out%min_exponents   = min_exponents(1:n_base_units)
-    config_out%max_exponents   = max_exponents(1:n_base_units)
-    config_out%denominators    = denominators(1:n_base_units)
-    config_out%max_n_units     = max_n_units
-    config_out%max_iter        = max_iter
-    config_out%base_units      = base_units(1:n_base_units)
-    config_out%tests           = tests
-    config_out%comparison      = comparison
-    config_out%unary           = unary
-    config_out%sqrt            = sqrt
-    config_out%cbrt            = cbrt
-    config_out%square          = square
-    config_out%intrinsics      = intrinsics
-    config_out%dtio            = dtio
+    config_out%min_exponents   = min_exponents(1:n_base_units) ! The allowable lower limits for the unit exponents.
+    config_out%max_exponents   = max_exponents(1:n_base_units) ! The allowable upper limits for the unit exponents.
+    config_out%denominators    = denominators(1:n_base_units) ! The allowable denominators for unit exponents.
+    config_out%max_n_units     = max_n_units ! The maximum number of units in the unit system.
+    config_out%max_iter        = max_iter ! The maximum number of iterations when generating the unit system.
+    config_out%base_units      = base_units(1:n_base_units) ! The base units.
+    config_out%tests           = tests ! Whether tests will be written. (Not used at the moment.)
+    config_out%comparison      = comparison ! Whether comparison operators will be written.
+    config_out%unary           = unary ! Whether unary operators will be written.
+    config_out%sqrt            = sqrt ! Whether the `sqrt` function will be written.
+    config_out%cbrt            = cbrt ! Whether the `cbrt` function will be written.
+    config_out%square          = square ! Whether the `square` function will be written.
+    config_out%intrinsics      = intrinsics ! Whether one argument intrinsics will be written.
+    config_out%dtio            = dtio ! Whether derived type I/O will be written. Experimental, doesn't work right in all compilers.
     
+    call config_out%logger%check(len(config_out%output_file) > 0, "output_file must be defined", n_failures)
     call config_out%logger%check(n_base_units > 0, "base_units must have 1 or more members", n_failures)
-    call config_out%logger%check(len(type_definition) > 0, "type_definition must have 1 or more characters", n_failures)
+    call config_out%logger%check(len(type_definition) >= 1, "type_definition must have 1 or more characters", n_failures)
     call config_out%logger%check(all(denominators >= 1), "all denominators must be 1 or more", n_failures)
+    call config_out%logger%check(index(config_out%module_name, " ") == 0, "module_name can not contain spaces", n_failures)
+    call config_out%logger%check(len(config_out%module_name) >= 1, "module_name must not be empty", n_failures)
+    call config_out%logger%check(len(config_out%module_name) <= 31, &
+                                    "module_name must be 31 characters or less to meet the Fortran standard", n_failures)
     
     do i_base_unit = 1, n_base_units ! SERIAL
         call config_out%logger%check(.not. is_close(min_exponents(i_base_unit), -huge(1.0_WP)), &
@@ -188,6 +197,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     call config_out%logger%check(config_out%max_n_units > 0, "max_n_units must be 1 or greater.", n_failures)
     
+    call assert(n_failures >= 0, "genunits_io (read_config_namelist): n_failures is negative")
     if (n_failures > 0) then
         call config_out%logger%error("config namelist input validation error(s)")
         rc = n_failures
@@ -243,6 +253,8 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         n_seed_units = n_seed_units + 1
     end do
     
+    call assert(n_seed_units >= 0, "genunits_io (read_seed_unit_namelists): n_seed_units is negative")
+    call config%logger%check(n_seed_units > 0, "At least one seed unit is required.", n_failures)
     write(unit=n_seed_units_string, fmt="(i0)") n_seed_units
     write(unit=max_n_units_string, fmt="(i0)") config%max_n_units
     call config%logger%check(n_seed_units <= config%max_n_units, &
@@ -251,6 +263,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
                                     // "). Either increase max_n_units or reduce the number of seed units.", &
                                     n_failures)
     
+    ! Once the arrays are sized properly, go back and read all of the seed units.
     rewind nml_unit
     allocate(config%seed_labels(n_seed_units))
     allocate(config%seed_units(n_seed_units))
@@ -320,10 +333,12 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     end do
     close(unit=nml_unit)
     
+    call assert(n_failures >= 0, "genunits_io (read_seed_unit_namelists): n_failures is negative")
     if (n_failures > 0) then
-        call config%logger%error("input validation error(s)")
+        call config%logger%error("seed namelist input validation error(s)")
         rc = n_failures
-        return
+    else
+        rc = 0
     end if
 end subroutine read_seed_unit_namelists
 
@@ -410,17 +425,13 @@ end subroutine process_trial_unit
 
 subroutine generate_system(config, unit_system)
     use checks, only: assert
-    use genunits_data, only: unit_type, unit_system_type, &
-                                m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
+    use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
     
-    class(config_type), intent(in)       :: config
-    type(unit_system_type), intent(out)  :: unit_system
+    class(config_type), intent(in)      :: config
+    type(unit_system_type), intent(out) :: unit_system
     
     type(unit_type) :: units(config%max_n_units), trial_unit
     integer         :: n_units, n_units_prev, i_units, j_units, iter, rc
-    
-    call assert(size(config%seed_units) <= config%max_n_units, &
-                    "genunits_io (generate_system): there are more seed units than ")
     
     ! Add all `seed_units` to `units`
     units(1:size(config%seed_units)) = config%seed_units
@@ -448,22 +459,28 @@ subroutine generate_system(config, unit_system)
                 if (rc /= 0) exit genunit_loop
             end do
             
-            ! unary operators
+            ! unary operators: These don't generate new units.
             
-            ! square root
-            trial_unit = sqrt_unit(units(i_units))
-            call process_trial_unit(config, trial_unit, units, n_units, rc)
-            if (rc /= 0) exit genunit_loop
+            if (config%sqrt) then
+                ! square root
+                trial_unit = sqrt_unit(units(i_units))
+                call process_trial_unit(config, trial_unit, units, n_units, rc)
+                if (rc /= 0) exit genunit_loop
+            end if
             
-            ! cube root
-            trial_unit = cbrt_unit(units(i_units))
-            call process_trial_unit(config, trial_unit, units, n_units, rc)
-            if (rc /= 0) exit genunit_loop
+            if (config%cbrt) then
+                ! cube root
+                trial_unit = cbrt_unit(units(i_units))
+                call process_trial_unit(config, trial_unit, units, n_units, rc)
+                if (rc /= 0) exit genunit_loop
+            end if
             
-            ! square
-            trial_unit = square_unit(units(i_units))
-            call process_trial_unit(config, trial_unit, units, n_units, rc)
-            if (rc /= 0) exit genunit_loop
+            if (config%square) then
+                ! square
+                trial_unit = square_unit(units(i_units))
+                call process_trial_unit(config, trial_unit, units, n_units, rc)
+                if (rc /= 0) exit genunit_loop
+            end if
         end do
         
         if ((iter > (config%max_iter - 1)) .or. (n_units == n_units_prev)) then
@@ -471,7 +488,9 @@ subroutine generate_system(config, unit_system)
         end if
     end do genunit_loop
     
+    call assert(iter > 0, "genunits_io (generate_system): no iterations?")
     call assert(iter <= config%max_iter, "genunits_io (generate_system): too many iterations")
+    call assert(n_units > 0, "genunits_io (generate_system): no units?")
     call assert(n_units <= config%max_n_units, "genunits_io (generate_system): too many units")
     
     write(unit=*, fmt="(a, i0, a, i0)") "FINAL iter=", iter, " n_units=", n_units
@@ -503,6 +522,7 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     write(unit=file_unit, fmt="(3a)") "    ", config%type_definition, " :: v"
     write(unit=file_unit, fmt="(a)") "contains"
     
+    ! addition operators
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: a_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(+) => a_", &
@@ -522,6 +542,7 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
             trim(unit_system%units(i_unit)%label())
     end if
     
+    ! subtraction operators
     write(unit=file_unit, fmt="(4a)") "    procedure, private :: s_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
@@ -541,6 +562,7 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
             trim(unit_system%units(i_unit)%label())
     end if
     
+    ! comparison operators
     if (config%comparison) then
         write(unit=file_unit, fmt="(4a)") "    procedure, private :: lt_", &
             trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
@@ -563,6 +585,7 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
             trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     end if
     
+    ! unary operators
     if (config%unary) then
         write(unit=file_unit, fmt="(2a)") "    procedure, private :: a_", trim(unit_system%units(i_unit)%label())
         write(unit=file_unit, fmt="(2a)") "    generic, public :: operator(+) => a_", trim(unit_system%units(i_unit)%label())
@@ -631,6 +654,7 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
         end if
     end do
     
+    ! derived-type I/O
     if (config%dtio) then
         write(unit=file_unit, fmt="(2a)") "    procedure :: wf_", trim(unit_system%units(i_unit)%label())
         write(unit=file_unit, fmt="(2a)") "    generic   :: write(formatted) => wf_", trim(unit_system%units(i_unit)%label())
@@ -707,6 +731,7 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
     
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_md_operators): file_unit must be open")
+    call assert(n_interfaces >= 0, "genunits_io (write_md_operators): n_interfaces is negative")
     
     ! multiply
     unit_m = m_unit(unit_left, unit_right)
@@ -750,6 +775,8 @@ end subroutine write_md_operators
 
 subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_result, op, &
                                     unitless_is_real_left, unitless_is_real_right)
+    ! This subroutine writes binary operator functions, for example: `a + b`.
+    
     use checks, only: assert, all_close
     use genunits_data, only: unit_type, unit_system_type
     
@@ -762,7 +789,7 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
     logical, intent(in), optional :: unitless_is_real_left, unitless_is_real_right
     
     character(len=2)              :: op_label
-    character(len=:), allocatable :: binary_operator_procedure
+    character(len=:), allocatable :: binary_operator_procedure, real_type
     logical                       :: file_unit_open, conditional, unitless_is_real_left_, unitless_is_real_right_
     
     inquire(unit=file_unit, opened=file_unit_open)
@@ -827,8 +854,16 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
         binary_operator_procedure = trim(op_label) // "_" // trim(unit_left%label()) // "_" // trim(unit_right%label())
     end if
     
-    call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_binary_operator): " // &
-                        "binary_operator_procedure name is too long and won't meet the Fortran 2003 standard")
+    call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_binary_operator): " &
+                        // "binary_operator_procedure name is too long and won't meet the Fortran 2003 standard")
+    
+    if (len(config%kind_parameter) == 0) then
+        real_type = "real"
+    else
+        call assert(len(config%kind_parameter) > 1, "genunits_io (write_binary_operator): kind parameter is too short: " &
+                                                        // config%kind_parameter)
+        real_type = "real(kind=" // config%kind_parameter(2:) // ")"
+    end if
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(left, right)"
     
@@ -839,13 +874,13 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
     end if
     
     if (all_close(unit_left%e, 0.0_WP) .and. unitless_is_real_left_) then
-        write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter(2:), "), intent(in) :: left"
+        write(unit=file_unit, fmt="(3a)") "    ", real_type, ", intent(in) :: left"
     else
         write(unit=file_unit, fmt="(3a)") "    class(", trim(unit_left%label()), "), intent(in) :: left"
     end if
     
     if (all_close(unit_right%e, 0.0_WP) .and. unitless_is_real_right_) then
-        write(unit=file_unit, fmt="(3a)") "    real(kind=", config%kind_parameter(2:), "), intent(in) :: right"
+        write(unit=file_unit, fmt="(3a)") "    ", real_type, ", intent(in) :: right"
     else
         write(unit=file_unit, fmt="(3a)") "    class(", trim(unit_right%label()), "), intent(in) :: right"
     end if
@@ -869,6 +904,8 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
 end subroutine write_binary_operator
 
 subroutine write_unary_operator(unit_system, file_unit, unit, op)
+    ! This subroutine writes unary operator functions, for example: `-b`.
+    
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
     
@@ -912,6 +949,8 @@ subroutine write_unary_operator(unit_system, file_unit, unit, op)
 end subroutine write_unary_operator
 
 subroutine write_unit_function(config, unit_system, file_unit)
+    ! Writes a function to return a human readable unit name for a particular unit.
+    
     use checks, only: assert
     use genunits_data, only: unit_system_type
     
@@ -1136,6 +1175,9 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
 end subroutine write_exponentiation_interfaces
 
 subroutine write_exponentiation_function(config, unit_system, file_unit, unit, op)
+    ! Writes exponentiation functions. For compile-time unit checking, this is limited to special cases. The compiler can't know
+    ! the units of `a**2` at present, but it can know the units of `square(a)`.
+    
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
@@ -1232,12 +1274,14 @@ subroutine write_intrinsic_1arg_interface(unit_system, file_unit, fun)
 end subroutine write_intrinsic_1arg_interface
 
 subroutine write_intrinsic_1arg_function(unit_system, file_unit, fun)
+    ! Writes intrinsic functions with one argument. Input units are same as output units.
+    
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
     
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
-    character(len=*), intent(in)       :: fun
+    character(len=*), intent(in)       :: fun ! function name
     
     character(len=:), allocatable :: intrinsic_1arg_function
     logical                       :: file_unit_open
@@ -1265,7 +1309,7 @@ subroutine write_intrinsic_1arg_function(unit_system, file_unit, fun)
 end subroutine write_intrinsic_1arg_function
 
 subroutine write_module(config, unit_system, file_unit, rc)
-    use checks, only: all_close
+    use checks, only: all_close, assert
     use genunits_data, only: unit_type, unit_system_type, sqrt_unit, cbrt_unit, square_unit
     
     class(config_type), intent(in)      :: config
@@ -1518,6 +1562,8 @@ subroutine write_module(config, unit_system, file_unit, rc)
     call config%logger%info("Generated " // trim(n_char) // " interfaces.")
     
     rc = 0
+    
+    call assert(n_interfaces >= 0, "genunits_io (write_module): n_interfaces is negative")
 end subroutine write_module
 
 end module genunits_io

@@ -2,6 +2,12 @@
 
 Priorities:
 
+- `pure` Monte Carlo uncertainty propagation
+    - Setting the random number generator should help this be combined with automatic differentiation by making the results less noisy.
+    - For uncertainty sources, I'll need to include the RNG type in the MC derived type? So I need a thread-safe seed generator for that. I'm not sure if I need the thread-safe seed generator for any other component.
+    - Variance reduction:
+        - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
+        - <https://en.wikipedia.org/wiki/Variance_reduction>
 - convergence.f90: convergence testing framework
     - grid/temporal convergence (set up the same: take a callback where one parameter is the delta to be varied)
         - produce both error and order plots
@@ -28,7 +34,6 @@ Priorities:
         call x%set_dv(1, N_DV) ! set this as variable number 1```
     - Add `%v%v` to linter (disabled for now) to help identify what to fix in the future...
 - `make lint` runs Python linters too.
-- Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
 - Make script to install FLT build system in a directory
 - Documentation for genunits
     - `use_line` creates a new line at semicolons, so that depends.py can see the dependency.
@@ -122,6 +127,7 @@ Priorities:
                     - > To build applications using command-line tools only, you must have a supported version of Build Tools for Visual Studio installed.
                 - <https://visualstudio.microsoft.com/downloads/>
         - Other:
+            - Git: <https://git-scm.com/download/win>
             - MikTeX
             - Python
                 - <https://docs.python.org/3/using/windows.html>
@@ -449,7 +455,6 @@ Later:
     - Would be advantageous to only have needed derivatives for the iteration and add additional derivatives for the final run.
     - Can return solutions for arbitrary arrays.
     - <https://twitter.com/chenna1985/status/1802660023010513012>
-- How to do pure Monte Carlo uncertainty propagation? Include the RNG type in the MC derived type? So I need a thread-safe seed generator first.
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
     - Make ga.f90 use rngmod.f90.
     - herrera_tackling_1998

@@ -60,6 +60,7 @@ pure function label(unit)
     end do
     
     ! Ensure that the `unit_label` won't be too long to be valid in Fortran 2003.
+    call assert(len(trim(label)) > 0, "genunits_data (label): label has zero length")
     call assert(len(trim(label)) <= MAX_LABEL_LEN, "genunits_data (label): label is too long")
 end function label
 
@@ -137,6 +138,8 @@ pure function readable(unit, unit_system)
     end if
     
     readable = trim(adjustl(positive_string)) // trim(adjustl(negative_string))
+    
+    call assert(len(trim(readable)) > 0, "genunits_data (readable): readable has zero length")
 end function readable
 
 pure subroutine real_to_rational(x, numerator, denominator, rc)
