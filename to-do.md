@@ -2,13 +2,19 @@
 
 Priorities:
 
+- Remove `-static` and whatnot due to conflicts with OpenMP?
+- Change config.ini to depends.ini and f90lint.ini in py directory. Add explanations of every item in comments.
+- `depends.py` input file: Prune to the minimum to reduce code maintenance and confusion when using. no mk/depends.mk specification, etc.
+- `f90lint`: Change `skip_indexing` to `dont_lint`, make other changes to make the input file more clear.
 - `pure` Monte Carlo uncertainty propagation
     - Setting the random number generator should help this be combined with automatic differentiation by making the results less noisy.
     - For uncertainty sources, I'll need to include the RNG type in the MC derived type? So I need a thread-safe seed generator for that. I'm not sure if I need the thread-safe seed generator for any other component.
     - Variance reduction:
         - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
         - <https://en.wikipedia.org/wiki/Variance_reduction>
+    - `mc_fosm` module for combination MC and FOSM: If number of samples equals 1, use FOSM. Otherwise, use MC. A hybrid approach might be useful sometimes too.
 - convergence.f90: convergence testing framework
+    - Convergence testing framework takes `type(ad)` for both exact solution and numerical solution. Calculates convergence rate for value and all derivatives. Also checks that derivatives of value convergence rate is small. Can handle arbitrary rank arrays?
     - grid/temporal convergence (set up the same: take a callback where one parameter is the delta to be varied)
         - produce both error and order plots
         - `convergence_rate(func, deltas, norm, outfile, expected_order, tol, actual_order, rc)`
@@ -22,6 +28,7 @@ Priorities:
 - Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
 - genunits
     - Change `config%intrinsics` to `unitless_1arg_intrinsics` array in nml file that is looped over to minimize number of interfaces, reduce amount of hard coded things, and reduce number of places to change when adding unitless 1 argument intrinsics
+        - Add `abs` and test for it.
     - 2 argument `min` and `max`
     - Generic `linspace` and `linf_norm`
     - Test unitless intrinsics.

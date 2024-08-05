@@ -98,3 +98,11 @@ Units to be rejected, that is, not included in the unit system.
 - Limiting to only units used or units that can appear from combinations.
     - To reduce the number of units farther, examine how many iterations it takes to obtain a particular derived unit. Units which require many iterations from the reference units are less likely to appear and more likely can be safely disregarded.
 - Have namelist group `reject` to ensure that particular units do not appear in the `unit_system`, similar to namelist group to specify labeled units.
+
+## Issues
+
+- Slow compilation, sometimes.
+- Better support for generic programming would reduce the amount of code to generate.
+- No good way to make an array with different units for each element. Could make an array of a derived type with a `class(*)` member, but I'm not sure if that would keep the compile-time checking.
+- Integration with automatic differentiation: `%v%v` is annoying, so perhaps I should set the members to be private and think of alternatives.
+- Compiler support for derived type I/O, particularly with namelists, varies.
