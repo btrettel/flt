@@ -28,6 +28,8 @@ integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the mo
                               DEFAULT_DENOMINATOR = 1,  &
                               MAX_USE_LINES       = 10
 
+character(len=4), parameter :: INTRINSIC_1ARG(6) = ["sin", "cos", "tan", "exp", "log", "abs"]
+
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line, kind_parameter, module_name
     real(kind=WP), allocatable    :: min_exponents(:), &
@@ -1240,15 +1242,14 @@ subroutine write_intrinsic_1arg_interfaces(unit_system, file_unit)
     integer, intent(in)                :: file_unit
     
     logical :: file_unit_open
+    integer :: i_intrinsic
     
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_intrinsic_1arg_interfaces): file_unit must be open")
     
-    call write_intrinsic_1arg_interface(unit_system, file_unit, "sin")
-    call write_intrinsic_1arg_interface(unit_system, file_unit, "cos")
-    call write_intrinsic_1arg_interface(unit_system, file_unit, "tan")
-    call write_intrinsic_1arg_interface(unit_system, file_unit, "exp")
-    call write_intrinsic_1arg_interface(unit_system, file_unit, "log")
+    do i_intrinsic = 1, size(INTRINSIC_1ARG) ! SERIAL
+        call write_intrinsic_1arg_interface(unit_system, file_unit, trim(INTRINSIC_1ARG(i_intrinsic)))
+    end do
 end subroutine write_intrinsic_1arg_interfaces
 
 subroutine write_intrinsic_1arg_interface(unit_system, file_unit, fun)
@@ -1267,6 +1268,9 @@ subroutine write_intrinsic_1arg_interface(unit_system, file_unit, fun)
     
     allocate(unit%e(unit_system%n_base_units))
     unit%e = 0.0_WP
+    
+    call assert(index(fun, " ") == 0, &
+                    "genunits_io (write_intrinsic_1arg_interface): spaces should not be in the function name: '" // fun // "'")
     
     write(unit=file_unit, fmt="(2a)") "interface ", fun
     write(unit=file_unit, fmt="(4a)") "    module procedure ", fun, "_", trim(unit%label())
@@ -1293,6 +1297,9 @@ subroutine write_intrinsic_1arg_function(unit_system, file_unit, fun)
     allocate(unit%e(unit_system%n_base_units))
     unit%e = 0.0_WP
     
+    call assert(index(fun, " ") == 0, &
+                    "genunits_io (write_intrinsic_1arg_function): spaces should not be in the function name '" // fun // "'")
+    
     intrinsic_1arg_function = fun // "_" // trim(unit%label())
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", intrinsic_1arg_function, "(arg)"
@@ -1317,7 +1324,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     integer, intent(in)                 :: file_unit
     integer, intent(out)                :: rc
     
-    integer           :: i_seed_unit, i_unit, j_unit, max_label_len, n_interfaces, i_space
+    integer           :: i_seed_unit, i_unit, j_unit, max_label_len, n_interfaces, i_space, i_intrinsic
     character(len=10) :: n_char
     character(len=20) :: use_format
     type(unit_type)   :: trial_unit
@@ -1374,7 +1381,16 @@ subroutine write_module(config, unit_system, file_unit, rc)
     write(unit=file_unit, fmt="(a)") "public :: unit"
     
     if (config%intrinsics) then
-        write(unit=file_unit, fmt="(a)") "public :: sin, cos, tan, exp, log"
+        write(unit=file_unit, fmt="(a)", advance="no") "public :: "
+        
+        do i_intrinsic = 1, size(INTRINSIC_1ARG) ! SERIAL
+            if (i_intrinsic /= size(INTRINSIC_1ARG)) then
+                write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG(i_intrinsic)), ", "
+            else
+                write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG(i_intrinsic))
+            end if
+        end do
+        write(unit=file_unit, fmt="(a)") ""
     end if
     
     if (use_sqrt) then
@@ -1436,7 +1452,13 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end if
         
         if (config%intrinsics) then
-            write(unit=file_unit, fmt="(a)", advance="no") "sin, cos, tan, exp, log"
+            do i_intrinsic = 1, size(INTRINSIC_1ARG) ! SERIAL
+                if (i_intrinsic /= size(INTRINSIC_1ARG)) then
+                    write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG(i_intrinsic)), ", "
+                else
+                    write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG(i_intrinsic))
+                end if
+            end do
             
             if (use_sqrt .or. use_cbrt .or. use_square) then
                 write(unit=file_unit, fmt="(a)", advance="no") ", "
@@ -1548,12 +1570,10 @@ subroutine write_module(config, unit_system, file_unit, rc)
     end if
     
     if (config%intrinsics) then
-        call write_intrinsic_1arg_function(unit_system, file_unit, "sin")
-        call write_intrinsic_1arg_function(unit_system, file_unit, "cos")
-        call write_intrinsic_1arg_function(unit_system, file_unit, "tan")
-        call write_intrinsic_1arg_function(unit_system, file_unit, "exp")
-        call write_intrinsic_1arg_function(unit_system, file_unit, "log")
-        n_interfaces = n_interfaces + 5
+        do i_intrinsic = 1, size(INTRINSIC_1ARG) ! SERIAL
+            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG(i_intrinsic)))
+            n_interfaces = n_interfaces + 1
+        end do
     end if
     
     write(unit=file_unit, fmt="(2a)") "end module ", config%module_name
