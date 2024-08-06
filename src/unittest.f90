@@ -29,7 +29,9 @@ contains
     procedure :: real_eq => real_eq
     procedure :: real_ne => real_ne
     procedure :: real_gt => real_gt
-    ! TODO: real_ge, real_lt, real_le
+    procedure :: real_lt => real_lt
+    procedure :: real_ge => real_ge
+    procedure :: real_le => real_le
     generic :: integer_eq => integer5_eq, integer10_eq
     procedure, private :: integer5_eq, integer10_eq
     procedure :: integer_ne => integer_ne
@@ -304,6 +306,141 @@ subroutine real_gt(tests, returned_real, compared_real, message_in)
     call assert(tests%n_failures >= 0, "unittest (real_gt): negative number of failures")
     call assert(tests%n_failures <= tests%n_tests, "unittest (real_gt): number of failures exceeds number of tests")
 end subroutine real_gt
+
+subroutine real_lt(tests, returned_real, compared_real, message_in)
+    ! Check whether `returned_real < compared_real`, increase `number_of_failures` if `.true.`.
+    
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    
+    class(test_results_type), intent(in out) :: tests
+    
+    real(kind=WP), intent(in)    :: returned_real, compared_real
+    character(len=*), intent(in) :: message_in
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=4)              :: variable_type
+    character(len=1)              :: test_operator
+    logical                       :: test_passes
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
+                            returned_real, compared_real
+    
+    test_operator = "<"
+    timestamp     = now()
+    variable_type = "real"
+    message       = message_in
+    
+    test_passes = returned_real < compared_real
+    
+    write(unit=tests%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        tests%n_failures = tests%n_failures + 1
+        
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "       < real = ", compared_real
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
+        end if
+    end if
+    
+    tests%n_tests = tests%n_tests + 1
+    
+    call assert(tests%n_tests >= 0, "unittest (real_lt): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (real_lt): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (real_lt): number of failures exceeds number of tests")
+end subroutine real_lt
+
+subroutine real_ge(tests, returned_real, compared_real, message_in)
+    ! Check whether `returned_real >= compared_real`, increase `number_of_failures` if `.true.`.
+    
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    
+    class(test_results_type), intent(in out) :: tests
+    
+    real(kind=WP), intent(in)    :: returned_real, compared_real
+    character(len=*), intent(in) :: message_in
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=4)              :: variable_type
+    character(len=2)              :: test_operator
+    logical                       :: test_passes
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
+                            returned_real, compared_real
+    
+    test_operator = ">="
+    timestamp     = now()
+    variable_type = "real"
+    message       = message_in
+    
+    test_passes = returned_real >= compared_real
+    
+    write(unit=tests%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        tests%n_failures = tests%n_failures + 1
+        
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "      >= real = ", compared_real
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
+        end if
+    end if
+    
+    tests%n_tests = tests%n_tests + 1
+    
+    call assert(tests%n_tests >= 0, "unittest (real_ge): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (real_ge): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (real_ge): number of failures exceeds number of tests")
+end subroutine real_ge
+
+subroutine real_le(tests, returned_real, compared_real, message_in)
+    ! Check whether `returned_real <= compared_real`, increase `number_of_failures` if `.true.`.
+    
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    
+    class(test_results_type), intent(in out) :: tests
+    
+    real(kind=WP), intent(in)    :: returned_real, compared_real
+    character(len=*), intent(in) :: message_in
+    
+    character(len=TIMESTAMP_LEN)  :: timestamp
+    character(len=4)              :: variable_type
+    character(len=2)              :: test_operator
+    logical                       :: test_passes
+    character(len=:), allocatable :: message
+    
+    namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
+                            returned_real, compared_real
+    
+    test_operator = "<="
+    timestamp     = now()
+    variable_type = "real"
+    message       = message_in
+    
+    test_passes = returned_real <= compared_real
+    
+    write(unit=tests%logger%unit, nml=test_result)
+    
+    if (.not. test_passes) then
+        tests%n_failures = tests%n_failures + 1
+        
+        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
+            write(unit=ERROR_UNIT, fmt="(a, g0.8)") "      >= real = ", compared_real
+            write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
+        end if
+    end if
+    
+    tests%n_tests = tests%n_tests + 1
+    
+    call assert(tests%n_tests >= 0, "unittest (real_le): negative number of tests")
+    call assert(tests%n_failures >= 0, "unittest (real_le): negative number of failures")
+    call assert(tests%n_failures <= tests%n_tests, "unittest (real_le): number of failures exceeds number of tests")
+end subroutine real_le
 
 subroutine integer5_eq(tests, returned_integer, compared_integer, message_in)
     ! Check whether two integers are identical, increase `number_of_failures` if `.false.`.

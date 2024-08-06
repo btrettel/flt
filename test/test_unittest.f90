@@ -16,7 +16,7 @@ implicit none
 type(log_type), target  :: logger
 type(test_results_type) :: tests, failing_tests
 
-integer, parameter :: N_FAILING = 16
+integer, parameter :: N_FAILING = 19
 character(len=*), parameter :: EXIT_CODE_FILE = "exit_code.txt"
 
 logical :: exit_code_file_exists
@@ -67,6 +67,16 @@ call tests%real_ne(0.0_WP, 100.0_WP * spacing(0.0_WP), "real_ne, one zero, one d
 call tests%real_ne(100.0_WP * spacing(0.0_WP), 0.0_WP, "real_ne, one zero, one different (2)")
 
 call tests%real_gt(1.0_WP, 0.0_WP, "real_gt")
+
+call tests%real_lt(0.0_WP, 1.0_WP, "real_lt")
+
+call tests%real_ge(1.0_WP, 0.0_WP, "real_ge (1)")
+
+call tests%real_ge(1.0_WP, 1.0_WP, "real_ge (2)")
+
+call tests%real_le(0.0_WP, 1.0_WP, "real_le (1)")
+
+call tests%real_le(1.0_WP, 1.0_WP, "real_le (2)")
 
 call tests%integer_eq(1, 1, "integer_eq")
 
@@ -131,6 +141,12 @@ call failing_tests%real_eq(0.0_WP, 1.0_WP, "real_eq, failure (less)")
 call failing_tests%real_ne(1.0_WP, 1.0_WP, "real_ne, failure")
 
 call failing_tests%real_gt(-1.0_WP, 0.0_WP, "real_gt, failure")
+
+call failing_tests%real_lt(0.0_WP, -1.0_WP, "real_lt, failure")
+
+call failing_tests%real_ge(-1.0_WP, 0.0_WP, "real_ge, failure")
+
+call failing_tests%real_le(0.0_WP, -1.0_WP, "real_le, failure")
 
 call failing_tests%real_eq(10.0_WP, 5.0_WP, "real_eq, failure, abs_tol set", abs_tol=4.1_WP)
 

@@ -50,8 +50,8 @@ directories              = config['f90lint']['directories'].split(' ')
 skip_indexing            = canonicalize_paths(config['f90lint']['skip_indexing'])
 ignore_assertion_density = canonicalize_paths(config['f90lint']['ignore_assertion_density'])
 ignore_test_sloc_ratio   = canonicalize_paths(config['f90lint']['ignore_test_sloc_ratio'])
-ignore_branch_density    = [] # TODO: Add later
-ignore_comment_density   = [] # TODO: Add later
+ignore_branch_density    = canonicalize_paths(config['f90lint']['ignore_branch_density'])
+ignore_comment_density   = canonicalize_paths(config['f90lint']['ignore_comment_density'])
 
 fail = False
 

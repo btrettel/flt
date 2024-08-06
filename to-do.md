@@ -5,7 +5,9 @@ Priorities:
 - Remove `-static` and whatnot due to conflicts with OpenMP?
 - Change config.ini to depends.ini and f90lint.ini in py directory. Add explanations of every item in comments.
 - `depends.py` input file: Prune to the minimum to reduce code maintenance and confusion when using. no mk/depends.mk specification, etc.
-- `f90lint`: Change `skip_indexing` to `dont_lint`, make other changes to make the input file more clear.
+- `f90lint`:
+    - Change `skip_indexing` to `dont_lint`, make other changes to make the input file more clear.
+    - check for `implicit none`
 - `pure` Monte Carlo uncertainty propagation
     - Setting the random number generator should help this be combined with automatic differentiation by making the results less noisy.
     - For uncertainty sources, I'll need to include the RNG type in the MC derived type? So I need a thread-safe seed generator for that. I'm not sure if I need the thread-safe seed generator for any other component.
@@ -108,38 +110,6 @@ Priorities:
     - Add feature to generate a module to allow for basic math on "vectors" where each row has a different unit. Implement "vectors" as derived types. Vector is probably not the right word.
         - <https://github.com/arjenmarkus/handling-units/blob/main/src/handling_units_dimensions.tex>
             - > If the feature does not support arrays whose elements have different dimensions/units of measure, then certain use patterns are not possible. That may or may not be a breaking requirement for the feature.
-- Build testing
-    - FreeBSD in a virtual machine
-        - <https://cyber.dabamos.de/programming/modernfortran/fortran-compilers.html>
-    - Windows in a virtual machine
-        - Windows and the virtual machine itself
-            - <https://www.microsoft.com/software-download/windows11>
-            - <https://sysguides.com/install-a-windows-11-virtual-machine-on-kvm>
-            - <https://www.youtube.com/watch?v=7tqKBy9r9b4>
-            - <https://sysguides.com/share-files-between-the-kvm-host-and-windows-guest-using-virtiofs>
-        - Build systems
-            - GNU Make
-                - <https://stackoverflow.com/a/73862277/1124489>
-                    - Windows 10+: `winget install ezwinports.make`
-            - NMAKE from Visual Studio Build Tools
-            - Jom
-                - <https://wiki.qt.io/Jom>
-        - Compilers
-            - gfortran
-                - <https://fortran-lang.org/learn/os_setup/install_gfortran/#windows>
-                - <https://gcc.gnu.org/wiki/GFortranBinaries#Windows>
-            - FTN95
-            - ifx
-                - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/get-started-guide/2024-2/get-started-on-windows.html>
-                    - > To build applications using command-line tools only, you must have a supported version of Build Tools for Visual Studio installed.
-                - <https://visualstudio.microsoft.com/downloads/>
-        - Other:
-            - Git: <https://git-scm.com/download/win>
-            - MikTeX
-            - Python
-                - <https://docs.python.org/3/using/windows.html>
-                - <https://learn.microsoft.com/en-us/windows/python/beginners>
-    - Mac OS
 - Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
 - Count test_units.f90 and test_units_ad.f90 towards test_genunits_io.f90?
 - When work has ifx 2024.2, change `assert` to eliminate `full_message` by putting the message directly on the `error stop` line. Also see [compiler-bugs report0002](https://github.com/btrettel/compiler-bugs/tree/main/report0002).
