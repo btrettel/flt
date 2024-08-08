@@ -16,7 +16,9 @@ Priorities:
         - <https://en.wikipedia.org/wiki/Variance_reduction>
     - `mc_fosm` module for combination MC and FOSM: If number of samples equals 1, use FOSM. Otherwise, use MC. A hybrid approach might be useful sometimes too.
 - convergence.f90: convergence testing framework
-    - Convergence testing framework takes `type(ad)` for both exact solution and numerical solution. Calculates convergence rate for value and all derivatives. Also checks that derivatives of value convergence rate is small. Can handle arbitrary rank arrays?
+    - Make convergence testing framework work when there are multiple dependent variables. One approach could be to have separate procedures to 1. loop the simulation over the different grids/time-steps returning all dependent variables for all grids/time-steps and 2. do the convergence test and make plots for a particular dependent variable.
+    - Convergence testing framework takes `type(ad)` for both exact solution and numerical solution. Calculates convergence rate for value and all derivatives. Also checks that derivatives of value convergence rate is small.
+        - Can handle arbitrary rank arrays? Might have to use `include` trick so that the body of each procedure is the same.
     - grid/temporal convergence (set up the same: take a callback where one parameter is the delta to be varied)
         - produce both error and order plots
         - `convergence_rate(func, deltas, norm, outfile, expected_order, tol, actual_order, rc)`
@@ -29,13 +31,15 @@ Priorities:
     - Richardson extrapolation procedure
 - Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
 - genunits
-    - Change `config%intrinsics` to `unitless_1arg_intrinsics` array in nml file that is looped over to minimize number of interfaces, reduce amount of hard coded things, and reduce number of places to change when adding unitless 1 argument intrinsics
-        - Add `abs` and test for it.
+    - `abs` is not just unitless.
+    - Add comma and ampersand after last unit in commented use line
+        - Done? Line 1436 of genunits_io.f90?
+    - Change `config%intrinsics` to `unitless_1arg_intrinsics` array in nml file that is looped over to minimize number of interfaces and reduce amount of hard coded things.
     - 2 argument `min` and `max`
     - Generic `linspace` and `linf_norm`
     - Test unitless intrinsics.
-    - Add comparison operators, including `real` for `unitless`, with tests.
-    - Look into inheritance for genunits to avoid the `%v%v` problem?
+    - Add and test comparison operators, including `real` for `unitless`.
+    - Look into inheritance for genunits to avoid the `%v%v` problem? Could also try a pointer and make the actual unit type value not `%v`.
     - Better constructor for AD and genunits. Make default constructor set a constant, and have a separate subroutine to set the variable number of the derivatives? Example proposed syntax for combination of AD and genunits:
         - ```type(si_length) :: x
 

@@ -1433,7 +1433,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             write(unit=file_unit, fmt=trim(use_format), advance="no") trim(config%seed_labels(i_seed_unit)), &
                                                                         "=> ", &
                                                                         trim(config%seed_units(i_seed_unit)%label())
-            if (use_sqrt .or. use_cbrt .or. use_square) then
+            if (config%intrinsics .or. use_sqrt .or. use_cbrt .or. use_square) then
                 write(unit=file_unit, fmt="(a)") ", &"
             else
                 if (i_seed_unit /= size(config%seed_labels)) then
@@ -1444,7 +1444,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end if
         end do
         
-        if (use_sqrt .or. use_cbrt .or. use_square .or. config%intrinsics) then
+        if (config%intrinsics .or. use_sqrt .or. use_cbrt .or. use_square) then
             write(unit=file_unit, fmt="(a)", advance="no") "!"
             do i_space = 1, 12 + len(config%module_name) ! SERIAL
                 write(unit=file_unit, fmt="(a)", advance="no") " "
