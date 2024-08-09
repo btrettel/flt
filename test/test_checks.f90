@@ -9,7 +9,7 @@ program test_checks
 
 use build, only: DEBUG
 use checks, only: TOL_FACTOR, abs_tolerance, is_close, all_close, assert, assert_dimension, assert_precision_loss, &
-                    cancellation_precision_loss
+                    log10_spacing_jump
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
@@ -192,23 +192,29 @@ end if ! IBM XLF comment end
 x = 0.0_WP
 y = -1.0_WP
 z = x - y
-call tests%integer_eq(cancellation_precision_loss(x, y, z), 0, "cancellation_precision_loss, no loss (1)")
+call tests%real_eq(log10_spacing_jump(x, y, z), 0.0_WP, "cancellation_precision_loss, no loss (1)")
 call assert_precision_loss(x, y, z)
 
 x = 100000.0_WP
 y = 100000.0_WP - 1.0_WP
 z = x - y
-call tests%integer_eq(cancellation_precision_loss(x, y, z), 4, "cancellation_precision_loss, 4 digits lost")
+call tests%real_gt(log10_spacing_jump(x, y, z), 4.0_WP, "cancellation_precision_loss, 4 digits lost")
 
 x = 100000.0_WP
 y = 100000.0_WP - spacing(x)
 z = x - y
-call tests%integer_eq(cancellation_precision_loss(x, y, z), precision(z), "cancellation_precision_loss, complete loss")
+call tests%real_gt(log10_spacing_jump(x, y, z), 0.0_WP, "cancellation_precision_loss, complete loss")
 
 x = 1.0_WP
 y = 2.0_WP
 z = x + y
-call tests%integer_eq(cancellation_precision_loss(x, y, z), 0, "cancellation_precision_loss, no loss (2)")
+call tests%real_eq(log10_spacing_jump(x, y, z), 0.0_WP, "cancellation_precision_loss, no loss (2)")
+call assert_precision_loss(x, y, z)
+
+x = 0.0_WP
+y = 0.0_WP
+z = x + y
+call tests%real_eq(log10_spacing_jump(x, y, z), 0.0_WP, "cancellation_precision_loss, no loss (3)")
 call assert_precision_loss(x, y, z)
 
 if (DEBUG) then ! IBM XLF comment start

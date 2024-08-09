@@ -28,7 +28,7 @@ integer, public, parameter :: DP = selected_real_kind(15, 307)  ! double
 integer, public, parameter :: WP = DP
 
 ! Number of digits of acceptable precision loss in catastrophic cancellation.
-integer, public, parameter :: ACCEPTABLE_PRECISION_LOSS = floor(real(precision(1.0_WP), WP)/4.0_WP)
+integer, public, parameter :: ACCEPTABLE_LOG10_SPACING_JUMP = floor(real(precision(1.0_WP), WP)/4.0_WP)
 
 ! String parameters
 ! -----------------

@@ -7,7 +7,7 @@
 
 program test_prec
 
-use prec, only: I5, I9, WP, PI, ACCEPTABLE_PRECISION_LOSS
+use prec, only: I5, I9, WP, PI, ACCEPTABLE_LOG10_SPACING_JUMP
 use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
@@ -26,7 +26,7 @@ call tests%integer_ge(precision(1.0), 6, "default real kind precision")
 call tests%integer_ge(range(1.0), 37, "default real kind exponent range")
 call tests%integer_ge(precision(1.0_WP), 15, "real kind WP precision")
 call tests%integer_ge(range(1.0_WP), 307, "real kind WP exponent range")
-call tests%integer_eq(ACCEPTABLE_PRECISION_LOSS, 3, "real kind WP ACCEPTABLE_PRECISION_LOSS")
+call tests%integer_eq(ACCEPTABLE_LOG10_SPACING_JUMP, 3, "real kind WP ACCEPTABLE_LOG10_SPACING_JUMP")
 
 ! This needs to be modified when changing the precision.
 call tests%real_eq(3.141592653589793_WP, PI, "PI value")
