@@ -19,6 +19,8 @@ public :: abs_tolerance
 public :: is_close, all_close
 public :: assert
 public :: assert_dimension
+public :: assert_precision_loss
+public :: cancellation_precision_loss
 
 interface all_close
     module procedure all_close_rank_1
@@ -207,5 +209,34 @@ pure subroutine assert_dimension_rank_3(a, b)
     call assert(all(lbound(a) == lbound(b)), "checks (assert_dimension_rank_3): lbound")
     call assert(all(ubound(a) == ubound(b)), "checks (assert_dimension_rank_3): ubound")
 end subroutine assert_dimension_rank_3
+
+pure subroutine assert_precision_loss(x, y, z)
+    use prec, only: ACCEPTABLE_PRECISION_LOSS, CL
+    
+    real(kind=WP), intent(in) :: x, y, z
+    
+    character(len=CL) :: message
+    
+    write(unit=message, fmt="(a, i0, a, i0, a, g0, a, g0, a, g0)") "checks (assert_precision_loss): loss in precision (", &
+                                        cancellation_precision_loss(x, y, z), " digits) above acceptable limit (", &
+                                        ACCEPTABLE_PRECISION_LOSS, " digits), inputs = ", x, ", ", y, ", output = ", z
+    call assert(cancellation_precision_loss(x, y, z) <= ACCEPTABLE_PRECISION_LOSS, trim(message))
+end subroutine assert_precision_loss
+
+pure function cancellation_precision_loss(x, y, z)
+    ! Returns an estimate of the number of digits of precision lost in the cancellation error.
+    
+    real(kind=WP), intent(in) :: x, y, z
+    
+    integer :: cancellation_precision_loss
+    
+    real(kind=WP) :: cancellation_precision
+    
+    cancellation_precision      = log(abs(z / max(spacing(x), spacing(y)))) / log(10.0_WP)
+    cancellation_precision_loss = max(precision(z) - ceiling(cancellation_precision), 0)
+    
+    call assert(cancellation_precision >= 0.0_WP, "checks (cancellation_precision_loss): cancellation_precision must be >= 0")
+    call assert(cancellation_precision_loss >= 0, "checks (cancellation_precision_loss): cancellation_precision_loss must be >= 0")
+end function cancellation_precision_loss
 
 end module checks

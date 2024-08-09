@@ -29,6 +29,7 @@ Priorities:
     - MC convergence
         - Could simply design `convergence_rate` to handle this as well. Flag does sampling properly, etc.
     - Richardson extrapolation procedure
+    - Check for ideas: marshall_scientific_2011
 - Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
 - genunits
     - `abs` is not just unitless.
