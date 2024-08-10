@@ -226,6 +226,7 @@ end subroutine assert_precision_loss
 
 pure function log10_spacing_jump(x, y, z)
     ! A large jump in `spacing` indicates potential catastrophic cancellation.
+    ! TODO: Figure out a better way to detect catastrophic cancellation above a certain size.
     
     real(kind=WP), intent(in) :: x, y, z
     

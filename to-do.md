@@ -47,6 +47,7 @@ Priorities:
         x = si_length(1.0_WP) ! make a constant
         call x%set_dv(1, N_DV) ! set this as variable number 1```
     - Add `%v%v` to linter (disabled for now) to help identify what to fix in the future...
+    - Say that the output of genunits is public domain in the output.
 - `make lint` runs Python linters too.
 - Make script to install FLT build system in a directory
 - Documentation for genunits
@@ -99,6 +100,9 @@ Priorities:
     - Works with units.f90? Might be more trouble than it's worth, but give it a shot.
 - genunits: Generates a module named `units` which provides compile-time checking of physical dimensions. (started)
     - Derived type input
+        - Goals for derived type namelist input:
+            - Specify mean value, uncertainty, and unit in a namelist.
+            - Return some sort of error if the unit is inappropriate.
         - Make derived type input end at a ` `, `,`, or `/`. See NAG email.
         - Allow for prefixes like `m`, `c`, `k` on each unit? A base unit can be defined by a base symbol and a base prefix. So the base unit `kg` is constructed from the base symbol `g` and the base prefix `k`.
             - <https://ucum.org/ucum#baseunits>
