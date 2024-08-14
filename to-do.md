@@ -32,14 +32,8 @@ Priorities:
     - Check for ideas: marshall_scientific_2011
 - Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
 - genunits
-    - `abs` is not just unitless.
-    - Add comma and ampersand after last unit in commented use line
-        - Done? Line 1436 of genunits_io.f90?
-    - Change `config%intrinsics` to `unitless_1arg_intrinsics` array in nml file that is looped over to minimize number of interfaces and reduce amount of hard coded things.
-    - 2 argument `min` and `max`
     - Generic `linspace` and `linf_norm`
-    - Test unitless intrinsics.
-    - Add and test comparison operators, including `real` for `unitless`.
+    - Add and test comparison operators for `real` for `unitless`.
     - Look into inheritance for genunits to avoid the `%v%v` problem? Could also try a pointer and make the actual unit type value not `%v`.
     - Better constructor for AD and genunits. Make default constructor set a constant, and have a separate subroutine to set the variable number of the derivatives? Example proposed syntax for combination of AD and genunits:
         - ```type(si_length) :: x
@@ -47,16 +41,15 @@ Priorities:
         x = si_length(1.0_WP) ! make a constant
         call x%set_dv(1, N_DV) ! set this as variable number 1```
     - Add `%v%v` to linter (disabled for now) to help identify what to fix in the future...
-    - Say that the output of genunits is public domain in the output.
 - `make lint` runs Python linters too.
 - Make script to install FLT build system in a directory
 - Documentation for genunits
     - `use_line` creates a new line at semicolons, so that depends.py can see the dependency.
 - genunits_io.f90: Change type-bound procedures for `config` to be normal procedures.
 - fmad.f90:
-    - Addition and subtraction for `real`s (with tests).
+    - Addition and subtraction for `real`s (with tests). (What did I mean by this? fmad.f90 already handles `real`s for addition and subtraction.)
     - Assert that `dv` of the output is allocated (via `assert`) and has correct size (via `assert_dimension`).
-    - comparison operators for reals, with tests
+    - comparison operators for `real`s, with tests
 - Better constructors for AD. I should be able to get a constant by using `ad` directly.
 - Make `test_concurrent` more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
     - ```./test_purerng
