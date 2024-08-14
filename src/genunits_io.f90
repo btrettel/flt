@@ -28,7 +28,8 @@ integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the mo
                               DEFAULT_DENOMINATOR = 1,  &
                               MAX_USE_LINES       = 10
 
-character(len=4), parameter :: INTRINSIC_1ARG(6) = ["sin", "cos", "tan", "exp", "log", "abs"]
+character(len=4), parameter :: INTRINSIC_1ARG_UNITLESS(5)  = ["sin", "cos", "tan", "exp", "log"]
+!character(len=4), parameter :: INTRINSIC_1ARG_WITHUNITS(1) = ["abs"]
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line, kind_parameter, module_name
@@ -1246,8 +1247,8 @@ subroutine write_intrinsic_1arg_interfaces(unit_system, file_unit)
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_intrinsic_1arg_interfaces): file_unit must be open")
     
-    do i_intrinsic = 1, size(INTRINSIC_1ARG) ! SERIAL
-        call write_intrinsic_1arg_interface(unit_system, file_unit, trim(INTRINSIC_1ARG(i_intrinsic)))
+    do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
+        call write_intrinsic_1arg_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)))
     end do
 end subroutine write_intrinsic_1arg_interfaces
 
@@ -1382,11 +1383,11 @@ subroutine write_module(config, unit_system, file_unit, rc)
     if (config%intrinsics) then
         write(unit=file_unit, fmt="(a)", advance="no") "public :: "
         
-        do i_intrinsic = 1, size(INTRINSIC_1ARG) ! SERIAL
-            if (i_intrinsic /= size(INTRINSIC_1ARG)) then
-                write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG(i_intrinsic)), ", "
+        do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
+            if (i_intrinsic /= size(INTRINSIC_1ARG_UNITLESS)) then
+                write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), ", "
             else
-                write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG(i_intrinsic))
+                write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic))
             end if
         end do
         write(unit=file_unit, fmt="(a)") ""
@@ -1451,11 +1452,11 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end if
         
         if (config%intrinsics) then
-            do i_intrinsic = 1, size(INTRINSIC_1ARG) ! SERIAL
-                if (i_intrinsic /= size(INTRINSIC_1ARG)) then
-                    write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG(i_intrinsic)), ", "
+            do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
+                if (i_intrinsic /= size(INTRINSIC_1ARG_UNITLESS)) then
+                    write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), ", "
                 else
-                    write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG(i_intrinsic))
+                    write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic))
                 end if
             end do
             
@@ -1569,8 +1570,8 @@ subroutine write_module(config, unit_system, file_unit, rc)
     end if
     
     if (config%intrinsics) then
-        do i_intrinsic = 1, size(INTRINSIC_1ARG) ! SERIAL
-            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG(i_intrinsic)))
+        do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
+            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)))
             n_interfaces = n_interfaces + 1
         end do
     end if
