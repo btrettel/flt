@@ -16,7 +16,7 @@ use units, only: unitless     => unit_p00000_p00000_p00000, &
                  si_volume    => unit_p30000_p00000_p00000, &
                  si_density   => unit_m30000_p10000_p00000, &
                  si_frequency => unit_p00000_p00000_m10000, &
-                 unit, sin, cos, tan, exp, log, abs, sqrt, cbrt, square
+                 unit, sin, cos, tan, exp, log, abs, max, min, sqrt, cbrt, square
 use prec, only: WP, CL
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -253,8 +253,8 @@ subroutine test_intrinsics(tests)
     
     type(test_results_type), intent(in out) :: tests
     
-    type(si_length) :: l1, l2
-    type(unitless)  :: u1, u2
+    type(si_length) :: l1, l2, l3
+    type(unitless)  :: u1, u2, u3
     
     u1%v = PI/6.0_WP
     u2   = sin(u1)
@@ -289,6 +289,20 @@ subroutine test_intrinsics(tests)
     l1%v = 3.0_WP
     l2   = abs(l1)
     call tests%real_eq(l2%v, 3.0_WP, "intrinsics, abs 4")
+    
+    u1%v = 0.0_WP
+    u2%v = 1.0_WP
+    u3   = min(u1, u2)
+    call tests%real_eq(u3%v, 0.0_WP, "intrinsics, min 1")
+    u3   = max(u1, u2)
+    call tests%real_eq(u3%v, 1.0_WP, "intrinsics, max 1")
+    
+    l1%v = 0.0_WP
+    l2%v = 1.0_WP
+    l3   = min(l1, l2)
+    call tests%real_eq(l3%v, 0.0_WP, "intrinsics, min 2")
+    l3   = max(l1, l2)
+    call tests%real_eq(l3%v, 1.0_WP, "intrinsics, max 2")
 end subroutine test_intrinsics
 
 end program test_units

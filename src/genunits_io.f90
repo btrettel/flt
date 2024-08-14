@@ -30,7 +30,7 @@ integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the mo
 
 character(len=4), parameter :: INTRINSIC_1ARG_UNITLESS(5)  = ["sin", "cos", "tan", "exp", "log"]
 character(len=4), parameter :: INTRINSIC_1ARG_WITHUNITS(1) = ["abs"]
-!character(len=4), parameter :: INTRINSIC_2ARG_WITHUNITS(1) = ["max", "min"]
+character(len=4), parameter :: INTRINSIC_2ARG_WITHUNITS(2) = ["max", "min"]
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line, kind_parameter, module_name
@@ -1255,6 +1255,10 @@ subroutine write_intrinsic_interfaces(unit_system, file_unit)
     do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
         call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)), .false.)
     end do
+    
+    do i_intrinsic = 1, size(INTRINSIC_2ARG_WITHUNITS) ! SERIAL
+        call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic)), .false.)
+    end do
 end subroutine write_intrinsic_interfaces
 
 subroutine write_intrinsic_interface(unit_system, file_unit, fun, unitless)
@@ -1456,6 +1460,18 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end do
             write(unit=file_unit, fmt="(a)") ""
         end if
+        
+        if (size(INTRINSIC_2ARG_WITHUNITS) > 0) then
+            write(unit=file_unit, fmt="(a)", advance="no") "public :: "
+            do i_intrinsic = 1, size(INTRINSIC_2ARG_WITHUNITS) ! SERIAL
+                if (i_intrinsic /= size(INTRINSIC_2ARG_WITHUNITS)) then
+                    write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic)), ", "
+                else
+                    write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic))
+                end if
+            end do
+            write(unit=file_unit, fmt="(a)") ""
+        end if
     end if
     
     if (use_sqrt) then
@@ -1527,7 +1543,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end if
             
             if (size(INTRINSIC_1ARG_WITHUNITS) > 0) then
-                if (size(INTRINSIC_1ARG_UNITLESS) > 0) then
+                if (size(INTRINSIC_1ARG_WITHUNITS) > 0) then
                     write(unit=file_unit, fmt="(a)", advance="no") ", "
                 end if
                 
@@ -1540,7 +1556,23 @@ subroutine write_module(config, unit_system, file_unit, rc)
                 end do
             end if
             
-            if ((size(INTRINSIC_1ARG_UNITLESS) > 0) .or. (size(INTRINSIC_1ARG_WITHUNITS) > 0)) then
+            if (size(INTRINSIC_2ARG_WITHUNITS) > 0) then
+                if (size(INTRINSIC_2ARG_WITHUNITS) > 0) then
+                    write(unit=file_unit, fmt="(a)", advance="no") ", "
+                end if
+                
+                do i_intrinsic = 1, size(INTRINSIC_2ARG_WITHUNITS) ! SERIAL
+                    if (i_intrinsic /= size(INTRINSIC_2ARG_WITHUNITS)) then
+                        write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic)), ", "
+                    else
+                        write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic))
+                    end if
+                end do
+            end if
+            
+            if ((size(INTRINSIC_1ARG_UNITLESS) > 0) &
+                    .or. (size(INTRINSIC_1ARG_WITHUNITS) > 0) &
+                    .or. (size(INTRINSIC_2ARG_WITHUNITS) > 0)) then
                 if (use_sqrt .or. use_cbrt .or. use_square) then
                     write(unit=file_unit, fmt="(a)", advance="no") ", "
                 end if
@@ -1670,10 +1702,10 @@ subroutine write_module(config, unit_system, file_unit, rc)
             n_interfaces = n_interfaces + size(unit_system%units)
         end do
         
-!        do i_intrinsic = 1, size(INTRINSIC_2ARG_WITHUNITS) ! SERIAL
-!            call write_intrinsic_function(unit_system, file_unit, trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic)), .false., 2)
-!            n_interfaces = n_interfaces + size(unit_system%units)
-!        end do
+        do i_intrinsic = 1, size(INTRINSIC_2ARG_WITHUNITS) ! SERIAL
+            call write_intrinsic_function(unit_system, file_unit, trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic)), .false., 2)
+            n_interfaces = n_interfaces + size(unit_system%units)
+        end do
     end if
     
     write(unit=file_unit, fmt="(2a)") "end module ", config%module_name
