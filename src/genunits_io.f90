@@ -18,7 +18,7 @@ public :: in_exponent_bounds, denominator_matches, &
             write_unary_operator, &
             write_unit_function, write_unit_wf, write_unit_rf, &
             write_exponentiation_interfaces, write_exponentiation_function, &
-            write_intrinsic_1arg_interfaces, write_intrinsic_1arg_function, &
+            write_intrinsic_interfaces, write_intrinsic_1arg_function, &
             write_module
 
 character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
@@ -1234,7 +1234,7 @@ subroutine write_exponentiation_function(config, unit_system, file_unit, unit, o
     write(unit=file_unit, fmt="(3a)") "end function ", exponentiation_function, new_line("a")
 end subroutine write_exponentiation_function
 
-subroutine write_intrinsic_1arg_interfaces(unit_system, file_unit)
+subroutine write_intrinsic_interfaces(unit_system, file_unit)
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
     
@@ -1245,14 +1245,14 @@ subroutine write_intrinsic_1arg_interfaces(unit_system, file_unit)
     integer :: i_intrinsic
     
     inquire(unit=file_unit, opened=file_unit_open)
-    call assert(file_unit_open, "genunits_io (write_intrinsic_1arg_interfaces): file_unit must be open")
+    call assert(file_unit_open, "genunits_io (write_intrinsic_interfaces): file_unit must be open")
     
     do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
-        call write_intrinsic_1arg_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)))
+        call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)))
     end do
-end subroutine write_intrinsic_1arg_interfaces
+end subroutine write_intrinsic_interfaces
 
-subroutine write_intrinsic_1arg_interface(unit_system, file_unit, fun)
+subroutine write_intrinsic_interface(unit_system, file_unit, fun)
     use checks, only: assert
     use genunits_data, only: unit_type, unit_system_type
     
@@ -1264,18 +1264,18 @@ subroutine write_intrinsic_1arg_interface(unit_system, file_unit, fun)
     logical         :: file_unit_open
     
     inquire(unit=file_unit, opened=file_unit_open)
-    call assert(file_unit_open, "genunits_io (write_intrinsic_1arg_interface): file_unit must be open")
+    call assert(file_unit_open, "genunits_io (write_intrinsic_interface): file_unit must be open")
     
     allocate(unit%e(unit_system%n_base_units))
     unit%e = 0.0_WP
     
     call assert(index(fun, " ") == 0, &
-                    "genunits_io (write_intrinsic_1arg_interface): spaces should not be in the function name: '" // fun // "'")
+                    "genunits_io (write_intrinsic_interface): spaces should not be in the function name: '" // fun // "'")
     
     write(unit=file_unit, fmt="(2a)") "interface ", fun
     write(unit=file_unit, fmt="(4a)") "    module procedure ", fun, "_", trim(unit%label())
     write(unit=file_unit, fmt="(3a)") "end interface ", fun, new_line("a")
-end subroutine write_intrinsic_1arg_interface
+end subroutine write_intrinsic_interface
 
 subroutine write_intrinsic_1arg_function(unit_system, file_unit, fun)
     ! Writes intrinsic functions with one argument. Input units are same as output units.
@@ -1498,7 +1498,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     call write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_system, file_unit)
     if (config%intrinsics) then
-        call write_intrinsic_1arg_interfaces(unit_system, file_unit)
+        call write_intrinsic_interfaces(unit_system, file_unit)
     end if
     
     write(unit=file_unit, fmt="(2a)") "contains", new_line("a")
