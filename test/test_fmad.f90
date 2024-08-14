@@ -33,6 +33,7 @@ call test_min(tests)
 call test_abs(tests)
 call test_comparison(tests)
 call test_trig(tests)
+call test_disabled(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -444,5 +445,19 @@ subroutine test_trig(tests)
     
     ! TODO: Add more tests where the function value is known exactly.
 end subroutine test_trig
+
+subroutine test_disabled(tests)
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y
+
+    call x%init(-1.0_WP, 1, 0)
+    call tests%real_eq(x%v, -1.0_WP, "ad disabled, value")
+    call tests%integer_eq(size(x%dv), 0, "ad disabled, size(dv)")
+
+    call y%init_const(2.0_WP, 0)
+    call tests%real_eq(y%v, 2.0_WP, "ad disabled, const value")
+    call tests%integer_eq(size(y%dv), 0, "ad disabled, const size(dv)")
+end subroutine test_disabled
 
 end program test_fmad

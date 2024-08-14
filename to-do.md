@@ -125,6 +125,7 @@ Priorities:
 - f90lint.py: Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
 - fmad.f90 and units.f90
     - `is_close`
+- Add elemental FOSM `stdev` to fmad.f90. Don't include covariance (at first at least). Assert dimension of `f%dv`/`sigma`, assert input `sigmas >= 0`, assert output `sigma >= 0`.
 
 Later:
 

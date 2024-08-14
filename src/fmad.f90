@@ -107,18 +107,21 @@ elemental subroutine init(x, v, n, n_dv)
 
     integer :: i_dv ! loop index
     
-    call assert(n_dv >= 1, "fmad (init): n_dv must be one or more")
-    call assert(n >= 1, "fmad (init): n must be 1 or more")
-    call assert(n <= n_dv, "fmad (init): n must be n_dv or less")
+    call assert(n_dv >= 0, "fmad (init): n_dv must be zero or more")
     
     x%v = v
     
     allocate(x%dv(n_dv))
-    do concurrent (i_dv = 1:n_dv)
-        x%dv(i_dv) = merge(1.0_WP, 0.0_WP, i_dv == n)
-    end do
-    call assert(any(is_close(x%dv, 1.0_WP)), "fmad (init): at least one derivative set")
-    call assert(any(is_close(x%dv, 0.0_WP)), "fmad (init): at least one derivative not set")
+    
+    if (n_dv > 0) then
+        call assert(n >= 1, "fmad (init): n must be 1 or more")
+        call assert(n <= n_dv, "fmad (init): n must be n_dv or less")
+        do concurrent (i_dv = 1:n_dv)
+            x%dv(i_dv) = merge(1.0_WP, 0.0_WP, i_dv == n)
+        end do
+        call assert(any(is_close(x%dv, 1.0_WP)), "fmad (init): at least one derivative set")
+        call assert(any(is_close(x%dv, 0.0_WP)), "fmad (init): at least one derivative not set")
+    end if
 end subroutine init
 
 elemental subroutine init_const(x, v, n_dv)
@@ -129,12 +132,14 @@ elemental subroutine init_const(x, v, n_dv)
     real(kind=WP), intent(in) :: v    ! value of constant to set
     integer, intent(in)       :: n_dv ! total number of differentiable variables
     
-    call assert(n_dv >= 1, "fmad (init): n_dv must be one or more")
+    call assert(n_dv >= 0, "fmad (init): n_dv must be zero or more")
     
     allocate(x%dv(n_dv))
 
     x%v  = v
-    x%dv = 0.0_WP
+    if (n_dv > 0) then
+        x%dv = 0.0_WP
+    end if
 end subroutine init_const
 
 ! Operator procedures

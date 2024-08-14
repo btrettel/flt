@@ -234,10 +234,17 @@ subroutine test_unitless_real(tests)
     call tests%real_eq(t2%v, -4.0_WP, "unitless * real")
     
     f = 2.0_WP / t1
-    call tests%real_eq(f%v, 2.0_WP, "real / unitless")
+    call tests%real_eq(f%v, 2.0_WP, "real / time")
     
     t2 = t1 / 2.0_WP
-    call tests%real_eq(t2%v, 0.5_WP, "unitless / real")
+    call tests%real_eq(t2%v, 0.5_WP, "time / real")
+    
+    u1%v = 1.0_WP
+    u2 = 4.0_WP / u1
+    call tests%real_eq(u2%v, 4.0_WP, "real / unitless")
+    
+    u2 = u1 / 4.0_WP
+    call tests%real_eq(u2%v, 0.25_WP, "unitless / real")
 end subroutine test_unitless_real
 
 end program test_units
