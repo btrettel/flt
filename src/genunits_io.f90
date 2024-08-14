@@ -1250,6 +1250,10 @@ subroutine write_intrinsic_interfaces(unit_system, file_unit)
     do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
         call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)))
     end do
+    
+!    do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
+!        call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)))
+!    end do
 end subroutine write_intrinsic_interfaces
 
 subroutine write_intrinsic_interface(unit_system, file_unit, fun)
@@ -1277,42 +1281,53 @@ subroutine write_intrinsic_interface(unit_system, file_unit, fun)
     write(unit=file_unit, fmt="(3a)") "end interface ", fun, new_line("a")
 end subroutine write_intrinsic_interface
 
-subroutine write_intrinsic_1arg_function(unit_system, file_unit, fun)
+subroutine write_intrinsic_1arg_function(unit_system, file_unit, fun, unitless)
     ! Writes intrinsic functions with one argument. Input units are same as output units.
     
-    use checks, only: assert
+    use checks, only: assert, all_close
     use genunits_data, only: unit_type, unit_system_type
     
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     character(len=*), intent(in)       :: fun ! function name
+    logical, intent(in)                :: unitless
     
     character(len=:), allocatable :: intrinsic_1arg_function
     logical                       :: file_unit_open
     type(unit_type)               :: unit
+    integer                       :: i_unit
     
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_intrinsic_1arg_function): file_unit must be open")
     
-    allocate(unit%e(unit_system%n_base_units))
-    unit%e = 0.0_WP
-    
     call assert(index(fun, " ") == 0, &
                     "genunits_io (write_intrinsic_1arg_function): spaces should not be in the function name '" // fun // "'")
+    if (unitless) then
+        allocate(unit%e(unit_system%n_base_units))
+        unit%e = 0.0_WP
+        call assert(unit%is_in(unit_system%units), &
+                    "genunits_io (write_intrinsic_1arg_function): unitless=.true. requires that unitless be in the unit_system")
+    end if
     
-    intrinsic_1arg_function = fun // "_" // trim(unit%label())
-    
-    write(unit=file_unit, fmt="(3a)") "elemental function ", intrinsic_1arg_function, "(arg)"
-    
-    write(unit=file_unit, fmt="(2a)") "    ! arg: ", trim(unit%readable(unit_system))
-    write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit%readable(unit_system))
-    
-    write(unit=file_unit, fmt="(4a)") "    class(", trim(unit%label()), "), intent(in) :: arg"
-    write(unit=file_unit, fmt="(4a)") "    type(", trim(unit%label()), ") :: ", intrinsic_1arg_function
-    
-    write(unit=file_unit, fmt="(5a)") "    ", intrinsic_1arg_function, "%v = ", fun, "(arg%v)"
-    
-    write(unit=file_unit, fmt="(3a)") "end function ", intrinsic_1arg_function, new_line("a")
+    do i_unit = 1, size(unit_system%units) ! SERIAL
+        if (unitless .and. (.not. all_close(unit_system%units(i_unit)%e, 0.0_WP))) then
+            cycle
+        end if
+        
+        intrinsic_1arg_function = fun // "_" // trim(unit_system%units(i_unit)%label())
+        
+        write(unit=file_unit, fmt="(3a)") "elemental function ", intrinsic_1arg_function, "(arg)"
+        
+        write(unit=file_unit, fmt="(2a)") "    ! arg: ", trim(unit_system%units(i_unit)%readable(unit_system))
+        write(unit=file_unit, fmt="(2a)") "    ! result: ", trim(unit_system%units(i_unit)%readable(unit_system))
+        
+        write(unit=file_unit, fmt="(4a)") "    class(", trim(unit_system%units(i_unit)%label()), "), intent(in) :: arg"
+        write(unit=file_unit, fmt="(4a)") "    type(", trim(unit_system%units(i_unit)%label()), ") :: ", intrinsic_1arg_function
+        
+        write(unit=file_unit, fmt="(5a)") "    ", intrinsic_1arg_function, "%v = ", fun, "(arg%v)"
+        
+        write(unit=file_unit, fmt="(3a)") "end function ", intrinsic_1arg_function, new_line("a")
+    end do
 end subroutine write_intrinsic_1arg_function
 
 subroutine write_module(config, unit_system, file_unit, rc)
@@ -1571,9 +1586,14 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     if (config%intrinsics) then
         do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
-            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)))
+            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), unitless=.true.)
             n_interfaces = n_interfaces + 1
         end do
+        
+!        do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
+!            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)), unitless=.false.)
+!            n_interfaces = n_interfaces + blah
+!        end do
     end if
     
     write(unit=file_unit, fmt="(2a)") "end module ", config%module_name
