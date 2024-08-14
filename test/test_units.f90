@@ -16,7 +16,7 @@ use units, only: unitless     => unit_p00000_p00000_p00000, &
                  si_volume    => unit_p30000_p00000_p00000, &
                  si_density   => unit_m30000_p10000_p00000, &
                  si_frequency => unit_p00000_p00000_m10000, &
-                 unit, sqrt, cbrt, square
+                 unit, sin, cos, tan, exp, log, abs, sqrt, cbrt, square
 use prec, only: WP, CL
 use nmllog, only: log_type
 use unittest, only: test_results_type
@@ -31,6 +31,7 @@ call tests%start_tests(logger)
 call test_basic(tests)
 call test_dtio(tests)
 call test_unitless_real(tests)
+call test_intrinsics(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -246,5 +247,48 @@ subroutine test_unitless_real(tests)
     u2 = u1 / 4.0_WP
     call tests%real_eq(u2%v, 0.25_WP, "unitless / real")
 end subroutine test_unitless_real
+
+subroutine test_intrinsics(tests)
+    use prec, only: PI
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(si_length) :: l1, l2
+    type(unitless)  :: u1, u2
+    
+    u1%v = PI/6.0_WP
+    u2   = sin(u1)
+    call tests%real_eq(u2%v, 0.5_WP, "intrinsics, sin")
+    
+    u2   = cos(u1)
+    call tests%real_eq(u2%v, sqrt(3.0_WP)/2.0_WP, "intrinsics, cos")
+    
+    u2   = tan(u1)
+    call tests%real_eq(u2%v, sqrt(3.0_WP)/3.0_WP, "intrinsics, tan")
+    
+    u1%v = -2.0_WP
+    u2   = exp(u1)
+    call tests%real_eq(u2%v, exp(-2.0_WP), "intrinsics, exp")
+    
+    u1%v = 2.0_WP
+    u2   = log(u1)
+    call tests%real_eq(u2%v, log(2.0_WP), "intrinsics, log")
+    
+    u1%v = -2.0_WP
+    u2   = abs(u1)
+    call tests%real_eq(u2%v, 2.0_WP, "intrinsics, abs 1")
+    
+    u1%v = 4.0_WP
+    u2   = abs(u1)
+    call tests%real_eq(u2%v, 4.0_WP, "intrinsics, abs 2")
+    
+    l1%v = -1.0_WP
+    l2   = abs(l1)
+    call tests%real_eq(l2%v, 1.0_WP, "intrinsics, abs 3")
+    
+    l1%v = 3.0_WP
+    l2   = abs(l1)
+    call tests%real_eq(l2%v, 3.0_WP, "intrinsics, abs 4")
+end subroutine test_intrinsics
 
 end program test_units

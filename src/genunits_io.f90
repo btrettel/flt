@@ -29,7 +29,7 @@ integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the mo
                               MAX_USE_LINES       = 10
 
 character(len=4), parameter :: INTRINSIC_1ARG_UNITLESS(5)  = ["sin", "cos", "tan", "exp", "log"]
-!character(len=4), parameter :: INTRINSIC_1ARG_WITHUNITS(1) = ["abs"]
+character(len=4), parameter :: INTRINSIC_1ARG_WITHUNITS(1) = ["abs"]
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line, kind_parameter, module_name
@@ -1248,36 +1248,48 @@ subroutine write_intrinsic_interfaces(unit_system, file_unit)
     call assert(file_unit_open, "genunits_io (write_intrinsic_interfaces): file_unit must be open")
     
     do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
-        call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)))
+        call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), .true.)
     end do
     
-!    do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
-!        call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)))
-!    end do
+    do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
+        call write_intrinsic_interface(unit_system, file_unit, trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)), .false.)
+    end do
 end subroutine write_intrinsic_interfaces
 
-subroutine write_intrinsic_interface(unit_system, file_unit, fun)
-    use checks, only: assert
+subroutine write_intrinsic_interface(unit_system, file_unit, fun, unitless)
+    use checks, only: assert, all_close
     use genunits_data, only: unit_type, unit_system_type
     
     type(unit_system_type), intent(in) :: unit_system
     integer, intent(in)                :: file_unit
     character(len=*), intent(in)       :: fun
+    logical, intent(in)                :: unitless
     
     type(unit_type) :: unit
     logical         :: file_unit_open
+    integer         :: i_unit
     
     inquire(unit=file_unit, opened=file_unit_open)
     call assert(file_unit_open, "genunits_io (write_intrinsic_interface): file_unit must be open")
     
-    allocate(unit%e(unit_system%n_base_units))
-    unit%e = 0.0_WP
+    if (unitless) then
+        allocate(unit%e(unit_system%n_base_units))
+        unit%e = 0.0_WP
+        call assert(unit%is_in(unit_system%units), &
+                    "genunits_io (write_intrinsic_1arg_function): unitless=.true. requires that unitless be in the unit_system")
+    end if
     
     call assert(index(fun, " ") == 0, &
                     "genunits_io (write_intrinsic_interface): spaces should not be in the function name: '" // fun // "'")
     
     write(unit=file_unit, fmt="(2a)") "interface ", fun
-    write(unit=file_unit, fmt="(4a)") "    module procedure ", fun, "_", trim(unit%label())
+    do i_unit = 1, size(unit_system%units) ! SERIAL
+        if (unitless .and. (.not. all_close(unit_system%units(i_unit)%e, 0.0_WP))) then
+            cycle
+        end if
+        
+        write(unit=file_unit, fmt="(4a)") "    module procedure ", fun, "_", trim(unit_system%units(i_unit)%label())
+    end do
     write(unit=file_unit, fmt="(3a)") "end interface ", fun, new_line("a")
 end subroutine write_intrinsic_interface
 
@@ -1339,7 +1351,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     integer, intent(in)                 :: file_unit
     integer, intent(out)                :: rc
     
-    integer           :: i_seed_unit, i_unit, j_unit, max_label_len, n_interfaces, i_space, i_intrinsic
+    integer           :: i_seed_unit, i_unit, j_unit, max_label_len, n_interfaces, i_space, i_intrinsic, j_intrinsic
     character(len=10) :: n_char
     character(len=20) :: use_format
     type(unit_type)   :: trial_unit
@@ -1396,16 +1408,29 @@ subroutine write_module(config, unit_system, file_unit, rc)
     write(unit=file_unit, fmt="(a)") "public :: unit"
     
     if (config%intrinsics) then
-        write(unit=file_unit, fmt="(a)", advance="no") "public :: "
+        if (size(INTRINSIC_1ARG_UNITLESS) > 0) then
+            write(unit=file_unit, fmt="(a)", advance="no") "public :: "
+            do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
+                if (i_intrinsic /= size(INTRINSIC_1ARG_UNITLESS)) then
+                    write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), ", "
+                else
+                    write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic))
+                end if
+            end do
+            write(unit=file_unit, fmt="(a)") ""
+        end if
         
-        do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
-            if (i_intrinsic /= size(INTRINSIC_1ARG_UNITLESS)) then
-                write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), ", "
-            else
-                write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic))
-            end if
-        end do
-        write(unit=file_unit, fmt="(a)") ""
+        if (size(INTRINSIC_1ARG_WITHUNITS) > 0) then
+            write(unit=file_unit, fmt="(a)", advance="no") "public :: "
+            do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
+                if (i_intrinsic /= size(INTRINSIC_1ARG_WITHUNITS)) then
+                    write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)), ", "
+                else
+                    write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic))
+                end if
+            end do
+            write(unit=file_unit, fmt="(a)") ""
+        end if
     end if
     
     if (use_sqrt) then
@@ -1459,24 +1484,41 @@ subroutine write_module(config, unit_system, file_unit, rc)
             end if
         end do
         
-        if (config%intrinsics .or. use_sqrt .or. use_cbrt .or. use_square) then
-            write(unit=file_unit, fmt="(a)", advance="no") "!"
-            do i_space = 1, 12 + len(config%module_name) ! SERIAL
-                write(unit=file_unit, fmt="(a)", advance="no") " "
-            end do
-        end if
+        write(unit=file_unit, fmt="(a)", advance="no") "!"
+        do i_space = 1, 12 + len(config%module_name) ! SERIAL
+            write(unit=file_unit, fmt="(a)", advance="no") " "
+        end do
+        write(unit=file_unit, fmt="(a)", advance="no") "unit, "
         
         if (config%intrinsics) then
-            do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
-                if (i_intrinsic /= size(INTRINSIC_1ARG_UNITLESS)) then
-                    write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), ", "
-                else
-                    write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic))
-                end if
-            end do
+            if (size(INTRINSIC_1ARG_UNITLESS) > 0) then
+                do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
+                    if (i_intrinsic /= size(INTRINSIC_1ARG_UNITLESS)) then
+                        write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), ", "
+                    else
+                        write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic))
+                    end if
+                end do
+            end if
             
-            if (use_sqrt .or. use_cbrt .or. use_square) then
-                write(unit=file_unit, fmt="(a)", advance="no") ", "
+            if (size(INTRINSIC_1ARG_WITHUNITS) > 0) then
+                if (size(INTRINSIC_1ARG_UNITLESS) > 0) then
+                    write(unit=file_unit, fmt="(a)", advance="no") ", "
+                end if
+                
+                do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
+                    if (i_intrinsic /= size(INTRINSIC_1ARG_WITHUNITS)) then
+                        write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)), ", "
+                    else
+                        write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic))
+                    end if
+                end do
+            end if
+            
+            if ((size(INTRINSIC_1ARG_UNITLESS) > 0) .or. (size(INTRINSIC_1ARG_WITHUNITS) > 0)) then
+                if (use_sqrt .or. use_cbrt .or. use_square) then
+                    write(unit=file_unit, fmt="(a)", advance="no") ", "
+                end if
             end if
         end if
         
@@ -1586,14 +1628,22 @@ subroutine write_module(config, unit_system, file_unit, rc)
     
     if (config%intrinsics) then
         do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
-            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), unitless=.true.)
+            do j_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
+                call assert(trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)) /= trim(INTRINSIC_1ARG_WITHUNITS(j_intrinsic)), &
+                                "genunits_io (write_module): can't have an intrinsic in both " &
+                                // "INTRINSIC_1ARG_UNITLESS and INTRINSIC_1ARG_WITHUNITS.")
+            end do
+        end do
+        
+        do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
+            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), .true.)
             n_interfaces = n_interfaces + 1
         end do
         
-!        do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
-!            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)), unitless=.false.)
-!            n_interfaces = n_interfaces + blah
-!        end do
+        do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
+            call write_intrinsic_1arg_function(unit_system, file_unit, trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)), .false.)
+            n_interfaces = n_interfaces + size(unit_system%units)
+        end do
     end if
     
     write(unit=file_unit, fmt="(2a)") "end module ", config%module_name
