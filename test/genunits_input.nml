@@ -4,9 +4,9 @@ base_units      = "m", "kg", "s"
 type_definition = "real(kind=WP)"
 use_line        = "use prec, only: WP"
 kind_parameter  = "WP"
-max_n_units     = 10
+max_n_units     = 15
 
-min_exponents = -3.0, 0.0, -1.0
+min_exponents = -3.0, 0.0, -2.0
 max_exponents = 3.0, 1.0, 1.0
 denominators  = 2, 1, 2
 
@@ -51,4 +51,14 @@ e = -3.0, 1.0, 0.0
 &seed_unit
 label = "si_frequency"
 e = 0.0, 0.0, -1.0
+/
+
+&seed_unit
+label = "si_energy"
+e = 2.0, 1.0, -2.0
+/
+
+&seed_unit
+label = "si_energy_per_area"
+e = 0.0, 1.0, -2.0
 /

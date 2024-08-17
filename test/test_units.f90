@@ -8,14 +8,16 @@
 program test_units
 
 use, intrinsic :: iso_fortran_env, only: compiler_version
-use units, only: unitless     => unit_p00000_p00000_p00000, &
-                 si_length    => unit_p10000_p00000_p00000, &
-                 si_time      => unit_p00000_p00000_p10000, &
-                 si_velocity  => unit_p10000_p00000_m10000, &
-                 si_area      => unit_p20000_p00000_p00000, &
-                 si_volume    => unit_p30000_p00000_p00000, &
-                 si_density   => unit_m30000_p10000_p00000, &
-                 si_frequency => unit_p00000_p00000_m10000, &
+use units, only: unitless           => unit_p00000_p00000_p00000, &
+                 si_length          => unit_p10000_p00000_p00000, &
+                 si_time            => unit_p00000_p00000_p10000, &
+                 si_velocity        => unit_p10000_p00000_m10000, &
+                 si_area            => unit_p20000_p00000_p00000, &
+                 si_volume          => unit_p30000_p00000_p00000, &
+                 si_density         => unit_m30000_p10000_p00000, &
+                 si_frequency       => unit_p00000_p00000_m10000, &
+                 si_energy          => unit_p20000_p10000_m20000, &
+                 si_energy_per_area => unit_p00000_p10000_m20000, &
                  unit, sin, cos, tan, exp, log, abs, max, min, sqrt, cbrt, square
 use prec, only: WP, CL
 use nmllog, only: log_type
@@ -311,10 +313,14 @@ end subroutine test_intrinsics
 subroutine test_timing(tests)
     type(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), allocatable :: u(:, :)
+    real(kind=WP), allocatable   :: u_real(:, :)
+    type(si_energy), allocatable :: u_units(:, :)
     
-    call poisson_real(9, 9, 100, u)
-    call tests%real_eq(u(3, 3), 8.010424579559166e-2_WP, "poisson_real, regression test")
+    call poisson_real(9, 9, 100, u_real)
+    call tests%real_eq(u_real(3, 3), 8.010424579559166e-2_WP, "poisson_real, regression test")
+    
+    call poisson_units(9, 9, 100, u_units)
+    call tests%real_eq(u_units(3, 3)%v, 8.010424579559166e-2_WP, "poisson_units, regression test")
 end subroutine test_timing
 
 subroutine poisson_real(mmax, nmax, itmax, u)
@@ -332,16 +338,15 @@ subroutine poisson_real(mmax, nmax, itmax, u)
     real(kind=WP) :: hy
     real(kind=WP) :: q
 
-    real(kind=WP) :: hx2f(mmax + 2, nmax + 2) ! scaled forcing function
-    integer       :: i ! number of SOR iterations performed
-    real(kind=WP) :: x(mmax + 2)
-    real(kind=WP) :: y(nmax + 2)
+    real(kind=WP), allocatable :: hx2f(:, :) ! scaled forcing function
+    real(kind=WP), allocatable :: x(:), y(:)
     real(kind=WP) :: u_old ! numerical solution for previous iteration
     real(kind=WP) :: u_sum, ave, rmax, res
 
+    integer :: i ! number of SOR iterations performed
     integer :: m, n ! loop indices
 
-    allocate(u(mmax + 2, nmax + 2))
+    allocate(u(mmax + 2, nmax + 2), hx2f(mmax + 2, nmax + 2), x(mmax + 2), y(nmax + 2))
 
     ! Step 2: Set boundary conditions and initialize `u`
 
@@ -422,7 +427,7 @@ subroutine poisson_real(mmax, nmax, itmax, u)
         ! Step 6. Compare maximum residual to tolerance
         if (rmax < TOL) then
             exit
-        end if  
+        end if
     end do
 
     ! Step 7. Output solution
@@ -442,5 +447,138 @@ subroutine poisson_real(mmax, nmax, itmax, u)
 !        write(unit=*, fmt="(a)")
 !    end do
 end subroutine poisson_real
+
+subroutine poisson_units(mmax, nmax, itmax, u)
+    integer, intent(in) :: mmax  ! number of interior $x$ grid points
+    integer, intent(in) :: nmax  ! number of interior $y$ grid points
+    integer, intent(in) :: itmax ! maximum number of iterations allowed
+    type(si_energy), allocatable, intent(out) :: u(:, :) ! numerical solution
+    
+    real(kind=WP), parameter :: A     = 1.0_WP ! $x$ dimension
+    real(kind=WP), parameter :: B     = 1.0_WP ! $y$ dimension
+    real(kind=WP), parameter :: OMEGA = 1.0_WP ! relaxation parameter
+    real(kind=WP), parameter :: TOL   = 0.005_WP ! tolerance for maximum of absolute value of residual
+
+    type(si_length) :: hx
+    type(si_length) :: hy
+    type(unitless)  :: q
+    
+    type(si_energy_per_area) :: f, conversion, res, rmax
+
+    type(si_energy), allocatable :: hx2f(:, :) ! scaled forcing function
+    type(si_length), allocatable :: x(:), y(:)
+    type(si_energy) :: u_old ! numerical solution for previous iteration
+    type(si_energy) :: u_sum, ave, u_one
+
+    integer :: i ! number of SOR iterations performed
+    integer :: m, n ! loop indices
+
+    allocate(u(mmax + 2, nmax + 2), hx2f(mmax + 2, nmax + 2), x(mmax + 2), y(nmax + 2))
+    
+    f%v          = 4.0_WP
+    conversion%v = 1.0_WP
+    u_one%v      = 1.0_WP
+
+    ! Step 2: Set boundary conditions and initialize `u`
+
+    hx%v = A / real(mmax + 1, WP)
+    hy%v = B / real(nmax + 1, WP)
+    q    = square(hx / hy)
+
+    u_sum%v       = 0.0_WP
+    x(1)%v        = 0.0_WP
+    x(mmax + 2)%v = A
+    y(1)%v        = 0.0_WP
+    y(nmax + 2)%v = B
+
+    do m = 2, mmax + 1
+        x(m) = x(m - 1) + hx
+        
+        u(m, 1)        = conversion * square(x(m))
+        u(m, nmax + 2) = conversion * square(x(m)) + u_one
+        
+        u_sum = u_sum + u(m, 1) + u(m, nmax + 2)
+    end do
+
+    do n = 2, nmax + 1
+        y(n) = y(n - 1) + hy
+        
+        u(1, n)        = conversion * square(y(n))
+        u(mmax + 2, n) = u_one + conversion * square(y(n))
+        
+        u_sum = u_sum + u(1, n) + u(mmax + 2, n)
+    end do
+
+    ave = u_sum / (2.0_WP * real(mmax + nmax, WP))
+!    write(unit=*, fmt="(a, f5.3)") " starting guess = ", ave
+
+    do n = 2, nmax + 1
+        do m = 2, mmax + 1
+            ! initialize `u` to average of boundary values
+            u(m, n) = ave
+            
+            hx2f(m, n) = -square(hx) * f
+        end do
+    end do
+
+    ! Step 3: Begin SOR iterations
+
+    do i = 1, itmax
+        ! Step 4. Calculate `i`th SOR iterate
+        do n = 2, nmax + 1
+            do m = 2, mmax + 1
+                u_old = u(m, n)
+                
+                u(m, n) = (u(m - 1, n) &
+                            + q * u(m, n - 1) &
+                            + u(m + 1, n) &
+                            + q * u(m, n + 1) &
+                            + hx2f(m, n)) &
+                            / (2.0_WP + 2.0_WP * q)
+                
+                u(m, n) = OMEGA * u(m, n) + (1.0_WP - OMEGA) * u_old
+            end do
+        end do
+        
+        ! Step 5. Calculate maximum residual for `i`th SOR iterate
+        rmax%v = 0.0_WP
+        do n = 2, nmax + 1
+            do m = 2, mmax + 1
+                res = (hx2f(m, n) &
+                        + u(m - 1, n) &
+                        + u(m + 1, n) &
+                        - (2.0_WP + 2.0_WP * q) * u(m, n) &
+                        + q * u(m, n - 1) &
+                        + q * u(m, n + 1)) &
+                        / square(hx)
+                rmax = max(abs(res), rmax)
+            end do
+        end do
+        
+!        write(unit=*, fmt="(a, i4, a, es15.6)") " i = ", i, " res = ", rmax
+        
+        ! Step 6. Compare maximum residual to tolerance
+        if (rmax%v < TOL) then
+            exit
+        end if
+    end do
+
+    ! Step 7. Output solution
+
+!    write(unit=*, fmt="(a)", advance="no") "       x = "
+!    do m = 2, mmax + 1
+!        write(unit=*, fmt="(a, f5.3, a)", advance="no") " ", x(m), " "
+!    end do
+!    write(unit=*, fmt="(a)")
+
+!    do n = nmax + 1, 2, -1
+!        write(unit=*, fmt="(a, f5.3, a)", advance="no") " y = ", y(n), " "
+!        do m = 2, mmax + 1
+!            write(unit=*, fmt="(a, f5.3, a)", advance="no") " ", U(m, n), " "
+!        end do
+        
+!        write(unit=*, fmt="(a)")
+!    end do
+end subroutine poisson_units
 
 end program test_units
