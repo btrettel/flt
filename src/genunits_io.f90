@@ -90,11 +90,12 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     n_failures = 0
     
+    ! Set the defaults.
+    
     do concurrent (i_base_unit = 1:MAX_BASE_UNITS)
         base_units(i_base_unit) = ""
     end do
     
-    ! Set the defaults.
     output_file     = ""
     type_definition = "real(kind=WP)"
     use_line        = "use prec, only: WP"

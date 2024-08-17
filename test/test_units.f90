@@ -311,16 +311,25 @@ subroutine test_intrinsics(tests)
 end subroutine test_intrinsics
 
 subroutine test_timing(tests)
+    use timer, only: timeit
+    
     type(test_results_type), intent(in out) :: tests
     
     real(kind=WP), allocatable   :: u_real(:, :)
     type(si_energy), allocatable :: u_units(:, :)
+    
+    real(kind=WP) :: time_real, time_units
     
     call poisson_real(9, 9, 100, u_real)
     call tests%real_eq(u_real(3, 3), 8.010424579559166e-2_WP, "poisson_real, regression test")
     
     call poisson_units(9, 9, 100, u_units)
     call tests%real_eq(u_units(3, 3)%v, 8.010424579559166e-2_WP, "poisson_units, regression test")
+    
+    time_real  = timeit(time_it_poisson_real, 100)
+    time_units = timeit(time_it_poisson_units, 100)
+    
+    print *, time_real, time_units, time_units / time_real
 end subroutine test_timing
 
 subroutine poisson_real(mmax, nmax, itmax, u)
@@ -337,22 +346,25 @@ subroutine poisson_real(mmax, nmax, itmax, u)
     real(kind=WP) :: hx
     real(kind=WP) :: hy
     real(kind=WP) :: q
+    real(kind=WP) :: f
 
-    real(kind=WP), allocatable :: hx2f(:, :) ! scaled forcing function
     real(kind=WP), allocatable :: x(:), y(:)
     real(kind=WP) :: u_old ! numerical solution for previous iteration
     real(kind=WP) :: u_sum, ave, rmax, res
 
     integer :: i ! number of SOR iterations performed
     integer :: m, n ! loop indices
-
-    allocate(u(mmax + 2, nmax + 2), hx2f(mmax + 2, nmax + 2), x(mmax + 2), y(nmax + 2))
+    
+    if (allocated(x)) deallocate(x) ! to get around gfortran bug
+    if (allocated(y)) deallocate(y) ! to get around gfortran bug
+    allocate(u(mmax + 2, nmax + 2), x(mmax + 2), y(nmax + 2))
 
     ! Step 2: Set boundary conditions and initialize `u`
 
     hx = A / real(mmax + 1, WP)
     hy = B / real(nmax + 1, WP)
     q  = (hx / hy)**2
+    f  = 4.0_WP
 
     u_sum       = 0.0_WP
     x(1)        = 0.0_WP
@@ -383,8 +395,6 @@ subroutine poisson_real(mmax, nmax, itmax, u)
         do m = 2, mmax + 1
             ! initialize `u` to average of boundary values
             u(m, n) = ave
-            
-            hx2f(m, n) = -(hx**2) * 4.0_WP
         end do
     end do
 
@@ -400,7 +410,7 @@ subroutine poisson_real(mmax, nmax, itmax, u)
                             + q * u(m, n - 1) &
                             + u(m + 1, n) &
                             + q * u(m, n + 1) &
-                            + hx2f(m, n)) &
+                            - (hx**2) * f) &
                             / (2.0_WP + 2.0_WP * q)
                 
                 u(m, n) = OMEGA * u(m, n) + (1.0_WP - OMEGA) * u_old
@@ -411,7 +421,7 @@ subroutine poisson_real(mmax, nmax, itmax, u)
         rmax = 0.0_WP
         do n = 2, nmax + 1
             do m = 2, mmax + 1
-                res = (hx2f(m, n) &
+                res = (-(hx**2) * f &
                         + u(m - 1, n) &
                         + u(m + 1, n) &
                         - (2.0_WP + 2.0_WP * q) * u(m, n) &
@@ -465,7 +475,6 @@ subroutine poisson_units(mmax, nmax, itmax, u)
     
     type(si_energy_per_area) :: f, conversion, res, rmax
 
-    type(si_energy), allocatable :: hx2f(:, :) ! scaled forcing function
     type(si_length), allocatable :: x(:), y(:)
     type(si_energy) :: u_old ! numerical solution for previous iteration
     type(si_energy) :: u_sum, ave, u_one
@@ -473,7 +482,9 @@ subroutine poisson_units(mmax, nmax, itmax, u)
     integer :: i ! number of SOR iterations performed
     integer :: m, n ! loop indices
 
-    allocate(u(mmax + 2, nmax + 2), hx2f(mmax + 2, nmax + 2), x(mmax + 2), y(nmax + 2))
+    if (allocated(x)) deallocate(x) ! to get around gfortran bug
+    if (allocated(y)) deallocate(y) ! to get around gfortran bug
+    allocate(u(mmax + 2, nmax + 2), x(mmax + 2), y(nmax + 2))
     
     f%v          = 4.0_WP
     conversion%v = 1.0_WP
@@ -516,8 +527,6 @@ subroutine poisson_units(mmax, nmax, itmax, u)
         do m = 2, mmax + 1
             ! initialize `u` to average of boundary values
             u(m, n) = ave
-            
-            hx2f(m, n) = -square(hx) * f
         end do
     end do
 
@@ -533,7 +542,7 @@ subroutine poisson_units(mmax, nmax, itmax, u)
                             + q * u(m, n - 1) &
                             + u(m + 1, n) &
                             + q * u(m, n + 1) &
-                            + hx2f(m, n)) &
+                            - square(hx) * f) &
                             / (2.0_WP + 2.0_WP * q)
                 
                 u(m, n) = OMEGA * u(m, n) + (1.0_WP - OMEGA) * u_old
@@ -544,7 +553,7 @@ subroutine poisson_units(mmax, nmax, itmax, u)
         rmax%v = 0.0_WP
         do n = 2, nmax + 1
             do m = 2, mmax + 1
-                res = (hx2f(m, n) &
+                res = (-square(hx) * f &
                         + u(m - 1, n) &
                         + u(m + 1, n) &
                         - (2.0_WP + 2.0_WP * q) * u(m, n) &
@@ -580,5 +589,17 @@ subroutine poisson_units(mmax, nmax, itmax, u)
 !        write(unit=*, fmt="(a)")
 !    end do
 end subroutine poisson_units
+
+subroutine time_it_poisson_real()
+    real(kind=WP), allocatable :: u_real(:, :)
+    
+    call poisson_real(9, 9, 100, u_real)
+end subroutine time_it_poisson_real
+
+subroutine time_it_poisson_units()
+    type(si_energy), allocatable :: u_units(:, :)
+    
+    call poisson_units(9, 9, 100, u_units)
+end subroutine time_it_poisson_units
 
 end program test_units
