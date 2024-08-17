@@ -32,6 +32,7 @@ Priorities:
     - Check for ideas: marshall_scientific_2011
 - Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
 - genunits
+    - Add `**` operator for `unitless` as that stays `unitless`.
     - Generic `linspace` and `linf_norm`
     - Add and test comparison operators for `real` for `unitless`.
     - Look into inheritance for genunits to avoid the `%v%v` problem? Could also try a pointer and make the actual unit type value not `%v`.
@@ -47,6 +48,7 @@ Priorities:
     - `use_line` creates a new line at semicolons, so that depends.py can see the dependency.
 - genunits_io.f90: Change type-bound procedures for `config` to be normal procedures.
 - fmad.f90:
+    - Make `init` and `init_const` have optional argument to avoid allocation for `dv` and instead check size of `dv` and zero it.
     - Addition and subtraction for `real`s (with tests). (What did I mean by this? fmad.f90 already handles `real`s for addition and subtraction.)
     - Assert that `dv` of the output is allocated (via `assert`) and has correct size (via `assert_dimension`).
     - comparison operators for `real`s, with tests

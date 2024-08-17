@@ -118,6 +118,8 @@ subroutine test_basic(tests)
                                 "compile-time error for physical dimension mismatch, 2", "test_units_fail_2.txt")
     call tests%exit_code_ne("make test_units_fail_3", 0, &
                                 "compile-time error for physical dimension mismatch, 3", "test_units_fail_3.txt")
+    call tests%exit_code_ne("make test_units_fail_4", 0, &
+                                "compile-time error for physical dimension mismatch, 4", "test_units_fail_4.txt")
     ! IBM XLF comment end
 
     ! If this compiles, then I can use constructors nicely.

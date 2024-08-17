@@ -1,7 +1,7 @@
 # `-check uninit` has false positives with namelists for the moment.
 # <https://community.intel.com/t5/Intel-Fortran-Compiler/Known-bug-with-check-all-or-check-uninit-in-ifx-2024-0-0-for/m-p/1545825>
 
-FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays
+FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays -nostandard-realloc-lhs
 DFLAGS = -diag-disable=10440 -O0 -g -traceback -debug full -check all,nouninit -fpe0 -standard-semantics
 RFLAGS = -O2 -static -qopt-report -fiopenmp
 AFLAGS = 
@@ -19,3 +19,6 @@ NFLAGS = -xHost
 # <https://github.com/fortran-lang/fpm/issues/868#issuecomment-1720960031>
 
 # `-diag-disable=10440`: This is to avoid a warning about debug mode disabling optimizations. This warning might only appear on older versions of ifx.
+
+# `-nostandard-realloc-lhs`: This could be useful to catch undesired reallocation on assignment. Memory allocation could be slow.
+# <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/standard-realloc-lhs.html>

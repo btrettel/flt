@@ -19,7 +19,7 @@ checks.nml: test_assert_false_1$(BINEXT) test_assert_false_2$(BINEXT) test_asser
 
 genunits_io.nml: test$(DIR_SEP)genunits_input.nml
 
-units.nml: test$(DIR_SEP)test_units_fail_1.f90 test$(DIR_SEP)test_units_fail_2.f90 test$(DIR_SEP)test_units_fail_3.f90
+units.nml: test$(DIR_SEP)test_units_fail_1.f90 test$(DIR_SEP)test_units_fail_2.f90 test$(DIR_SEP)test_units_fail_3.f90 test$(DIR_SEP)test_units_fail_4.f90
 
 unittest.nml: prec.nml
 
