@@ -32,6 +32,7 @@ call test_basic(tests)
 call test_dtio(tests)
 call test_unitless_real(tests)
 call test_intrinsics(tests)
+call test_timing(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -306,5 +307,140 @@ subroutine test_intrinsics(tests)
     l3   = max(l1, l2)
     call tests%real_eq(l3%v, 1.0_WP, "intrinsics, max 2")
 end subroutine test_intrinsics
+
+subroutine test_timing(tests)
+    type(test_results_type), intent(in out) :: tests
+    
+    real(kind=WP), allocatable :: u(:, :)
+    
+    call poisson_real(9, 9, 100, u)
+    call tests%real_eq(u(3, 3), 8.010424579559166e-2_WP, "poisson_real, regression test")
+end subroutine test_timing
+
+subroutine poisson_real(mmax, nmax, itmax, u)
+    integer, intent(in) :: mmax  ! number of interior $x$ grid points
+    integer, intent(in) :: nmax  ! number of interior $y$ grid points
+    integer, intent(in) :: itmax ! maximum number of iterations allowed
+    real(kind=WP), allocatable, intent(out) :: u(:, :) ! numerical solution
+    
+    real(kind=WP), parameter :: A     = 1.0_WP ! $x$ dimension
+    real(kind=WP), parameter :: B     = 1.0_WP ! $y$ dimension
+    real(kind=WP), parameter :: OMEGA = 1.0_WP ! relaxation parameter
+    real(kind=WP), parameter :: TOL   = 0.005_WP ! tolerance for maximum of absolute value of residual
+
+    real(kind=WP) :: hx
+    real(kind=WP) :: hy
+    real(kind=WP) :: q
+
+    real(kind=WP) :: hx2f(mmax + 2, nmax + 2) ! scaled forcing function
+    integer       :: i ! number of SOR iterations performed
+    real(kind=WP) :: x(mmax + 2)
+    real(kind=WP) :: y(nmax + 2)
+    real(kind=WP) :: u_old ! numerical solution for previous iteration
+    real(kind=WP) :: u_sum, ave, rmax, res
+
+    integer :: m, n ! loop indices
+
+    allocate(u(mmax + 2, nmax + 2))
+
+    ! Step 2: Set boundary conditions and initialize `u`
+
+    hx = A / real(mmax + 1, WP)
+    hy = B / real(nmax + 1, WP)
+    q  = (hx / hy)**2
+
+    u_sum       = 0.0_WP
+    x(1)        = 0.0_WP
+    x(mmax + 2) = A
+    y(1)        = 0.0_WP
+    y(nmax + 2) = B
+
+    do m = 2, mmax + 1
+        x(m) = x(m - 1) + hx
+        
+        u(m, 1) = x(m)**2
+        u(m, nmax + 2) = x(m)**2 + 1.0_WP
+        u_sum = u_sum + u(m, 1) + u(m, nmax + 2)
+    end do
+
+    do n = 2, nmax + 1
+        y(n) = y(n - 1) + hy
+        
+        u(1, n) = y(n)**2
+        u(mmax + 2, n) = 1.0_WP + y(n)**2
+        u_sum = u_sum + u(1, n) + u(mmax + 2, n)
+    end do
+
+    ave = u_sum / (2.0_WP * real(mmax + nmax, WP))
+!    write(unit=*, fmt="(a, f5.3)") " starting guess = ", ave
+
+    do n = 2, nmax + 1
+        do m = 2, mmax + 1
+            ! initialize `u` to average of boundary values
+            u(m, n) = ave
+            
+            hx2f(m, n) = -(hx**2) * 4.0_WP
+        end do
+    end do
+
+    ! Step 3: Begin SOR iterations
+
+    do i = 1, itmax
+        ! Step 4. Calculate `i`th SOR iterate
+        do n = 2, nmax + 1
+            do m = 2, mmax + 1
+                u_old = u(m, n)
+                
+                u(m, n) = (u(m - 1, n) &
+                            + q * u(m, n - 1) &
+                            + u(m + 1, n) &
+                            + q * u(m, n + 1) &
+                            + hx2f(m, n)) &
+                            / (2.0_WP + 2.0_WP * q)
+                
+                u(m, n) = OMEGA * u(m, n) + (1.0_WP - OMEGA) * u_old
+            end do
+        end do
+        
+        ! Step 5. Calculate maximum residual for `i`th SOR iterate
+        rmax = 0.0_WP
+        do n = 2, nmax + 1
+            do m = 2, mmax + 1
+                res = (hx2f(m, n) &
+                        + u(m - 1, n) &
+                        + u(m + 1, n) &
+                        - (2.0_WP + 2.0_WP * q) * u(m, n) &
+                        + q * u(m, n - 1) &
+                        + q * u(m, n + 1)) &
+                        / (hx**2)
+                rmax = max(abs(res), rmax)
+            end do
+        end do
+        
+!        write(unit=*, fmt="(a, i4, a, es15.6)") " i = ", i, " res = ", rmax
+        
+        ! Step 6. Compare maximum residual to tolerance
+        if (rmax < TOL) then
+            exit
+        end if  
+    end do
+
+    ! Step 7. Output solution
+
+!    write(unit=*, fmt="(a)", advance="no") "       x = "
+!    do m = 2, mmax + 1
+!        write(unit=*, fmt="(a, f5.3, a)", advance="no") " ", x(m), " "
+!    end do
+!    write(unit=*, fmt="(a)")
+
+!    do n = nmax + 1, 2, -1
+!        write(unit=*, fmt="(a, f5.3, a)", advance="no") " y = ", y(n), " "
+!        do m = 2, mmax + 1
+!            write(unit=*, fmt="(a, f5.3, a)", advance="no") " ", U(m, n), " "
+!        end do
+        
+!        write(unit=*, fmt="(a)")
+!    end do
+end subroutine poisson_real
 
 end program test_units
