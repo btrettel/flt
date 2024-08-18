@@ -3,7 +3,7 @@
 
 FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays
 DFLAGS = -diag-disable=10440 -O0 -g -traceback -debug full -check all,nouninit -fpe0 -standard-semantics
-RFLAGS = -O2 -static -qopt-report -fiopenmp
+RFLAGS = -O2 -static -qopt-report -fiopenmp -flto
 AFLAGS = 
 NFLAGS = -xHost
 
