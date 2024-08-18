@@ -7,8 +7,8 @@ Why write genunits? Why not use an existing solution?
     - TODO: Unit-aware intrinsic functions can easily be added by changing the input file, and this is a first-class feature (it is the *only* way to add unit-aware intrinsic functions).
 - As Van Snyder highlights, generating the full set of units within certain bounds requires a huge number of units. This leads to slow compilation times for many compilers. genunits avoids this by intelligently prioritizing which units to include.
 - Fortran specifically:
-    - PhysUnits checks units are run-time, which will have an impact on performance.
-    - quaff is quite nice, but does not use type-bound operators, requiring a bit more work. The units coverage also isn't as good as I'd like, missing turbulence quantities.
+    - PhysUnits checks units at run-time, which will have an impact on performance.
+    - quaff is quite nice, but does not use type-bound operators, requiring a bit more work. The units coverage also isn't as good as I'd like, missing turbulence quantities. But quaff also has many features genunits lacks: unit conversions, automatic test generation, probably more.
 
 ## files
 
@@ -44,7 +44,7 @@ Why write genunits? Why not use an existing solution?
             - `write_module`: Calls all the other subroutines.
                 - TODO: Split this up more per below.
             - `write_header`
-            - TODO: `write_intrinsics`
+            - DONE: `write_intrinsics`
             - TODO: `write_custom`
             - `print_interface_stats`
                 - Print number of operators per type, exponentiation functions.
@@ -67,6 +67,7 @@ Why write genunits? Why not use an existing solution?
 - `sqrt`: Adds `sqrt` functions. `.true.` by default.
 - `cbrt`: Adds `cbrt` functions. `.true.` by default.
 - `square`: Adds `square` functions. `.true.` by default.
+- TODO: Add missing entries.
 - `max_n_units`
 - `max_n_interfaces`
 - `type_definition`

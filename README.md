@@ -2,10 +2,10 @@
 
 Misc. Fortran libraries and tools (all at various stages of development), intended for my own personal use:
 
-- autodiff.f90: Module for forward-mode automatic differentiation.
 - checks.f90: Module for procedures used for run-time checks.
 - depends.py: Python script to generate Makefile dependencies for Fortran modules.
 - [f90lint.py](f90lint.md): Python script to do some static analysis not done by the other linters I have.
+- fmad.f90: Module for forward-mode automatic differentiation.
 - nmllog.f90: Module for structured logging in namelist files. Also includes logger which can be used in `pure` procedures where the actual writing is done outside of the pure procedure.
 - genunits.f90: Program to generate a module `units` which allows for compile-time physical dimension consistency checking. (Under active development.)
 - prec.f90: Module to set precisions, lengths, and mathematical constants. Uses common convention of `WP` for real precision.
@@ -28,7 +28,7 @@ Other files:
         - ifort 2021.12.0
         - nvfortran 24.5-1
         - xlf2008 17.1.1 (Linux on Power, in QEMU)
-        - nagfor 7.2
+        - nagfor 7.2 (2024-08-14: not any longer)
 - Simplicity: No convoluted or opaque build system or algorithms. The simplest approach that works is usually what I'll pick.
 - Familiarity: Interfaces to flt modules should be based on interfaces for other successful modules/packages, or standard Fortran if the module is intended to replace existing Fortran functionality.
 
@@ -40,18 +40,18 @@ To build and test all components on my Ubuntu computer (should be similar on mos
 
 GNU Make:
 
-    make test
+    make check
 
 BSD Make:
 
-    bmake -f BSDmakefile test
+    bmake -f BSDmakefile check
 
 For both GNU Make and BSD Make, some macros can be set on the command line. The `FC` macro can be set to `gfortran` (default), `ifx`, `ifort`, or `nvfortran` to change which compiler is used. The `BUILD` macro can be set to `debug` (default) or `release`, which changes compiler flags and also disables assertions for `release`.
 
 [Public domain POSIX make](https://frippery.org/make/) (used mostly to test POSIX compliance):
 
-    pdpmake -f PDPmakefile test
+    pdpmake -f PDPmakefile check
 
 On Windows, Microsoft NMAKE can be used, though not all tests will pass at present (that will be corrected):
 
-    nmake -f Nmakefile test
+    nmake -f Nmakefile check
