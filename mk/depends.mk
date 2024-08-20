@@ -8,6 +8,8 @@ src$(DIR_SEP)checks.$(OBJEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)prec
 
 src$(DIR_SEP)cli.$(OBJEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) src$(DIR_SEP)cli.f90
 
+src$(DIR_SEP)convergence.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)fmad.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) src$(DIR_SEP)convergence.f90
+
 src$(DIR_SEP)debug.$(OBJEXT): src$(DIR_SEP)debug.f90
 
 src$(DIR_SEP)fmad.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)fmad.f90
@@ -66,6 +68,12 @@ test_checks$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJE
 
 checks.nml: test_checks$(BINEXT)
 	$(RUN)test_checks$(BINEXT)
+
+test_convergence$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)convergence.$(OBJEXT) src$(DIR_SEP)fmad.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_convergence.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)convergence.$(OBJEXT) src$(DIR_SEP)fmad.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_convergence.f90
+
+convergence.nml: test_convergence$(BINEXT)
+	$(RUN)test_convergence$(BINEXT)
 
 test_fmad$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)fmad.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_fmad.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)fmad.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_fmad.f90

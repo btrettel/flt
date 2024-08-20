@@ -3,7 +3,7 @@
 
 FFLAGS = -Wall -Wextra -Werror -pedantic-errors -Wno-maybe-uninitialized -Wno-do-subscript -std=f2018 -Wconversion -Wconversion-extra -fimplicit-none -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=-2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -ffree-line-length-132
 DFLAGS = -Og -g -fbacktrace -fcheck=all -ffpe-trap=invalid,zero,overflow,underflow,denormal --coverage
-RFLAGS = -O2 -static -Wno-uninitialized -fopt-info-missed=$(MISSED) -fopenmp -flto
+RFLAGS = -O2 -Wno-uninitialized -fopt-info-missed=$(MISSED) -fopenmp -flto
 AFLAGS = 
 NFLAGS = -march=native
 
@@ -17,6 +17,7 @@ NFLAGS = -march=native
 # Removed: `-fmax-errors=1`
 
 # static linking:
+# `-static`
 # <https://gcc.gnu.org/onlinedocs/gfortran/Link-Options.html>
 # <https://fortran-lang.discourse.group/t/problems-with-build-of-static-exe/8228/5>
 # <https://fortran-lang.discourse.group/t/makefile-errors-using-gfortran-static-option/3491>

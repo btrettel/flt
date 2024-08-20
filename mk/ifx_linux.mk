@@ -3,7 +3,7 @@
 
 FFLAGS = -warn errors -warn all -diag-error=remark,warn,error -fltconsistency -stand:f18 -init=snan,arrays
 DFLAGS = -diag-disable=10440 -O0 -g -traceback -debug full -check all,nouninit -fpe0 -standard-semantics
-RFLAGS = -O2 -static -qopt-report -fiopenmp -flto
+RFLAGS = -O2 -qopt-report -fiopenmp -flto
 AFLAGS = 
 NFLAGS = -xHost
 
@@ -14,6 +14,8 @@ NFLAGS = -xHost
 # `-xHost`: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/xhost-qxhost.html>
 
 # static linking: <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/static-002.html>
+# `-static`
+# Disabled due to conflicts with OpenMP?
 
 # `-standard-semantics` is only used for BUILD=debug due to a potential performance reduction.
 # <https://github.com/fortran-lang/fpm/issues/868#issuecomment-1720960031>

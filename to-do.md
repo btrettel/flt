@@ -2,7 +2,6 @@
 
 Priorities:
 
-- Remove `-static` and whatnot due to conflicts with OpenMP?
 - Change config.ini to depends.ini and f90lint.ini in py directory. Add explanations of every item in comments.
 - `depends.py` input file: Prune to the minimum to reduce code maintenance and confusion when using. no mk/depends.mk specification, etc.
 - `f90lint`:
@@ -16,6 +15,7 @@ Priorities:
         - <https://en.wikipedia.org/wiki/Variance_reduction>
     - `mc_fosm` module for combination MC and FOSM: If number of samples equals 1, use FOSM. Otherwise, use MC. A hybrid approach might be useful sometimes too.
 - convergence.f90: convergence testing framework
+    - Have a feature to minimize the run-time of each convergence test, perhaps through some sort of optimizer.
     - Make convergence testing framework work when there are multiple dependent variables. One approach could be to have separate procedures to 1. loop the simulation over the different grids/time-steps returning all dependent variables for all grids/time-steps and 2. do the convergence test and make plots for a particular dependent variable.
     - Convergence testing framework takes `type(ad)` for both exact solution and numerical solution. Calculates convergence rate for value and all derivatives. Also checks that derivatives of value convergence rate is small.
         - Can handle arbitrary rank arrays? Might have to use `include` trick so that the body of each procedure is the same.
@@ -24,8 +24,8 @@ Priorities:
         - `convergence_rate(func, deltas, norm, outfile, expected_order, tol, actual_order, rc)`
             - `norm` can be `NORM_POINTWISE` or `NORM_INFINITY`
             - `actual_order` is `intent(out)`
+            - `rc` can be used to catch issues like the criteria of nishikawa_pitfalls_2023 being unmet, etc.
         - Convergence error plot assumes positive discretization error (or implicit norm of some sort), order plot does not
-        - `rc` can be used to catch issues like the criteria of nishikawa_pitfalls_2023 being unmet, etc.
     - MC convergence
         - Could simply design `convergence_rate` to handle this as well. Flag does sampling properly, etc.
     - Richardson extrapolation procedure
@@ -52,6 +52,9 @@ Priorities:
     - Addition and subtraction for `real`s (with tests). (What did I mean by this? fmad.f90 already handles `real`s for addition and subtraction.)
     - Assert that `dv` of the output is allocated (via `assert`) and has correct size (via `assert_dimension`).
     - comparison operators for `real`s, with tests
+    - `fmad` variable "pruner", which takes a big list of variables, only some of which are active, and translates that into derivative array indices, and vice-versa (or something like this, to minimize the number of variables to track derivatives of)
+        - `init`, `init_const`, and (new) `init_input`
+        - `init_input` will work with the pruner to enable or disable AD as needed.
 - Better constructors for AD. I should be able to get a constant by using `ad` directly.
 - Make `test_concurrent` more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
     - ```./test_purerng

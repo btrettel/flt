@@ -1,6 +1,6 @@
 FFLAGS = -Error=Any_Warning -f2018 -info -quiet -I src -w=ques
 DFLAGS = -g
-RFLAGS = -O2 -openmp -Bstatic
+RFLAGS = -O2 -openmp
 AFLAGS = 
 NFLAGS = -target=native
 
@@ -9,3 +9,4 @@ NFLAGS = -target=native
 # `-w=ques`: Added because nagfor doesn't like mixing `real`s and `integer`s in `system_clock`:
 # `Questionable: src/timer.f90, line 63: Argument COUNT (no. 1) to intrinsic subroutine SYSTEM_CLOCK is of type INTEGER(int64), but argument COUNT_RATE (no. 2) is of type DOUBLE PRECISION`
 # I don't agree that this is questionable and might ask them to remove this message.
+# disabled: `-Bstatic` (disabled due to conflicts with OpenMP?)
