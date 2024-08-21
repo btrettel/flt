@@ -15,20 +15,16 @@ Priorities:
         - <https://en.wikipedia.org/wiki/Variance_reduction>
     - `mc_fosm` module for combination MC and FOSM: If number of samples equals 1, use FOSM. Otherwise, use MC. A hybrid approach might be useful sometimes too.
 - convergence.f90: convergence testing framework
-    - Have a feature to minimize the run-time of each convergence test, perhaps through some sort of optimizer.
-    - Make convergence testing framework work when there are multiple dependent variables. One approach could be to have separate procedures to 1. loop the simulation over the different grids/time-steps returning all dependent variables for all grids/time-steps and 2. do the convergence test and make plots for a particular dependent variable.
-    - Convergence testing framework takes `type(ad)` for both exact solution and numerical solution. Calculates convergence rate for value and all derivatives. Also checks that derivatives of value convergence rate is small.
-        - Can handle arbitrary rank arrays? Might have to use `include` trick so that the body of each procedure is the same.
-    - grid/temporal convergence (set up the same: take a callback where one parameter is the delta to be varied)
-        - produce both error and order plots
-        - `convergence_rate(func, deltas, norm, outfile, expected_order, tol, actual_order, rc)`
-            - `norm` can be `NORM_POINTWISE` or `NORM_INFINITY`
-            - `actual_order` is `intent(out)`
-            - `rc` can be used to catch issues like the criteria of nishikawa_pitfalls_2023 being unmet, etc.
-        - Convergence error plot assumes positive discretization error (or implicit norm of some sort), order plot does not
-    - MC convergence
-        - Could simply design `convergence_rate` to handle this as well. Flag does sampling properly, etc.
-    - Richardson extrapolation procedure
+    - Have a feature to minimize the run-time of each convergence test, perhaps through some sort of optimizer. Reduce number of time steps for spatial convergence, etc.
+    - Make plots. Need to pass in variable names for plots?
+    - de(i_n, i_var), de_dv(i_n, i_var)
+    - Output `delta` for plot for `de_solver`.
+    - do i_dv = 1, n_dv to fill in de_dv(i_n, i_var, i_dv) and p_dv(i_var, i_dv)
+    - Test orders of accuracy for derivatives.
+    - convenience subroutine to calculate both de and de_dv given f, f_exact, ord, lower_index, upper_index
+    - Reduce boilerplate more:
+        - procedure(s) to pick CFL number and/or time-step?
+    - Richardson extrapolation procedure?
     - Check for ideas: marshall_scientific_2011
 - Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
 - genunits

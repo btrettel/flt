@@ -50,7 +50,12 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
             type(ad), intent(out), allocatable      :: de(:)       ! discretization error for value
             !real(kind=WP), intent(out), allocatable :: de_dv(:, :) ! discretization error for derivatives
             
+            ! This is not `pure` to make debugging easier.
+            
             ! Exact or manufactured solutions are called in this function.
+            
+            ! Discretization error is calculated in here.
+            ! A norm can be used or a local metric can be used.
             
             ! Additional tests can be added to be used with `tests`.
             
@@ -175,6 +180,10 @@ pure function norm_real_rank_1(x, ord, lower, upper)
         upper_ = size(x)
     end if
     
+    call assert(lower_ >= lbound(x, dim=1), "convergence (norm_ad_rank_1): lower index bound must be >= lbound")
+    call assert(upper_ <= ubound(x, dim=1), "convergence (norm_ad_rank_1): upper index bound must be >= ubound")
+    call assert(lower_ < upper_, "convergence (norm_ad_rank_1): lower index bound must be above upper index bound")
+    
     norm_real_rank_1 = 0.0_WP
     if (ord == huge(1)) then
         ! $l_\infty$ norm
@@ -220,6 +229,10 @@ pure function norm_ad_rank_1(x, ord, lower, upper)
     else
         upper_ = size(x)
     end if
+    
+    call assert(lower_ >= lbound(x, dim=1), "convergence (norm_ad_rank_1): lower index bound must be >= lbound")
+    call assert(upper_ <= ubound(x, dim=1), "convergence (norm_ad_rank_1): upper index bound must be >= ubound")
+    call assert(lower_ < upper_, "convergence (norm_ad_rank_1): lower index bound must be above upper index bound")
     
     call norm_ad_rank_1%init_const(0.0_WP, size(x(1)%dv))
     if (ord == huge(1)) then
