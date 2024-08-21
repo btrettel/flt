@@ -27,16 +27,19 @@ call logger%close()
 
 contains
 
-subroutine fake_de(n, tests, de)
-    integer, intent(in)                     :: n           ! number of grid cells, time steps, etc.
+subroutine fake_de(n, last, tests, de)
+    integer, intent(in)                     :: n
+    logical, intent(in)                     :: last
     type(test_results_type), intent(in out) :: tests
-    type(ad), intent(out), allocatable      :: de(:)       ! discretization error for value
+    type(ad), intent(out), allocatable      :: de(:)
     
     allocate(de(1))
     
     call de%init_const(1.0_WP / real(n, WP), 1)
     
-    call tests%real_eq(1.0_WP, 1.0_WP, "fake_de, fake test")
+    if (last) then
+        call tests%real_eq(1.0_WP, 1.0_WP, "fake_de, fake test")
+    end if
 end subroutine fake_de
 
 end program test_convergence
