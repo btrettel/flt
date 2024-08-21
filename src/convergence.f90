@@ -135,15 +135,15 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     end do
 end subroutine convergence_test
 
-pure function norm_real_rank_1(x, ord)
+pure function norm_real_rank_1(x, ord, lower, upper)
     use checks, only: assert
     
     real(kind=WP), intent(in)     :: x(:)
-    integer, intent(in), optional :: ord
+    integer, intent(in), optional :: ord, lower, upper
     
     real(kind=WP) :: norm_real_rank_1
     
-    integer :: ord_, i
+    integer :: ord_, lower_, upper_, i
     
     if (present(ord)) then
         ord_ = ord
@@ -151,15 +151,27 @@ pure function norm_real_rank_1(x, ord)
         ord_ = 2
     end if
     
+    if (present(lower)) then
+        lower_ = lower
+    else
+        lower_ = 1
+    end if
+    
+    if (present(upper)) then
+        upper_ = upper
+    else
+        upper_ = size(x)
+    end if
+    
     norm_real_rank_1 = 0.0_WP
     if (ord == huge(1)) then
         ! $l_\infty$ norm
         
-        do i = 1, size(x) ! SERIAL
+        do i = lower_, upper_ ! SERIAL
             norm_real_rank_1 = max(norm_real_rank_1, abs(x(i)))
         end do
     else
-        do i = 1, size(x) ! SERIAL
+        do i = lower_, upper_ ! SERIAL
             norm_real_rank_1 = norm_real_rank_1 + abs(x(i))**ord_
         end do
         norm_real_rank_1 = norm_real_rank_1**(1.0_WP/real(ord_, WP))
@@ -168,16 +180,16 @@ pure function norm_real_rank_1(x, ord)
     call assert(norm_real_rank_1 >= 0.0_WP, "convergence (norm_real_rank_1): negative norm?")
 end function norm_real_rank_1
 
-pure function norm_ad_rank_1(x, ord)
+pure function norm_ad_rank_1(x, ord, lower, upper)
     use fmad, only: max, abs
     use checks, only: assert
     
     type(ad), intent(in)          :: x(:)
-    integer, intent(in), optional :: ord
+    integer, intent(in), optional :: ord, lower, upper
     
     type(ad) :: norm_ad_rank_1
     
-    integer :: ord_, i
+    integer :: ord_, lower_, upper_, i
     
     if (present(ord)) then
         ord_ = ord
@@ -185,15 +197,27 @@ pure function norm_ad_rank_1(x, ord)
         ord_ = 2
     end if
     
+    if (present(lower)) then
+        lower_ = lower
+    else
+        lower_ = 1
+    end if
+    
+    if (present(upper)) then
+        upper_ = upper
+    else
+        upper_ = size(x)
+    end if
+    
     call norm_ad_rank_1%init_const(0.0_WP, size(x(1)%dv))
     if (ord == huge(1)) then
         ! $l_\infty$ norm
         
-        do i = 1, size(x) ! SERIAL
+        do i = lower_, upper_ ! SERIAL
             norm_ad_rank_1 = max(norm_ad_rank_1, abs(x(i)))
         end do
     else
-        do i = 1, size(x) ! SERIAL
+        do i = lower_, upper_ ! SERIAL
             norm_ad_rank_1 = norm_ad_rank_1 + abs(x(i))**ord_
         end do
         norm_ad_rank_1 = norm_ad_rank_1**(1.0_WP/real(ord_, WP))
