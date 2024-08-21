@@ -77,7 +77,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     n_n = size(n_arr)
     
     print "(2a)", message, ":"
-    print "(5a12)", "n", "var #", "v/dv", "de", "p"
+    print "(3a6, 2a14)", "n", "var #", "v/dv", "de", "p"
     do i_n = 1, n_n ! SERIAL
         last = (i_n == n_n)
         call solver_de(n_arr(i_n), last, tests, de_i_n)!, de_dv_i_n)
@@ -90,7 +90,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
             
             do i_var = 1, n_var ! SERIAL
                 de(i_n, i_var) = de_i_n(i_var)
-                print "(2i12, a12, es12.4)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
+                print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
             end do
         else
             do i_var = 1, n_var ! SERIAL
@@ -100,7 +100,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                 p(i_var) = log(de(i_n, i_var) / de(i_n - 1, i_var)) &
                                 / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
                 
-                print "(2i12, a12, es12.4, f12.4)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v, p(i_var)%v
+                print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v, p(i_var)%v
             end do
         end if
     end do
