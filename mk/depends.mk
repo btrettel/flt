@@ -8,7 +8,7 @@ src$(DIR_SEP)checks.$(OBJEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)prec
 
 src$(DIR_SEP)cli.$(OBJEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) src$(DIR_SEP)cli.f90
 
-src$(DIR_SEP)convergence.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)fmad.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) src$(DIR_SEP)convergence.f90
+src$(DIR_SEP)convergence.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)fmad.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) src$(DIR_SEP)convergence.f90
 
 src$(DIR_SEP)debug.$(OBJEXT): src$(DIR_SEP)debug.f90
 

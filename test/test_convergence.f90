@@ -20,7 +20,7 @@ type(test_results_type) :: tests
 call logger%open("convergence.nml")
 call tests%start_tests(logger)
 
-call convergence_test([1, 10, 100], fake_de, [1.0_WP, 1.0_WP, 1.0_WP], "fake_de test", tests)
+call convergence_test([1, 10, 100], fake_de, [1.0_WP], "fake_de test", tests)
 
 call tests%end_tests()
 call logger%close()

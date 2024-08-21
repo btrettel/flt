@@ -27,6 +27,7 @@ contains
 
 subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    use checks, only: assert, assert_dimension
     use nmllog, only: CRITICAL_LEVEL
     use unittest, only: test_results_type
     use fmad, only: log
@@ -71,11 +72,14 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     
     if (present(p_tol)) then
         p_tol_ = p_tol
-        ! TODO: assert_dimension for `p_tol` and `p_expected`
     else
         allocate(p_tol_(size(p_expected)))
         p_tol_ = 0.05_WP
     end if
+    
+    call assert(all(n_arr > 0), "convergence (convergence_test): n can not be zero or negative")
+    call assert(len(message) > 0, "convergence (convergence_test): message can not be empty")
+    call assert(p_tol_ > 0.0_WP, "convergence (convergence_test): p_tol is too small")
     
     n_n = size(n_arr)
     
@@ -95,14 +99,16 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
             n_var = size(de_i_n)
             allocate(de(n_n, n_var))
             allocate(p(n_var))
-            ! TODO: assert_dimension for `p` and `p_expected`
+            call assert_dimension(p, p_expected)
             
             do i_var = 1, n_var ! SERIAL
+                call assert(de_i_n(i_var)%v >= 0.0_WP, "convergence (convergence_test): discretization error must be >= 0")
                 de(i_n, i_var) = de_i_n(i_var)
                 print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
             end do
         else
             do i_var = 1, n_var ! SERIAL
+                call assert(de_i_n(i_var)%v >= 0.0_WP, "convergence (convergence_test): discretization error must be >= 0")
                 de(i_n, i_var) = de_i_n(i_var)
                 
                 ! order of accuracy; see roy_review_2005 eq. 6 or 8
@@ -124,6 +130,9 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     
     ! Check that the orders of accuracy are as expected.
     do i_var = 1, n_var ! SERIAL
+        call assert(p_expected(i_var) > 0.0_WP, "convergence (convergence_test): p_expected is zero or negative, " &
+                                                // "which probably isn't desired")
+        
         write(unit=i_var_string, fmt="(i0)") i_var
         call tests%real_eq(p(i_var)%v, p_expected(i_var), message // ", p, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
         
@@ -140,6 +149,9 @@ pure function norm_real_rank_1(x, ord, lower, upper)
     
     real(kind=WP), intent(in)     :: x(:)
     integer, intent(in), optional :: ord, lower, upper
+    
+    ! `lower` and `upper` are used for cases where not all indices are to be summed over.
+    ! For example, if you have ghost cells, those cells have fictitious data that should not be summed over.
     
     real(kind=WP) :: norm_real_rank_1
     
