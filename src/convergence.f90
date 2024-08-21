@@ -26,6 +26,8 @@ end interface norm
 contains
 
 subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    use nmllog, only: CRITICAL_LEVEL
     use unittest, only: test_results_type
     use fmad, only: log
     
@@ -59,6 +61,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     integer                    :: i_n, n_n     ! index of `n_arr` and size of `n_arr`
     integer                    :: i_var, n_var ! index for dependent variables and number of dependent variables
     integer                    :: i_dv, n_dv   ! index for derivatives and number of derivatives
+    integer                    :: stdout_level, n_failures
     type(ad), allocatable      :: de_i_n(:), de(:, :)
     ! TODO: real(kind=WP), allocatable :: de_dv_i_n(:), de_dv(:, :)
     type(ad), allocatable      :: p(:)
@@ -76,8 +79,14 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     
     n_n = size(n_arr)
     
+    ! Suppress test messages while printing the table.
+    stdout_level = tests%logger%stdout_level
+    tests%logger%stdout_level = CRITICAL_LEVEL + 1
+    n_failures = tests%n_failures
+    
     print "(2a)", message, ":"
     print "(3a6, 2a14)", "n", "var #", "v/dv", "de", "p"
+    ! MAYBE: Run convergence tests in parallel later?
     do i_n = 1, n_n ! SERIAL
         last = (i_n == n_n)
         call solver_de(n_arr(i_n), last, tests, de_i_n)!, de_dv_i_n)
@@ -106,6 +115,12 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     end do
     
     n_dv = size(p(1)%dv)
+    
+    ! Re-enable test failure messages.
+    if (tests%n_failures > n_failures) then
+        write(unit=ERROR_UNIT, fmt="(a)") "One or more test failures were suppressed during convergence test. Check the test log."
+    end if
+    tests%logger%stdout_level = stdout_level
     
     ! Check that the orders of accuracy are as expected.
     do i_var = 1, n_var ! SERIAL

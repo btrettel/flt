@@ -41,7 +41,7 @@ type, public :: log_type
     character(len=:), allocatable :: filename
     integer :: unit          = UNIT_CLOSED
     integer :: file_level    = WARNING_LEVEL
-    integer :: stdout_level  = WARNING_LEVEL
+    integer :: stdout_level  = WARNING_LEVEL ! also used for stderr
     logical :: stdout_prefix = .true.
 contains
     procedure :: open => log_open
