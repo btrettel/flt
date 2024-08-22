@@ -120,7 +120,7 @@ elemental subroutine init(x, v, n, n_dv)
             x%dv(i_dv) = merge(1.0_WP, 0.0_WP, i_dv == n)
         end do
         call assert(any(is_close(x%dv, 1.0_WP)), "fmad (init): at least one derivative set")
-        call assert(any(is_close(x%dv, 0.0_WP)), "fmad (init): at least one derivative not set")
+        call assert(any(is_close(x%dv, 0.0_WP)) .or. (n_dv <= 1), "fmad (init): at least one derivative not set")
     end if
 end subroutine init
 
@@ -396,7 +396,7 @@ end function real_ad_divide
 elemental function ad_real_exponentiate(ad_in, real_in)
     ! Exponentiates an `ad` by a `real`.
     
-    use checks, only: assert
+    use checks, only: assert, is_close
     use prec, only: WP
     
     class(ad), intent(in)      :: ad_in
@@ -404,8 +404,8 @@ elemental function ad_real_exponentiate(ad_in, real_in)
     
     type(ad) :: ad_real_exponentiate
     
-    call assert((abs(ad_in%v) > 0.0_WP) .and. (real_in >= 0), &
-                    "fmad (ad_real_exponentiate): exponent is negative and argument is zero")
+    call assert(.not. (is_close(ad_in%v, 0.0_WP) .and. (real_in <= 0.0_WP)), &
+                    "fmad (ad_real_exponentiate): exponent is negative or zero and argument is zero")
     call assert(allocated(ad_in%dv), "fmad (ad_real_exponentiate): ad_in%dv must be allocated")
     
     ad_real_exponentiate%v  = ad_in%v**real_in
@@ -415,7 +415,7 @@ end function ad_real_exponentiate
 elemental function ad_integer_exponentiate(ad_in, integer_in)
     ! Exponentiates an `ad` by an `integer`.
     
-    use checks, only: assert
+    use checks, only: assert, is_close
     use prec, only: WP
     
     class(ad), intent(in) :: ad_in
@@ -423,8 +423,8 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
     
     type(ad) :: ad_integer_exponentiate
     
-    call assert((abs(ad_in%v) > 0.0_WP) .and. (integer_in >= 0), &
-                    "fmad (ad_integer_exponentiate): exponent is negative and argument is zero")
+    call assert(.not. (is_close(ad_in%v, 0.0_WP) .and. (integer_in <= 0)), &
+                    "fmad (ad_integer_exponentiate): exponent is negative or zero and argument is zero")
     call assert(allocated(ad_in%dv), "fmad (ad_integer_exponentiate): ad_in%dv must be allocated")
 
     ad_integer_exponentiate%v  = ad_in%v**integer_in
