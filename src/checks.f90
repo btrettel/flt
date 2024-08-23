@@ -19,8 +19,6 @@ public :: abs_tolerance
 public :: is_close, all_close
 public :: assert
 public :: assert_dimension
-public :: assert_precision_loss
-public :: log10_spacing_jump
 
 interface all_close
     module procedure all_close_rank_1
@@ -209,30 +207,5 @@ pure subroutine assert_dimension_rank_3(a, b)
     call assert(all(lbound(a) == lbound(b)), "checks (assert_dimension_rank_3): lbound")
     call assert(all(ubound(a) == ubound(b)), "checks (assert_dimension_rank_3): ubound")
 end subroutine assert_dimension_rank_3
-
-elemental subroutine assert_precision_loss(x, y, z)
-    use prec, only: ACCEPTABLE_LOG10_SPACING_JUMP, CL
-    
-    real(kind=WP), intent(in) :: x, y, z
-    
-    character(len=CL) :: message
-    
-    write(unit=message, fmt="(a, g0, a, g0, a, g0, a, g0, a, g0)") "checks (assert_precision_loss): loss in precision (", &
-                                        log10_spacing_jump(x, y, z), " log10 spacing jump) above acceptable limit (", &
-                                        ACCEPTABLE_LOG10_SPACING_JUMP, " log10 spacing jump), inputs = ", x, ", ", y, &
-                                        ", output = ", z
-    call assert(log10_spacing_jump(x, y, z) <= ACCEPTABLE_LOG10_SPACING_JUMP, trim(message))
-end subroutine assert_precision_loss
-
-pure function log10_spacing_jump(x, y, z)
-    ! A large jump in `spacing` indicates potential catastrophic cancellation.
-    ! TODO: Figure out a better way to detect catastrophic cancellation above a certain size.
-    
-    real(kind=WP), intent(in) :: x, y, z
-    
-    real(kind=WP) :: log10_spacing_jump
-    
-    log10_spacing_jump = log(abs(max(spacing(x), spacing(y)) / spacing(z))) / log(10.0_WP)
-end function log10_spacing_jump
 
 end module checks

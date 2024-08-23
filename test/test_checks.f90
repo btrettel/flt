@@ -8,8 +8,7 @@
 program test_checks
 
 use build, only: DEBUG
-use checks, only: TOL_FACTOR, abs_tolerance, is_close, all_close, assert, assert_dimension, assert_precision_loss, &
-                    log10_spacing_jump
+use checks, only: TOL_FACTOR, abs_tolerance, is_close, all_close, assert, assert_dimension
 use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
@@ -26,7 +25,6 @@ character(len=80)       :: assert_false_line
 real(kind=WP) :: a1(5),    b1(5),    &
                  a2(5, 5), b2(5, 5), &
                  a3(5, 5), b3(5, 5)
-real(kind=WP) :: x, y, z
 
 call logger%open("checks.nml")
 call tests%start_tests(logger)
@@ -185,46 +183,6 @@ else
                                 "assert_dimension, real, rank 2, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
     call tests%exit_code_eq("./test_assert_dimension_false_3", 0, &
                                 "assert_dimension, real, rank 3, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
-end if ! IBM XLF comment end
-
-! catastrophic cancellation detection
-
-x = 0.0_WP
-y = -1.0_WP
-z = x - y
-call tests%real_eq(log10_spacing_jump(x, y, z), 0.0_WP, "cancellation_precision_loss, no loss (1)")
-call assert_precision_loss(x, y, z)
-
-x = 100000.0_WP
-y = 100000.0_WP - 1.0_WP
-z = x - y
-call tests%real_gt(log10_spacing_jump(x, y, z), 4.0_WP, "cancellation_precision_loss, 4 digits lost")
-
-x = 100000.0_WP
-y = 100000.0_WP - spacing(x)
-z = x - y
-call tests%real_gt(log10_spacing_jump(x, y, z), 0.0_WP, "cancellation_precision_loss, complete loss")
-
-x = 1.0_WP
-y = 2.0_WP
-z = x + y
-call tests%real_eq(log10_spacing_jump(x, y, z), 0.0_WP, "cancellation_precision_loss, no loss (2)")
-call assert_precision_loss(x, y, z)
-
-x = 0.0_WP
-y = 0.0_WP
-z = x + y
-call tests%real_eq(log10_spacing_jump(x, y, z), 0.0_WP, "cancellation_precision_loss, no loss (3)")
-call assert_precision_loss(x, y, z)
-
-if (DEBUG) then ! IBM XLF comment start
-    ! Check that `assert_dimension` terminates with a non-zero exit code for debug mode.
-    call tests%exit_code_ne("./test_assert_precision_loss_1", 0, &
-                                "assert_precision_loss failure, exit code", ASSERT_FALSE_OUTPUT)
-else
-    ! Check that `assert_dimension` does not terminate with a non-zero exit code for release mode.
-    call tests%exit_code_eq("./test_assert_precision_loss_1", 0, &
-                                "assert_precision_loss failure, exit code", ASSERT_FALSE_OUTPUT)
 end if ! IBM XLF comment end
 
 call tests%end_tests()

@@ -148,7 +148,7 @@ end subroutine init_const
 elemental function ad_ad_add(ad_left, ad_right)
     ! Adds two `ad`s.
     
-    use checks, only: assert, assert_precision_loss
+    use checks, only: assert
     
     class(ad), intent(in) :: ad_left, ad_right
     
@@ -159,16 +159,13 @@ elemental function ad_ad_add(ad_left, ad_right)
     
     ad_ad_add%v  = ad_left%v  + ad_right%v
     ad_ad_add%dv = ad_left%dv + ad_right%dv
-    
-    call assert_precision_loss(ad_left%v, ad_right%v, ad_ad_add%v)
-    call assert_precision_loss(ad_left%dv, ad_right%dv, ad_ad_add%dv)
 end function ad_ad_add
 
 elemental function ad_real_add(ad_in, real_in)
     ! Adds an `ad` and a `real`.
     
     use prec, only: WP
-    use checks, only: assert, assert_precision_loss
+    use checks, only: assert
     
     class(ad), intent(in)     :: ad_in
     real(kind=WP), intent(in) :: real_in
@@ -179,15 +176,13 @@ elemental function ad_real_add(ad_in, real_in)
 
     ad_real_add%v  = ad_in%v + real_in
     ad_real_add%dv = ad_in%dv
-    
-    call assert_precision_loss(ad_in%v, real_in, ad_real_add%v)
 end function ad_real_add
 
 elemental function real_ad_add(real_left, ad_right)
     ! Adds a `real` and an `ad`.
     
     use prec, only: WP
-    use checks, only: assert, assert_precision_loss
+    use checks, only: assert
     
     real(kind=WP), intent(in) :: real_left
     class(ad), intent(in)     :: ad_right
@@ -198,14 +193,12 @@ elemental function real_ad_add(real_left, ad_right)
 
     real_ad_add%v  = real_left + ad_right%v
     real_ad_add%dv = ad_right%dv
-    
-    call assert_precision_loss(real_left, ad_right%v, real_ad_add%v)
 end function real_ad_add
 
 elemental function ad_ad_subtract(ad_left, ad_right)
     ! Subtracts two `ad`s.
     
-    use checks, only: assert, assert_precision_loss
+    use checks, only: assert
     
     class(ad), intent(in) :: ad_left, ad_right
     
@@ -216,16 +209,13 @@ elemental function ad_ad_subtract(ad_left, ad_right)
 
     ad_ad_subtract%v  = ad_left%v  - ad_right%v
     ad_ad_subtract%dv = ad_left%dv - ad_right%dv
-    
-    call assert_precision_loss(ad_left%v, ad_right%v, ad_ad_subtract%v)
-    call assert_precision_loss(ad_left%dv, ad_right%dv, ad_ad_subtract%dv)
 end function ad_ad_subtract
 
 elemental function ad_real_subtract(ad_left, real_right)
     ! Subtracts a `real` from an `ad`.
     
     use prec, only: WP
-    use checks, only: assert, assert_precision_loss
+    use checks, only: assert
     
     class(ad), intent(in)     :: ad_left
     real(kind=WP), intent(in) :: real_right
@@ -236,15 +226,13 @@ elemental function ad_real_subtract(ad_left, real_right)
 
     ad_real_subtract%v  = ad_left%v - real_right
     ad_real_subtract%dv = ad_left%dv
-    
-    call assert_precision_loss(ad_left%v, real_right, ad_real_subtract%v)
 end function ad_real_subtract
 
 elemental function real_ad_subtract(real_left, ad_right)
     ! Subtracts a `real` from an `ad`.
 
     use prec, only: WP
-    use checks, only: assert, assert_precision_loss
+    use checks, only: assert
     
     real(kind=WP), intent(in) :: real_left
     class(ad), intent(in)     :: ad_right
@@ -255,8 +243,6 @@ elemental function real_ad_subtract(real_left, ad_right)
     
     real_ad_subtract%v  = real_left - ad_right%v
     real_ad_subtract%dv = -ad_right%dv
-    
-    call assert_precision_loss(real_left, ad_right%v, real_ad_subtract%v)
 end function real_ad_subtract
 
 elemental function ad_subtract_unary(ad_in)
@@ -292,7 +278,7 @@ end function ad_add_unary
 elemental function ad_ad_multiply(ad_left, ad_right)
     ! Multiplies two `ad`s.
     
-    use checks, only: assert, assert_precision_loss
+    use checks, only: assert
     
     class(ad), intent(in) :: ad_left, ad_right
     
@@ -303,8 +289,6 @@ elemental function ad_ad_multiply(ad_left, ad_right)
 
     ad_ad_multiply%v  = ad_left%v * ad_right%v
     ad_ad_multiply%dv = ad_left%dv * ad_right%v + ad_left%v * ad_right%dv
-    
-    call assert_precision_loss(ad_left%dv * ad_right%v, ad_left%v * ad_right%dv, ad_ad_multiply%dv)
 end function ad_ad_multiply
 
 elemental function ad_real_multiply(ad_left, real_right)
@@ -344,7 +328,7 @@ end function real_ad_multiply
 elemental function ad_ad_divide(ad_left, ad_right)
     ! Divides two `ad`.
     
-    use checks, only: assert, assert_precision_loss
+    use checks, only: assert
     
     class(ad), intent(in) :: ad_left, ad_right
     
@@ -355,8 +339,6 @@ elemental function ad_ad_divide(ad_left, ad_right)
     
     ad_ad_divide%v  = ad_left%v / ad_right%v
     ad_ad_divide%dv = (ad_left%dv * ad_right%v - ad_left%v * ad_right%dv) / (ad_right%v**2)
-    
-    call assert_precision_loss(ad_left%dv * ad_right%v, ad_left%v * ad_right%dv, ad_ad_divide%dv * ad_right%v**2)
 end function ad_ad_divide
 
 elemental function ad_real_divide(ad_left, real_right)

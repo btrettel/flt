@@ -39,13 +39,12 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     real(kind=WP), intent(in), optional     :: p_tol(:)
     
     interface
-        subroutine solver_de(n, last, tests, de)!, de_dv)
+        subroutine solver_de(n, tests, de)!, de_dv)
             use unittest, only: test_results_type
             use fmad, only: ad
             use prec, only: WP
             
             integer, intent(in)                     :: n           ! number of grid cells, time steps, Monte Carlo samples, etc.
-            logical, intent(in)                     :: last        ! for tests that should only be done on the last `n`
             type(test_results_type), intent(in out) :: tests
             type(ad), intent(out), allocatable      :: de(:)       ! discretization error for value
             !real(kind=WP), intent(out), allocatable :: de_dv(:, :) ! discretization error for derivatives
@@ -73,7 +72,6 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     type(ad), allocatable      :: p(:)
     real(kind=WP), allocatable :: p_tol_(:)
     character(len=6)           :: i_var_string, i_dv_string
-    logical                    :: last
     
     if (present(p_tol)) then
         p_tol_ = p_tol
@@ -99,8 +97,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     print "(3a6, 2a14)", "n", "var #", "v/dv", "de", "p"
     ! MAYBE: Run convergence tests in parallel later?
     do i_n = 1, n_n ! SERIAL
-        last = (i_n == n_n)
-        call solver_de(n_arr(i_n), last, tests, de_i_n)!, de_dv_i_n)
+        call solver_de(n_arr(i_n), tests, de_i_n)!, de_dv_i_n)
         
         if (i_n == 1) then
             n_var = size(de_i_n)
