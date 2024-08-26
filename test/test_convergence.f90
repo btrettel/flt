@@ -27,14 +27,19 @@ call logger%close()
 
 contains
 
-subroutine fake_de(n, tests, de)
+subroutine fake_de(n, tests, de, de_dv)
     integer, intent(in)                     :: n
     type(test_results_type), intent(in out) :: tests
     type(ad), intent(out), allocatable      :: de(:)
+    real(kind=WP), intent(out), allocatable :: de_dv(:, :)
     
-    allocate(de(1))
+    integer, parameter :: N_VAR = 1, N_DV = 1
+    
+    allocate(de(N_VAR))
+    allocate(de_dv(N_VAR, N_DV))
     
     call de%init_const(1.0_WP / real(n, WP), 1)
+    de_dv(1, 1) = 2.0_WP / real(n, WP)
     
     call tests%real_eq(1.0_WP, 1.0_WP, "fake_de, fake test")
 end subroutine fake_de

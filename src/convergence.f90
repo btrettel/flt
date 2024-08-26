@@ -39,7 +39,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     real(kind=WP), intent(in), optional     :: p_tol(:)
     
     interface
-        subroutine solver_de(n, tests, de)!, de_dv)
+        subroutine solver_de(n, tests, de, de_dv)
             use unittest, only: test_results_type
             use fmad, only: ad
             use prec, only: WP
@@ -47,7 +47,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
             integer, intent(in)                     :: n           ! number of grid cells, time steps, Monte Carlo samples, etc.
             type(test_results_type), intent(in out) :: tests
             type(ad), intent(out), allocatable      :: de(:)       ! discretization error for value
-            !real(kind=WP), intent(out), allocatable :: de_dv(:, :) ! discretization error for derivatives
+            real(kind=WP), intent(out), allocatable :: de_dv(:, :) ! discretization error for derivatives (i_var, i_dv)
             
             ! This is not `pure` to make debugging easier.
             
@@ -67,10 +67,10 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     integer                    :: i_var, n_var ! index for dependent variables and number of dependent variables
     integer                    :: i_dv, n_dv   ! index for derivatives and number of derivatives
     integer                    :: stdout_level, n_failures
-    type(ad), allocatable      :: de_i_n(:), de(:, :)
-    ! TODO: real(kind=WP), allocatable :: de_dv_i_n(:), de_dv(:, :)
-    type(ad), allocatable      :: p(:)
-    real(kind=WP), allocatable :: p_tol_(:)
+    type(ad), allocatable      :: de_i_n(:), de(:, :) ! de(n_n, n_var)
+    real(kind=WP), allocatable :: de_dv_i_n(:, :), de_dv(:, :, :) ! de_dv(n_n, n_var, n_dv)
+    type(ad), allocatable      :: p_v(:)
+    real(kind=WP), allocatable :: p_tol_(:), p_dv(:, :)
     character(len=32)          :: i_var_string, i_dv_string, de_string
     
     if (present(p_tol)) then
@@ -97,13 +97,16 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     print "(3a6, 2a14)", "n", "var #", "v/dv", "de", "p"
     ! MAYBE: Run convergence tests in parallel later?
     do i_n = 1, n_n ! SERIAL
-        call solver_de(n_arr(i_n), tests, de_i_n)!, de_dv_i_n)
+        call solver_de(n_arr(i_n), tests, de_i_n, de_dv_i_n)
         
         if (i_n == 1) then
             n_var = size(de_i_n)
             allocate(de(n_n, n_var))
-            allocate(p(n_var))
-            call assert_dimension(p, p_expected)
+            allocate(p_v(n_var))
+            n_dv = size(de_i_n(1)%dv)
+            allocate(p_dv(n_var, n_dv))
+            allocate(de_dv(n_n, n_var, n_dv))
+            call assert_dimension(p_v, p_expected)
             
             do i_var = 1, n_var ! SERIAL
                 write(unit=de_string, fmt="(es14.5)") de_i_n(i_var)%v
@@ -113,6 +116,10 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                                 // "If one or more variables are expected to be exact, test that separately with real_eq.")
                 de(i_n, i_var) = de_i_n(i_var)
                 print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
+                do i_dv = 1, n_dv ! SERIAL
+                    de_dv(i_n, i_var, i_dv) = de_dv_i_n(i_var, i_dv)
+                    print "(3i6, es14.5)", n_arr(i_n), i_var, i_dv, de_dv(i_n, i_var, i_dv)
+                end do
             end do
         else
             do i_var = 1, n_var ! SERIAL
@@ -124,15 +131,22 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                 de(i_n, i_var) = de_i_n(i_var)
                 
                 ! order of accuracy; see roy_review_2005 eq. 6 or 8
-                p(i_var) = log(de(i_n, i_var) / de(i_n - 1, i_var)) &
+                p_v(i_var) = log(de(i_n, i_var) / de(i_n - 1, i_var)) &
                                 / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
                 
-                print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v, p(i_var)%v
+                print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v, p_v(i_var)%v
+                
+                do i_dv = 1, n_dv ! SERIAL
+                    de_dv(i_n, i_var, i_dv) = de_dv_i_n(i_var, i_dv)
+                    
+                    ! order of accuracy; see roy_review_2005 eq. 6 or 8
+                    p_dv(i_var, i_dv) = log(de_dv(i_n, i_var, i_dv) / de_dv(i_n - 1, i_var, i_dv)) &
+                                            / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
+                    print "(3i6, es14.5, f14.6)", n_arr(i_n), i_var, i_dv, de_dv(i_n, i_var, i_dv), p_dv(i_var, i_dv)
+                end do
             end do
         end if
     end do
-    
-    n_dv = size(p(1)%dv)
     
     ! Re-enable test failure messages.
     if (tests%n_failures > n_failures) then
@@ -146,12 +160,15 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                                                 // "which probably isn't desired")
         
         write(unit=i_var_string, fmt="(i0)") i_var
-        call tests%real_eq(p(i_var)%v, p_expected(i_var), message // ", p, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
+        call tests%real_eq(p_v(i_var)%v, p_expected(i_var), message // ", p_v = expected, var=" // trim(i_var_string), &
+                                abs_tol=p_tol_(i_var))
         
         do i_dv = 1, n_dv ! SERIAL
             write(unit=i_dv_string, fmt="(i0)") i_dv
-            call tests%real_eq(p(i_var)%dv(i_dv), 0.0_WP, message // ", p%dv(" // trim(i_dv_string) &
-                                    // "), var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
+            call tests%real_eq(p_v(i_var)%dv(i_dv), 0.0_WP, message // ", p_v%dv(" // trim(i_dv_string) &
+                                    // ") = 0, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
+            call tests%real_eq(p_dv(i_var, i_dv), p_expected(i_var), message // ", p_dv(" // trim(i_dv_string) &
+                                    // ") = expected, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
         end do
     end do
 end subroutine convergence_test
