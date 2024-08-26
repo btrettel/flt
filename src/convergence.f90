@@ -71,7 +71,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     ! TODO: real(kind=WP), allocatable :: de_dv_i_n(:), de_dv(:, :)
     type(ad), allocatable      :: p(:)
     real(kind=WP), allocatable :: p_tol_(:)
-    character(len=6)           :: i_var_string, i_dv_string
+    character(len=32)          :: i_var_string, i_dv_string, de_string
     
     if (present(p_tol)) then
         p_tol_ = p_tol
@@ -106,16 +106,20 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
             call assert_dimension(p, p_expected)
             
             do i_var = 1, n_var ! SERIAL
+                write(unit=de_string, fmt="(es14.5)") de_i_n(i_var)%v
                 call assert(de_i_n(i_var)%v > TOL_FACTOR * spacing(0.0_WP), &
-                            "convergence (convergence_test): Discretization error must be > 0. " &
+                            "convergence (convergence_test): Discretization error = " // trim(adjustl(de_string)) &
+                                // ", but it must be > 0. " &
                                 // "If one or more variables are expected to be exact, test that separately with real_eq.")
                 de(i_n, i_var) = de_i_n(i_var)
                 print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
             end do
         else
             do i_var = 1, n_var ! SERIAL
+                write(unit=de_string, fmt="(es14.5)") de_i_n(i_var)%v
                 call assert(de_i_n(i_var)%v > TOL_FACTOR * spacing(0.0_WP), &
-                            "convergence (convergence_test): Discretization error must be > 0. " &
+                            "convergence (convergence_test): Discretization error = " // trim(adjustl(de_string)) &
+                                // ", but it must be > 0. " &
                                 // "If one or more variables are expected to be exact, test that separately with real_eq.")
                 de(i_n, i_var) = de_i_n(i_var)
                 
@@ -213,7 +217,7 @@ pure function norm_ad_rank_1(x, ord, lower, upper)
     
     type(ad) :: norm_ad_rank_1
     
-    integer :: ord_, lower_, upper_, i
+    integer :: ord_, lower_, upper_, i, n
     
     if (present(ord)) then
         ord_ = ord
@@ -245,10 +249,12 @@ pure function norm_ad_rank_1(x, ord, lower, upper)
             norm_ad_rank_1 = max(norm_ad_rank_1, abs(x(i)))
         end do
     else
+        n = 0
         do i = lower_, upper_ ! SERIAL
+            n = n + 1
             norm_ad_rank_1 = norm_ad_rank_1 + abs(x(i))**ord_
         end do
-        norm_ad_rank_1 = norm_ad_rank_1**(1.0_WP/real(ord_, WP))
+        norm_ad_rank_1 = (norm_ad_rank_1**(1.0_WP/real(ord_, WP))) / real(n, WP)
     end if
     
     call assert(norm_ad_rank_1%v >= 0.0_WP, "convergence (norm_ad_rank_1): negative norm?")

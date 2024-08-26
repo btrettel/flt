@@ -2,6 +2,16 @@
 
 Priorities:
 
+- fmad.f90:
+    - Make `init` and `init_const` have optional argument to avoid allocation for `dv` and instead check size of `dv` and zero it.
+    - Addition and subtraction for `real`s (with tests). (What did I mean by this? fmad.f90 already handles `real`s for addition and subtraction.)
+    - Assert that `dv` of the output is allocated (via `assert`) and has correct size (via `assert_dimension`).
+    - comparison operators for `real`s, with tests
+    - `fmad` variable "pruner", which takes a big list of variables, only some of which are active, and translates that into derivative array indices, and vice-versa (or something like this, to minimize the number of variables to track derivatives of)
+        - `init`, `init_const`, and (new) `init_input`
+        - `init_input` will work with the pruner to enable or disable AD as needed.
+    - Better constructors for AD. I should be able to get a constant by using `ad` directly. Make `dv` unallocated at first and if any operator uses it, then allocate? That'll be expensive.
+    - <https://en.wikipedia.org/wiki/Tornado_diagram>
 - Change config.ini to depends.ini and f90lint.ini in py directory. Add explanations of every item in comments.
 - `depends.py` input file: Prune to the minimum to reduce code maintenance and confusion when using. no mk/depends.mk specification, etc.
 - `f90lint`:
@@ -14,6 +24,7 @@ Priorities:
         - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
         - <https://en.wikipedia.org/wiki/Variance_reduction>
     - `mc_fosm` module for combination MC and FOSM: If number of samples equals 1, use FOSM. Otherwise, use MC. A hybrid approach might be useful sometimes too.
+    - Probably would be faster to not have a derived type and just run the simulation subroutine multiple times. No inlining needed.
 - convergence.f90: convergence testing framework
     - Have a feature to minimize the run-time of each convergence test, perhaps through some sort of optimizer. Reduce number of time steps for spatial convergence, etc.
     - Make plots. Need to pass in variable names for plots?
@@ -26,6 +37,7 @@ Priorities:
         - procedure(s) to pick CFL number and/or time-step?
     - Richardson extrapolation procedure?
     - Check for ideas: marshall_scientific_2011
+    - Have ability to produce convergence rate plot like smitherman_calculation_2007 fig. 8. This could be useful to help pinpoint what is wrong when debugging.
 - Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
 - genunits
     - Add `**` operator for `unitless` as that stays `unitless`.
@@ -43,15 +55,6 @@ Priorities:
 - Documentation for genunits
     - `use_line` creates a new line at semicolons, so that depends.py can see the dependency.
 - genunits_io.f90: Change type-bound procedures for `config` to be normal procedures.
-- fmad.f90:
-    - Make `init` and `init_const` have optional argument to avoid allocation for `dv` and instead check size of `dv` and zero it.
-    - Addition and subtraction for `real`s (with tests). (What did I mean by this? fmad.f90 already handles `real`s for addition and subtraction.)
-    - Assert that `dv` of the output is allocated (via `assert`) and has correct size (via `assert_dimension`).
-    - comparison operators for `real`s, with tests
-    - `fmad` variable "pruner", which takes a big list of variables, only some of which are active, and translates that into derivative array indices, and vice-versa (or something like this, to minimize the number of variables to track derivatives of)
-        - `init`, `init_const`, and (new) `init_input`
-        - `init_input` will work with the pruner to enable or disable AD as needed.
-- Better constructors for AD. I should be able to get a constant by using `ad` directly.
 - Make `test_concurrent` more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
     - ```./test_purerng
     real returned = -3999.7052
