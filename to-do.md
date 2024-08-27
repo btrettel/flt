@@ -27,7 +27,7 @@ Priorities:
     - Probably would be faster to not have a derived type and just run the simulation subroutine multiple times. No inlining needed.
 - convergence.f90: convergence testing framework
     - Have a feature to minimize the run-time of each convergence test, perhaps through some sort of optimizer. Reduce number of time steps for spatial convergence, etc.
-    - Make plots. Need to pass in variable names for plots?
+    - Make plots. Need to pass in variable names for plots? Probably is a good idea to pass in the variable name anyway to use instead of the variable number in the table printout.
     - Output `delta` for plot for `de_solver`.
     - convenience subroutine to calculate both de and de_dv given f, f_exact, ord, lower_index, upper_index
     - Reduce boilerplate more:

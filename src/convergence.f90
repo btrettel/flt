@@ -12,7 +12,7 @@ use prec, only: WP
 implicit none
 private
 
-public :: norm, convergence_test
+public :: norm, convergence_test, logspace
 
 interface norm
     ! <https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html>
@@ -47,7 +47,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
             integer, intent(in)                     :: n           ! number of grid cells, time steps, Monte Carlo samples, etc.
             type(test_results_type), intent(in out) :: tests
             type(ad), intent(out), allocatable      :: de(:)       ! discretization error for value
-            real(kind=WP), intent(out), allocatable :: de_dv(:, :) ! discretization error for derivatives (i_var, i_dv)
+            real(kind=WP), intent(out), allocatable :: de_dv(:, :) ! discretization error for derivatives (n_var, n_dv)
             
             ! This is not `pure` to make debugging easier.
             
@@ -117,8 +117,13 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                 de(i_n, i_var) = de_i_n(i_var)
                 print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
                 do i_dv = 1, n_dv ! SERIAL
+                    write(unit=de_string, fmt="(es14.5)") de_dv_i_n(i_var, i_dv)
+                    call assert(de_dv_i_n(i_var, i_dv) > TOL_FACTOR * spacing(0.0_WP), &
+                                "convergence (convergence_test): Discretization error = " // trim(adjustl(de_string)) &
+                                    // ", but it must be > 0. " &
+                                    // "If one or more variables are expected to be exact, test that separately with real_eq.")
                     de_dv(i_n, i_var, i_dv) = de_dv_i_n(i_var, i_dv)
-                    print "(3i6, es14.5)", n_arr(i_n), i_var, i_dv, de_dv(i_n, i_var, i_dv)
+                    print "(a6, 2i6, es14.5)", "", i_var, i_dv, de_dv(i_n, i_var, i_dv)
                 end do
             end do
         else
@@ -137,12 +142,17 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                 print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v, p_v(i_var)%v
                 
                 do i_dv = 1, n_dv ! SERIAL
+                    write(unit=de_string, fmt="(es14.5)") de_dv_i_n(i_var, i_dv)
+                    call assert(de_dv_i_n(i_var, i_dv) > TOL_FACTOR * spacing(0.0_WP), &
+                                "convergence (convergence_test): Discretization error = " // trim(adjustl(de_string)) &
+                                    // ", but it must be > 0. " &
+                                    // "If one or more variables are expected to be exact, test that separately with real_eq.")
                     de_dv(i_n, i_var, i_dv) = de_dv_i_n(i_var, i_dv)
                     
                     ! order of accuracy; see roy_review_2005 eq. 6 or 8
                     p_dv(i_var, i_dv) = log(de_dv(i_n, i_var, i_dv) / de_dv(i_n - 1, i_var, i_dv)) &
                                             / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
-                    print "(3i6, es14.5, f14.6)", n_arr(i_n), i_var, i_dv, de_dv(i_n, i_var, i_dv), p_dv(i_var, i_dv)
+                    print "(a6, 2i6, es14.5, f14.6)", "", i_var, i_dv, de_dv(i_n, i_var, i_dv), p_dv(i_var, i_dv)
                 end do
             end do
         end if
@@ -276,5 +286,36 @@ pure function norm_ad_rank_1(x, ord, lower, upper)
     
     call assert(norm_ad_rank_1%v >= 0.0_WP, "convergence (norm_ad_rank_1): negative norm?")
 end function norm_ad_rank_1
+
+pure function logspace(loglower, logupper, n)
+    ! <https://numpy.org/doc/stable/reference/generated/numpy.logspace.html>
+    ! <https://www.mathworks.com/help/matlab/ref/logspace.html>
+    
+    use checks, only: assert, is_close
+    
+    real(kind=WP), intent(in)     :: loglower, logupper
+    integer, intent(in), optional :: n
+    
+    integer, allocatable :: logspace(:)
+    
+    integer       :: i, n_
+    real(kind=WP) :: logdelta
+    
+    if (present(n)) then
+        n_ = n
+    else
+        n_ = 50
+    end if
+    
+    allocate(logspace(n_))
+    
+    call assert(loglower < logupper, "convergence (logspace): loglower must be less than logupper")
+    call assert(n_ >= 2, "convergence (logspace): n must be greater than or equal to 2")
+    
+    logdelta = (logupper - loglower) / real(n_ - 1, WP)
+    do concurrent (i = 1:n_)
+        logspace(i) = nint(10.0_WP**(loglower + logdelta * real(i - 1, WP)))
+    end do
+end function logspace
 
 end module convergence
