@@ -45,6 +45,27 @@ subroutine fake_de(n, tests, de, de_dv)
     call tests%real_eq(1.0_WP, 1.0_WP, "fake_de, fake test")
 end subroutine fake_de
 
+subroutine fake_de2(n, tests, de, de_dv)
+    integer, intent(in)                     :: n
+    type(test_results_type), intent(in out) :: tests
+    type(ad), intent(out), allocatable      :: de(:)
+    real(kind=WP), intent(out), allocatable :: de_dv(:, :)
+    
+    integer, parameter :: N_VAR = 2, N_DV = 1
+    
+    integer :: i_var
+    
+    allocate(de(N_VAR))
+    allocate(de_dv(N_VAR, N_DV))
+    
+    do i_var = 1, N_VAR
+        call de(i_var)%init_const(1.0_WP / real(n, WP), 1)
+        de_dv(i_var, 1) = 2.0_WP / real(n, WP)
+    end do
+    
+    call tests%real_eq(1.0_WP, 1.0_WP, "fake_de2, fake test")
+end subroutine fake_de2
+
 subroutine test_convergence_test(tests)
     use convergence, only: convergence_test
     use nmllog, only: CRITICAL_LEVEL
@@ -69,6 +90,10 @@ subroutine test_convergence_test(tests)
 
     call tests%integer_eq(failing_tests%n_failures, N_FAILING, &
                                     "correct number of tests expected to fail that fail")
+    
+    ! To check that the output looks correct.
+    ! I want `n` to be printed once per `solver_de` subroutine call.
+    call convergence_test([1, 10, 100], fake_de2, [1.0_WP, 1.0_WP], "fake_de2, passing", tests)
 end subroutine test_convergence_test
 
 subroutine test_logspace(tests)

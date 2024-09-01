@@ -119,7 +119,12 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                                 // ", but it must be > 0. " &
                                 // "If one or more variables are expected to be exact, test that separately with real_eq.")
                 de(i_n, i_var) = de_i_n(i_var)
-                print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
+                
+                if (i_var == 1) then
+                    print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
+                else
+                    print "(a6, i6, a6, es14.5)", "", i_var, "v", de(i_n, i_var)%v
+                end if
                 do i_dv = 1, n_dv ! SERIAL
                     write(unit=de_string, fmt="(es14.5)") de_dv_i_n(i_var, i_dv)
                     call assert(de_dv_i_n(i_var, i_dv) > TOL_FACTOR * spacing(0.0_WP), &
@@ -143,7 +148,11 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                 p_v(i_var) = log(de(i_n, i_var) / de(i_n - 1, i_var)) &
                                 / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
                 
-                print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v, p_v(i_var)%v
+                if (i_var == 1) then
+                    print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v, p_v(i_var)%v
+                else
+                    print "(a6, i6, a6, es14.5, f14.6)", "", i_var, "v", de(i_n, i_var)%v, p_v(i_var)%v
+                end if
                 
                 do i_dv = 1, n_dv ! SERIAL
                     write(unit=de_string, fmt="(es14.5)") de_dv_i_n(i_var, i_dv)
