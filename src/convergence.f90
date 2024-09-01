@@ -31,7 +31,7 @@ contains
 
 subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
-    use checks, only: assert, assert_dimension, TOL_FACTOR
+    use checks, only: assert, assert_dimension
     use nmllog, only: CRITICAL_LEVEL
     use unittest, only: test_results_type
     use fmad, only: log
@@ -75,7 +75,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     real(kind=WP), allocatable :: de_dv_i_n(:, :), de_dv(:, :, :) ! de_dv(n_n, n_var, n_dv)
     type(ad), allocatable      :: p_v(:)
     real(kind=WP), allocatable :: p_tol_(:), p_dv(:, :)
-    character(len=32)          :: i_var_string, i_dv_string, de_string
+    character(len=32)          :: i_var_string, i_dv_string
     
     if (present(p_tol)) then
         p_tol_ = p_tol
@@ -113,11 +113,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
             call assert_dimension(p_v, p_expected)
             
             do i_var = 1, n_var ! SERIAL
-                write(unit=de_string, fmt="(es14.5)") de_i_n(i_var)%v
-                call assert(de_i_n(i_var)%v > TOL_FACTOR * spacing(0.0_WP), &
-                            "convergence (convergence_test): Discretization error = " // trim(adjustl(de_string)) &
-                                // ", but it must be > 0. " &
-                                // "If one or more variables are expected to be exact, test that separately with real_eq.")
+                call assert_discretization_error(de_i_n(i_var)%v, i_var, 0)
                 de(i_n, i_var) = de_i_n(i_var)
                 
                 if (i_var == 1) then
@@ -126,22 +122,14 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                     print "(a6, i6, a6, es14.5)", "", i_var, "v", de(i_n, i_var)%v
                 end if
                 do i_dv = 1, n_dv ! SERIAL
-                    write(unit=de_string, fmt="(es14.5)") de_dv_i_n(i_var, i_dv)
-                    call assert(de_dv_i_n(i_var, i_dv) > TOL_FACTOR * spacing(0.0_WP), &
-                                "convergence (convergence_test): Discretization error = " // trim(adjustl(de_string)) &
-                                    // ", but it must be > 0. " &
-                                    // "If one or more variables are expected to be exact, test that separately with real_eq.")
+                    call assert_discretization_error(de_dv_i_n(i_var, i_dv), i_var, i_dv)
                     de_dv(i_n, i_var, i_dv) = de_dv_i_n(i_var, i_dv)
                     print "(a6, 2i6, es14.5)", "", i_var, i_dv, de_dv(i_n, i_var, i_dv)
                 end do
             end do
         else
             do i_var = 1, n_var ! SERIAL
-                write(unit=de_string, fmt="(es14.5)") de_i_n(i_var)%v
-                call assert(de_i_n(i_var)%v > TOL_FACTOR * spacing(0.0_WP), &
-                            "convergence (convergence_test): Discretization error = " // trim(adjustl(de_string)) &
-                                // ", but it must be > 0. " &
-                                // "If one or more variables are expected to be exact, test that separately with real_eq.")
+                call assert_discretization_error(de_i_n(i_var)%v, i_var, 0)
                 de(i_n, i_var) = de_i_n(i_var)
                 
                 ! order of accuracy; see roy_review_2005 eq. 6 or 8
@@ -155,11 +143,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
                 end if
                 
                 do i_dv = 1, n_dv ! SERIAL
-                    write(unit=de_string, fmt="(es14.5)") de_dv_i_n(i_var, i_dv)
-                    call assert(de_dv_i_n(i_var, i_dv) > TOL_FACTOR * spacing(0.0_WP), &
-                                "convergence (convergence_test): Discretization error = " // trim(adjustl(de_string)) &
-                                    // ", but it must be > 0. " &
-                                    // "If one or more variables are expected to be exact, test that separately with real_eq.")
+                    call assert_discretization_error(de_dv_i_n(i_var, i_dv), i_var, i_dv)
                     de_dv(i_n, i_var, i_dv) = de_dv_i_n(i_var, i_dv)
                     
                     ! order of accuracy; see roy_review_2005 eq. 6 or 8
@@ -195,6 +179,28 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
         end do
     end do
 end subroutine convergence_test
+
+subroutine assert_discretization_error(de, i_var, i_dv)
+    use checks, only: assert, TOL_FACTOR
+    
+    real(kind=WP), intent(in) :: de
+    integer, intent(in)       :: i_var, i_dv
+    
+    character(len=32) :: de_string, arg_string
+    
+    write(unit=de_string, fmt="(es14.5)") de
+    
+    if (i_dv == 0) then ! `i_dv = 0` is used for the value here.
+        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "de(i_var=", i_var, ", i_dv=", i_dv, ")"
+    else
+        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "de_dv(i_var=", i_var, ", i_dv=", i_dv, ")"
+    end if
+    
+    call assert(de > TOL_FACTOR * spacing(0.0_WP), &
+                    "convergence (convergence_test): " // trim(adjustl(arg_string)) // "=" // trim(adjustl(de_string)) &
+                        // ", but it must be > 0. " &
+                        // "If one or more variables are expected to be exact, test that separately with real_eq.")
+end subroutine assert_discretization_error
 
 pure function dnorm_real_rank_1(x, ord, lower, upper)
     use checks, only: assert
