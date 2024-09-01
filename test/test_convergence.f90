@@ -21,8 +21,7 @@ call tests%start_tests(logger)
 
 call test_convergence_test(tests)
 call test_logspace(tests)
-
-! TODO: test `norm`
+call test_dnorm(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -86,8 +85,78 @@ subroutine test_logspace(tests)
     call tests%integer_eq(n(1), 1, "logspace, index 1")
     call tests%integer_eq(n(2), 3, "logspace, index 2")
     call tests%integer_eq(n(3), 10, "logspace, index 3")
-    
-    print *, n
 end subroutine test_logspace
+
+subroutine test_dnorm(tests)
+    use convergence, only: dnorm
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    real(kind=WP), allocatable :: x(:)
+    type(ad), allocatable      :: y(:)
+    
+    integer, parameter :: N_DV = 1
+    
+    real(kind=WP) :: dnorm_x, dnorm_exact
+    type(ad)      :: dnorm_y
+    integer       :: i
+    
+    dnorm_exact = 1.5_WP
+    allocate(x(3))
+    x = dnorm_exact
+    allocate(y(size(x)))
+    do i = 1, size(x)
+        call y(i)%init_const(x(i), N_DV)
+    end do
+    dnorm_x = dnorm(x)
+    dnorm_y = dnorm(y)
+    call tests%real_eq(dnorm_x, dnorm_exact, "dnorm (real, ord=2, uniform)")
+    call tests%real_eq(dnorm_y%v, dnorm_exact, "dnorm (ad, ord=2, uniform)")
+    deallocate(x, y)
+    
+    dnorm_exact = sqrt((1.0_WP + 2.0_WP**2) / 3.0_WP)
+    x = [-1.0_WP, 0.0_WP, 2.0_WP]
+    allocate(y(size(x)))
+    do i = 1, size(x)
+        call y(i)%init_const(x(i), N_DV)
+    end do
+    dnorm_x = dnorm(x)
+    dnorm_y = dnorm(y)
+    call tests%real_eq(dnorm_x, dnorm_exact, "dnorm (real, ord=2, non-uniform, 1)")
+    call tests%real_eq(dnorm_y%v, dnorm_exact, "dnorm (ad, ord=2, non-uniform, 1)")
+    dnorm_exact = 1.0_WP
+    dnorm_x = dnorm(x, ord=1)
+    dnorm_y = dnorm(y, ord=1)
+    call tests%real_eq(dnorm_x, dnorm_exact, "dnorm (real, ord=1, non-uniform, 1)")
+    call tests%real_eq(dnorm_y%v, dnorm_exact, "dnorm (ad, ord=1, non-uniform, 1)")
+    dnorm_exact = 2.0_WP
+    dnorm_x = dnorm(x, ord=huge(1))
+    dnorm_y = dnorm(y, ord=huge(1))
+    call tests%real_eq(dnorm_x, dnorm_exact, "dnorm (real, ord=huge(1), non-uniform, 1)")
+    call tests%real_eq(dnorm_y%v, dnorm_exact, "dnorm (ad, ord=huge(1), non-uniform, 1)")
+    deallocate(x, y)
+    
+    dnorm_exact = sqrt((1.0_WP + 2.0_WP**2) / 3.0_WP)
+    x = [-2.0_WP, 1.0_WP, 0.0_WP]
+    allocate(y(size(x)))
+    do i = 1, size(x)
+        call y(i)%init_const(x(i), N_DV)
+    end do
+    dnorm_x = dnorm(x)
+    dnorm_y = dnorm(y)
+    call tests%real_eq(dnorm_x, dnorm_exact, "dnorm (real, ord=2, non-uniform, 2)")
+    call tests%real_eq(dnorm_y%v, dnorm_exact, "dnorm (ad, ord=2, non-uniform, 2)")
+    dnorm_exact = 1.0_WP
+    dnorm_x = dnorm(x, ord=1)
+    dnorm_y = dnorm(y, ord=1)
+    call tests%real_eq(dnorm_x, dnorm_exact, "dnorm (real, ord=1, non-uniform, 2)")
+    call tests%real_eq(dnorm_y%v, dnorm_exact, "dnorm (ad, ord=1, non-uniform, 2)")
+    dnorm_exact = 2.0_WP
+    dnorm_x = dnorm(x, ord=huge(1))
+    dnorm_y = dnorm(y, ord=huge(1))
+    call tests%real_eq(dnorm_x, dnorm_exact, "dnorm (real, ord=huge(1), non-uniform, 2)")
+    call tests%real_eq(dnorm_y%v, dnorm_exact, "dnorm (ad, ord=huge(1), non-uniform, 2)")
+    deallocate(x, y)
+end subroutine test_dnorm
 
 end program test_convergence

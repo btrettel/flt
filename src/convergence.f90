@@ -12,16 +12,20 @@ use prec, only: WP
 implicit none
 private
 
-public :: norm, convergence_test, logspace
+public :: dnorm, convergence_test, logspace
 
-interface norm
+interface dnorm
     ! <https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html>
     ! <https://help.imsl.com/fortran/fnlmath/current/NORM.htm>
     ! <https://gcc.gnu.org/onlinedocs/gfortran/NORM2.html>
     
-    module procedure norm_real_rank_1
-    module procedure norm_ad_rank_1
-end interface norm
+    ! <https://www.petercheng.me/blog/discrete-L2-norm>
+    ! <https://scicomp.stackexchange.com/questions/5095/discrete-lp-norms-for-non-uniform-grid>
+    ! roy_review_2005 eq. 7: the discrete norm takes into account `n` so that it's comparable to a point-wise value.
+    
+    module procedure dnorm_real_rank_1
+    module procedure dnorm_ad_rank_1
+end interface dnorm
 
 contains
 
@@ -183,7 +187,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     end do
 end subroutine convergence_test
 
-pure function norm_real_rank_1(x, ord, lower, upper)
+pure function dnorm_real_rank_1(x, ord, lower, upper)
     use checks, only: assert
     
     real(kind=WP), intent(in)     :: x(:)
@@ -192,57 +196,7 @@ pure function norm_real_rank_1(x, ord, lower, upper)
     ! `lower` and `upper` are used for cases where not all indices are to be summed over.
     ! For example, if you have ghost cells, those cells have fictitious data that should not be summed over.
     
-    real(kind=WP) :: norm_real_rank_1
-    
-    integer :: ord_, lower_, upper_, i
-    
-    if (present(ord)) then
-        ord_ = ord
-    else
-        ord_ = 2
-    end if
-    
-    if (present(lower)) then
-        lower_ = lower
-    else
-        lower_ = 1
-    end if
-    
-    if (present(upper)) then
-        upper_ = upper
-    else
-        upper_ = size(x)
-    end if
-    
-    call assert(lower_ >= lbound(x, dim=1), "convergence (norm_ad_rank_1): lower index bound must be >= lbound")
-    call assert(upper_ <= ubound(x, dim=1), "convergence (norm_ad_rank_1): upper index bound must be >= ubound")
-    call assert(lower_ < upper_, "convergence (norm_ad_rank_1): lower index bound must be above upper index bound")
-    
-    norm_real_rank_1 = 0.0_WP
-    if (ord == huge(1)) then
-        ! $l_\infty$ norm
-        
-        do i = lower_, upper_ ! SERIAL
-            norm_real_rank_1 = max(norm_real_rank_1, abs(x(i)))
-        end do
-    else
-        do i = lower_, upper_ ! SERIAL
-            norm_real_rank_1 = norm_real_rank_1 + abs(x(i))**ord_
-        end do
-        norm_real_rank_1 = norm_real_rank_1**(1.0_WP/real(ord_, WP))
-    end if
-    
-    call assert(norm_real_rank_1 >= 0.0_WP, "convergence (norm_real_rank_1): negative norm?")
-end function norm_real_rank_1
-
-pure function norm_ad_rank_1(x, ord, lower, upper)
-    use fmad, only: max, abs
-    use checks, only: assert
-    
-    type(ad), intent(in)          :: x(:)
-    integer, intent(in), optional :: ord, lower, upper
-    
-    type(ad) :: norm_ad_rank_1
+    real(kind=WP) :: dnorm_real_rank_1
     
     integer :: ord_, lower_, upper_, i, n
     
@@ -264,28 +218,80 @@ pure function norm_ad_rank_1(x, ord, lower, upper)
         upper_ = size(x)
     end if
     
-    call assert(lower_ >= lbound(x, dim=1), "convergence (norm_ad_rank_1): lower index bound must be >= lbound")
-    call assert(upper_ <= ubound(x, dim=1), "convergence (norm_ad_rank_1): upper index bound must be >= ubound")
-    call assert(lower_ < upper_, "convergence (norm_ad_rank_1): lower index bound must be above upper index bound")
+    call assert(lower_ >= lbound(x, dim=1), "convergence (dnorm_ad_rank_1): lower index bound must be >= lbound")
+    call assert(upper_ <= ubound(x, dim=1), "convergence (dnorm_ad_rank_1): upper index bound must be >= ubound")
+    call assert(lower_ < upper_, "convergence (dnorm_ad_rank_1): lower index bound must be above upper index bound")
     
-    call norm_ad_rank_1%init_const(0.0_WP, size(x(1)%dv))
-    if (ord == huge(1)) then
+    dnorm_real_rank_1 = 0.0_WP
+    if (ord_ == huge(1)) then
         ! $l_\infty$ norm
         
         do i = lower_, upper_ ! SERIAL
-            norm_ad_rank_1 = max(norm_ad_rank_1, abs(x(i)))
+            dnorm_real_rank_1 = max(dnorm_real_rank_1, abs(x(i)))
         end do
     else
         n = 0
         do i = lower_, upper_ ! SERIAL
             n = n + 1
-            norm_ad_rank_1 = norm_ad_rank_1 + abs(x(i))**ord_
+            dnorm_real_rank_1 = dnorm_real_rank_1 + abs(x(i))**ord_
         end do
-        norm_ad_rank_1 = (norm_ad_rank_1**(1.0_WP/real(ord_, WP))) / real(n, WP)
+        dnorm_real_rank_1 = (dnorm_real_rank_1 / real(n, WP))**(1.0_WP/real(ord_, WP))
     end if
     
-    call assert(norm_ad_rank_1%v >= 0.0_WP, "convergence (norm_ad_rank_1): negative norm?")
-end function norm_ad_rank_1
+    call assert(dnorm_real_rank_1 >= 0.0_WP, "convergence (dnorm_real_rank_1): negative norm?")
+end function dnorm_real_rank_1
+
+pure function dnorm_ad_rank_1(x, ord, lower, upper)
+    use fmad, only: max, abs
+    use checks, only: assert
+    
+    type(ad), intent(in)          :: x(:)
+    integer, intent(in), optional :: ord, lower, upper
+    
+    type(ad) :: dnorm_ad_rank_1
+    
+    integer :: ord_, lower_, upper_, i, n
+    
+    if (present(ord)) then
+        ord_ = ord
+    else
+        ord_ = 2
+    end if
+    
+    if (present(lower)) then
+        lower_ = lower
+    else
+        lower_ = 1
+    end if
+    
+    if (present(upper)) then
+        upper_ = upper
+    else
+        upper_ = size(x)
+    end if
+    
+    call assert(lower_ >= lbound(x, dim=1), "convergence (dnorm_ad_rank_1): lower index bound must be >= lbound")
+    call assert(upper_ <= ubound(x, dim=1), "convergence (dnorm_ad_rank_1): upper index bound must be >= ubound")
+    call assert(lower_ < upper_, "convergence (dnorm_ad_rank_1): lower index bound must be above upper index bound")
+    
+    call dnorm_ad_rank_1%init_const(0.0_WP, size(x(1)%dv))
+    if (ord_ == huge(1)) then
+        ! $l_\infty$ norm
+        
+        do i = lower_, upper_ ! SERIAL
+            dnorm_ad_rank_1 = max(dnorm_ad_rank_1, abs(x(i)))
+        end do
+    else
+        n = 0
+        do i = lower_, upper_ ! SERIAL
+            n = n + 1
+            dnorm_ad_rank_1 = dnorm_ad_rank_1 + abs(x(i))**ord_
+        end do
+        dnorm_ad_rank_1 = (dnorm_ad_rank_1 / real(n, WP))**(1.0_WP/real(ord_, WP))
+    end if
+    
+    call assert(dnorm_ad_rank_1%v >= 0.0_WP, "convergence (dnorm_ad_rank_1): negative norm?")
+end function dnorm_ad_rank_1
 
 pure function logspace(loglower, logupper, n)
     ! <https://numpy.org/doc/stable/reference/generated/numpy.logspace.html>
