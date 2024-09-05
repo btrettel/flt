@@ -86,6 +86,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     
     call assert_dimension(p_tol_, p_expected)
     
+    call assert(size(n_arr) >= 2, "convergence (convergence_test): n_arr should have at least 2 elements to calculate p")
     call assert(all(n_arr > 0), "convergence (convergence_test): n can not be zero or negative")
     call assert(len(message) > 0, "convergence (convergence_test): message can not be empty")
     call assert(all(p_tol_ > 0.0_WP), "convergence (convergence_test): p_tol is too small")
@@ -175,7 +176,7 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
             call tests%real_eq(p_v(i_var)%dv(i_dv), 0.0_WP, message // ", p_v%dv(" // trim(i_dv_string) &
                                     // ")=0, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
             call tests%real_eq(p_dv(i_var, i_dv), p_expected(i_var), message // ", p_dv(" // trim(i_dv_string) &
-                                    // "=expected, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
+                                    // ")=expected, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
         end do
     end do
 end subroutine convergence_test
