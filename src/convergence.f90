@@ -29,7 +29,7 @@ end interface dnorm
 
 contains
 
-subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
+subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use checks, only: assert, assert_dimension
     use nmllog, only: CRITICAL_LEVEL
@@ -43,36 +43,36 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     real(kind=WP), intent(in), optional     :: p_tol(:)
     
     interface
-        subroutine solver_de(n, tests, de, de_dv)
+        subroutine solver_ne(n, tests, ne, ne_dv)
             use unittest, only: test_results_type
             use fmad, only: ad
             use prec, only: WP
             
             integer, intent(in)                     :: n           ! number of grid cells, time steps, Monte Carlo samples, etc.
             type(test_results_type), intent(in out) :: tests
-            type(ad), intent(out), allocatable      :: de(:)       ! discretization error for value
-            real(kind=WP), intent(out), allocatable :: de_dv(:, :) ! discretization error for derivatives (n_var, n_dv)
+            type(ad), intent(out), allocatable      :: ne(:)       ! numerical error for value
+            real(kind=WP), intent(out), allocatable :: ne_dv(:, :) ! numerical error for derivatives (n_var, n_dv)
             
             ! This is not `pure` to make debugging easier.
             
             ! Exact or manufactured solutions are called in this function.
             
-            ! Discretization error is calculated in here.
+            ! Numerical error (usually discretization error) is calculated in here.
             ! A norm can be used or a local metric can be used.
             
             ! Additional tests can be added to be used with `tests`.
             
-            ! Instead pass out `de` and calculate `de_dv` in `convergence_test`?
+            ! Instead pass out `ne` and calculate `ne_dv` in `convergence_test`?
             ! Start as-is, later figure out how to refactor to simplify.
-        end subroutine solver_de
+        end subroutine solver_ne
     end interface
     
     integer                    :: i_n, n_n     ! index of `n_arr` and size of `n_arr`
     integer                    :: i_var, n_var ! index for dependent variables and number of dependent variables
     integer                    :: i_dv, n_dv   ! index for derivatives and number of derivatives
     integer                    :: stdout_level, n_failures
-    type(ad), allocatable      :: de_i_n(:), de(:, :) ! de(n_n, n_var)
-    real(kind=WP), allocatable :: de_dv_i_n(:, :), de_dv(:, :, :) ! de_dv(n_n, n_var, n_dv)
+    type(ad), allocatable      :: ne_i_n(:), ne(:, :) ! ne(n_n, n_var)
+    real(kind=WP), allocatable :: ne_dv_i_n(:, :), ne_dv(:, :, :) ! ne_dv(n_n, n_var, n_dv)
     type(ad), allocatable      :: p_v(:)
     real(kind=WP), allocatable :: p_tol_(:), p_dv(:, :)
     character(len=32)          :: i_var_string, i_dv_string
@@ -99,58 +99,58 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     n_failures = tests%n_failures
     
     print "(2a)", message, ":"
-    print "(3a6, 2a14)", "n", "var #", "v/dv", "de", "p"
+    print "(3a6, 2a14)", "n", "var #", "v/dv", "ne", "p"
     ! MAYBE: Run convergence tests in parallel later?
     do i_n = 1, n_n ! SERIAL
-        call solver_de(n_arr(i_n), tests, de_i_n, de_dv_i_n)
+        call solver_ne(n_arr(i_n), tests, ne_i_n, ne_dv_i_n)
         
         if (i_n == 1) then
-            n_var = size(de_i_n)
-            allocate(de(n_n, n_var))
+            n_var = size(ne_i_n)
+            allocate(ne(n_n, n_var))
             allocate(p_v(n_var))
-            n_dv = size(de_i_n(1)%dv)
+            n_dv = size(ne_i_n(1)%dv)
             allocate(p_dv(n_var, n_dv))
-            allocate(de_dv(n_n, n_var, n_dv))
+            allocate(ne_dv(n_n, n_var, n_dv))
             call assert_dimension(p_v, p_expected)
             
             do i_var = 1, n_var ! SERIAL
-                call assert_discretization_error(de_i_n(i_var)%v, i_var, 0)
-                de(i_n, i_var) = de_i_n(i_var)
+                call assert_numerical_error(ne_i_n(i_var)%v, i_var, 0)
+                ne(i_n, i_var) = ne_i_n(i_var)
                 
                 if (i_var == 1) then
-                    print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v
+                    print "(2i6, a6, es14.5)", n_arr(i_n), i_var, "v", ne(i_n, i_var)%v
                 else
-                    print "(a6, i6, a6, es14.5)", "", i_var, "v", de(i_n, i_var)%v
+                    print "(a6, i6, a6, es14.5)", "", i_var, "v", ne(i_n, i_var)%v
                 end if
                 do i_dv = 1, n_dv ! SERIAL
-                    call assert_discretization_error(de_dv_i_n(i_var, i_dv), i_var, i_dv)
-                    de_dv(i_n, i_var, i_dv) = de_dv_i_n(i_var, i_dv)
-                    print "(a6, 2i6, es14.5)", "", i_var, i_dv, de_dv(i_n, i_var, i_dv)
+                    call assert_numerical_error(ne_dv_i_n(i_var, i_dv), i_var, i_dv)
+                    ne_dv(i_n, i_var, i_dv) = ne_dv_i_n(i_var, i_dv)
+                    print "(a6, 2i6, es14.5)", "", i_var, i_dv, ne_dv(i_n, i_var, i_dv)
                 end do
             end do
         else
             do i_var = 1, n_var ! SERIAL
-                call assert_discretization_error(de_i_n(i_var)%v, i_var, 0)
-                de(i_n, i_var) = de_i_n(i_var)
+                call assert_numerical_error(ne_i_n(i_var)%v, i_var, 0)
+                ne(i_n, i_var) = ne_i_n(i_var)
                 
                 ! order of accuracy; see roy_review_2005 eq. 6 or 8
-                p_v(i_var) = log(de(i_n, i_var) / de(i_n - 1, i_var)) &
+                p_v(i_var) = log(ne(i_n, i_var) / ne(i_n - 1, i_var)) &
                                 / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
                 
                 if (i_var == 1) then
-                    print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", de(i_n, i_var)%v, p_v(i_var)%v
+                    print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", ne(i_n, i_var)%v, p_v(i_var)%v
                 else
-                    print "(a6, i6, a6, es14.5, f14.6)", "", i_var, "v", de(i_n, i_var)%v, p_v(i_var)%v
+                    print "(a6, i6, a6, es14.5, f14.6)", "", i_var, "v", ne(i_n, i_var)%v, p_v(i_var)%v
                 end if
                 
                 do i_dv = 1, n_dv ! SERIAL
-                    call assert_discretization_error(de_dv_i_n(i_var, i_dv), i_var, i_dv)
-                    de_dv(i_n, i_var, i_dv) = de_dv_i_n(i_var, i_dv)
+                    call assert_numerical_error(ne_dv_i_n(i_var, i_dv), i_var, i_dv)
+                    ne_dv(i_n, i_var, i_dv) = ne_dv_i_n(i_var, i_dv)
                     
                     ! order of accuracy; see roy_review_2005 eq. 6 or 8
-                    p_dv(i_var, i_dv) = log(de_dv(i_n, i_var, i_dv) / de_dv(i_n - 1, i_var, i_dv)) &
+                    p_dv(i_var, i_dv) = log(ne_dv(i_n, i_var, i_dv) / ne_dv(i_n - 1, i_var, i_dv)) &
                                             / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
-                    print "(a6, 2i6, es14.5, f14.6)", "", i_var, i_dv, de_dv(i_n, i_var, i_dv), p_dv(i_var, i_dv)
+                    print "(a6, 2i6, es14.5, f14.6)", "", i_var, i_dv, ne_dv(i_n, i_var, i_dv), p_dv(i_var, i_dv)
                 end do
             end do
         end if
@@ -181,27 +181,27 @@ subroutine convergence_test(n_arr, solver_de, p_expected, message, tests, p_tol)
     end do
 end subroutine convergence_test
 
-subroutine assert_discretization_error(de, i_var, i_dv)
+subroutine assert_numerical_error(ne, i_var, i_dv)
     use checks, only: assert, TOL_FACTOR
     
-    real(kind=WP), intent(in) :: de
+    real(kind=WP), intent(in) :: ne
     integer, intent(in)       :: i_var, i_dv
     
-    character(len=32) :: de_string, arg_string
+    character(len=32) :: ne_string, arg_string
     
-    write(unit=de_string, fmt="(es14.5)") de
+    write(unit=ne_string, fmt="(es14.5)") ne
     
     if (i_dv == 0) then ! `i_dv = 0` is used for the value here.
-        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "de(i_var=", i_var, ", i_dv=", i_dv, ")"
+        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "ne(i_var=", i_var, ", i_dv=", i_dv, ")"
     else
-        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "de_dv(i_var=", i_var, ", i_dv=", i_dv, ")"
+        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "ne_dv(i_var=", i_var, ", i_dv=", i_dv, ")"
     end if
     
-    call assert(de > TOL_FACTOR * spacing(0.0_WP), &
-                    "convergence (convergence_test): " // trim(adjustl(arg_string)) // "=" // trim(adjustl(de_string)) &
+    call assert(ne > TOL_FACTOR * spacing(0.0_WP), &
+                    "convergence (convergence_test): " // trim(adjustl(arg_string)) // "=" // trim(adjustl(ne_string)) &
                         // ", but it must be > 0. " &
                         // "If one or more variables are expected to be exact, test that separately with real_eq.")
-end subroutine assert_discretization_error
+end subroutine assert_numerical_error
 
 pure function dnorm_real_rank_1(x, ord, lower, upper)
     use checks, only: assert

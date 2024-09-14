@@ -7,6 +7,7 @@ Priorities:
         - > To build without MPI, OpenMP, or both, use the command lines, respectively:
 - convergence.f90: convergence testing framework
     - Print run-time for each convergence test in the table and a total time at the end.
+    - Python code to convert SymPy output to formatted Fortran code with `params%`, `PI`, numbers to `_WP`
     - Have a feature to minimize the run-time of each convergence test, perhaps through some sort of optimizer. Reduce number of time steps for spatial convergence, etc.
     - Make plots. Need to pass in variable names for plots? Probably is a good idea to pass in the variable name anyway to use instead of the variable number in the table printout.
     - Output `delta` for plot for `de_solver`.
