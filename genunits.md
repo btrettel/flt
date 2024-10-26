@@ -107,3 +107,14 @@ Units to be rejected, that is, not included in the unit system.
 - No good way to make an array with different units for each element. Could make an array of a derived type with a `class(*)` member, but I'm not sure if that would keep the compile-time checking.
 - Integration with automatic differentiation: `%v%v` is annoying, so perhaps I should set the members to be private and think of alternatives.
 - Compiler support for derived type I/O, particularly with namelists, varies.
+- Need for interprocedural optimization (`-flto`, `-ipo`, etc.) for inlining.
+
+## Compiler comparison table (to-do)
+
+- passes tests (crayftn does not)
+- flags to enable inlining
+- run time slowdown without inlining
+- run time slowdown with inlining
+- compilation time slowdown without inlining
+- compilation time slowdown with inlining
+- other restrictions (for example: Intel's limit on number of interfaces, crayftn breaking)

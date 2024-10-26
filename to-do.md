@@ -2,9 +2,11 @@
 
 Priorities:
 
-- Set parallel settings in non-portable Makefile via a macro to ease disabling or enabling OpenMP per project.
-    - <https://github.com/lanl/SNAP>:
-        - > To build without MPI, OpenMP, or both, use the command lines, respectively:
+- Make flags
+    - Set parallel settings in non-portable Makefile via a macro to ease disabling or enabling OpenMP per project.
+        - <https://github.com/lanl/SNAP>:
+            - > To build without MPI, OpenMP, or both, use the command lines, respectively:
+    - Static linking (off by default due to conflict with OpenMP)
 - convergence.f90: convergence testing framework
     - Print run-time for each convergence test in the table and a total time at the end.
     - Python code to convert SymPy output to formatted Fortran code with `params%`, `PI`, numbers to `_WP`
@@ -194,7 +196,9 @@ Later:
     - absolute vs. offset vs. relative units
 - add names to deeply nested `if`s and `do`s in unittest
 - Search for `TODO` and finish those tasks.
-- fmutate.f90:
+- fmutate.py:
+    - Rewrite in Python to use an actual parser. Many of the bullets below will need to be updated as they assume Fortran below.
+        - <https://fortran-lang.discourse.group/t/antlr-grammars-for-fortran/8673>
     - Start with deleting lines and one other mutation operator. The reason to have two is to have the infrastructure for multiple mutation operators from the start.
     - Get papers for FORTRAN 77 mutation tester to see what that did.
         - acree_mutation_1979
@@ -452,3 +456,10 @@ Later:
 - Smart pointers
     - Develop smart pointers before reverse mode AD.
 - Maybe: Remove units*.f90 and rev.f90 from `skip_indexing` for f90lint to lint those files. Make `make f90lint` depend on the generated files so that they are present for linting.
+- Differentiable tridiagonal solver
+    - Example interfaces:
+        - Books: tannehill_computational_1997, schetz_boundary_1993, ellis_fortran_1994
+        - <https://www.ibm.com/docs/en/essl/6.2?topic=blaes-sgtsv-dgtsv-cgtsv-zgtsv-general-tridiagonal-matrix-factorization-multiple-right-hand-side-solve>
+        - <https://www.netlib.org/lapack/lapack-3.1.1/html/dgtsv.f.html>
+        - <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-fortran/2024-2/dttrsb.html>
+    - Parallel version
