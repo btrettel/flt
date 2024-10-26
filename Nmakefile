@@ -10,7 +10,9 @@
 !ifndef FC
 FC=ifort
 !endif
-BUILD = debug
+BUILD  = debug
+OPENMP = no
+STATIC = no
 !include mk\windows_defaults.mk
 
 #############
@@ -35,6 +37,22 @@ FFLAGS = $(FFLAGS) $(DFLAGS) $(AFLAGS)
 FFLAGS = $(FFLAGS) $(RFLAGS) $(AFLAGS)
 !else
 !error Set BUILD to either debug or release. BUILD=$(BUILD)
+!endif
+
+!if "$(OPENMP)" == "yes"
+FFLAGS = $(FFLAGS) $(OMPFLAGS)
+!elseif "$(OPENMP)" == "no"
+FFLAGS = $(FFLAGS)
+!else
+!error Set OPENMP to either yes or no. OPENMP=$(OPENMP)
+!endif
+
+!if "$(STATIC)" == "yes"
+FFLAGS = $(FFLAGS) $(SFLAGS)
+!elseif "$(STATIC)" == "no"
+FFLAGS = $(FFLAGS)
+!else
+!error Set STATIC to either yes or no. STATIC=$(STATIC)
 !endif
 
 !include mk\before.mk

@@ -34,7 +34,9 @@ else ifeq ($(FC),fort77)
 FC = gfortran
 endif
 endif
-BUILD = debug
+BUILD  = debug
+OPENMP = no
+STATIC = no
 include mk/linux_defaults.mk
 
 #############
@@ -73,6 +75,22 @@ else ifeq ($(BUILD),release)
 FFLAGS += $(RFLAGS) $(AFLAGS)
 else
 $(error Set BUILD to either debug or release. BUILD=$(BUILD))
+endif
+
+ifeq ($(OPENMP),yes)
+FFLAGS += $(OMPFLAGS)
+else ifeq ($(OPENMP),no)
+FFLAGS += 
+else
+$(error Set OPENMP to either yes or no. OPENMP=$(OPENMP))
+endif
+
+ifeq ($(STATIC),yes)
+FFLAGS += $(SFLAGS)
+else ifeq ($(STATIC),no)
+FFLAGS += 
+else
+$(error Set STATIC to either yes or no. STATIC=$(STATIC))
 endif
 
 include mk/before.mk

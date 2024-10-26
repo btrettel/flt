@@ -2,11 +2,7 @@
 
 Priorities:
 
-- Make flags
-    - Set parallel settings in non-portable Makefile via a macro to ease disabling or enabling OpenMP per project.
-        - <https://github.com/lanl/SNAP>:
-            - > To build without MPI, OpenMP, or both, use the command lines, respectively:
-    - Static linking (off by default due to conflict with OpenMP)
+- Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).
 - convergence.f90: convergence testing framework
     - Print run-time for each convergence test in the table and a total time at the end.
     - Python code to convert SymPy output to formatted Fortran code with `params%`, `PI`, numbers to `_WP`
@@ -77,7 +73,6 @@ Priorities:
         - <https://www.scivision.dev/oneapi-fortran-iostat-codes/>
         - <https://www.ibm.com/docs/en/xl-fortran-linux/16.1.1?topic=inputoutput-conditions-iostat-values>
         - <https://groups.google.com/g/comp.lang.fortran/c/l8UJoI-x9PM>
-- Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).
 - `make install` to install everything in `app`.
     - `DESTDIR` and `PREFIX` variables
     - <https://nullprogram.com/blog/2017/08/20/>

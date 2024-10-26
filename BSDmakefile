@@ -23,7 +23,9 @@ FC = gfortran
 FC = gfortran
 .endif
 .endif
-BUILD = debug
+BUILD  = debug
+OPENMP = no
+STATIC = no
 .include <mk/linux_defaults.mk>
 
 #############
@@ -62,6 +64,22 @@ FFLAGS += $(DFLAGS) $(AFLAGS)
 FFLAGS += $(RFLAGS) $(AFLAGS)
 .else
 .error Set BUILD to either debug or release. BUILD=$(BUILD)
+.endif
+
+.if $(OPENMP) == yes
+FFLAGS += $(OMPFLAGS)
+.elif $(OPENMP) == no
+FFLAGS += 
+.else
+.error Set OPENMP to either yes or no. OPENMP=$(OPENMP)
+.endif
+
+.if $(STATIC) == yes
+FFLAGS += $(SFLAGS)
+.elif $(STATIC) == no
+FFLAGS += 
+.else
+.error Set STATIC to either yes or no. STATIC=$(STATIC)
 .endif
 
 .include <mk/before.mk>
