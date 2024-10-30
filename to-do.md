@@ -2,7 +2,37 @@
 
 Priorities:
 
-- Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).
+- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
+    - Make ga.f90 use rngmod.f90.
+    - herrera_tackling_1998
+    - Have multiple outputs.
+        - `chromo%f`
+        - `chromo%f_set`
+        - `chromo%out(:)` (for non-objective function outputs that may be of interest)
+- `purerng`:
+    - RNG splitting
+    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
+    - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
+        - lecuyer_implementing_1991
+    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
+        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
+        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
+        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
+    - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
+    - better `random_seed()`
+    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
+- returncodes.f90: A module containing `errno` codes, other internal return codes.
+    - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
+        - <https://fortranwiki.org/fortran/show/iso_fortran_env>
+            - `iostat_end`, `iostat_eor`
+        - <https://www.scivision.dev/oneapi-fortran-iostat-codes/>
+        - <https://www.ibm.com/docs/en/xl-fortran-linux/16.1.1?topic=inputoutput-conditions-iostat-values>
+        - <https://groups.google.com/g/comp.lang.fortran/c/l8UJoI-x9PM>
+- fmad.f90 and units.f90
+    - `is_close`
+
+Later:
+
 - convergence.f90: convergence testing framework
     - Print run-time for each convergence test in the table and a total time at the end.
     - Python code to convert SymPy output to formatted Fortran code with `params%`, `PI`, numbers to `_WP`
@@ -66,13 +96,6 @@ Priorities:
     - <https://valgrind.org/docs/manual/manual-core.html#manual-core.suppress>
     - <https://stackoverflow.com/a/23897854/1124489>
     - Old: Selectively use Valgrind for all code that you're confident will not have false positives. Add a list of tests that fail Valgrind to config.ini (`no_valgrind`) and make depends.py generate the associated Makefile components.
-- returncodes.f90: A module containing `errno` codes, other internal return codes.
-    - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
-        - <https://fortranwiki.org/fortran/show/iso_fortran_env>
-            - `iostat_end`, `iostat_eor`
-        - <https://www.scivision.dev/oneapi-fortran-iostat-codes/>
-        - <https://www.ibm.com/docs/en/xl-fortran-linux/16.1.1?topic=inputoutput-conditions-iostat-values>
-        - <https://groups.google.com/g/comp.lang.fortran/c/l8UJoI-x9PM>
 - `make install` to install everything in `app`.
     - `DESTDIR` and `PREFIX` variables
     - <https://nullprogram.com/blog/2017/08/20/>
@@ -81,8 +104,6 @@ Priorities:
 - `make dist`
     - create tgz and/or zip file of `DESTDIR`
     - lists hashes
-- Add `PFLAGS` to enable or disable parallelization for debug and release. OpenMP and other libraries can't be statically linked, so they might lead to portability issues if they aren't used but are dynamically linked and aren't available.
-    - `THREADING=serial` vs. `THREADING=parallel`
 - `ARCH=gpu` for ifx and nvfortran. `GFLAGS` for GPU flags?
 - nmllog.f90
     - `check_bounds(x, rc, lower, upper)`
@@ -119,12 +140,6 @@ Priorities:
 - Count test_units.f90 and test_units_ad.f90 towards test_genunits_io.f90?
 - When work has ifx 2024.2, change `assert` to eliminate `full_message` by putting the message directly on the `error stop` line. Also see [compiler-bugs report0002](https://github.com/btrettel/compiler-bugs/tree/main/report0002).
 - f90lint.py: Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
-- fmad.f90 and units.f90
-    - `is_close`
-- Add elemental FOSM `stdev` to fmad.f90. Don't include covariance (at first at least). Assert dimension of `f%dv`/`sigma`, assert input `sigmas >= 0`, assert output `sigma >= 0`.
-
-Later:
-
 - f90lint:
     - No programs in source, no modules in app or test.
     - List longest subroutines
@@ -239,18 +254,6 @@ Later:
         - changing order of magnitude of numbers
         - moving parentheses (common mistake)
     - When complete, add here: <https://fortranwiki.org/fortran/show/Mutation+testing+frameworks>
-- `purerng`:
-    - RNG splitting
-    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
-    - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
-        - lecuyer_implementing_1991
-    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
-        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
-        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
-        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
-    - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
-    - better `random_seed()`
-    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
 - compiler_tests.f90: Tests for intrinsics used in these libraries.
     - How can I identify all the intrinsics used here?
     - accuracy of important intrinsics
@@ -407,6 +410,7 @@ Later:
     - Replace PDPmakefile with POSIXmakefile that is strictly POSIX (has no `include` or any other non-POSIX things) and should work on IBM AIX make too. This file can be constructed from the other files via `make POSIXmakefile`. Don't set `FC` and whatnot, instead set those via the command line or defaults?
     - Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all` (`SFLAGS`?)
     - `PFLAGS` make macro to switch between GPU and CPU for ifx, nvfortran, etc.
+    - Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).
 - f90lint:
     - Add tests for remaining modules which aren't passing.
     - Check for modules which don't have tests.
@@ -440,13 +444,6 @@ Later:
     - Would be advantageous to only have needed derivatives for the iteration and add additional derivatives for the final run.
     - Can return solutions for arbitrary arrays.
     - <https://twitter.com/chenna1985/status/1802660023010513012>
-- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
-    - Make ga.f90 use rngmod.f90.
-    - herrera_tackling_1998
-    - Have multiple outputs.
-        - `chromo%f`
-        - `chromo%f_set`
-        - `chromo%out(:)` (for non-objective function outputs that may be of interest)
 - `CMP` based tests
 - Smart pointers
     - Develop smart pointers before reverse mode AD.

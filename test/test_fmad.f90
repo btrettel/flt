@@ -34,6 +34,7 @@ call test_abs(tests)
 call test_comparison(tests)
 call test_trig(tests)
 call test_disabled(tests)
+call test_fosm(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -45,9 +46,9 @@ subroutine test_scalars(tests)
     
     type(test_results_type), intent(in out) :: tests
     
-    real(kind=WP) :: a, b
-    type(ad)      :: x, y, z
-    integer       :: c
+    real(WP) :: a, b
+    type(ad) :: x, y, z
+    integer  :: c
     
     a = 7.0_WP
     b = 12.0_WP
@@ -459,5 +460,42 @@ subroutine test_disabled(tests)
     call tests%real_eq(y%v, 2.0_WP, "ad disabled, const value")
     call tests%integer_eq(size(y%dv), 0, "ad disabled, const size(dv)")
 end subroutine test_disabled
+
+subroutine test_fosm(tests)
+    use fmad, only: var, stdev
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    integer, parameter :: N_X = 3
+    
+    type(ad) :: x(N_X)
+    real(WP) :: sigmas(N_DV), y(N_X), z(N_X), &
+                    y_expected(N_X), z_expected(N_X)
+
+    call x%init_const(0.0_WP, N_DV)
+    x(1)%dv(1) = -2.0_WP
+    x(1)%dv(1) = 3.0_WP
+    x(2)%dv(1) = 1.0_WP
+    x(2)%dv(1) = 1.0_WP
+    x(3)%dv(1) = 0.0_WP
+    x(3)%dv(1) = 0.0_WP
+    sigmas(1) = 1.5_WP
+    sigmas(2) = 3.0_WP
+    
+    y = var(x, sigmas)
+    z = stdev(x, sigmas)
+    y_expected(1) = (x(1)%dv(1)*sigmas(1) + x(1)%dv(2)*sigmas(2))**2
+    y_expected(2) = (x(2)%dv(1)*sigmas(1) + x(2)%dv(2)*sigmas(2))**2
+    y_expected(3) = (x(3)%dv(1)*sigmas(1) + x(3)%dv(2)*sigmas(2))**2
+    z_expected = sqrt(y_expected)
+    
+    call tests%real_eq(y(1), y_expected(1), "fmad var(1)")
+    call tests%real_eq(y(2), y_expected(2), "fmad var(2)")
+    call tests%real_eq(y(3), y_expected(3), "fmad var(3)")
+    
+    call tests%real_eq(z(1), z_expected(1), "fmad stdev(1)")
+    call tests%real_eq(z(2), z_expected(2), "fmad stdev(2)")
+    call tests%real_eq(z(3), z_expected(3), "fmad stdev(3)")
+end subroutine test_fosm
 
 end program test_fmad

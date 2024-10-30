@@ -12,12 +12,13 @@ implicit none
 private
 
 public :: sqrt, tanh, log, exp, merge, max, min, abs, sin, cos, tan
+public :: var, stdev
 public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
 type, public :: ad
-    real(kind=WP)              :: v     ! function value
-    real(kind=WP), allocatable :: dv(:) ! function derivatives value
+    real(WP)              :: v     ! function value
+    real(WP), allocatable :: dv(:) ! function derivatives value
 contains
     procedure :: init
     procedure :: init_const
@@ -98,12 +99,11 @@ contains
 
 elemental subroutine init(x, v, n, n_dv)
     use checks, only: assert, is_close
-    use prec, only: WP
     
     class(ad), intent(in out) :: x    ! `class` can't be `intent(out)` and `pure`?!?
-    real(kind=WP), intent(in) :: v    ! value of variable to set
-    integer, intent(in)       :: n, & ! variable number represented (sets the appropriate derivative)
-                                 n_dv ! total number of differentiable variables
+    real(WP), intent(in) :: v    ! value of variable to set
+    integer, intent(in)  :: n, & ! variable number represented (sets the appropriate derivative)
+                            n_dv ! total number of differentiable variables
 
     integer :: i_dv ! loop index
     
@@ -126,11 +126,10 @@ end subroutine init
 
 elemental subroutine init_const(x, v, n_dv)
     use checks, only: assert
-    use prec, only: WP
     
     class(ad), intent(in out) :: x ! `class` can't be `intent(out)` and `pure`?!?
-    real(kind=WP), intent(in) :: v    ! value of constant to set
-    integer, intent(in)       :: n_dv ! total number of differentiable variables
+    real(WP), intent(in) :: v    ! value of constant to set
+    integer, intent(in)  :: n_dv ! total number of differentiable variables
     
     call assert(n_dv >= 0, "fmad (init): n_dv must be zero or more")
     
@@ -164,11 +163,10 @@ end function ad_ad_add
 elemental function ad_real_add(ad_in, real_in)
     ! Adds an `ad` and a `real`.
     
-    use prec, only: WP
     use checks, only: assert
     
-    class(ad), intent(in)     :: ad_in
-    real(kind=WP), intent(in) :: real_in
+    class(ad), intent(in) :: ad_in
+    real(WP), intent(in)  :: real_in
     
     type(ad) :: ad_real_add
     
@@ -181,11 +179,10 @@ end function ad_real_add
 elemental function real_ad_add(real_left, ad_right)
     ! Adds a `real` and an `ad`.
     
-    use prec, only: WP
     use checks, only: assert
     
-    real(kind=WP), intent(in) :: real_left
-    class(ad), intent(in)     :: ad_right
+    real(WP), intent(in)  :: real_left
+    class(ad), intent(in) :: ad_right
     
     type(ad) :: real_ad_add
     
@@ -214,11 +211,10 @@ end function ad_ad_subtract
 elemental function ad_real_subtract(ad_left, real_right)
     ! Subtracts a `real` from an `ad`.
     
-    use prec, only: WP
     use checks, only: assert
     
-    class(ad), intent(in)     :: ad_left
-    real(kind=WP), intent(in) :: real_right
+    class(ad), intent(in) :: ad_left
+    real(WP), intent(in)  :: real_right
     
     type(ad) :: ad_real_subtract
     
@@ -231,11 +227,10 @@ end function ad_real_subtract
 elemental function real_ad_subtract(real_left, ad_right)
     ! Subtracts a `real` from an `ad`.
 
-    use prec, only: WP
     use checks, only: assert
     
-    real(kind=WP), intent(in) :: real_left
-    class(ad), intent(in)     :: ad_right
+    real(WP), intent(in)  :: real_left
+    class(ad), intent(in) :: ad_right
     
     type(ad) :: real_ad_subtract
     
@@ -294,11 +289,10 @@ end function ad_ad_multiply
 elemental function ad_real_multiply(ad_left, real_right)
     ! Multiplies an `ad` by a `real`.
     
-    use prec, only: WP
     use checks, only: assert
     
-    class(ad), intent(in)     :: ad_left
-    real(kind=WP), intent(in) :: real_right
+    class(ad), intent(in) :: ad_left
+    real(WP), intent(in)  :: real_right
     
     type(ad) :: ad_real_multiply
     
@@ -311,11 +305,10 @@ end function ad_real_multiply
 elemental function real_ad_multiply(real_left, ad_right)
     ! Multiplies a `real` by an `ad`.
     
-    use prec, only: WP
     use checks, only: assert
 
-    real(kind=WP), intent(in) :: real_left
-    class(ad), intent(in)     :: ad_right
+    real(WP), intent(in)  :: real_left
+    class(ad), intent(in) :: ad_right
     
     type(ad) :: real_ad_multiply
     
@@ -344,11 +337,10 @@ end function ad_ad_divide
 elemental function ad_real_divide(ad_left, real_right)
     ! Divides an `ad` by a `real`.
     
-    use prec, only: WP
     use checks, only: assert
 
-    class(ad), intent(in)     :: ad_left
-    real(kind=WP), intent(in) :: real_right
+    class(ad), intent(in) :: ad_left
+    real(WP), intent(in)  :: real_right
     
     type(ad) :: ad_real_divide
     
@@ -361,11 +353,10 @@ end function ad_real_divide
 elemental function real_ad_divide(real_left, ad_right)
     ! Divides a `real` by an `ad`.
     
-    use prec, only: WP
     use checks, only: assert
 
-    real(kind=WP), intent(in) :: real_left
-    class(ad), intent(in)     :: ad_right
+    real(WP), intent(in)  :: real_left
+    class(ad), intent(in) :: ad_right
     
     type(ad) :: real_ad_divide
     
@@ -379,10 +370,9 @@ elemental function ad_real_exponentiate(ad_in, real_in)
     ! Exponentiates an `ad` by a `real`.
     
     use checks, only: assert, is_close
-    use prec, only: WP
     
-    class(ad), intent(in)      :: ad_in
-    real(kind=WP), intent(in)  :: real_in
+    class(ad), intent(in) :: ad_in
+    real(WP), intent(in)  :: real_in
     
     type(ad) :: ad_real_exponentiate
     
@@ -398,7 +388,6 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
     ! Exponentiates an `ad` by an `integer`.
     
     use checks, only: assert, is_close
-    use prec, only: WP
     
     class(ad), intent(in) :: ad_in
     integer, intent(in)   :: integer_in
@@ -475,7 +464,6 @@ elemental function ad_sqrt(ad_in)
     ! Takes the square root of an `ad`.
     
     use checks, only: assert
-    use prec, only: WP
     
     class(ad), intent(in) :: ad_in
     
@@ -489,7 +477,6 @@ elemental function ad_sqrt(ad_in)
 end function ad_sqrt
 
 elemental function ad_tanh(ad_in)
-    use prec, only: WP
     use checks, only: assert
     
     class(ad), intent(in) :: ad_in
@@ -504,7 +491,6 @@ end function ad_tanh
 
 elemental function ad_log(ad_in)
     use checks, only: assert
-    use prec, only: WP
     
     class(ad), intent(in) :: ad_in
     
@@ -561,11 +547,10 @@ end function ad_ad_max_2
 pure function real_ad_max_2(real_left, ad_right)
     ! Related: <https://en.wikipedia.org/wiki/Rectifier_(neural_networks)>
     
-    use prec, only: WP
     use checks, only: assert
     
-    real(kind=WP), intent(in) :: real_left
-    class(ad), intent(in)     :: ad_right
+    real(WP), intent(in)  :: real_left
+    class(ad), intent(in) :: ad_right
     
     type(ad) :: real_ad_max_2
     
@@ -586,11 +571,10 @@ pure function ad_ad_min_2(ad_left, ad_right)
 end function ad_ad_min_2
 
 pure function real_ad_min_2(real_left, ad_right)
-    use prec, only: WP
     use checks, only: assert
     
-    real(kind=WP), intent(in) :: real_left
-    class(ad), intent(in)     :: ad_right
+    real(WP), intent(in)  :: real_left
+    class(ad), intent(in) :: ad_right
     
     type(ad) :: real_ad_min_2
     
@@ -602,7 +586,6 @@ end function real_ad_min_2
 
 elemental function ad_abs(ad_in)
     use checks, only: assert, is_close
-    use prec, only: WP
     
     class(ad), intent(in) :: ad_in
     
@@ -659,9 +642,49 @@ elemental function ad_tan(ad_in)
     ad_tan%dv = ad_in%dv/(cos(ad_in%v)**2)
 end function ad_tan
 
+pure function var(x, sigmas)
+    ! Computes the variance with the FOSM method.
+    ! Assumes each random variable is independent.
+    ! See putko_approach_2001 section 2.2.
+    
+    use checks, only: assert, assert_dimension
+    
+    type(ad), intent(in) :: x(:)
+    real(WP), intent(in) :: sigmas(:)
+    
+    real(WP), allocatable :: var(:)
+    
+    integer :: i_x, i_dv
+    
+    call assert(all(sigmas >= 0.0_WP), "ad (var): input sigmas must be >= 0")
+    
+    allocate(var(size(x)))
+    var = 0.0_WP
+    do concurrent (i_x = 1:size(x))
+        call assert_dimension(x(i_x)%dv, sigmas)
+        do i_dv = 1, size(x(1)%dv) ! SERIAL
+            var(i_x) = var(i_x) + (x(i_x)%dv(i_dv) * sigmas(i_dv))**2
+        end do
+    end do
+    
+    call assert(all(var >= 0.0_WP), "ad (var): output var must be >= 0")
+end function var
+
+pure function stdev(x, sigmas)
+    use checks, only: assert
+    
+    type(ad), intent(in) :: x(:)
+    real(WP), intent(in) :: sigmas(:)
+    
+    real(WP), allocatable :: stdev(:)
+    
+    stdev = sqrt(var(x, sigmas))
+    
+    call assert(all(stdev >= 0.0_WP), "ad (stdev): output stdev must be >= 0")
+end function stdev
+
 pure function f(x, y)
     use checks, only: assert
-    use prec, only: WP
     
     ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.
     
