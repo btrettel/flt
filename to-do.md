@@ -2,25 +2,30 @@
 
 Priorities:
 
-- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
-    - Make ga.f90 use rngmod.f90.
-    - herrera_tackling_1998
-    - Have multiple outputs.
-        - `chromo%f`
-        - `chromo%f_set`
-        - `chromo%out(:)` (for non-objective function outputs that may be of interest)
+- Change `real(kind=WP)` to `real(WP)`.
 - `purerng`:
     - RNG splitting
-    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
-    - For arrays: One `rng_type` per `harvest`. `random_seed` uses spacing in lecuyer_efficient_1988 to set for arrays.
         - lecuyer_implementing_1991
+        - Iterative: 20 lines
+        - Decomposition: 41 lines
+        - Russian peasant: 23 lines
+    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
     - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
         - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
         - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
         - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
     - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
-    - better `random_seed()`
     - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
+- ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
+    - Make ga.f90 use rngmod.f90.
+    - Design to use deb_efficient_2000 eq. 4 for constraints. Objective functions must return an array for each constraint if any are violated.
+    - herrera_tackling_1998
+    - de_jong_analysis_1975 p. 68 (pdf p. 83): mutation probability should be proportional to `1/n_pop`
+        - Combine with 1/5 rule for the PDF width from evolution strategies. beyer_evolution_2002 p. 26 (pdf p. 22)
+    - Have multiple outputs.
+        - `chromo%f`
+        - `chromo%f_set`
+        - `chromo%out(:)` (for non-objective function outputs that may be of interest). Make type a `class(*)` variable so that I can put any output I want in there.
 - returncodes.f90: A module containing `errno` codes, other internal return codes.
     - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
         - <https://fortranwiki.org/fortran/show/iso_fortran_env>

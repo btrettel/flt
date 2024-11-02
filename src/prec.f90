@@ -40,6 +40,6 @@ integer, public, parameter :: CL = 1024 ! `CL` stands for character length
 
 ! PI: 3.1415926535897932384626433...
 ! <https://stackoverflow.com/a/49416279/1124489>
-real(kind=WP), public, parameter :: PI = 4.0_WP * atan(1.0_WP)
+real(WP), public, parameter :: PI = 4.0_WP * atan(1.0_WP)
 
 end module prec

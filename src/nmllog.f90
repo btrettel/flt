@@ -293,12 +293,12 @@ subroutine log_debug_info(this)
     character(len=TIMESTAMP_LEN)  :: timestamp
     logical                       :: unit_open
     
-    !real(kind=WP) :: real_huge
-    integer       :: real_kind_code, real_precision, real_range, real_radix, &
-                        real_min_exponent, real_max_exponent, &
-                        integer_kind_code, integer_range, integer_huge
-    logical       :: real_support_datatype, real_support_denormal, real_support_divide, &
-                        real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
+    !real(WP) :: real_huge
+    integer  :: real_kind_code, real_precision, real_range, real_radix, &
+                    real_min_exponent, real_max_exponent, &
+                    integer_kind_code, integer_range, integer_huge
+    logical  :: real_support_datatype, real_support_denormal, real_support_divide, &
+                    real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
     
     namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
                             real_kind_code, real_precision, real_range, real_radix, & !real_huge, &

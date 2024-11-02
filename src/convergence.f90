@@ -37,10 +37,10 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     use fmad, only: log
     
     integer, intent(in)                     :: n_arr(:) ! array of number of grid cells, time steps, Monte Carlo samples, etc.
-    real(kind=WP), intent(in)               :: p_expected(:) ! expected order of convergence
+    real(WP), intent(in)                    :: p_expected(:) ! expected order of convergence
     character(len=*), intent(in)            :: message
     type(test_results_type), intent(in out) :: tests
-    real(kind=WP), intent(in), optional     :: p_tol(:)
+    real(WP), intent(in), optional          :: p_tol(:)
     
     interface
         subroutine solver_ne(n, tests, ne, ne_dv)
@@ -51,7 +51,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
             integer, intent(in)                     :: n           ! number of grid cells, time steps, Monte Carlo samples, etc.
             type(test_results_type), intent(in out) :: tests
             type(ad), intent(out), allocatable      :: ne(:)       ! numerical error for value
-            real(kind=WP), intent(out), allocatable :: ne_dv(:, :) ! numerical error for derivatives (n_var, n_dv)
+            real(WP), intent(out), allocatable      :: ne_dv(:, :) ! numerical error for derivatives (n_var, n_dv)
             
             ! This is not `pure` to make debugging easier.
             
@@ -67,15 +67,15 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
         end subroutine solver_ne
     end interface
     
-    integer                    :: i_n, n_n     ! index of `n_arr` and size of `n_arr`
-    integer                    :: i_var, n_var ! index for dependent variables and number of dependent variables
-    integer                    :: i_dv, n_dv   ! index for derivatives and number of derivatives
-    integer                    :: stdout_level, n_failures
-    type(ad), allocatable      :: ne_i_n(:), ne(:, :) ! ne(n_n, n_var)
-    real(kind=WP), allocatable :: ne_dv_i_n(:, :), ne_dv(:, :, :) ! ne_dv(n_n, n_var, n_dv)
-    type(ad), allocatable      :: p_v(:)
-    real(kind=WP), allocatable :: p_tol_(:), p_dv(:, :)
-    character(len=32)          :: i_var_string, i_dv_string
+    integer               :: i_n, n_n     ! index of `n_arr` and size of `n_arr`
+    integer               :: i_var, n_var ! index for dependent variables and number of dependent variables
+    integer               :: i_dv, n_dv   ! index for derivatives and number of derivatives
+    integer               :: stdout_level, n_failures
+    type(ad), allocatable :: ne_i_n(:), ne(:, :) ! ne(n_n, n_var)
+    real(WP), allocatable :: ne_dv_i_n(:, :), ne_dv(:, :, :) ! ne_dv(n_n, n_var, n_dv)
+    type(ad), allocatable :: p_v(:)
+    real(WP), allocatable :: p_tol_(:), p_dv(:, :)
+    character(len=32)     :: i_var_string, i_dv_string
     
     if (present(p_tol)) then
         p_tol_ = p_tol
@@ -184,8 +184,8 @@ end subroutine convergence_test
 subroutine assert_numerical_error(ne, i_var, i_dv)
     use checks, only: assert, TOL_FACTOR
     
-    real(kind=WP), intent(in) :: ne
-    integer, intent(in)       :: i_var, i_dv
+    real(WP), intent(in) :: ne
+    integer, intent(in)  :: i_var, i_dv
     
     character(len=32) :: ne_string, arg_string
     
@@ -206,13 +206,13 @@ end subroutine assert_numerical_error
 pure function dnorm_real_rank_1(x, ord, lower, upper)
     use checks, only: assert
     
-    real(kind=WP), intent(in)     :: x(:)
+    real(WP), intent(in)          :: x(:)
     integer, intent(in), optional :: ord, lower, upper
     
     ! `lower` and `upper` are used for cases where not all indices are to be summed over.
     ! For example, if you have ghost cells, those cells have fictitious data that should not be summed over.
     
-    real(kind=WP) :: dnorm_real_rank_1
+    real(WP) :: dnorm_real_rank_1
     
     integer :: ord_, lower_, upper_, i, n
     
@@ -315,13 +315,13 @@ pure function logspace(loglower, logupper, n)
     
     use checks, only: assert, is_close
     
-    real(kind=WP), intent(in)     :: loglower, logupper
+    real(WP), intent(in)          :: loglower, logupper
     integer, intent(in), optional :: n
     
     integer, allocatable :: logspace(:)
     
-    integer       :: i, n_
-    real(kind=WP) :: logdelta
+    integer  :: i, n_
+    real(WP) :: logdelta
     
     if (present(n)) then
         n_ = n
