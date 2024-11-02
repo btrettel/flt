@@ -32,7 +32,7 @@ subroutine fake_de(n, tests, de, de_dv)
     integer, intent(in)                     :: n
     type(test_results_type), intent(in out) :: tests
     type(ad), intent(out), allocatable      :: de(:)
-    real(kind=WP), intent(out), allocatable :: de_dv(:, :)
+    real(WP), intent(out), allocatable      :: de_dv(:, :)
     
     integer, parameter :: N_VAR = 1, N_DV = 1
     
@@ -49,7 +49,7 @@ subroutine fake_de2(n, tests, de, de_dv)
     integer, intent(in)                     :: n
     type(test_results_type), intent(in out) :: tests
     type(ad), intent(out), allocatable      :: de(:)
-    real(kind=WP), intent(out), allocatable :: de_dv(:, :)
+    real(WP), intent(out), allocatable      :: de_dv(:, :)
     
     integer, parameter :: N_VAR = 2, N_DV = 1
     
@@ -117,14 +117,14 @@ subroutine test_dnorm(tests)
     
     type(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), allocatable :: x(:)
-    type(ad), allocatable      :: y(:)
+    real(WP), allocatable :: x(:)
+    type(ad), allocatable :: y(:)
     
     integer, parameter :: N_DV = 1
     
-    real(kind=WP) :: dnorm_x, dnorm_exact
-    type(ad)      :: dnorm_y
-    integer       :: i
+    real(WP) :: dnorm_x, dnorm_exact
+    type(ad) :: dnorm_y
+    integer  :: i
     
     dnorm_exact = 1.5_WP
     allocate(x(3))

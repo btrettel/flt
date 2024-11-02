@@ -34,8 +34,7 @@ character(len=4), parameter :: INTRINSIC_2ARG_WITHUNITS(2) = ["min", "max"]
 
 type, public :: config_type
     character(len=:), allocatable :: output_file, type_definition, use_line, kind_parameter, module_name
-    real(kind=WP), allocatable    :: min_exponents(:), &
-                                     max_exponents(:)
+    real(WP), allocatable         :: min_exponents(:), max_exponents(:)
     integer, allocatable          :: denominators(:)
     
     integer :: max_n_units, max_iter !, max_n_interfaces
@@ -78,7 +77,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     ! `config` namelist group
     character(len=CL)            :: output_file, type_definition, use_line, kind_parameter, module_name
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
-    real(kind=WP)                :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
+    real(WP)                     :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
     integer                      :: denominators(MAX_BASE_UNITS), max_n_units, max_iter
     logical                      :: tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
@@ -97,7 +96,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     end do
     
     output_file     = ""
-    type_definition = "real(kind=WP)"
+    type_definition = "real(WP)"
     use_line        = "use prec, only: WP"
     kind_parameter  = "_WP"
     module_name     = "units"
@@ -228,7 +227,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     
     ! `seed_unit` namelist group
     character(len=MAX_LABEL_LEN) :: label
-    real(kind=WP)                :: e(MAX_BASE_UNITS)
+    real(WP)                     :: e(MAX_BASE_UNITS)
     
     namelist /seed_unit/ label, e
     
@@ -378,12 +377,12 @@ pure function denominator_matches(e, d)
     
     use checks, only: is_close
     
-    real(kind=WP), intent(in) :: e
-    integer, intent(in)       :: d
+    real(WP), intent(in) :: e
+    integer, intent(in)  :: d
     
     logical :: denominator_matches
     
-    real(kind=WP) :: ed
+    real(WP) :: ed
     
     ed = e * real(d, kind=WP)
     
@@ -866,7 +865,7 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
     else
         call assert(len(config%kind_parameter) > 1, "genunits_io (write_binary_operator): kind parameter is too short: " &
                                                         // config%kind_parameter)
-        real_type = "real(kind=" // config%kind_parameter(2:) // ")"
+        real_type = "real(" // config%kind_parameter(2:) // ")"
     end if
     
     write(unit=file_unit, fmt="(3a)") "elemental function ", binary_operator_procedure, "(left, right)"

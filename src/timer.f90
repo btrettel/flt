@@ -27,7 +27,7 @@ type, public :: timer_type
     logical                  :: active = .false. ! whether the timer is currently timing
     integer(kind=TIMER_KIND) :: sum_count = 0_TIMER_KIND, & ! time before current timer start
                                 start_count, count_max
-    real(kind=WP)            :: count_rate
+    real(WP)                 :: count_rate
     
     ! nagfor complains if `count_rate` is different type than `count` or `count_max`:
     ! <https://fortran-lang.discourse.group/t/proper-usage-of-system-clock/3245>
@@ -54,7 +54,7 @@ subroutine start_timer(timer)
     class(timer_type), intent(in out) :: timer
     
     integer(kind=TIMER_KIND) :: start_count, count_max
-    real(kind=WP)            :: count_rate
+    real(WP)                 :: count_rate
     
     call assert(.not. timer%active, "timer (start_timer): An active timer can not be started.")
     
@@ -82,7 +82,7 @@ subroutine stop_timer(timer)
     class(timer_type), intent(in out) :: timer
     
     integer(kind=TIMER_KIND) :: stop_count, count_max, before_count_max
-    real(kind=WP)            :: count_rate
+    real(WP)                 :: count_rate
     
     call assert(timer%active, "timer (stop_timer): An inactive timer has already stopped.")
     
@@ -122,7 +122,7 @@ end subroutine reset_timer
 pure function read_timer(timer)
     class(timer_type), intent(in) :: timer
     
-    real(kind=WP) :: read_timer
+    real(WP) :: read_timer
     
     call assert(.not. timer%active, "timer (read_timer): Timer must be inactive to be read.")
     
@@ -138,7 +138,7 @@ function timeit(f, number)
     
     integer(kind=I9), optional :: number
     
-    real(kind=WP) :: timeit
+    real(WP) :: timeit
     
     type(timer_type) :: wtime
     integer(kind=I9) :: i, number_
@@ -162,10 +162,10 @@ end function timeit
 subroutine sleep(duration)
     use checks, only: assert
     
-    real(kind=WP), intent(in) :: duration
+    real(WP), intent(in) :: duration
     
     integer(kind=TIMER_KIND) :: start_count, count_max, stop_count, running_count
-    real(kind=WP)            :: count_rate
+    real(WP)                 :: count_rate
     
     call assert(duration > 0.0_WP, "duration must be greater than zero.")
     

@@ -13,7 +13,7 @@ private
 
 ! <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
 ! I started `TOL_FACTOR` at 5, but increased it to 25 based on experience.
-real(kind=WP), public, parameter :: TOL_FACTOR = 25.0_WP
+real(WP), public, parameter :: TOL_FACTOR = 25.0_WP
 
 public :: abs_tolerance
 public :: is_close, all_close
@@ -41,9 +41,9 @@ pure function abs_tolerance(input_real_1, input_real_2)
     ! <https://fortran-lang.discourse.group/t/suggestion-findloc-tolerance/5131/5>
     ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Floating-point-equivalence-check/m-p/1087149>
     
-    real(kind=WP), intent(in) :: input_real_1, input_real_2
+    real(WP), intent(in) :: input_real_1, input_real_2
     
-    real(kind=WP) :: abs_tolerance
+    real(WP) :: abs_tolerance
     
     abs_tolerance = TOL_FACTOR * spacing(max(abs(input_real_1), abs(input_real_2)))
 end function abs_tolerance
@@ -58,12 +58,12 @@ elemental function is_close(input_real_1, input_real_2, rel_tol, abs_tol)
     ! <https://numpy.org/doc/stable/reference/generated/numpy.isclose.html>
     ! <https://docs.python.org/3/library/math.html#math.isclose>
     
-    real(kind=WP), intent(in)           :: input_real_1, input_real_2
-    real(kind=WP), intent(in), optional :: rel_tol, abs_tol
+    real(WP), intent(in)           :: input_real_1, input_real_2
+    real(WP), intent(in), optional :: rel_tol, abs_tol
     
     logical :: is_close
     
-    real(kind=WP) :: rel_tol_, abs_tol_, tol
+    real(WP) :: rel_tol_, abs_tol_, tol
     
     if (present(rel_tol)) then
         rel_tol_ = rel_tol
@@ -89,14 +89,14 @@ end function is_close
 pure function all_close_rank_1(input_real_1, input_real_2, rel_tol, abs_tol)
     ! like <https://numpy.org/doc/stable/reference/generated/numpy.allclose.html>
     
-    real(kind=WP), intent(in)           :: input_real_1(:), input_real_2(:)
-    real(kind=WP), intent(in), optional :: rel_tol, abs_tol
+    real(WP), intent(in)           :: input_real_1(:), input_real_2(:)
+    real(WP), intent(in), optional :: rel_tol, abs_tol
     
     logical :: all_close_rank_1
     
     integer :: i, n_match
     
-    real(kind=WP) :: rel_tol_, abs_tol_
+    real(WP) :: rel_tol_, abs_tol_
     
     if (present(rel_tol)) then
         rel_tol_ = rel_tol
@@ -129,14 +129,14 @@ pure function all_close_rank_1(input_real_1, input_real_2, rel_tol, abs_tol)
 end function all_close_rank_1
 
 pure function all_close_rank_1_rank_0(input_real_1, input_real_2, rel_tol, abs_tol)
-    real(kind=WP), intent(in)           :: input_real_1(:), input_real_2
-    real(kind=WP), intent(in), optional :: rel_tol, abs_tol
+    real(WP), intent(in)           :: input_real_1(:), input_real_2
+    real(WP), intent(in), optional :: rel_tol, abs_tol
     
     logical :: all_close_rank_1_rank_0
     
     integer :: i, n_match
     
-    real(kind=WP) :: rel_tol_, abs_tol_
+    real(WP) :: rel_tol_, abs_tol_
     
     if (present(rel_tol)) then
         rel_tol_ = rel_tol

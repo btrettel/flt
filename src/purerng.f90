@@ -43,7 +43,7 @@ elemental subroutine purerng_random_number(rng, harvest)
     use prec, only: WP
     
     class(rng_type), intent(in out) :: rng
-    real(kind=WP), intent(out)      :: harvest
+    real(WP), intent(out)           :: harvest
     
     select case (rng%rng_num)
         case (RNG_LECUYER)
@@ -158,7 +158,7 @@ elemental subroutine lecuyer(rng, harvest)
     use checks, only: assert
     
     type(rng_type), intent(in out) :: rng
-    real(kind=WP), intent(out)     :: harvest
+    real(WP), intent(out)          :: harvest
     
     integer(kind=I10) :: k(L), z
     
@@ -211,7 +211,7 @@ elemental subroutine determ(rng, harvest)
     ! deterministic "random" number
     
     type(rng_type), intent(in out) :: rng
-    real(kind=WP), intent(out)     :: harvest
+    real(WP), intent(out)          :: harvest
     
     harvest = real(rng%seed(rng%seed(1)), WP) / real(DETERM_DENOM, WP)
     

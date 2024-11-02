@@ -1,13 +1,13 @@
 pure function linspace(lower, upper, n)
     use checks, only: assert, is_close
     
-    real(kind=WP), intent(in)     :: lower, upper
+    real(WP), intent(in)          :: lower, upper
     integer, intent(in), optional :: n
     
-    real(kind=WP), allocatable :: linspace(:)
+    real(WP), allocatable :: linspace(:)
     
-    integer :: i, n_
-    real(kind=WP) :: delta
+    integer  :: i, n_
+    real(WP) :: delta
     
     if (present(n)) then
         n_ = n

@@ -3,20 +3,10 @@
 Priorities:
 
 - Change `real(kind=WP)` to `real(WP)`.
-- `purerng`:
-    - RNG splitting
-        - lecuyer_implementing_1991
-        - Iterative: 20 lines
-        - Decomposition: 41 lines
-        - Russian peasant: 23 lines
-    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
-    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
-        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
-        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
-        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
-    - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
-    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
+- Change `real(???, kind=WP)` to `real(???, WP)`.
+- Change `integer(kind=` to `integer(`.
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
+    - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
     - Make ga.f90 use rngmod.f90.
     - Design to use deb_efficient_2000 eq. 4 for constraints. Objective functions must return an array for each constraint if any are violated.
     - herrera_tackling_1998
@@ -35,6 +25,18 @@ Priorities:
         - <https://groups.google.com/g/comp.lang.fortran/c/l8UJoI-x9PM>
 - fmad.f90 and units.f90
     - `is_close`
+- `purerng`:
+    - RNG splitting
+        - lecuyer_implementing_1991
+        - Iterative: 20 lines
+        - Decomposition: 41 lines
+        - Russian peasant: 23 lines
+    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
+    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
+        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
+        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
+        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
+    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
 
 Later:
 

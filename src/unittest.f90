@@ -140,17 +140,17 @@ subroutine real_eq(tests, returned_real, compared_real, message_in, abs_tol)
     
     class(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), intent(in)    :: returned_real, compared_real
+    real(WP), intent(in)         :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
     
-    real(kind=WP), intent(in), optional :: abs_tol
+    real(WP), intent(in), optional :: abs_tol
     
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=4)              :: variable_type
     character(len=2)              :: test_operator
     logical                       :: test_passes
     character(len=:), allocatable :: message
-    real(kind=WP)                 :: tolerance, difference
+    real(WP)                      :: tolerance, difference
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
                             returned_real, compared_real, tolerance, difference
@@ -205,17 +205,17 @@ subroutine real_ne(tests, returned_real, compared_real, message_in, abs_tol)
     
     class(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), intent(in)    :: returned_real, compared_real
+    real(WP), intent(in)         :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
     
-    real(kind=WP), intent(in), optional :: abs_tol
+    real(WP), intent(in), optional :: abs_tol
     
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=4)              :: variable_type
     character(len=2)              :: test_operator
     logical                       :: test_passes
     character(len=:), allocatable :: message
-    real(kind=WP)                 :: tolerance, difference
+    real(WP)                      :: tolerance, difference
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
                             returned_real, compared_real, tolerance, difference
@@ -269,7 +269,7 @@ subroutine real_gt(tests, returned_real, compared_real, message_in)
     
     class(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), intent(in)    :: returned_real, compared_real
+    real(WP), intent(in)         :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
     
     character(len=TIMESTAMP_LEN)  :: timestamp
@@ -314,7 +314,7 @@ subroutine real_lt(tests, returned_real, compared_real, message_in)
     
     class(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), intent(in)    :: returned_real, compared_real
+    real(WP), intent(in)         :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
     
     character(len=TIMESTAMP_LEN)  :: timestamp
@@ -359,7 +359,7 @@ subroutine real_ge(tests, returned_real, compared_real, message_in)
     
     class(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), intent(in)    :: returned_real, compared_real
+    real(WP), intent(in)         :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
     
     character(len=TIMESTAMP_LEN)  :: timestamp
@@ -404,7 +404,7 @@ subroutine real_le(tests, returned_real, compared_real, message_in)
     
     class(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), intent(in)    :: returned_real, compared_real
+    real(WP), intent(in)         :: returned_real, compared_real
     character(len=*), intent(in) :: message_in
     
     character(len=TIMESTAMP_LEN)  :: timestamp
@@ -828,9 +828,9 @@ subroutine end_tests(tests)
     
     class(test_results_type), intent(in out) :: tests
     
-    integer       :: n_tests, n_failures
-    real(kind=WP) :: duration ! in seconds
-    logical       :: unit_open
+    integer  :: n_tests, n_failures
+    real(WP) :: duration ! in seconds
+    logical  :: unit_open
     
     namelist /tests_summary/ n_tests, n_failures, duration
     

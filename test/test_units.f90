@@ -315,10 +315,10 @@ subroutine test_timing(tests)
     
     type(test_results_type), intent(in out) :: tests
     
-    real(kind=WP), allocatable   :: u_real(:, :)
+    real(WP), allocatable        :: u_real(:, :)
     type(si_energy), allocatable :: u_units(:, :)
     
-    real(kind=WP) :: time_real, time_units
+    real(WP) :: time_real, time_units
     
     call poisson_real(9, 9, 100, u_real)
     call tests%real_eq(u_real(3, 3), 8.010424579559166e-2_WP, "poisson_real, regression test")
@@ -336,21 +336,21 @@ subroutine poisson_real(mmax, nmax, itmax, u)
     integer, intent(in) :: mmax  ! number of interior $x$ grid points
     integer, intent(in) :: nmax  ! number of interior $y$ grid points
     integer, intent(in) :: itmax ! maximum number of iterations allowed
-    real(kind=WP), allocatable, intent(out) :: u(:, :) ! numerical solution
+    real(WP), allocatable, intent(out) :: u(:, :) ! numerical solution
     
-    real(kind=WP), parameter :: A     = 1.0_WP ! $x$ dimension
-    real(kind=WP), parameter :: B     = 1.0_WP ! $y$ dimension
-    real(kind=WP), parameter :: OMEGA = 1.0_WP ! relaxation parameter
-    real(kind=WP), parameter :: TOL   = 0.005_WP ! tolerance for maximum of absolute value of residual
+    real(WP), parameter :: A     = 1.0_WP ! $x$ dimension
+    real(WP), parameter :: B     = 1.0_WP ! $y$ dimension
+    real(WP), parameter :: OMEGA = 1.0_WP ! relaxation parameter
+    real(WP), parameter :: TOL   = 0.005_WP ! tolerance for maximum of absolute value of residual
 
-    real(kind=WP) :: hx
-    real(kind=WP) :: hy
-    real(kind=WP) :: q
-    real(kind=WP) :: f
+    real(WP) :: hx
+    real(WP) :: hy
+    real(WP) :: q
+    real(WP) :: f
 
-    real(kind=WP), allocatable :: x(:), y(:)
-    real(kind=WP) :: u_old ! numerical solution for previous iteration
-    real(kind=WP) :: u_sum, ave, rmax, res
+    real(WP), allocatable :: x(:), y(:)
+    real(WP) :: u_old ! numerical solution for previous iteration
+    real(WP) :: u_sum, ave, rmax, res
 
     integer :: i ! number of SOR iterations performed
     integer :: m, n ! loop indices
@@ -464,10 +464,10 @@ subroutine poisson_units(mmax, nmax, itmax, u)
     integer, intent(in) :: itmax ! maximum number of iterations allowed
     type(si_energy), allocatable, intent(out) :: u(:, :) ! numerical solution
     
-    real(kind=WP), parameter :: A     = 1.0_WP ! $x$ dimension
-    real(kind=WP), parameter :: B     = 1.0_WP ! $y$ dimension
-    real(kind=WP), parameter :: OMEGA = 1.0_WP ! relaxation parameter
-    real(kind=WP), parameter :: TOL   = 0.005_WP ! tolerance for maximum of absolute value of residual
+    real(WP), parameter :: A     = 1.0_WP ! $x$ dimension
+    real(WP), parameter :: B     = 1.0_WP ! $y$ dimension
+    real(WP), parameter :: OMEGA = 1.0_WP ! relaxation parameter
+    real(WP), parameter :: TOL   = 0.005_WP ! tolerance for maximum of absolute value of residual
 
     type(si_length) :: hx
     type(si_length) :: hy
@@ -591,7 +591,7 @@ subroutine poisson_units(mmax, nmax, itmax, u)
 end subroutine poisson_units
 
 subroutine time_it_poisson_real()
-    real(kind=WP), allocatable :: u_real(:, :)
+    real(WP), allocatable :: u_real(:, :)
     
     call poisson_real(9, 9, 100, u_real)
 end subroutine time_it_poisson_real

@@ -33,7 +33,7 @@ abstract interface
         import :: rng_type
         
         class(rng_type), intent(in out) :: rng
-        real(kind=WP), intent(out)      :: harvest
+        real(WP), intent(out)           :: harvest
     end subroutine
 end interface
 
@@ -43,7 +43,7 @@ elemental subroutine pure_random_number(rng, harvest)
     use prec, only: WP
     
     class(rng_type), intent(in out) :: rng
-    real(kind=WP), intent(out)      :: harvest
+    real(WP), intent(out)           :: harvest
     
     ! TODO: Why do I not have to pass rng in the argument list?
     call rng%rng(harvest)
@@ -55,7 +55,7 @@ elemental subroutine lecuyer(rng, harvest)
     use prec, only: WP
     
     type(rng_type), intent(in out) :: rng
-    real(kind=WP), intent(out)     :: harvest
+    real(WP), intent(out)          :: harvest
     
     ! TODO: For speed, I might be able to reduce the precision of some of these `integer`s.
     

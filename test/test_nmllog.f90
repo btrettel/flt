@@ -177,12 +177,12 @@ subroutine test_log_debug_info(tests)
     character(len=CL)            :: compiler_options, compiler_version
     
     ! Search nmllog.f90 for `real_huge` to see why this is commented out.
-    !real(kind=WP) :: real_huge
-    integer       :: real_kind_code, real_precision, real_range, real_radix, &
-                        real_min_exponent, real_max_exponent, &
-                        integer_kind_code, integer_range, integer_huge
-    logical       :: real_support_datatype, real_support_denormal, real_support_divide, &
-                        real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
+    !real(WP) :: real_huge
+    integer  :: real_kind_code, real_precision, real_range, real_radix, &
+                    real_min_exponent, real_max_exponent, &
+                    integer_kind_code, integer_range, integer_huge
+    logical  :: real_support_datatype, real_support_denormal, real_support_divide, &
+                    real_support_inf, real_support_nan, real_support_sqrt, real_support_standard
     
     namelist /debug_info/ timestamp, level, compiler_options, compiler_version, &
                             real_kind_code, real_precision, real_range, real_radix, & !real_huge, &

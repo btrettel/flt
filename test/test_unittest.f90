@@ -384,7 +384,7 @@ subroutine test_read_unittest_nml(tests)
     character(len=2)             :: test_operator
     logical                      :: test_passes, returned_logical, compared_logical
     character(len=CL)            :: message, returned_character, compared_character
-    real(kind=WP)                :: returned_real, compared_real, tolerance, difference
+    real(WP)                     :: returned_real, compared_real, tolerance, difference
     integer                      :: returned_integer, compared_integer
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
@@ -393,8 +393,8 @@ subroutine test_read_unittest_nml(tests)
                             returned_integer, compared_integer, &
                             returned_character, compared_character
     
-    integer       :: n_tests, n_failures
-    real(kind=WP) :: duration ! in seconds
+    integer  :: n_tests, n_failures
+    real(WP) :: duration ! in seconds
     
     namelist /tests_summary/ n_tests, n_failures, duration
     

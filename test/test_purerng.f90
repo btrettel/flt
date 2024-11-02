@@ -7,7 +7,6 @@
 
 program test_purerng
 
-
 use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
@@ -35,7 +34,7 @@ subroutine test_lecuyer(tests)
     type(test_results_type), intent(in out) :: tests
     
     type(rng_type) :: rng
-    real(kind=WP)  :: harvest
+    real(WP)       :: harvest
     integer        :: seed_size, rng_num, i
 
     integer(kind=I10), allocatable :: seed(:)
@@ -92,7 +91,7 @@ subroutine test_determ(tests)
     type(test_results_type), intent(in out) :: tests
     
     type(rng_type) :: rng
-    real(kind=WP)  :: harvest
+    real(WP)       :: harvest
     integer        :: rng_num
 
     integer(kind=I10), allocatable :: seed(:)
@@ -159,7 +158,7 @@ subroutine test_concurrent(tests)
     integer, parameter :: N_RNGS = 100
     
     type(rng_type) :: rng(N_RNGS)
-    real(kind=WP)  :: harvest(N_RNGS)
+    real(WP)       :: harvest(N_RNGS)
     integer        :: i_rng
     
     do i_rng = 1, N_RNGS ! SERIAL

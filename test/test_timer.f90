@@ -16,7 +16,7 @@ implicit none
 type(log_type), target  :: logger
 type(test_results_type) :: tests
 type(timer_type)        :: wtime
-real(kind=WP)           :: duration_seconds, timeit_duration_seconds
+real(WP)                :: duration_seconds, timeit_duration_seconds
 
 call logger%open("timer.nml")
 call tests%start_tests(logger)

@@ -20,7 +20,7 @@ integer, public, parameter  :: MAX_BASE_UNITS = 10, &
                                EXPONENT_LEN   = 5
 
 type, public :: unit_type
-    real(kind=WP), allocatable :: e(:)
+    real(WP), allocatable :: e(:)
 contains
     procedure :: label
     procedure :: readable
@@ -145,8 +145,8 @@ end function readable
 pure subroutine real_to_rational(x, numerator, denominator, rc)
     use checks, only: is_close, assert
     
-    real(kind=WP), intent(in) :: x
-    integer, intent(out)      :: numerator, denominator, rc
+    real(WP), intent(in) :: x
+    integer, intent(out) :: numerator, denominator, rc
     
     integer, parameter :: MAX_ITERATIONS = 64
     

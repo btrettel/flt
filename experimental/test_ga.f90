@@ -16,7 +16,7 @@ implicit none
 type(log_type)          :: logger
 type(test_results_type) :: tests
 integer                 :: ri
-real(kind=WP)           :: rr
+real(WP)                :: rr
 type(bounds_type)       :: bounds
 
 call logger%open("ga.nml")

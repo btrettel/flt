@@ -138,8 +138,8 @@ subroutine test_real_to_rational(tests)
     
     type(test_results_type), intent(in out) :: tests
     
-    real(kind=WP) :: x
-    integer       :: numerator, denominator, rc
+    real(WP) :: x
+    integer  :: numerator, denominator, rc
     
     x = 1.0_WP
     call real_to_rational(x, numerator, denominator, rc)

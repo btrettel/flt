@@ -11,7 +11,7 @@ use checks, only: assert_dimension
 use prec, only: WP
 implicit none
 
-real(kind=WP) :: a2(5, 5), c2(4, 4)
+real(WP) :: a2(5, 5), c2(4, 4)
 
 call assert_dimension(a2, c2)
 

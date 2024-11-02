@@ -22,9 +22,9 @@ integer                 :: test_assert_false_unit
 logical                 :: is_close_array(2), test_assert_false_exists
 character(len=80)       :: assert_false_line
 
-real(kind=WP) :: a1(5),    b1(5),    &
-                 a2(5, 5), b2(5, 5), &
-                 a3(5, 5), b3(5, 5)
+real(WP) :: a1(5),    b1(5),    &
+            a2(5, 5), b2(5, 5), &
+            a3(5, 5), b3(5, 5)
 
 call logger%open("checks.nml")
 call tests%start_tests(logger)

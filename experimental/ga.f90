@@ -16,12 +16,12 @@ private
 
 type, public :: bounds_type
     ! lower and upper bounds
-    real(kind=WP) :: lower, upper
+    real(WP) :: lower, upper
 end type bounds_type
 
 type, public :: ga_config
-    real(kind=WP) :: p_select, p_cross, p_mutate, stop_time
-    integer       :: n_gener, n_stall
+    real(WP) :: p_select, p_cross, p_mutate, stop_time
+    integer  :: n_gener, n_stall
     
     ! number of individuals in population
     integer :: n_pop
@@ -36,13 +36,13 @@ type, public :: ga_config
 end type ga_config
 
 type, public :: individual_type
-    real(kind=WP), allocatable :: chromo(:)
+    real(WP), allocatable :: chromo(:)
     
     ! whether the quality function(s) has/have been set
     logical :: set
     
     ! quality function values
-    real(kind=WP), allocatable :: fitness(:)
+    real(WP), allocatable :: fitness(:)
 end type individual_type
 
 type, public :: pop_type
@@ -58,8 +58,8 @@ public :: initialize
 contains
 
 function rand_int(lower_bound, upper_bound, nu)
-    integer, intent(in)       :: lower_bound, upper_bound
-    real(kind=WP), intent(in) :: nu
+    integer, intent(in)  :: lower_bound, upper_bound
+    real(WP), intent(in) :: nu
     
     integer :: rand_int
     
@@ -70,9 +70,9 @@ end function rand_int
 function rand_uniform(lower_bound, upper_bound, nu)
     ! Returns a uniform random variable.
     
-    real(kind=WP), intent(in) :: lower_bound, upper_bound, nu
+    real(WP), intent(in) :: lower_bound, upper_bound, nu
     
-    real(kind=WP) :: rand_uniform
+    real(WP) :: rand_uniform
     
     rand_uniform = lower_bound + (upper_bound - lower_bound) * nu
 end function rand_uniform
@@ -83,11 +83,11 @@ function rand_cauchy(m, b, nu)
     
     use prec, only: PI
     
-    real(kind=WP), intent(in) :: m ! median
-    real(kind=WP), intent(in) :: b ! half width
-    real(kind=WP), intent(in) :: nu ! random CDF value for inverse sampling
+    real(WP), intent(in) :: m ! median
+    real(WP), intent(in) :: b ! half width
+    real(WP), intent(in) :: nu ! random CDF value for inverse sampling
     
-    real(kind=WP) :: rand_cauchy
+    real(WP) :: rand_cauchy
     
     rand_cauchy = m + b * tan(PI * (nu - 0.5_WP))
 end function rand_cauchy
@@ -96,7 +96,7 @@ pure subroutine clip(bounds, x)
     ! Clip variable `x` within upper and lower bounds.
     
     type(bounds_type), intent(in) :: bounds
-    real(kind=WP), intent(in out) :: x
+    real(WP), intent(in out)      :: x
     
     x = min(x, bounds%upper)
     x = max(x, bounds%lower)
@@ -106,8 +106,8 @@ subroutine initialize(config, pop)
     type(ga_config), intent(in) :: config
     type(pop_type), intent(out) :: pop
     
-    integer       :: i_pop, i_gene
-    real(kind=WP) :: nu
+    integer  :: i_pop, i_gene
+    real(WP) :: nu
     
     pop_loop: do i_pop = 1, config%n_pop
         gene_loop: do i_gene = 1, config%n_genes
@@ -126,7 +126,7 @@ end subroutine initialize
 !        function f(x)
 !            ! TODO: Make ga_types.f90 as the `interface` block needs to use `individual_type`
 !            type(individual_type), intent(in) :: x
-!            real(kind=WP)                     :: f(:)
+!            real(WP)                          :: f(:)
 !        end function fun
 !    end interface
 !end subroutine optimize
