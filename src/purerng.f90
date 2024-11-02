@@ -20,13 +20,13 @@ integer, parameter :: DETERM_DENOM = 1000
 
 ! from lecuyer_efficient_1988, table III
 integer, parameter :: L = 2
-integer(kind=I10), parameter :: LECUYER_M(L) = [2147483563_I10, 2147483399_I10]
-integer(kind=I10), parameter :: LECUYER_A(L) = [40014_I10, 40692_I10]
-integer(kind=I10), parameter :: LECUYER_Q(L) = [53668_I10, 52774_I10]
-integer(kind=I10), parameter :: LECUYER_R(L) = [12211_I10, 3791_I10]
+integer(I10), parameter :: LECUYER_M(L) = [2147483563_I10, 2147483399_I10]
+integer(I10), parameter :: LECUYER_A(L) = [40014_I10, 40692_I10]
+integer(I10), parameter :: LECUYER_Q(L) = [53668_I10, 52774_I10]
+integer(I10), parameter :: LECUYER_R(L) = [12211_I10, 3791_I10]
 
 type, public :: rng_type
-    integer(kind=I10), allocatable, private :: seed(:)
+    integer(I10), allocatable, private :: seed(:)
     integer, private :: rng_num = RNG_LECUYER
 contains
     procedure :: random_number => purerng_random_number
@@ -63,9 +63,9 @@ subroutine purerng_random_seed(rng, seed_size, put, get)
     
     class(rng_type), intent(in out) :: rng
     
-    integer, intent(out), optional                        :: seed_size
-    integer(kind=I10), intent(in), optional               :: put(:)
-    integer(kind=I10), allocatable, intent(out), optional :: get(:)
+    integer, intent(out), optional                   :: seed_size
+    integer(I10), intent(in), optional               :: put(:)
+    integer(I10), allocatable, intent(out), optional :: get(:)
     
     integer :: values(8), i
     
@@ -160,7 +160,7 @@ elemental subroutine lecuyer(rng, harvest)
     type(rng_type), intent(in out) :: rng
     real(WP), intent(out)          :: harvest
     
-    integer(kind=I10) :: k(L), z
+    integer(I10) :: k(L), z
     
     call assert(allocated(rng%seed), "purerng (lecuyer): seed array must be allocated")
     call assert(size(rng%seed) == 2, "purerng (lecuyer): seed array is the wrong size")
@@ -185,7 +185,7 @@ elemental subroutine lecuyer(rng, harvest)
         z = z + LECUYER_M(1) - 1
     end if
     
-    harvest = real(z, kind=WP) / real(LECUYER_M(1), kind=WP)
+    harvest = real(z, WP) / real(LECUYER_M(1), WP)
     
     ! lecuyer_efficient_1988 p. 747R:
     ! > Notice that the function will never return 0.0 or 1.0, as long as `REAL` variables have at least 23-bit mantissa (this is

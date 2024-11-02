@@ -19,7 +19,7 @@ private
 public :: lecuyer
 
 type, public :: rng_type
-    integer(kind=I10), allocatable     :: seed(:)
+    integer(I10), allocatable          :: seed(:)
     procedure(rng_subroutine), pointer :: rng ! TODO: Does `rng = lecuyer` set the default?
 contains
     procedure :: random_number => pure_random_number
@@ -62,12 +62,12 @@ elemental subroutine lecuyer(rng, harvest)
     integer, parameter :: L = 2
     
     ! from lecuyer_efficient_1988, table III
-    integer(kind=I10), parameter :: M(L) = [2147483563_I10, 2147483399_I10]
-    integer(kind=I10), parameter :: A(L) = [40014_I10, 40692_I10]
-    integer(kind=I10), parameter :: Q(L) = [53668_I10, 52774_I10]
-    integer(kind=I10), parameter :: R(L) = [12211_I10, 3791_I10]
+    integer(I10), parameter :: M(L) = [2147483563_I10, 2147483399_I10]
+    integer(I10), parameter :: A(L) = [40014_I10, 40692_I10]
+    integer(I10), parameter :: Q(L) = [53668_I10, 52774_I10]
+    integer(I10), parameter :: R(L) = [12211_I10, 3791_I10]
     
-    integer(kind=I10) :: k(L), z
+    integer(I10) :: k(L), z
     
     call assert(allocated(rng%seed))
     call assert(size(rng%seed) == 2)
@@ -90,7 +90,7 @@ elemental subroutine lecuyer(rng, harvest)
         z = z + M(1) - 1
     end if
     
-    harvest = real(z, kind=WP) / real(M(1), kind=WP)
+    harvest = real(z, WP) / real(M(1), WP)
     
     ! lecuyer_efficient_1988 p. 747R:
     ! > Notice that the function will never return 0.0 or 1.0, as long as `REAL` variables have at least 23-bit mantissa (this is

@@ -494,8 +494,8 @@ subroutine integer10_eq(tests, returned_integer, compared_integer, message_in)
     
     class(test_results_type), intent(in out) :: tests
     
-    integer(kind=I10), intent(in) :: returned_integer, compared_integer
-    character(len=*), intent(in)  :: message_in
+    integer(I10), intent(in)     :: returned_integer, compared_integer
+    character(len=*), intent(in) :: message_in
     
     character(len=TIMESTAMP_LEN)  :: timestamp
     character(len=7)              :: variable_type
@@ -627,8 +627,8 @@ subroutine integer10_ge(tests, returned_integer, compared_integer, message_in)
     
     class(test_results_type), intent(in out) :: tests
     
-    integer(kind=I10), intent(in) :: returned_integer, compared_integer
-    character(len=*), intent(in)  :: message_in
+    integer(I10), intent(in)     :: returned_integer, compared_integer
+    character(len=*), intent(in) :: message_in
     
     logical :: test_passes
     
@@ -716,8 +716,8 @@ subroutine integer10_le(tests, returned_integer, compared_integer, message_in)
     
     class(test_results_type), intent(in out) :: tests
     
-    integer(kind=I10), intent(in) :: returned_integer, compared_integer
-    character(len=*), intent(in)  :: message_in
+    integer(I10), intent(in)     :: returned_integer, compared_integer
+    character(len=*), intent(in) :: message_in
     
     logical :: test_passes
     

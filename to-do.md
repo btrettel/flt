@@ -2,9 +2,6 @@
 
 Priorities:
 
-- Change `real(kind=WP)` to `real(WP)`.
-- Change `real(???, kind=WP)` to `real(???, WP)`.
-- Change `integer(kind=` to `integer(`.
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
     - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
     - Make ga.f90 use rngmod.f90.

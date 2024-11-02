@@ -24,10 +24,10 @@ integer, public, parameter :: TIMER_KIND = selected_int_kind(18)
 public :: timeit, sleep
 
 type, public :: timer_type
-    logical                  :: active = .false. ! whether the timer is currently timing
-    integer(kind=TIMER_KIND) :: sum_count = 0_TIMER_KIND, & ! time before current timer start
-                                start_count, count_max
-    real(WP)                 :: count_rate
+    logical             :: active = .false. ! whether the timer is currently timing
+    integer(TIMER_KIND) :: sum_count = 0_TIMER_KIND, & ! time before current timer start
+                           start_count, count_max
+    real(WP)            :: count_rate
     
     ! nagfor complains if `count_rate` is different type than `count` or `count_max`:
     ! <https://fortran-lang.discourse.group/t/proper-usage-of-system-clock/3245>
@@ -53,8 +53,8 @@ subroutine start_timer(timer)
     
     class(timer_type), intent(in out) :: timer
     
-    integer(kind=TIMER_KIND) :: start_count, count_max
-    real(WP)                 :: count_rate
+    integer(TIMER_KIND) :: start_count, count_max
+    real(WP)            :: count_rate
     
     call assert(.not. timer%active, "timer (start_timer): An active timer can not be started.")
     
@@ -81,8 +81,8 @@ subroutine stop_timer(timer)
     
     class(timer_type), intent(in out) :: timer
     
-    integer(kind=TIMER_KIND) :: stop_count, count_max, before_count_max
-    real(WP)                 :: count_rate
+    integer(TIMER_KIND) :: stop_count, count_max, before_count_max
+    real(WP)            :: count_rate
     
     call assert(timer%active, "timer (stop_timer): An inactive timer has already stopped.")
     
@@ -136,12 +136,12 @@ function timeit(f, number)
     
     procedure(timeit_subroutine) :: f
     
-    integer(kind=I9), optional :: number
+    integer(I9), optional :: number
     
     real(WP) :: timeit
     
     type(timer_type) :: wtime
-    integer(kind=I9) :: i, number_
+    integer(I9)      :: i, number_
     
     if (present(number)) then
         number_ = number
@@ -164,8 +164,8 @@ subroutine sleep(duration)
     
     real(WP), intent(in) :: duration
     
-    integer(kind=TIMER_KIND) :: start_count, count_max, stop_count, running_count
-    real(WP)                 :: count_rate
+    integer(TIMER_KIND) :: start_count, count_max, stop_count, running_count
+    real(WP)            :: count_rate
     
     call assert(duration > 0.0_WP, "duration must be greater than zero.")
     

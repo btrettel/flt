@@ -384,9 +384,9 @@ pure function denominator_matches(e, d)
     
     real(WP) :: ed
     
-    ed = e * real(d, kind=WP)
+    ed = e * real(d, WP)
     
-    denominator_matches = is_close(real(nint(ed), kind=WP), ed)
+    denominator_matches = is_close(real(nint(ed), WP), ed)
 end function denominator_matches
 
 pure subroutine process_trial_unit(config, trial_unit, units, n_units, rc)

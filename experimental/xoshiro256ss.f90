@@ -2,10 +2,10 @@ use, intrinsic :: iso_fortran_env, only: INT64, REAL64
 
 elemental subroutine xoshiro256ss_next(rng, harvest)
     type(rng_type), intent(in out) :: rng
-    real(kind=REAL64), intent(out) :: harvest
+    real(REAL64), intent(out)      :: harvest
     
-    integer(kind=INT64)  :: iharvest, & ! `harvest` in integer form
-                            t
+    integer(INT64) :: iharvest, & ! `harvest` in integer form
+                      t
     
     ! This subroutine mostly follows <https://prng.di.unimi.it/xoshiro256starstar.c>, but I added code to convert to `real`.
     
@@ -65,13 +65,13 @@ pure subroutine xoshiro256ss_jump(rng)
     integer :: i, b
     
     ! C: `static const uint64_t JUMP[] = { 0x180ec6d33cfd0aba, 0xd5a61266f0c9392c, 0xa9582618e03fc9aa, 0x39abdc4529b1661c };
-    integer(kind=INT64), parameter :: JUMP(4) = [1733541517147835066_INT64, &
-                                                    -3051731464161248980_INT64, &
-                                                    -6244198995065845334_INT64, &
-                                                    4155657270789760540_INT64]
+    integer(INT64), parameter :: JUMP(4) = [1733541517147835066_INT64, &
+                                            -3051731464161248980_INT64, &
+                                            -6244198995065845334_INT64, &
+                                            4155657270789760540_INT64]
     
-    integer(kind=INT64) :: s(4)
-    real(kind=REAL64)   :: harvest
+    integer(INT64) :: s(4)
+    real(REAL64)   :: harvest
     
     ! C: `uint64_t s0 = 0;`
     ! C: `uint64_t s1 = 0;`

@@ -37,10 +37,10 @@ subroutine test_lecuyer(tests)
     real(WP)       :: harvest
     integer        :: seed_size, rng_num, i
 
-    integer(kind=I10), allocatable :: seed(:)
+    integer(I10), allocatable :: seed(:)
 
-    integer, parameter           :: L = 2, N_PROPERTY = 100!, N_STATS = 100000
-    integer(kind=I10), parameter :: LECUYER_M(L) = [2147483563_I10, 2147483399_I10]
+    integer, parameter      :: L = 2, N_PROPERTY = 100!, N_STATS = 100000
+    integer(I10), parameter :: LECUYER_M(L) = [2147483563_I10, 2147483399_I10]
 
     call rng%random_seed(seed_size=seed_size)
     call tests%integer_eq(seed_size, 2, "lecuyer, random_seed(size)")
@@ -94,7 +94,7 @@ subroutine test_determ(tests)
     real(WP)       :: harvest
     integer        :: rng_num
 
-    integer(kind=I10), allocatable :: seed(:)
+    integer(I10), allocatable :: seed(:)
     
     call rng%set_rng_num(RNG_DETERM)
     
