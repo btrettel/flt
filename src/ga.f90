@@ -208,8 +208,8 @@ subroutine evaluate(config, objfun, pop)
     use prec, only: WP
     use checks, only: assert, is_close
     
-    type(ga_config), intent(in) :: config
-    type(pop_type), intent(out) :: pop
+    type(ga_config), intent(in)    :: config
+    type(pop_type), intent(in out) :: pop
     
     integer  :: i_pop, i_pop_best
     real(WP) :: f_max
@@ -263,9 +263,9 @@ subroutine evaluate(config, objfun, pop)
 end subroutine evaluate
 
 !subroutine optimize(config, objfun, pop, rc)
-!    type(ga_config), intent(in) :: config
-!    type(pop_type), intent(out) :: pop
-!    integer, intent(out)        :: rc ! TODO: return codes
+!    type(ga_config), intent(in)    :: config
+!    type(pop_type), intent(in out) :: pop
+!    integer, intent(out)           :: rc ! TODO: return codes
     
 !    interface
 !        subroutine objfun(chromo, f, sum_g)

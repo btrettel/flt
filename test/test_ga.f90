@@ -21,6 +21,7 @@ call test_init_pop(tests)
 call test_mutate_indiv(tests)
 call test_cross_two_indivs(tests)
 call test_select_indiv(tests)
+call test_evaluate(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -217,27 +218,59 @@ subroutine test_select_indiv(tests)
     call tests%real_eq(indiv%f, 0.0_WP, "select_indiv, indiv%f (3)")
 end subroutine test_select_indiv
 
-!subroutine rosenbrock(chromo, f, sum_g)
-!    ! <https://en.wikipedia.org/wiki/Rosenbrock_function>
+subroutine rosenbrock(chromo, f, sum_g)
+    ! <https://en.wikipedia.org/wiki/Rosenbrock_function>
     
-!    use prec, only: WP
-!    use checks, only: assert
+    use prec, only: WP
+    use checks, only: assert
     
-!    real(WP), intent(in)  :: chromo(:)
-!    real(WP), intent(out) :: f
-!    real(WP), intent(out) :: sum_g
+    real(WP), intent(in)  :: chromo(:)
+    real(WP), intent(out) :: f
+    real(WP), intent(out) :: sum_g
     
-!    real(WP) :: a, b, x, y
+    real(WP) :: a, b, x, y
     
-!    call assert(size(chromo) == 2, "test_ga (rosenbrock): wrong size chromo")
+    call assert(size(chromo) == 2, "test_ga (rosenbrock): wrong size chromo")
     
-!    a = 1.0_WP
-!    b = 100.0_WP
-!    x = chromo(1)
-!    y = chromo(2)
+    a = 1.0_WP
+    b = 100.0_WP
+    x = chromo(1)
+    y = chromo(2)
     
-!    f     = (a - x)**2 + b*(y - x**2)**2
-!    sum_g = 0.0_WP
-!end subroutine rosenbrock
+    f     = (a - x)**2 + b*(y - x**2)**2
+    sum_g = 0.0_WP
+end subroutine rosenbrock
+
+subroutine test_evaluate(tests)
+    use prec, only: WP
+    use ga, only: ga_config, pop_type, evaluate
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ga_config) :: config
+    type(pop_type)  :: pop
+    
+    config%n_pop   = 2
+    config%n_genes = 2
+    allocate(pop%indivs(config%n_pop))
+    allocate(pop%indivs(1)%chromo(config%n_genes))
+    allocate(pop%indivs(2)%chromo(config%n_genes))
+    
+    pop%best_ever_indiv%f_set = .true.
+    pop%best_ever_indiv%f     = huge(1.0_WP)
+    pop%best_pop_indiv%f_set  = .true.
+    pop%best_pop_indiv%f      = huge(1.0_WP)
+    pop%indivs(1)%f_set = .false.
+    pop%indivs(2)%f_set = .false.
+    pop%indivs(1)%chromo(1) = 0.0_WP
+    pop%indivs(1)%chromo(2) = 0.0_WP
+    pop%indivs(2)%chromo(1) = 1.0_WP
+    pop%indivs(2)%chromo(2) = 1.0_WP
+    
+    call evaluate(config, rosenbrock, pop)
+    
+    call tests%real_eq(pop%indivs(1)%f, 1.0_WP, "evaluate, pop%indivs(1)%f")
+    call tests%real_eq(pop%indivs(2)%f, 0.0_WP, "evaluate, pop%indivs(2)%f")
+end subroutine test_evaluate
 
 end program test_ga
