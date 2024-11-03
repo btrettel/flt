@@ -2,8 +2,6 @@
 
 Priorities:
 
-- purerng.f90:
-    - `set_determ` to set RNG type and seed for deterministic RNG more conveniently.
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
     - Make simulation fully specified by the chromosome so that no additional `config` type needs to be passed in beyond the genetic algorithm configuration.
     - Design to use deb_efficient_2000 eq. 4 for constraints. Objective functions must return an array for each constraint if any are violated.
