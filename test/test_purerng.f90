@@ -99,12 +99,10 @@ subroutine test_determ(tests)
 
     integer(I10), allocatable :: seed(:)
     
-    call rng%set_rng_num(RNG_DETERM)
+    call rng%set_determ([0.5_WP])
     
     call rng%get_rng_num(rng_num)
     call tests%integer_eq(rng_num, RNG_DETERM, "determ, rng=RNG_DETERM")
-    
-    call rng%random_seed(put=[2_I10, 500_I10])
     
     call rng%random_seed(get=seed)
     call tests%integer_eq(seed(1), 2_I10, "determ, random_seed(put), seed(1)")
@@ -181,71 +179,65 @@ subroutine test_concurrent(tests)
 end subroutine test_concurrent
 
 subroutine test_int(tests)
-    use prec, only: I10
-    use purerng, only: rng_type, RNG_DETERM
+    use prec, only: WP
+    use purerng, only: rng_type
     
     type(test_results_type), intent(in out) :: tests
     
     type(rng_type) :: rng
     integer        :: ri
     
-    call rng%set_rng_num(RNG_DETERM)
-    
-    call rng%random_seed(put=[2_I10, 0_I10])
+    call rng%set_determ([0.0_WP])
     call rng%int(0, 1, ri)
     call tests%integer_eq(ri, 0, "rand_int (1)")
     
-    call rng%random_seed(put=[2_I10, 490_I10])
+    call rng%set_determ([0.49_WP])
     call rng%int(0, 1, ri)
     call tests%integer_eq(ri, 0, "rand_int (2)")
     
-    call rng%random_seed(put=[2_I10, 500_I10])
+    call rng%set_determ([0.5_WP])
     call rng%int(0, 1, ri)
     call tests%integer_eq(ri, 1, "rand_int (3)")
     
-    call rng%random_seed(put=[2_I10, 990_I10])
+    call rng%set_determ([0.99_WP])
     call rng%int(0, 1, ri)
     call tests%integer_eq(ri, 1, "rand_int (4)")
     
-    call rng%random_seed(put=[2_I10, 1000_I10])
+    call rng%set_determ([1.0_WP])
     call rng%int(0, 1, ri)
     call tests%integer_eq(ri, 1, "rand_int (5)")
 end subroutine test_int
 
 subroutine test_uniform(tests)
-    use prec, only: WP, I10
-    use purerng, only: rng_type, RNG_DETERM
+    use prec, only: WP
+    use purerng, only: rng_type
     
     type(test_results_type), intent(in out) :: tests
     
     type(rng_type) :: rng
     real(WP)       :: rr
     
-    call rng%set_rng_num(RNG_DETERM)
-    
-    call rng%random_seed(put=[2_I10, 0_I10])
+    call rng%set_determ([0.0_WP])
     call rng%uniform(-2.0_WP, 3.0_WP, rr)
     call tests%real_eq(rr, -2.0_WP, "rand_uniform (r = 0)")
     
-    call rng%random_seed(put=[2_I10, 500_I10])
+    call rng%set_determ([0.5_WP])
     call rng%uniform(-2.0_WP, 3.0_WP, rr)
     call tests%real_eq(rr, 0.5_WP, "rand_uniform (r = 0.5)")
     
-    call rng%random_seed(put=[2_I10, 1000_I10])
+    call rng%set_determ([1.0_WP])
     call rng%uniform(-2.0_WP, 3.0_WP, rr)
     call tests%real_eq(rr, 3.0_WP, "rand_uniform (r = 1)")
 end subroutine test_uniform
 
 subroutine test_cauchy(tests)
-    use prec, only: WP, I10
-    use purerng, only: rng_type, RNG_DETERM
+    use prec, only: WP
+    use purerng, only: rng_type
     
     type(test_results_type), intent(in out) :: tests
     
     type(rng_type) :: rng
     real(WP)       :: rr
-    
-    call rng%set_rng_num(RNG_DETERM)
     
     ! rand_cauchy = m + b * tan(PI * (r - 0.5_WP))
 
@@ -267,32 +259,32 @@ subroutine test_cauchy(tests)
 !    rr = rand_cauchy(0.0_WP, 1.0_WP, 1.0_WP/6.0_WP)
 !    call tests%real_eq(rr, -sqrt(3.0_WP), "rand_cauchy (r = 1/6)")
     
-    call rng%random_seed(put=[2_I10, 250_I10])
+    call rng%set_determ([0.25_WP])
     call rng%cauchy(0.0_WP, 1.0_WP, rr)
     call tests%real_eq(rr, -1.0_WP, "rand_cauchy (r = 1/4)")
     
 !    rr = rand_cauchy(0.0_WP, 1.0_WP, 1.0_WP/3.0_WP)
 !    call tests%real_eq(rr, -sqrt(3.0_WP)/3.0_WP, "rand_cauchy (r = 1/3)")
     
-    call rng%random_seed(put=[2_I10, 500_I10])
+    call rng%set_determ([0.5_WP])
     call rng%cauchy(0.0_WP, 1.0_WP, rr)
     call tests%real_eq(rr, 0.0_WP, "rand_cauchy (r = 1/2)")
 
 !    rr = rand_cauchy(0.0_WP, 1.0_WP, 2.0_WP/3.0_WP)
 !    call tests%real_eq(rr, sqrt(3.0_WP)/3.0_WP, "rand_cauchy (r = 2/3)")
     
-    call rng%random_seed(put=[2_I10, 750_I10])
+    call rng%set_determ([0.75_WP])
     call rng%cauchy(0.0_WP, 1.0_WP, rr)
     call tests%real_eq(rr, 1.0_WP, "rand_cauchy (r = 3/4)")
 
 !    rr = rand_cauchy(0.0_WP, 1.0_WP, 5.0_WP/6.0_WP)
 !    call tests%real_eq(rr, sqrt(3.0_WP), "rand_cauchy (r = 5/6)")
     
-    call rng%random_seed(put=[2_I10, 750_I10])
+    call rng%set_determ([0.75_WP])
     call rng%cauchy(2.0_WP, 1.0_WP, rr)
     call tests%real_eq(rr, 3.0_WP, "rand_cauchy (changed m)")
     
-    call rng%random_seed(put=[2_I10, 750_I10])
+    call rng%set_determ([0.75_WP])
     call rng%cauchy(0.0_WP, 0.5_WP, rr)
     call tests%real_eq(rr, 0.5_WP, "rand_cauchy (changed b)")
 end subroutine test_cauchy

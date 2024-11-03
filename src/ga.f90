@@ -23,9 +23,6 @@ type, public :: ga_config
     ! number of genes actually used
     integer :: n_genes
     
-    ! number of fitness functions actually used
-    integer :: n_fitness
-    
     ! lower and upper bounds for each gene
     real(WP), allocatable :: lb(:), ub(:)
 end type ga_config
@@ -36,8 +33,8 @@ type, public :: individual_type
     ! whether the quality function(s) has/have been set
     logical :: set
     
-    ! quality function values
-    real(WP), allocatable :: fitness(:)
+    ! quality function value
+    real(WP) :: fitness
 end type individual_type
 
 type, public :: pop_type
@@ -46,25 +43,9 @@ type, public :: pop_type
     type(individual_type) :: best_pop_individual, best_ever_individual
 end type pop_type
 
-public :: clip
 public :: initialize
 
 contains
-
-pure subroutine clip(lower_bound, upper_bound, x)
-    ! Clip variable `x` within upper and lower bounds.
-    
-    use checks, only: assert
-    
-    real(WP), intent(in)     :: lower_bound, upper_bound
-    real(WP), intent(in out) :: x
-    
-    x = max(x, lower_bound)
-    x = min(x, upper_bound)
-    
-    call assert(x >= lower_bound, "purerng (rand_uniform): x >= lower_bound violated")
-    call assert(x <= upper_bound, "purerng (rand_uniform): x <= upper_bound violated")
-end subroutine clip
 
 subroutine initialize(config, rng, pop)
     use purerng, only: rng_type

@@ -33,6 +33,7 @@ contains
     procedure :: random_seed   => purerng_random_seed
     procedure :: set_rng_num   => set_rng_num
     procedure :: get_rng_num   => get_rng_num
+    procedure :: set_determ    => set_determ
     procedure :: int           => rand_int
     procedure :: uniform       => rand_uniform
     procedure :: cauchy        => rand_cauchy
@@ -153,6 +154,23 @@ elemental subroutine get_rng_num(rng, rng_num)
     
     rng_num = rng%rng_num
 end subroutine get_rng_num
+
+subroutine set_determ(rng, harvest)
+    use prec, only: WP
+    
+    class(rng_type), intent(in out) :: rng
+    real(WP), intent(in)            :: harvest(:)
+    
+    integer(I10) :: seed(size(harvest) + 1)
+    integer      :: i_harvest
+    
+    call rng%set_rng_num(RNG_DETERM)
+    seed(1) = 2_I10
+    do concurrent (i_harvest = 1:size(harvest))
+        seed(1 + i_harvest) = nint(real(DETERM_DENOM, WP) * harvest(i_harvest), I10)
+    end do
+    call rng%random_seed(put=seed)
+end subroutine set_determ
 
 elemental subroutine lecuyer(rng, harvest)
     ! Random number generator from lecuyer_efficient_1988, fig. 3.

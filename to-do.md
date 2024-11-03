@@ -2,10 +2,12 @@
 
 Priorities:
 
+- purerng.f90:
+    - `set_determ` to set RNG type and seed for deterministic RNG more conveniently.
 - ga.f90: Module for derivative-free optimization of `real`s with a genetic algorithm.
-    - Move `rand_int`, `rand_uniform`, and `rand_cauchy` from ga.f90 to `purerng`. Change their names to be more similar to SciPy or NumPy.
-    - Make ga.f90 use rngmod.f90.
+    - Make simulation fully specified by the chromosome so that no additional `config` type needs to be passed in beyond the genetic algorithm configuration.
     - Design to use deb_efficient_2000 eq. 4 for constraints. Objective functions must return an array for each constraint if any are violated.
+    - luke_essentials_2013 p. 31
     - herrera_tackling_1998
     - de_jong_analysis_1975 p. 68 (pdf p. 83): mutation probability should be proportional to `1/n_pop`
         - Combine with 1/5 rule for the PDF width from evolution strategies. beyer_evolution_2002 p. 26 (pdf p. 22)
