@@ -33,6 +33,9 @@ contains
     procedure :: random_seed   => purerng_random_seed
     procedure :: set_rng_num   => set_rng_num
     procedure :: get_rng_num   => get_rng_num
+    procedure :: int           => rand_int
+    procedure :: uniform       => rand_uniform
+    procedure :: cauchy        => rand_cauchy
 end type rng_type
 
 contains
@@ -226,5 +229,60 @@ elemental subroutine determ(rng, harvest)
     call assert(rng%seed(1) >= 2_I10, "purerng (determ): z <= 0")
     call assert(rng%seed(1) <= size(rng%seed, kind=I10), "purerng (determ): z >= LECUYER_M(1)")
 end subroutine determ
+
+elemental subroutine rand_int(rng, lower_bound, upper_bound, nu)
+    use prec, only: WP
+    use checks, only: assert
+    
+    class(rng_type), intent(in out) :: rng
+    integer, intent(in)             :: lower_bound, upper_bound
+    integer, intent(out)            :: nu
+    
+    real(WP) :: harvest
+    
+    call rng%random_number(harvest)
+    
+    ! The `min` function makes this not return `upper_bound + 1` when `r = 1.0_WP`.
+    nu = min(lower_bound + floor(real(upper_bound + 1 - lower_bound, WP) * harvest), upper_bound)
+    
+    call assert(nu >= lower_bound, "purerng (rand_int): nu >= lower_bound violated")
+    call assert(nu <= upper_bound, "purerng (rand_int): nu >= upper_bound violated")
+end subroutine rand_int
+
+elemental subroutine rand_uniform(rng, lower_bound, upper_bound, nu)
+    ! Returns a uniform random variable.
+    
+    use prec, only: WP
+    use checks, only: assert
+    
+    class(rng_type), intent(in out) :: rng
+    real(WP), intent(in)            :: lower_bound, upper_bound
+    real(WP), intent(out)           :: nu
+    
+    real(WP) :: harvest
+    
+    call rng%random_number(harvest)
+    nu = lower_bound + (upper_bound - lower_bound) * harvest
+    
+    call assert(nu >= lower_bound, "purerng (rand_uniform): nu >= lower_bound violated")
+    call assert(nu <= upper_bound, "purerng (rand_uniform): nu >= upper_bound violated")
+end subroutine rand_uniform
+
+elemental subroutine rand_cauchy(rng, m, b, nu)
+    ! Returns a Cauchy random variable with inverse transform sampling.
+    ! Notation follows <https://mathworld.wolfram.com/CauchyDistribution.html>.
+    
+    use prec, only: WP, PI
+    
+    class(rng_type), intent(in out) :: rng
+    real(WP), intent(in)            :: m ! median
+    real(WP), intent(in)            :: b ! half width
+    real(WP), intent(out)           :: nu
+    
+    real(WP) :: harvest
+    
+    call rng%random_number(harvest)
+    nu = m + b * tan(PI * (harvest - 0.5_WP))
+end subroutine rand_cauchy
 
 end module purerng
