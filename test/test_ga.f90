@@ -20,6 +20,7 @@ call tests%start_tests(logger)
 call test_init_pop(tests)
 call test_mutate_indiv(tests)
 call test_cross_two_indivs(tests)
+call test_select_indiv(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -163,5 +164,45 @@ subroutine test_cross_two_indivs(tests)
     call tests%real_eq(indiv_2%chromo(1), 0.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(1)")
     call tests%real_eq(indiv_2%chromo(2), 5.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(2)")
 end subroutine test_cross_two_indivs
+
+subroutine test_select_indiv(tests)
+    use prec, only: WP
+    use ga, only: ga_config, pop_type, indiv_type, select_indiv
+    use purerng, only: rng_type
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ga_config)  :: config
+    type(rng_type)   :: rng
+    type(pop_type)   :: pop
+    type(indiv_type) :: indiv
+    
+    config%n_pop = 2
+    allocate(pop%indivs(config%n_pop))
+    
+    pop%indivs(1)%f_set = .true.
+    pop%indivs(1)%f     = 0.0_WP
+    pop%indivs(2)%f_set = .true.
+    pop%indivs(2)%f     = -1.0_WP
+    call rng%set_determ([0.0_WP, 1.0_WP])
+    call select_indiv(config, rng, pop, indiv)
+    call tests%real_eq(indiv%f, -1.0_WP, "select_indiv, indiv%f (1)")
+    
+    pop%indivs(1)%f_set = .true.
+    pop%indivs(1)%f     = 0.0_WP
+    pop%indivs(2)%f_set = .true.
+    pop%indivs(2)%f     = -1.0_WP
+    call rng%set_determ([1.0_WP, 0.0_WP])
+    call select_indiv(config, rng, pop, indiv)
+    call tests%real_eq(indiv%f, -1.0_WP, "select_indiv, indiv%f (2)")
+    
+    pop%indivs(1)%f_set = .true.
+    pop%indivs(1)%f     = 0.0_WP
+    pop%indivs(2)%f_set = .true.
+    pop%indivs(2)%f     = -1.0_WP
+    call rng%set_determ([0.0_WP, 0.0_WP])
+    call select_indiv(config, rng, pop, indiv)
+    call tests%real_eq(indiv%f, 0.0_WP, "select_indiv, indiv%f (3)")
+end subroutine test_select_indiv
 
 end program test_ga

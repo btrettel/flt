@@ -26,7 +26,7 @@ type, public :: ga_config
     real(WP) :: p_cross_indiv = 0.5_WP, p_mutate = 0.02_WP
     
     ! `n_select = 2` is most popular according to luke_essentials_2013 p. 45.
-    real(WP) :: n_select = 2.0_WP
+    integer :: n_select = 2
     
     ! `p_cross_gene = 0.5_WP` was the first proposed suggestion according to luke_essentials_2013 p. 39.
     real(WP) :: p_cross_gene = 0.5_WP
@@ -34,7 +34,7 @@ type, public :: ga_config
     real(WP) :: stop_time = huge(1.0_WP)
     integer  :: n_gener = 1000, n_stall = 200
     real(WP) :: rel_b = 0.2_WP ! `b` parameter for Cauchy dist., relative to range of variable determined from `lb` and `ub`
-    integer  :: n_genes ! number of genes
+    integer  :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
     
     real(WP), allocatable :: lb(:), ub(:) ! lower and upper bounds for each gene
 end type ga_config
@@ -55,7 +55,7 @@ type, public :: pop_type
     type(indiv_type) :: best_pop_indiv, best_ever_indiv
 end type pop_type
 
-public :: init_pop, mutate_indiv, cross_two_indivs
+public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv
 
 contains
 
@@ -100,6 +100,8 @@ pure subroutine mutate_indiv(config, rng, indiv)
     integer  :: i_gene, i_sample
     real(WP) :: nu, b
     
+    call assert(config%n_genes > 0, "ga (mutate_indiv): config%n_genes > 0 violated")
+    
     do concurrent (i_gene = 1:config%n_genes)
         call rng%random_number(nu)
         if (config%p_mutate >= nu) then
@@ -143,6 +145,7 @@ pure subroutine cross_two_indivs(config, rng, indiv_1, indiv_2)
     integer  :: i_gene
     real(WP) :: nu, gene_temp
     
+    call assert(config%n_genes > 0, "ga (cross_two_indivs): config%n_genes > 0 violated")
     call assert_dimension(indiv_1%chromo, indiv_2%chromo)
     
     do concurrent (i_gene = 1:config%n_genes)
@@ -159,6 +162,36 @@ pure subroutine cross_two_indivs(config, rng, indiv_1, indiv_2)
         end if
     end do
 end subroutine cross_two_indivs
+
+pure subroutine select_indiv(config, rng, pop, indiv)
+    ! Tournament selection
+    ! Follows luke_essentials_2013 Algorithm 32, p. 45.
+    
+    use purerng, only: rng_type
+    use checks, only: assert, assert_dimension
+    
+    type(ga_config), intent(in)    :: config
+    type(rng_type), intent(in out) :: rng
+    type(pop_type), intent(in out) :: pop
+    type(indiv_type), intent(out)  :: indiv
+    
+    integer :: nu, i_pop
+    
+    call assert(config%n_pop == size(pop%indivs), "ga (select_indiv): config%n_pop == size(pop%indivs) violated")
+    
+    call rng%int(1, config%n_pop, nu)
+    indiv = pop%indivs(nu)
+    call assert(indiv%f_set, "ga (select_indiv): objective function not set (1)")
+    do i_pop = 2, config%n_select ! SERIAL
+        call rng%int(1, config%n_pop, nu)
+        
+        call assert(pop%indivs(nu)%f_set, "ga (select_indiv): objective function not set (2)")
+        
+        if (pop%indivs(nu)%f < indiv%f) then
+            indiv = pop%indivs(nu)
+        end if
+    end do
+end subroutine select_indiv
 
 !subroutine optimize(config, objfun, best_ever_indiv, rc)
 !    type(ga_config), intent(in)   :: config
