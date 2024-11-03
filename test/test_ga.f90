@@ -104,17 +104,21 @@ subroutine test_mutate_indiv(tests)
     ! mutation test
     indiv%chromo(1) = 2.0_WP
     indiv%chromo(2) = 15.0_WP
+    indiv%f_set     = .true.
     call mutate_indiv(config, rng, indiv)
     call tests%real_eq(indiv%chromo(1), 1.0_WP, "mutate_indiv, mutation, indiv%chromo(1)")
     call tests%real_eq(indiv%chromo(2), 10.0_WP, "mutate_indiv, mutation, indiv%chromo(2)")
+    call tests%logical_false(indiv%f_set, "mutate_indiv, mutation, f_set")
     
     ! no mutation test
     indiv%chromo(1) = 2.0_WP
     indiv%chromo(2) = 15.0_WP
+    indiv%f_set     = .true.
     config%p_mutate = 0.2_WP
     call mutate_indiv(config, rng, indiv)
     call tests%real_eq(indiv%chromo(1), 2.0_WP, "mutate_indiv, no mutation, indiv%chromo(1)")
     call tests%real_eq(indiv%chromo(2), 15.0_WP, "mutate_indiv, no mutation, indiv%chromo(2)")
+    call tests%logical_true(indiv%f_set, "mutate_indiv, no mutation, f_set")
 end subroutine test_mutate_indiv
 
 subroutine test_cross_two_indivs(tests)
@@ -143,26 +147,34 @@ subroutine test_cross_two_indivs(tests)
     ! crossover
     indiv_1%chromo(1) = 2.0_WP
     indiv_1%chromo(2) = 15.0_WP
+    indiv_1%f_set     = .true.
     indiv_2%chromo(1) = 0.0_WP
     indiv_2%chromo(2) = 5.0_WP
+    indiv_2%f_set     = .true.
     call rng%set_determ([0.25_WP])
     call cross_two_indivs(config, rng, indiv_1, indiv_2)
     call tests%real_eq(indiv_1%chromo(1), 0.0_WP, "cross_two_indivs, crossover, indiv_1%chromo(1)")
     call tests%real_eq(indiv_1%chromo(2), 5.0_WP, "cross_two_indivs, crossover, indiv_1%chromo(2)")
     call tests%real_eq(indiv_2%chromo(1), 2.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(1)")
     call tests%real_eq(indiv_2%chromo(2), 15.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(2)")
+    call tests%logical_false(indiv_1%f_set, "cross_two_indivs, crossover, f_set 1")
+    call tests%logical_false(indiv_2%f_set, "cross_two_indivs, crossover, f_set 2")
     
     ! no crossover
     indiv_1%chromo(1) = 2.0_WP
     indiv_1%chromo(2) = 15.0_WP
+    indiv_1%f_set     = .true.
     indiv_2%chromo(1) = 0.0_WP
     indiv_2%chromo(2) = 5.0_WP
+    indiv_2%f_set     = .true.
     call rng%set_determ([0.75_WP])
     call cross_two_indivs(config, rng, indiv_1, indiv_2)
     call tests%real_eq(indiv_1%chromo(1), 2.0_WP, "cross_two_indivs, crossover, indiv_1%chromo(1)")
     call tests%real_eq(indiv_1%chromo(2), 15.0_WP, "cross_two_indivs, crossover, indiv_1%chromo(2)")
     call tests%real_eq(indiv_2%chromo(1), 0.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(1)")
     call tests%real_eq(indiv_2%chromo(2), 5.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(2)")
+    call tests%logical_true(indiv_1%f_set, "cross_two_indivs, no crossover, f_set 1")
+    call tests%logical_true(indiv_2%f_set, "cross_two_indivs, no crossover, f_set 2")
 end subroutine test_cross_two_indivs
 
 subroutine test_select_indiv(tests)
@@ -204,5 +216,28 @@ subroutine test_select_indiv(tests)
     call select_indiv(config, rng, pop, indiv)
     call tests%real_eq(indiv%f, 0.0_WP, "select_indiv, indiv%f (3)")
 end subroutine test_select_indiv
+
+!subroutine rosenbrock(chromo, f, sum_g)
+!    ! <https://en.wikipedia.org/wiki/Rosenbrock_function>
+    
+!    use prec, only: WP
+!    use checks, only: assert
+    
+!    real(WP), intent(in)  :: chromo(:)
+!    real(WP), intent(out) :: f
+!    real(WP), intent(out) :: sum_g
+    
+!    real(WP) :: a, b, x, y
+    
+!    call assert(size(chromo) == 2, "test_ga (rosenbrock): wrong size chromo")
+    
+!    a = 1.0_WP
+!    b = 100.0_WP
+!    x = chromo(1)
+!    y = chromo(2)
+    
+!    f     = (a - x)**2 + b*(y - x**2)**2
+!    sum_g = 0.0_WP
+!end subroutine rosenbrock
 
 end program test_ga

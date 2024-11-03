@@ -31,9 +31,8 @@ type, public :: ga_config
     ! `p_cross_gene = 0.5_WP` was the first proposed suggestion according to luke_essentials_2013 p. 39.
     real(WP) :: p_cross_gene = 0.5_WP
     
-    real(WP) :: stop_time = huge(1.0_WP)
-    integer  :: n_gener = 1000, n_stall = 200
-    real(WP) :: rel_b = 0.2_WP ! `b` parameter for Cauchy dist., relative to range of variable determined from `lb` and `ub`
+    integer  :: n_gener = 1000
+    real(WP) :: rel_b   = 0.2_WP ! `b` parameter for Cauchy dist., relative to range of variable determined from `lb` and `ub`
     integer  :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
     
     real(WP), allocatable :: lb(:), ub(:) ! lower and upper bounds for each gene
@@ -47,6 +46,9 @@ type, public :: indiv_type
     
     ! objective function value
     real(WP) :: f
+    
+    ! sum of constraint violations
+    real(WP) :: sum_g = 0.0_WP
 end type indiv_type
 
 type, public :: pop_type
@@ -55,7 +57,7 @@ type, public :: pop_type
     type(indiv_type) :: best_pop_indiv, best_ever_indiv
 end type pop_type
 
-public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv
+public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate
 
 contains
 
@@ -85,6 +87,11 @@ subroutine init_pop(config, rng, pop)
             call assert(pop%indivs(i_pop)%chromo(i_gene) <= config%ub(i_gene), "ga (init_pop): upper bound violated")
         end do gene_loop
     end do pop_loop
+    
+    pop%best_pop_indiv%f      = huge(1.0_WP)
+    pop%best_pop_indiv%f_set  = .true.
+    pop%best_ever_indiv%f     = huge(1.0_WP)
+    pop%best_ever_indiv%f_set = .true.
 end subroutine init_pop
 
 pure subroutine mutate_indiv(config, rng, indiv)
@@ -124,6 +131,7 @@ pure subroutine mutate_indiv(config, rng, indiv)
             end do
             
             indiv%chromo(i_gene) = indiv%chromo(i_gene) + nu
+            indiv%f_set = .false.
             
             call assert(indiv%chromo(i_gene) >= config%lb(i_gene), "ga (mutate_indiv): lower bound violated")
             call assert(indiv%chromo(i_gene) <= config%ub(i_gene), "ga (mutate_indiv): upper bound violated")
@@ -159,6 +167,9 @@ pure subroutine cross_two_indivs(config, rng, indiv_1, indiv_2)
             gene_temp              = indiv_1%chromo(i_gene)
             indiv_1%chromo(i_gene) = indiv_2%chromo(i_gene)
             indiv_2%chromo(i_gene) = gene_temp
+            
+            indiv_1%f_set = .false.
+            indiv_2%f_set = .false.
         end if
     end do
 end subroutine cross_two_indivs
@@ -193,19 +204,79 @@ pure subroutine select_indiv(config, rng, pop, indiv)
     end do
 end subroutine select_indiv
 
-!subroutine optimize(config, objfun, best_ever_indiv, rc)
-!    type(ga_config), intent(in)   :: config
-!    type(indiv_type), intent(out) :: best_ever_indiv
-!    integer, intent(out)          :: rc
+subroutine evaluate(config, objfun, pop)
+    use prec, only: WP
+    use checks, only: assert, is_close
+    
+    type(ga_config), intent(in) :: config
+    type(pop_type), intent(out) :: pop
+    
+    integer  :: i_pop, i_pop_best
+    real(WP) :: f_max
+    
+    interface
+        subroutine objfun(chromo, f, sum_g)
+            use prec, only: WP
+            
+            ! Passing in all `real`s means that the objective function does not need any of this module's derived types.
+            real(WP), intent(in)  :: chromo(:)
+            real(WP), intent(out) :: f     ! objective function value
+            real(WP), intent(out) :: sum_g ! sum of constraint violations
+        end subroutine objfun
+    end interface
+    
+    call assert(config%n_pop == size(pop%indivs), "ga (evaluate): config%n_pop == size(pop%indivs) violated")
+    call assert(pop%best_ever_indiv%f_set, "ga (evaluate): pop%best_ever_indiv%f_set violated")
+    
+    f_max      = -huge(1.0_WP)
+    i_pop_best = 0
+    do i_pop = 1, config%n_pop ! SERIAL
+        call objfun(pop%indivs(i_pop)%chromo, pop%indivs(i_pop)%f, pop%indivs(i_pop)%sum_g)
+        
+        call assert(pop%indivs(i_pop)%sum_g >= 0.0_WP, "ga (evaluate): pop%indivs(i_pop)%sum_g >= 0 violated")
+        
+        if (is_close(pop%indivs(i_pop)%sum_g, 0.0_WP)) then
+            f_max      = max(f_max, pop%indivs(i_pop)%f)
+            i_pop_best = i_pop
+            pop%indivs(i_pop)%f_set = .true.
+        end if
+    end do
+    
+    call assert(i_pop_best > 0, "ga (evaluate): i_pop_best > 0 violated")
+    
+    ! set `f` for indivs that had constraint violations
+    ! See deb_efficient_2000 eq. 4.
+    do concurrent (i_pop = 1:config%n_pop)
+        if (pop%indivs(i_pop)%sum_g > 0.0_WP) then
+            pop%indivs(i_pop)%f     = f_max + pop%indivs(i_pop)%sum_g
+            pop%indivs(i_pop)%f_set = .true.
+        end if
+    end do
+    
+    ! pick pop best individual
+    pop%best_pop_indiv = pop%indivs(i_pop_best)
+    
+    ! set best ever individual
+    if (pop%best_ever_indiv%f > pop%best_pop_indiv%f) then
+        pop%best_ever_indiv = pop%best_pop_indiv
+    end if
+end subroutine evaluate
+
+!subroutine optimize(config, objfun, pop, rc)
+!    type(ga_config), intent(in) :: config
+!    type(pop_type), intent(out) :: pop
+!    integer, intent(out)        :: rc ! TODO: return codes
     
 !    interface
-!        subroutine objfun(indiv, f, violations, out)
-!            ! TODO: Make ga_types.f90 as the `interface` block needs to use `indiv_type`? Might be okay in later standards.
-!            ! TODO: sum of constraint violations
-!            type(indiv_type), intent(in) :: indiv
-!            real(WP)                     :: f, violations
-!        end function objfun
+!        subroutine objfun(chromo, f, sum_g)
+!            ! Passing in all `real`s means that the objective function does not need any of this module's derived types.
+!            real(WP), intent(in)  :: chromo(:)
+!            real(WP), intent(out) :: f     ! objective function value
+!            real(WP), intent(out) :: sum_g ! sum of constraint violations
+!        end subroutine objfun
 !    end interface
+    
+    
 !end subroutine optimize
 
 end module ga
