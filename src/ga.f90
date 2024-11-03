@@ -62,8 +62,8 @@ pure subroutine clip(lower_bound, upper_bound, x)
     x = max(x, lower_bound)
     x = min(x, upper_bound)
     
-    call assert(nu >= lower_bound, "purerng (rand_uniform): nu >= lower_bound violated")
-    call assert(nu <= upper_bound, "purerng (rand_uniform): nu >= upper_bound violated")
+    call assert(x >= lower_bound, "purerng (rand_uniform): x >= lower_bound violated")
+    call assert(x <= upper_bound, "purerng (rand_uniform): x <= upper_bound violated")
 end subroutine clip
 
 subroutine initialize(config, rng, pop)
@@ -74,12 +74,11 @@ subroutine initialize(config, rng, pop)
     type(rng_type), intent(in out) :: rng
     type(pop_type), intent(out)    :: pop
     
-    integer  :: i_pop, i_gene
-    real(WP) :: nu
+    integer :: i_pop, i_gene
     
     pop_loop: do i_pop = 1, config%n_pop ! SERIAL
         gene_loop: do i_gene = 1, config%n_genes ! SERIAL
-            pop%individuals(i_pop)%chromo(i_gene) = rng%uniform(config%lb(i_pop), config%ub(i_pop))
+            call rng%uniform(config%lb(i_pop), config%ub(i_pop), pop%individuals(i_pop)%chromo(i_gene))
             
             call assert(pop%individuals(i_pop)%chromo(i_gene) >= config%lb(i_pop), &
                             "ga (initialize): lower bound violated")

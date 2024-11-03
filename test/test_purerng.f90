@@ -22,6 +22,8 @@ call test_lecuyer(tests)
 call test_determ(tests)
 call test_concurrent(tests)
 call test_int(tests)
+call test_uniform(tests)
+call test_cauchy(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -209,5 +211,90 @@ subroutine test_int(tests)
     call rng%int(0, 1, ri)
     call tests%integer_eq(ri, 1, "rand_int (5)")
 end subroutine test_int
+
+subroutine test_uniform(tests)
+    use prec, only: WP, I10
+    use purerng, only: rng_type, RNG_DETERM
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(rng_type) :: rng
+    real(WP)       :: rr
+    
+    call rng%set_rng_num(RNG_DETERM)
+    
+    call rng%random_seed(put=[2_I10, 0_I10])
+    call rng%uniform(-2.0_WP, 3.0_WP, rr)
+    call tests%real_eq(rr, -2.0_WP, "rand_uniform (r = 0)")
+    
+    call rng%random_seed(put=[2_I10, 500_I10])
+    call rng%uniform(-2.0_WP, 3.0_WP, rr)
+    call tests%real_eq(rr, 0.5_WP, "rand_uniform (r = 0.5)")
+    
+    call rng%random_seed(put=[2_I10, 1000_I10])
+    call rng%uniform(-2.0_WP, 3.0_WP, rr)
+    call tests%real_eq(rr, 3.0_WP, "rand_uniform (r = 1)")
+end subroutine test_uniform
+
+subroutine test_cauchy(tests)
+    use prec, only: WP, I10
+    use purerng, only: rng_type, RNG_DETERM
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(rng_type) :: rng
+    real(WP)       :: rr
+    
+    call rng%set_rng_num(RNG_DETERM)
+    
+    ! rand_cauchy = m + b * tan(PI * (r - 0.5_WP))
+
+    ! theta     sin         cos         tan         r
+    ! -PI/2     -1          0           -inf        r - 1/2 = 1/2 ==> r = 1
+    ! -PI/3     -sqrt(3)/2  1/2         -sqrt(3)    r - 1/2 = -1/3 ==> r = 1/6
+    ! -PI/4     -sqrt(2)/2  sqrt(2)/2   -1          r - 1/2 = -1/4 ==> r = 1/4
+    ! -PI/6     -1/2        sqrt(3)/2   -sqrt(3)/3  r - 1/2 = -1/6 ==> r = 1/3
+    ! 0         0           1           0           1/2
+    ! PI/6      1/2         sqrt(3)/2   sqrt(3)/3   r - 1/2 = 1/6 ==> r = 2/3
+    ! PI/4      sqrt(2)/2   sqrt(2)/2   1           r - 1/2 = 1/4 ==> r = 3/4
+    ! PI/3      sqrt(3)/2   1/2         sqrt(3)     r - 1/2 = 1/3 ==> r = 5/6
+    ! PI/2      1           0           inf         r - 1/2 = 1/2 ==> r = 1
+
+    ! TODO: Add tests for `rand_cauchy` for `r` approaching 0 and 1.
+
+    ! Since new deterministic RNG can't return all rational numbers, some old tests are commented out.
+
+!    rr = rand_cauchy(0.0_WP, 1.0_WP, 1.0_WP/6.0_WP)
+!    call tests%real_eq(rr, -sqrt(3.0_WP), "rand_cauchy (r = 1/6)")
+    
+    call rng%random_seed(put=[2_I10, 250_I10])
+    call rng%cauchy(0.0_WP, 1.0_WP, rr)
+    call tests%real_eq(rr, -1.0_WP, "rand_cauchy (r = 1/4)")
+    
+!    rr = rand_cauchy(0.0_WP, 1.0_WP, 1.0_WP/3.0_WP)
+!    call tests%real_eq(rr, -sqrt(3.0_WP)/3.0_WP, "rand_cauchy (r = 1/3)")
+    
+    call rng%random_seed(put=[2_I10, 500_I10])
+    call rng%cauchy(0.0_WP, 1.0_WP, rr)
+    call tests%real_eq(rr, 0.0_WP, "rand_cauchy (r = 1/2)")
+
+!    rr = rand_cauchy(0.0_WP, 1.0_WP, 2.0_WP/3.0_WP)
+!    call tests%real_eq(rr, sqrt(3.0_WP)/3.0_WP, "rand_cauchy (r = 2/3)")
+    
+    call rng%random_seed(put=[2_I10, 750_I10])
+    call rng%cauchy(0.0_WP, 1.0_WP, rr)
+    call tests%real_eq(rr, 1.0_WP, "rand_cauchy (r = 3/4)")
+
+!    rr = rand_cauchy(0.0_WP, 1.0_WP, 5.0_WP/6.0_WP)
+!    call tests%real_eq(rr, sqrt(3.0_WP), "rand_cauchy (r = 5/6)")
+    
+    call rng%random_seed(put=[2_I10, 750_I10])
+    call rng%cauchy(2.0_WP, 1.0_WP, rr)
+    call tests%real_eq(rr, 3.0_WP, "rand_cauchy (changed m)")
+    
+    call rng%random_seed(put=[2_I10, 750_I10])
+    call rng%cauchy(0.0_WP, 0.5_WP, rr)
+    call tests%real_eq(rr, 0.5_WP, "rand_cauchy (changed b)")
+end subroutine test_cauchy
 
 end program test_purerng
