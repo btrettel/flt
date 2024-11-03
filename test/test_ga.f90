@@ -18,6 +18,7 @@ call logger%open("ga.nml")
 call tests%start_tests(logger)
 
 call test_init_pop(tests)
+call test_mutate_indiv(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -64,5 +65,54 @@ subroutine test_init_pop(tests)
     call tests%real_eq(pop%indivs(2)%chromo(2), 2.0_WP, "pop%indivs(2)%chromo(2)")
     call tests%real_eq(pop%indivs(2)%chromo(3), 4.0_WP, "pop%indivs(2)%chromo(3)")
 end subroutine test_init_pop
+
+subroutine test_mutate_indiv(tests)
+    use prec, only: WP
+    use ga, only: ga_config, indiv_type, mutate_indiv
+    use purerng, only: rng_type
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ga_config)  :: config
+    type(rng_type)   :: rng
+    type(indiv_type) :: indiv
+    
+    real(WP) :: b, nu
+    
+    config%n_pop   = 1
+    config%n_genes = 2
+    allocate(config%lb(config%n_genes))
+    allocate(config%ub(config%n_genes))
+    config%lb(1)    = 0.0_WP
+    config%ub(1)    = 2.0_WP
+    config%lb(2)    = 5.0_WP
+    config%ub(2)    = 15.0_WP
+    config%rel_b    = 0.5_WP ! changed from default to test it
+    config%p_mutate = 1.0_WP ! always mutate for the test
+    
+    ! Cauchy RV will always return -1 in this case.
+    call rng%set_determ([0.25_WP])
+    
+    b = (config%ub(1) - config%lb(1)) * config%rel_b
+    call rng%cauchy(0.0_WP, b, nu)
+    call tests%real_eq(nu, -1.0_WP, "Cauchy RV check")
+    
+    allocate(indiv%chromo(config%n_genes))
+    
+    ! mutation test
+    indiv%chromo(1) = 2.0_WP
+    indiv%chromo(2) = 15.0_WP
+    call mutate_indiv(config, rng, indiv)
+    call tests%real_eq(indiv%chromo(1), 1.0_WP, "mutate_indiv, mutation, indiv%chromo(1)")
+    call tests%real_eq(indiv%chromo(2), 10.0_WP, "mutate_indiv, mutation, indiv%chromo(2)")
+    
+    ! no mutation test
+    indiv%chromo(1) = 2.0_WP
+    indiv%chromo(2) = 15.0_WP
+    config%p_mutate = 0.2_WP
+    call mutate_indiv(config, rng, indiv)
+    call tests%real_eq(indiv%chromo(1), 2.0_WP, "mutate_indiv, no mutation, indiv%chromo(1)")
+    call tests%real_eq(indiv%chromo(2), 15.0_WP, "mutate_indiv, no mutation, indiv%chromo(2)")
+end subroutine test_mutate_indiv
 
 end program test_ga
