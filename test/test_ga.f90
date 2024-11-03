@@ -15,29 +15,11 @@ implicit none
 
 type(log_type)          :: logger
 type(test_results_type) :: tests
-integer                 :: ri
 real(WP)                :: rr
 type(bounds_type)       :: bounds
 
 call logger%open("ga.nml")
 call tests%start_tests(logger)
-
-! `rand_int`
-
-ri = rand_int(0, 1, 0.0_WP)
-call tests%integer_eq(ri, 0, "rand_int (1)")
-
-ri = rand_int(0, 1, 0.49_WP)
-call tests%integer_eq(ri, 0, "rand_int (2)")
-
-ri = rand_int(0, 1, 0.5_WP)
-call tests%integer_eq(ri, 1, "rand_int (3)")
-
-ri = rand_int(0, 1, 0.99_WP)
-call tests%integer_eq(ri, 1, "rand_int (4)")
-
-ri = rand_int(0, 1, 1.0_WP)
-call tests%integer_eq(ri, 1, "rand_int (5)")
 
 ! `rand_uniform`
 
@@ -99,8 +81,8 @@ call tests%real_eq(rr, 0.5_WP, "rand_cauchy (changed b)")
 
 ! `clip`
 
-bounds%lower = 0.0_WP
-bounds%upper = 1.0_WP
+lower = 0.0_WP
+upper = 1.0_WP
 
 rr = -5.0_WP
 call clip(bounds, rr)

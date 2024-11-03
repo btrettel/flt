@@ -21,6 +21,7 @@ call test_unique(tests)
 call test_lecuyer(tests)
 call test_determ(tests)
 call test_concurrent(tests)
+call test_int(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -176,5 +177,37 @@ subroutine test_concurrent(tests)
     ! TODO: Seems that this can fail if called at about the start of the hour due to the random seed initialization.
     ! Investigate later. Might be fixed by proper "jump"/"splitting" setup for the RNG.
 end subroutine test_concurrent
+
+subroutine test_int(tests)
+    use prec, only: I10
+    use purerng, only: rng_type, RNG_DETERM
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(rng_type) :: rng
+    integer        :: ri
+    
+    call rng%set_rng_num(RNG_DETERM)
+    
+    call rng%random_seed(put=[2_I10, 0_I10])
+    call rng%int(0, 1, ri)
+    call tests%integer_eq(ri, 0, "rand_int (1)")
+    
+    call rng%random_seed(put=[2_I10, 490_I10])
+    call rng%int(0, 1, ri)
+    call tests%integer_eq(ri, 0, "rand_int (2)")
+    
+    call rng%random_seed(put=[2_I10, 500_I10])
+    call rng%int(0, 1, ri)
+    call tests%integer_eq(ri, 1, "rand_int (3)")
+    
+    call rng%random_seed(put=[2_I10, 990_I10])
+    call rng%int(0, 1, ri)
+    call tests%integer_eq(ri, 1, "rand_int (4)")
+    
+    call rng%random_seed(put=[2_I10, 1000_I10])
+    call rng%int(0, 1, ri)
+    call tests%integer_eq(ri, 1, "rand_int (5)")
+end subroutine test_int
 
 end program test_purerng
