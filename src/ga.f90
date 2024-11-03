@@ -20,13 +20,16 @@ integer, parameter :: MAX_SAMPLES = 10000
 type, public :: ga_config
     ! `n_pop`, `p_cross`, and `p_mutate` defaults based on:
     ! de_jong_analysis_1975 pp. 68, 70 (pdf pp. 83, 85): for n_pop = 50, p_mutate = 0.02 is about optimal
-    ! de_jong_analysis_1975 pp. 75 (pdf pp. 90): p_cross = 0.6 is about optimal
+    ! de_jong_analysis_1975 pp. 75 (pdf pp. 90): p_cross_indiv = 0.6 is about optimal
     ! It's not exactly clear to me how large a population is ideal, but I guess `n_pop = 50` is a decent starting point.
     integer  :: n_pop = 50 ! number of indivs in population
-    real(WP) :: p_cross = 0.5_WP, p_mutate = 0.02_WP
+    real(WP) :: p_cross_indiv = 0.5_WP, p_mutate = 0.02_WP
     
     ! `n_select = 2` is most popular according to luke_essentials_2013 p. 45.
     real(WP) :: n_select = 2.0_WP
+    
+    ! `p_cross_gene = 0.5_WP` was the first proposed suggestion according to luke_essentials_2013 p. 39.
+    real(WP) :: p_cross_gene = 0.5_WP
     
     real(WP) :: stop_time = huge(1.0_WP)
     integer  :: n_gener = 1000, n_stall = 200
@@ -52,7 +55,7 @@ type, public :: pop_type
     type(indiv_type) :: best_pop_indiv, best_ever_indiv
 end type pop_type
 
-public :: init_pop, mutate_indiv
+public :: init_pop, mutate_indiv, cross_two_indivs
 
 contains
 
@@ -126,16 +129,46 @@ pure subroutine mutate_indiv(config, rng, indiv)
     end do
 end subroutine mutate_indiv
 
+pure subroutine cross_two_indivs(config, rng, indiv_1, indiv_2)
+    ! Uniform crossover
+    ! Follows luke_essentials_2013 Algorithm 25, p. 39.
+    
+    use purerng, only: rng_type
+    use checks, only: assert, assert_dimension
+    
+    type(ga_config), intent(in)      :: config
+    type(rng_type), intent(in out)   :: rng
+    type(indiv_type), intent(in out) :: indiv_1, indiv_2
+    
+    integer  :: i_gene
+    real(WP) :: nu, gene_temp
+    
+    call assert_dimension(indiv_1%chromo, indiv_2%chromo)
+    
+    do concurrent (i_gene = 1:config%n_genes)
+        call rng%random_number(nu)
+        if (config%p_cross_indiv >= nu) then
+            call assert(indiv_1%chromo(i_gene) >= config%lb(i_gene), "ga (cross_two_indivs): lower bound violated (1)")
+            call assert(indiv_1%chromo(i_gene) <= config%ub(i_gene), "ga (cross_two_indivs): upper bound violated (1)")
+            call assert(indiv_2%chromo(i_gene) >= config%lb(i_gene), "ga (cross_two_indivs): lower bound violated (2)")
+            call assert(indiv_2%chromo(i_gene) <= config%ub(i_gene), "ga (cross_two_indivs): upper bound violated (2)")
+            
+            gene_temp              = indiv_1%chromo(i_gene)
+            indiv_1%chromo(i_gene) = indiv_2%chromo(i_gene)
+            indiv_2%chromo(i_gene) = gene_temp
+        end if
+    end do
+end subroutine cross_two_indivs
+
 !subroutine optimize(config, objfun, best_ever_indiv, rc)
-!    type(ga_config), intent(in)        :: config
+!    type(ga_config), intent(in)   :: config
 !    type(indiv_type), intent(out) :: best_ever_indiv
-!    integer, intent(out)               :: rc
+!    integer, intent(out)          :: rc
     
 !    interface
 !        subroutine objfun(indiv, f, violations, out)
 !            ! TODO: Make ga_types.f90 as the `interface` block needs to use `indiv_type`? Might be okay in later standards.
 !            ! TODO: sum of constraint violations
-!            ! TODO: other outputs
 !            type(indiv_type), intent(in) :: indiv
 !            real(WP)                     :: f, violations
 !        end function objfun

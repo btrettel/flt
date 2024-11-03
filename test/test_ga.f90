@@ -19,6 +19,7 @@ call tests%start_tests(logger)
 
 call test_init_pop(tests)
 call test_mutate_indiv(tests)
+call test_cross_two_indivs(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -114,5 +115,53 @@ subroutine test_mutate_indiv(tests)
     call tests%real_eq(indiv%chromo(1), 2.0_WP, "mutate_indiv, no mutation, indiv%chromo(1)")
     call tests%real_eq(indiv%chromo(2), 15.0_WP, "mutate_indiv, no mutation, indiv%chromo(2)")
 end subroutine test_mutate_indiv
+
+subroutine test_cross_two_indivs(tests)
+    use prec, only: WP
+    use ga, only: ga_config, indiv_type, cross_two_indivs
+    use purerng, only: rng_type
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ga_config)  :: config
+    type(rng_type)   :: rng
+    type(indiv_type) :: indiv_1, indiv_2
+    
+    config%n_pop   = 1
+    config%n_genes = 2
+    allocate(config%lb(config%n_genes))
+    allocate(config%ub(config%n_genes))
+    config%lb(1)    = 0.0_WP
+    config%ub(1)    = 2.0_WP
+    config%lb(2)    = 5.0_WP
+    config%ub(2)    = 15.0_WP
+    
+    allocate(indiv_1%chromo(config%n_genes))
+    allocate(indiv_2%chromo(config%n_genes))
+    
+    ! crossover
+    indiv_1%chromo(1) = 2.0_WP
+    indiv_1%chromo(2) = 15.0_WP
+    indiv_2%chromo(1) = 0.0_WP
+    indiv_2%chromo(2) = 5.0_WP
+    call rng%set_determ([0.25_WP])
+    call cross_two_indivs(config, rng, indiv_1, indiv_2)
+    call tests%real_eq(indiv_1%chromo(1), 0.0_WP, "cross_two_indivs, crossover, indiv_1%chromo(1)")
+    call tests%real_eq(indiv_1%chromo(2), 5.0_WP, "cross_two_indivs, crossover, indiv_1%chromo(2)")
+    call tests%real_eq(indiv_2%chromo(1), 2.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(1)")
+    call tests%real_eq(indiv_2%chromo(2), 15.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(2)")
+    
+    ! no crossover
+    indiv_1%chromo(1) = 2.0_WP
+    indiv_1%chromo(2) = 15.0_WP
+    indiv_2%chromo(1) = 0.0_WP
+    indiv_2%chromo(2) = 5.0_WP
+    call rng%set_determ([0.75_WP])
+    call cross_two_indivs(config, rng, indiv_1, indiv_2)
+    call tests%real_eq(indiv_1%chromo(1), 2.0_WP, "cross_two_indivs, crossover, indiv_1%chromo(1)")
+    call tests%real_eq(indiv_1%chromo(2), 15.0_WP, "cross_two_indivs, crossover, indiv_1%chromo(2)")
+    call tests%real_eq(indiv_2%chromo(1), 0.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(1)")
+    call tests%real_eq(indiv_2%chromo(2), 5.0_WP, "cross_two_indivs, crossover, indiv_2%chromo(2)")
+end subroutine test_cross_two_indivs
 
 end program test_ga
