@@ -3,11 +3,7 @@
 Priorities:
 
 - ga.f90:
-    - Subroutine to optimize genetic algorithm parameters with a genetic algorithm. Objective function is wall-clock time.
-    - Make simulation fully specified by the chromosome so that no additional `config` type needs to be passed in beyond the genetic algorithm configuration.
-    - de_jong_analysis_1975 p. 68 (pdf p. 83): mutation probability should be proportional to `1/n_pop`
-        - Combine with 1/5 rule for the PDF width from evolution strategies. beyer_evolution_2002 p. 26 (pdf p. 22)
-    - Won't initially for simplicity: `chromo%out(:)` (for non-objective function outputs that may be of interest). Make type a `class(*)` variable so that I can put any output I want in there.
+    - `config%openmp` to enable parallel `evaluate`
 - returncodes.f90: A module containing `errno` codes, other internal return codes.
     - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
         - <https://fortranwiki.org/fortran/show/iso_fortran_env>
@@ -17,18 +13,6 @@ Priorities:
         - <https://groups.google.com/g/comp.lang.fortran/c/l8UJoI-x9PM>
 - fmad.f90 and units.f90
     - `is_close`
-- `purerng`:
-    - RNG splitting
-        - lecuyer_implementing_1991
-        - Iterative: 20 lines
-        - Decomposition: 41 lines
-        - Russian peasant: 23 lines
-    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
-    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
-        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
-        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
-        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
-    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
 
 Later:
 
@@ -454,3 +438,19 @@ Later:
         - <https://www.netlib.org/lapack/lapack-3.1.1/html/dgtsv.f.html>
         - <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-fortran/2024-2/dttrsb.html>
     - Parallel version
+- `purerng`:
+    - RNG splitting
+        - lecuyer_implementing_1991
+        - Iterative: 20 lines
+        - Decomposition: 41 lines
+        - Russian peasant: 23 lines
+    - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
+    - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
+        - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
+        - <https://en.wikipedia.org/wiki/Variance#Unbiased_sample_variance>
+        - <https://en.wikipedia.org/wiki/Continuous_uniform_distribution>
+    - Switch `random_seed` to use a return code rather than `error stop` to make it more easily tested?
+- ga.f90:
+    - Subroutine to optimize genetic algorithm parameters with a genetic algorithm. Objective function is wall-clock time.
+    - Make simulation fully specified by the chromosome so that no additional `config` type needs to be passed in beyond the genetic algorithm configuration.
+    - Won't initially for simplicity: `chromo%out(:)` (for non-objective function outputs that may be of interest). Make type a `class(*)` variable so that I can put any output I want in there.

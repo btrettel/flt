@@ -315,7 +315,10 @@ subroutine optimize(config, rng, objfun, pop, rc)
     
     rc = 0
     do i_gener = 1, config%n_gener ! SERIAL
-        do concurrent (i_pop = 1:config%n_pop:2)
+        do i_pop = 1, config%n_pop, 2 ! SERIAL
+            ! I don't have a parallel RNG right now, so this can't be parallelized at the moment.
+            ! Not that parallelizing this would matter much anyway as it's quick.
+            
             call select_indiv(config, rng, pop, next_pop%indivs(i_pop))
             call select_indiv(config, rng, pop, next_pop%indivs(i_pop + 1))
             call cross_two_indivs(config, rng, next_pop%indivs(i_pop), next_pop%indivs(i_pop + 1))
