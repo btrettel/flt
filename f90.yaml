@@ -404,7 +404,8 @@ regexp-rules:
     message: format descriptors should be lowercase for consistency
     regexp: \bfmt="[A-Z0-9\(\)]+"
     case-sensitive: true
-    active: true
+    active: false
+    # False positives with formats constructed from strings?
   
   statement-label:
     message: Don't use statement labels
