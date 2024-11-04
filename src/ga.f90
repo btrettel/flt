@@ -15,7 +15,8 @@ use prec, only: WP
 implicit none
 private
 
-integer, parameter :: MAX_SAMPLES = 10000
+integer, parameter          :: MAX_SAMPLES = 10000
+character(len=*), parameter :: GENER_FMT = "(i8)"
 
 type, public :: ga_config
     ! `n_pop`, `p_cross`, and `p_mutate` defaults based on:
@@ -36,6 +37,9 @@ type, public :: ga_config
     integer  :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
     
     real(WP), allocatable :: lb(:), ub(:) ! lower and upper bounds for each gene
+    
+    logical          :: progress = .true.
+    character(len=8) :: f_fmt = "f12.2"
 end type ga_config
 
 type, public :: indiv_type
@@ -127,6 +131,7 @@ pure subroutine mutate_indiv(config, rng, indiv)
                 i_sample = i_sample + 1
                 if (i_sample > MAX_SAMPLES) then
                     error stop "ga (mutate_indiv): MAX_SAMPLES exceeded"
+                    ! TODO: Alternatively, clip to the bounds.
                 end if
                 
                 call rng%cauchy(0.0_WP, b, nu)
@@ -308,10 +313,14 @@ subroutine optimize(config, rng, objfun, pop, rc)
     next_pop%best_ever_indiv      = pop%best_ever_indiv
     next_pop%best_pop_indiv%f_set = .false.
     
-    write(unit=*, fmt="(a)") "   gener    pop best   best ever"
-    write(unit=*, fmt="(i8)", advance="no") 0
+    if (config%progress) then
+        write(unit=*, fmt="(a)") "   gener    pop best   best ever"
+        write(unit=*, fmt=GENER_FMT, advance="no") 0
+    end if
     call evaluate(config, objfun, pop)
-    write(unit=*, fmt="(f12.2, f12.2)") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+    if (config%progress) then
+        write(unit=*, fmt="(2" // trim(config%f_fmt) // ")") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+    end if
     
     rc = 0
     do i_gener = 1, config%n_gener ! SERIAL
@@ -328,9 +337,13 @@ subroutine optimize(config, rng, objfun, pop, rc)
         
         pop%indivs = next_pop%indivs
         
-        write(unit=*, fmt="(i8)", advance="no") i_gener
+        if (config%progress) then
+            write(unit=*, fmt=GENER_FMT, advance="no") i_gener
+        end if
         call evaluate(config, objfun, pop)
-        write(unit=*, fmt="(f12.2, f12.2)") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+        if (config%progress) then
+            write(unit=*, fmt="(2" // trim(config%f_fmt) // ")") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+        end if
     end do
 end subroutine optimize
 
