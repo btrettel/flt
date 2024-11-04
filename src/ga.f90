@@ -31,7 +31,7 @@ type, public :: ga_config
     ! `p_cross_gene = 0.5_WP` was the first proposed suggestion according to luke_essentials_2013 p. 39.
     real(WP) :: p_cross_gene = 0.5_WP
     
-    integer  :: n_gener = 1000
+    integer  :: n_gener = 20
     real(WP) :: rel_b   = 0.2_WP ! `b` parameter for Cauchy dist., relative to range of variable determined from `lb` and `ub`
     integer  :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
     
@@ -57,7 +57,7 @@ type, public :: pop_type
     type(indiv_type) :: best_pop_indiv, best_ever_indiv
 end type pop_type
 
-public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate
+public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate, optimize
 
 contains
 
@@ -71,8 +71,13 @@ subroutine init_pop(config, rng, pop)
     
     integer :: i_pop, i_gene
     
-    call assert(.not. allocated(pop%indivs), "ga (init_pop): .not. allocated(pop%indivs)")
+    call assert(allocated(config%lb), "ga (init_pop): allocated(config%lb) violated")
+    call assert(allocated(config%ub), "ga (init_pop): allocated(config%ub) violated")
+    
+    call assert(.not. allocated(pop%indivs), "ga (init_pop): .not. allocated(pop%indivs) violated")
     allocate(pop%indivs(config%n_pop))
+    
+    call assert(config%n_genes > 0, "ga (init_pop): config%n_genes > 0 violated")
     
     pop_loop: do concurrent (i_pop = 1:config%n_pop)
         call assert(.not. allocated(pop%indivs(i_pop)%chromo), "ga (init_pop): .not. allocated(pop%indivs(i_pop)%chromo)")
@@ -108,6 +113,8 @@ pure subroutine mutate_indiv(config, rng, indiv)
     real(WP) :: nu, b
     
     call assert(config%n_genes > 0, "ga (mutate_indiv): config%n_genes > 0 violated")
+    call assert(allocated(config%lb), "ga (mutate_indiv): allocated(config%lb) violated")
+    call assert(allocated(config%ub), "ga (mutate_indiv): allocated(config%ub) violated")
     
     do concurrent (i_gene = 1:config%n_genes)
         call rng%random_number(nu)
@@ -155,6 +162,8 @@ pure subroutine cross_two_indivs(config, rng, indiv_1, indiv_2)
     
     call assert(config%n_genes > 0, "ga (cross_two_indivs): config%n_genes > 0 violated")
     call assert_dimension(indiv_1%chromo, indiv_2%chromo)
+    call assert(allocated(config%lb), "ga (cross_two_indivs): allocated(config%lb) violated")
+    call assert(allocated(config%ub), "ga (cross_two_indivs): allocated(config%ub) violated")
     
     do concurrent (i_gene = 1:config%n_genes)
         call rng%random_number(nu)
@@ -262,21 +271,62 @@ subroutine evaluate(config, objfun, pop)
     end if
 end subroutine evaluate
 
-!subroutine optimize(config, objfun, pop, rc)
-!    type(ga_config), intent(in)    :: config
-!    type(pop_type), intent(in out) :: pop
-!    integer, intent(out)           :: rc ! TODO: return codes
+subroutine optimize(config, rng, objfun, pop, rc)
+    ! Tournament selection
+    ! Follows luke_essentials_2013 Algorithm 20, p. 37.
     
-!    interface
-!        subroutine objfun(chromo, f, sum_g)
-!            ! Passing in all `real`s means that the objective function does not need any of this module's derived types.
-!            real(WP), intent(in)  :: chromo(:)
-!            real(WP), intent(out) :: f     ! objective function value
-!            real(WP), intent(out) :: sum_g ! sum of constraint violations
-!        end subroutine objfun
-!    end interface
+    use purerng, only: rng_type
+    use checks, only: assert
     
+    type(ga_config), intent(in)    :: config
+    type(rng_type), intent(in out) :: rng
+    type(pop_type), intent(in out) :: pop
+    integer, intent(out)           :: rc ! TODO: return codes
     
-!end subroutine optimize
+    integer :: i_gener, i_pop
+    
+    type(pop_type) :: next_pop
+    
+    interface
+        subroutine objfun(chromo, f, sum_g)
+            use prec, only: WP
+            
+            ! Passing in all `real`s means that the objective function does not need any of this module's derived types.
+            real(WP), intent(in)  :: chromo(:)
+            real(WP), intent(out) :: f     ! objective function value
+            real(WP), intent(out) :: sum_g ! sum of constraint violations
+        end subroutine objfun
+    end interface
+    
+    call assert(config%n_pop == size(pop%indivs), "ga (optimize): config%n_pop == size(pop%indivs) violated")
+    call assert(config%n_genes > 0, "ga (optimize): config%n_genes > 0 violated")
+    call assert(config%n_gener > 0, "ga (optimize): config%n_gener > 0 violated")
+    call assert(allocated(config%lb), "ga (optimize): allocated(config%lb) violated")
+    call assert(allocated(config%ub), "ga (optimize): allocated(config%ub) violated")
+    
+    allocate(next_pop%indivs(config%n_pop))
+    next_pop%best_ever_indiv      = pop%best_ever_indiv
+    next_pop%best_pop_indiv%f_set = .false.
+    
+    rc = 0
+    write(unit=*, fmt="(a)") "   gener    pop best   best ever"
+    do i_gener = 1, config%n_gener ! SERIAL
+        write(unit=*, fmt="(i8)", advance="no") i_gener
+        
+        call evaluate(config, objfun, pop)
+        
+        write(unit=*, fmt="(f12.2, f12.2)") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+        
+        do concurrent (i_pop = 1:config%n_pop:2)
+            call select_indiv(config, rng, pop, next_pop%indivs(i_pop))
+            call select_indiv(config, rng, pop, next_pop%indivs(i_pop + 1))
+            call cross_two_indivs(config, rng, next_pop%indivs(i_pop), next_pop%indivs(i_pop + 1))
+            call mutate_indiv(config, rng, next_pop%indivs(i_pop))
+            call mutate_indiv(config, rng, next_pop%indivs(i_pop + 1))
+        end do
+        
+        pop%indivs = next_pop%indivs
+    end do
+end subroutine optimize
 
 end module ga

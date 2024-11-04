@@ -22,6 +22,7 @@ call test_mutate_indiv(tests)
 call test_cross_two_indivs(tests)
 call test_select_indiv(tests)
 call test_evaluate(tests)
+call test_optimize(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -272,5 +273,39 @@ subroutine test_evaluate(tests)
     call tests%real_eq(pop%indivs(1)%f, 1.0_WP, "evaluate, pop%indivs(1)%f")
     call tests%real_eq(pop%indivs(2)%f, 0.0_WP, "evaluate, pop%indivs(2)%f")
 end subroutine test_evaluate
+
+subroutine test_optimize(tests)
+    use prec, only: WP, I10
+    use ga, only: ga_config, pop_type, init_pop, optimize
+    use purerng, only: rng_type
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ga_config) :: config
+    type(rng_type)  :: rng
+    type(pop_type)  :: pop
+    
+    integer :: rc
+    
+    config%n_genes = 2
+    allocate(pop%indivs(config%n_pop))
+    allocate(pop%indivs(1)%chromo(config%n_genes))
+    allocate(pop%indivs(2)%chromo(config%n_genes))
+    allocate(config%lb(config%n_genes))
+    allocate(config%ub(config%n_genes))
+    config%lb(1) = -20.0_WP
+    config%ub(1) = 20.0_WP
+    config%lb(2) = -20.0_WP
+    config%ub(2) = 20.0_WP
+    
+    call rng%random_seed(put=[2147483562_I10, 2147483398_I10])
+    call init_pop(config, rng, pop)
+    call optimize(config, rng, rosenbrock, pop, rc)
+    
+    call tests%integer_eq(rc, 0, "optimize, rc")
+    
+    ! characterization test
+    call tests%real_eq(pop%best_ever_indiv%f, 2.8404480517590853_WP, "optimize, pop%best_ever_indiv%f", abs_tol=1.0e-12_WP)
+end subroutine test_optimize
 
 end program test_ga
