@@ -308,15 +308,13 @@ subroutine optimize(config, rng, objfun, pop, rc)
     next_pop%best_ever_indiv      = pop%best_ever_indiv
     next_pop%best_pop_indiv%f_set = .false.
     
-    rc = 0
     write(unit=*, fmt="(a)") "   gener    pop best   best ever"
+    write(unit=*, fmt="(i8)", advance="no") 0
+    call evaluate(config, objfun, pop)
+    write(unit=*, fmt="(f12.2, f12.2)") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+    
+    rc = 0
     do i_gener = 1, config%n_gener ! SERIAL
-        write(unit=*, fmt="(i8)", advance="no") i_gener
-        
-        call evaluate(config, objfun, pop)
-        
-        write(unit=*, fmt="(f12.2, f12.2)") pop%best_pop_indiv%f, pop%best_ever_indiv%f
-        
         do concurrent (i_pop = 1:config%n_pop:2)
             call select_indiv(config, rng, pop, next_pop%indivs(i_pop))
             call select_indiv(config, rng, pop, next_pop%indivs(i_pop + 1))
@@ -326,6 +324,10 @@ subroutine optimize(config, rng, objfun, pop, rc)
         end do
         
         pop%indivs = next_pop%indivs
+        
+        write(unit=*, fmt="(i8)", advance="no") i_gener
+        call evaluate(config, objfun, pop)
+        write(unit=*, fmt="(f12.2, f12.2)") pop%best_pop_indiv%f, pop%best_ever_indiv%f
     end do
 end subroutine optimize
 
