@@ -1,0 +1,49 @@
+# fmutate.py to-do
+
+- Rewrite in Python to use an actual parser. Many of the bullets below will need to be updated as they assume Fortran below.
+    - <https://fortran-lang.discourse.group/t/antlr-grammars-for-fortran/8673>
+- Start with deleting lines and one other mutation operator. The reason to have two is to have the infrastructure for multiple mutation operators from the start.
+- Get papers for FORTRAN 77 mutation tester to see what that did.
+    - acree_mutation_1979
+    - budd_mutation_1979
+    - king_fortran_1991
+        - <https://web.archive.org/web/20221016055309/http://cs.gmu.edu/~offutt/rsrch/mut.html#MOTHRA>
+- Avoid dependency on external regex library. Build in the minimum regex that you need.
+- Make mutation rules in a human-readable file. This will allow you to easily add new rules. A namelist file would work.
+- Check /home/ben/notes/programming/correctness/code-testing.txt for more ideas.
+- Note: This will be brittle in the sense that it will only work for my own particular coding style.
+- Distinguish between compilation errors and test failures in the mutation score.
+- Mutation tester should not touch assertions.
+    - But it should note which assertions never fail as below.
+- Make highly parallelizable.
+    - Apply the mutation operators in batches in parallel. This will require a pure random number generator.
+    - Run the compiler in the next stage in parallel. This will allow me to note if the compilation fails as well.
+    - In the next stage, queue the codes that compiled and run them in parallel.
+- List tests that always pass. Check these tests to make sure that they actually discriminate between working and non-working code.
+    - List percent of times a test fails with a mutation. Sort the list to see which tests are most and least sensitive/discriminating.
+    - For tests that always pass, reduce tolerances so that the tests are more sensitive.
+    - For faster testing, consider eliminating tests which always pass, particularly if they take a long time.
+- Mutation operators:
+    - `comment_line`: Comment out non-empty lines.
+    - `switch_arithmetic_operator`: Switch arithmetic operators (`+`, `-`, `*`, `/`).
+    - `switch_comparison_operator`: Switch comparison operators (`>`, `<`, `==`, `>=`, `<=`, `/=`).
+    - `off_by_one_assignment`: Add or subtract one in an assignment (or start of a loop).
+    - `off_by_one_do_loop_end`: Add or subtract one at the end of a loop
+    - `off_by_one_indices_or_arguments`: Add or subtract one in indices or procedure arguments.
+    - TODO: mutation operators like the off-by-one operators that change the sign.
+    - `switch_variables`: Switch variables.
+    - `return`: Prematurely `return` in a procedure.
+    - `cycle`: Prematurely `cycle` in a loop.
+    - `exit`: Prematurely `exit` in a loop.
+    - `zero`: Set a variable to zero in an assignment (or at the start of a loop).
+    - `function_result`: Mutate `function` result values.
+    - `subroutine_out`: Mutate subroutine `intent(out)` and `intent(in out)` values.
+    - `array_size`: Increase or decrease array sizes by one.
+    - `delete_term`: Delete random equation terms. (Thought after skimming [this paper](https://doi.org/10.1115/1.4049322): Code coverage misses equation terms. A mutation tester which deletes random equation terms could be useful.)
+    - Swap intrinsics like sin and cos which are likely to be accidentally switched.
+    - Mutate `intent(in)` to `intent(out)`.
+    - Mutate `intent(out)` to `intent(in)`.
+    - Change order of exponentiation: `x**y` to `y**x`.
+    - changing order of magnitude of numbers
+    - moving parentheses (common mistake)
+- When complete, add here: <https://fortranwiki.org/fortran/show/Mutation+testing+frameworks>

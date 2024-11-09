@@ -1,0 +1,23 @@
+# f90lint to-do
+
+- Count test_units.f90 and test_units_ad.f90 towards test_genunits_io.f90?
+- Enforce some Power of 10 rules. Procedure lengths?
+- Measure and enforce code comment density? Assertions count towards this.
+    - <https://dirkriehle.com/2009/02/04/the-sweet-spot-of-code-commenting-in-open-source/comment-page-1/>
+- Require construct names for nested `do` loops and `if` statements.
+- Track and/or limit number of `if` statements to reduce number of test cases needed, accelerate code due to less branch prediction, and make the code more differentiable.
+- No programs in source, no modules in app or test.
+- List longest subroutines
+- Search for `TODO` and finish those tasks.
+- Maybe: Remove units*.f90 and rev.f90 from `skip_indexing` for f90lint to lint those files. Make `make f90lint` depend on the generated files so that they are present for linting.
+- Add tests for remaining modules which aren't passing.
+- Check for modules which don't have tests.
+- Measure `TODO` density and have bound on it to keep them current.
+- Identify untested procedures by looking at `use` lines in tests. This won't work for type-bound procedures, though.
+- Require that all functions be `pure`.
+- Output checking:
+    - Presence of files that should not be there: `fort.*`, `FORT.*`
+    - Fortran format overflow: `*` in ifort/gfortran/crayftn/nvfortran
+    - `forrtl: error`
+    - `NaN`
+    - `Infinity`

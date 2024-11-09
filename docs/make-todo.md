@@ -1,0 +1,41 @@
+# Makefile and build system to-do
+
+- Change config.ini to depends.ini and f90lint.ini in py directory. Add explanations of every item in comments.
+- `depends.py` input file: Prune to the minimum to reduce code maintenance and confusion when using. no mk/depends.mk specification, etc.
+- Because `make depends` requires some genunits output to be generated, it's not possible to start `make depends` from nothing. Have option to start `make depends` from nothing.
+- `make lint` runs Python linters too.
+- depends.py: Generates a list of executables from `app` in before.mk, add them to `CLEAN`.
+- Make script to install FLT build system in a directory
+- `make install` to install everything in `app`.
+    - `DESTDIR` and `PREFIX` variables
+    - <https://nullprogram.com/blog/2017/08/20/>
+    - <https://www.gnu.org/software/make/manual/html_node/Directory-Variables.html>
+    - <https://www.gnu.org/software/make/manual/html_node/DESTDIR.html>
+- `make dist`
+    - create tgz and/or zip file of `DESTDIR`
+    - lists hashes
+- `ARCH=gpu` for ifx and nvfortran. `GFLAGS` for GPU flags?
+- Option to disable automatic differentiation in Makefile for speed.
+- semgrep static analysis
+- Detect if certain compilers are present and don't run those in `make all` if they are not present. This will allow your Makefile to work on all your different computers.
+- Add linters.
+    - Add directory for flinter in tests to make sure that Flinter actually flags bad code. Have one test for good code too which should not be flagged.
+    - Camfort
+    - <http://simconglobal.com/fpt_summary.html>
+    - <https://fortran.uk/fortran-analysis-and-refactoring-with-plusfort/plusfort-evaluation-version/>
+    - <https://www.forcheck.nl/index.html>
+- Fortran module dependencies being wrong
+    - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/18>
+        - > I will note that from a quick scan of your script and makefile, it doesn’t actually appear to guarantee correct order of compilation (i.e. your .o files don’t depend on .mod files).
+    - <https://fortran-lang.discourse.group/t/why-should-i-use-cmake/953/23>
+        - > For Fortran, an object file depends on the source file it is compiled from AND all the .mod files for any modules USEd in the source file. A .mod file depends on the source file in which that module is defined. An executable depends on all the object files for all the code it uses, and code they use, etc, even if that code wasn’t in a module, and so doesn’t get included via a USE statement.
+- Making compatible with FPM.
+- Making work with NMAKE, GNU Make, and BSD Make.
+    - Figure out how to pass the `-f` argument to the `MAKE` macro so that recursive make works (for example, `bmake -f BSDmakefile all` and `pdpmake -f PDPmakefile all`).
+    - Figure out how to specify `BUILD` and `FC` in pdpmake.
+    - Figure out how to add back `test ! -e fort.*` and `test ! -e FORT.*` to tests as I don't know what the Windows equivalent is.
+        - Do these checks in Fortran?
+- Replace PDPmakefile with POSIXmakefile that is strictly POSIX (has no `include` or any other non-POSIX things) and should work on IBM AIX make too. This file can be constructed from the other files via `make POSIXmakefile`. Don't set `FC` and whatnot, instead set those via the command line or defaults?
+- Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all` (`SFLAGS`?)
+- `PFLAGS` make macro to switch between GPU and CPU for ifx, nvfortran, etc.
+- Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).

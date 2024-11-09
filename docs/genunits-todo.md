@@ -1,0 +1,79 @@
+# genunits to-do
+
+- Add `**` operator for `unitless` as that stays `unitless`.
+- Generic `linspace` and `linf_norm`
+- Add and test comparison operators for `real` for `unitless`.
+- Look into inheritance for genunits to avoid the `%v%v` problem? Could also try a pointer and make the actual unit type value not `%v`.
+- Better constructor for AD and genunits. Make default constructor set a constant, and have a separate subroutine to set the variable number of the derivatives? Example proposed syntax for combination of AD and genunits:
+    - ```type(si_length) :: x
+
+    x = si_length(1.0_WP) ! make a constant
+    call x%set_dv(1, N_DV) ! set this as variable number 1```
+- Add `%v%v` to linter (disabled for now) to help identify what to fix in the future...
+- Documentation for genunits
+    - `use_line` creates a new line at semicolons, so that depends.py can see the dependency.
+- genunits_io.f90: Change type-bound procedures for `config` to be normal procedures.
+- Derived type input
+    - Goals for derived type namelist input:
+        - Specify mean value, uncertainty, and unit in a namelist.
+        - Return some sort of error if the unit is inappropriate.
+    - Make derived type input end at a ` `, `,`, or `/`. See NAG email.
+    - Allow for prefixes like `m`, `c`, `k` on each unit? A base unit can be defined by a base symbol and a base prefix. So the base unit `kg` is constructed from the base symbol `g` and the base prefix `k`.
+        - <https://ucum.org/ucum#baseunits>
+        - <https://en.wikipedia.org/wiki/Unit_prefix>
+    - Use `vlist` for something else. `size(vlist)` seems to cause problems with nvfortran. See 2024-07-06 log.
+    - read/write number with uncertainty
+- How to handle physical dimensions with AD?
+    - `diff(f, x)`: Different return types depending on `x` and `y`.
+    - Link `x` to the index of the `dv` member variable by making the only non-zero `dv` member variable the one to differentiate with respect to.
+- Namelist group `template` which will read in a template and create versions of the procedure for all units and the proper interface block. Until Fortran has good generics, this is the only way to get a generic procedure.
+    - `&template file="file.f90" /`
+    - Examples:
+        - `is_close`
+        - `swap_alloc` for all units. This takes two arguments and has a non-trivial procedure body, so it can't be handled like intrinsics.
+- Add feature to generate a module to allow for basic math on "vectors" where each row has a different unit. Implement "vectors" as derived types. Vector is probably not the right word.
+    - <https://github.com/arjenmarkus/handling-units/blob/main/src/handling_units_dimensions.tex>
+        - > If the feature does not support arrays whose elements have different dimensions/units of measure, then certain use patterns are not possible. That may or may not be a breaking requirement for the feature.
+- `same_unit` function which have same units for input and output: `abs`, `maxval`, `minval`, etc.
+    - `max` and `min` would be hard as they take an arbitrary number of arguments.
+- `unitless` functions which have unitless input and output (like `sin`, `cos`, `log`, `exp`, `gamma`, etc.). Include possible `use` line in namelist group.
+- `unit` function to return array of exponents of corresponding unit (Implement with an `interface` with many `module procedures` listed, one for each unit? That would increase the number of interfaces for ifx, unfortunately.)
+- `dimension` function to return string with dimension (implement with an `interface` with many `module procedures` listed, one for each unit)
+- Add assertions to the generated module (if appropriate), and have the option to enable or disable assertions.
+- Remove dependency on nmllog so that this can be separated out more easily.
+    - This will also help to compile genunits with lfortran, though it's not sufficient as `is_close` won't compile with lfortran due to `spacing`.
+- Break `write_module` into multiple modules to help organization and make testing parts easier.
+- `n_interfaces` is passed into some subroutines but not others. Make the interfaces consistent.
+- Unit tests for all procedures.
+- Characterization test comparing against known valid `units.f90`.
+- Test exponentiation functions.
+- Compare compile and run times with and without `units`. Look at compile time for `units.mod` and also something calling the module separately.
+    - `make benchmark`
+- Better type names:
+    - Type names which lead to good error messages are best. Example error messages:
+        - gfortran: `Error: Cannot convert TYPE(unit_p10000_p00000_m10000) to TYPE(unit_p10000_p00000_p00000) at (1)`. This indicates that there's a physical dimension checking error, but isn't clear about what the expected and actual dimensions are.
+        - ifx: `error #6197: An assignment of different structure types is invalid.` (So ifx doesn't say what the types are.)
+- Add `test_unit` to genunits_io.f90 to write to test file.
+- As comments, print number of types and interfaces at the end of the generated file, along with genunits git revision information, and the namelist file used to generate the file.
+- Test with arrays instead of scalars.
+- `real(...)` to convert `unitless` to `real(kind=WP)` for when an intrinsic or something else that expects a `real(kind=WP)` isn't available. Also: `int`.
+- Table with times for various compilers on the same computer, as a function of number of units generated:
+    - Running genunits
+    - Compiling units.f90
+    - Compiling test_units.f90 with units
+    - Compiling test_real.f90 without units (otherwise identical)
+    - Running test_units.f90 with units
+    - Running test_real.f90 without units (otherwise identical, to show effect on run-time performance)
+- Compare error messages in different compilers for units.f90
+    - If necessary, request that lfortran type error message be similar to gfortran to be as useful as possible for units.f90.
+    - Have a documentation section listing what various error messages shown by various compilers mean. Some of these error messages are not particularly clear and that harms debugging. Also note which compilers have more useful error messages for genunits.
+- units test with operations on 3 or more different units to make sure the output is correct
+- Check for spaces at the end of lines.
+- Lint the generated file units.f90.
+- absolute vs. offset vs. relative units
+- For reading data from CSV files, a compile-time check can't be done. But you can make a derived type which contains the exponents, and corresponding subroutines to check that the output type matches the input type. There will have to be a lot of auto-generated subroutines, but it'll work.
+- FPM installation
+- New GitHub repository specifically for this.
+- Advertising:
+    - Post on Fortran Discourse.
+    - Create Fortran Wiki page on "Physical units" and list it there.

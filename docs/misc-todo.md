@@ -1,0 +1,146 @@
+- Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
+- Bayesian inference Fortran module, to solve basic problems like the probability of actually having breast cancer in Yudkowsky's "intuitive explanation" or whodunits. Use log probability or whatever is appropriate internally.
+- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `WP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
+    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
+    - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
+- Common issue in my Fortran code: not using `lbound` and `ubound`
+    - Do arrays passed into procedures maintain these index bounds?
+    - For all array procedures, have tests with non-default array lower bounds to check if array bounds are preserved.
+        - Make `unittest` subroutine similar to `assert_dimension` that takes two `class(*)` arrays of various sizes and fails if the bounds/dimensions don't match.
+- compiler_tests.f90: Tests for intrinsics used in these libraries.
+    - How can I identify all the intrinsics used here?
+    - accuracy of important intrinsics
+- data validation
+    - Base on <https://pandera.readthedocs.io/en/stable/index.html>?
+- debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
+    - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
+        - parker_monte_1997-1
+    - FLOP counting.
+    - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
+    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
+    - Use `pure` logging for this?
+    - Upper and lower bounds for each variable, report violations.
+- Differentiable tridiagonal solver
+    - Example interfaces:
+        - Books: tannehill_computational_1997, schetz_boundary_1993, ellis_fortran_1994
+        - <https://www.ibm.com/docs/en/essl/6.2?topic=blaes-sgtsv-dgtsv-cgtsv-zgtsv-general-tridiagonal-matrix-factorization-multiple-right-hand-side-solve>
+        - <https://www.netlib.org/lapack/lapack-3.1.1/html/dgtsv.f.html>
+        - <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-fortran/2024-2/dttrsb.html>
+    - Parallel version
+- grad.f90: gradient descent
+    - Turn off derivative calculation in backtracking line search by making the `dv` member variables have zero length.
+    - <https://www.tensorflow.org/guide/core/optimizers_core>
+        - Help plan interface to gradient descent
+    - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only.
+    - Works with units.f90? Might be more trouble than it's worth, but give it a shot.
+- input validation
+    - Write module to ease input validation. For example, a subroutine to write a message about a variable being out of bounds.
+    - `call validate_bounds(x, "x", rc, lower=0, lower_inclusive=.true.)`
+        - message: "x must be greater than or equal to 0."
+    - `call validate_bounds(x, "x", rc, lower=0)`
+        - message: "x must be greater than 0."
+        - I don't think that this is not inclusive is obvious enough.
+- interval arithmetic
+    - Combination with automatic differentiation: <http://www.mscs.mu.edu/%7Egeorgec/IFAQ/rocco1.html>
+- `constrained` data type
+    - <http://www.acorvid.com/2017/12/13/what-i-miss-when-writing-fortran/>
+        - > Constrained reals; for example, absolute mass, pressure, or temperature variables which throw an exception if they become negative. This is a first-class feature of types in Ada (constrained subtype)
+    - Can be done with a derived type with custom operators.
+- `io.f90`
+    - convenience subroutines
+        - `print_box` (other similar things for the most important messages that I don't want to miss)
+            - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
+        - `print_table*` for iterative progress in particular.
+            - `print_table_heading`
+            - `print_table_row` (different versions for integer first columns and character first columns?)
+            - Also useful for input to compare defaults and current values. See oran_numerical_1987 p. 75.
+            - Column heading could go off-screen for long tables, so reprint the heading periodically?
+        - `print_dict`
+            - Inspired by <https://youtu.be/PxmvTsrCTZg?t=103>:
+                - `iteration=2200 residual=0.0937`
+            - This is good for long lists because the column header in the table can go off-screen.
+        - Look into how other CFD softwares output iterative progress for ideas. Which metrics do they output?
+- latex.f90:
+    - Calculated numbers in papers: Write procedure to output LaTeX code to a file (appending by default) with a particular number format. Could pass in a Fortran format string.
+    - Include in io.f90?
+- Model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
+- Multidimensional Newton solver
+    - <https://web.mit.edu/18.06/www/Spring17/Multidimensional-Newton.pdf>
+        - <https://gcc.gnu.org/onlinedocs/gfortran/NORM2.html>
+    - <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.newton.html>
+    - <https://people.sc.fsu.edu/~jburkardt/f_src/newton_rc/newton_rc.html>
+    - Newton solver using AD taking a callback.
+    - Would be advantageous to only have needed derivatives for the iteration and add additional derivatives for the final run.
+    - Can return solutions for arbitrary arrays.
+    - <https://twitter.com/chenna1985/status/1802660023010513012>
+- nmlcli.f90
+    - Could modify `get_namelist` approach to make CLI use more typical `--` flags. `--flag` could also be converted to `flag=.true.` for `logical`s.
+    - Wouldn't work on nvfortran as nvfortran can't `read` namelists from internal variables?
+    - `--version`: integrates with revision.f90
+    - How can I get descriptions of each option in `--help`? Manually? Parsing comments in the namelist file that is included?
+    - <https://fortran-lang.discourse.group/t/are-namelists-portable/1212/10>
+    - <https://github.com/urbanjost/M_CLI?tab=readme-ov-file>
+    - <https://fortranwiki.org/fortran/show/get_namelist>
+- nmlfuzz.f90: namelist fuzz tester
+    - Intentionally pick inputs which pass input validation but cause the program to fail.
+    - Make depend on ga.f90
+        - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
+    - Use metaprogramming to make work since Fortran can't really do that well at present?
+        - Have a computer-generated module that converts from genetic algorithm chromosome to namelist.
+    - Make similar to <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>.
+    - Use fuzzing primarily to find assertion violations with integration tests.
+    - I guess the objective function includes the code coverage and whether or not an assertion violation occurred.
+    - For speed, incentivize causing assertion failures as quickly as possible. The objective function is a function of both whether the code ran successfully or not and how quickly it failed if it did fail.
+- port.f90
+    - Get all tests to pass on Windows.
+    - Wrapper for `execute_command_line` that handles `./` on \*nix vs. nothing on Windows and file extension (nothing vs. `.exe`).
+    - Differences between Windows and \*nix
+        - `rm_cmd`: `del /q` vs. `rm`
+        - `rmdir_cmd`: `rmdir /s /q` vs. `rmdir`
+        - `cd_cmd`: `cd` vs. `cd`
+        - `mv_cmd`: `move` vs. `mv`
+        - `cp_cmd`: `copy` vs. `cp`
+        - `mkdir_cmd`: `mkdir` vs. `mkdir`
+        - `cmd_separator`: `&` vs. `;`
+        - `dir_separator`: `\` vs. `/`
+        - `binext`: `.exe` vs. ``
+        - `run`: nothing vs. `./`
+        - `cmp`: `fc` vs. `cmp`
+    - Note: Would be faster to detect platform at compile-time, but more convoluted. Given that I probably won't be calling these commands in a way that will impact performance much, I'm not worried about it.
+- Poisson solvers, using same or similar interface as FISHPACK
+    - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>
+        - Old: <https://people.math.sc.edu/Burkardt/f77_src/fishpack/fishpack.html>
+    - <https://github.com/firemodels/fds/blob/master/Source/pois.f90>
+    - <https://github.com/jlokimlin/fishpack>
+    - <https://www.netlib.org/fishpack/>
+    - <https://ascl.net/1609.005>
+    - <https://arc.ucar.edu/knowledge_base/71991310>
+        - <https://github.com/NCAR/NCAR-Classic-Libraries-for-Geophysics>
+- probes.py: Python script to insert probes into (instrument) Fortran code, particularly for Monte Carlo arithmetic.
+    - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
+        - > SPAG is able to insert calls to probes at various points in your code (see below).
+    - <https://docs.cypress.io/guides/tooling/code-coverage>
+    - Don't insert probes into `pure` and `elemental` procedures?
+    - Use `pure` logging for this so that it'll work in `pure` procedures?
+    - <https://flibs.sourceforge.net/checking.html>
+        - <https://sourceforge.net/p/flibs/svncode/HEAD/tree/trunk/src/checking/>
+- `pure` Monte Carlo uncertainty propagation
+    - Setting the random number generator should help this be combined with automatic differentiation by making the results less noisy.
+    - For uncertainty sources, I'll need to include the RNG type in the MC derived type? So I need a thread-safe seed generator for that. I'm not sure if I need the thread-safe seed generator for any other component.
+    - Variance reduction:
+        - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
+        - <https://en.wikipedia.org/wiki/Variance_reduction>
+    - `mc_fosm` module for combination MC and FOSM: If number of samples equals 1, use FOSM. Otherwise, use MC. A hybrid approach might be useful sometimes too.
+    - Probably would be faster to not have a derived type and just run the simulation subroutine multiple times. No inlining needed.
+- regex.f90 (Could be useful for fmutate.f90.)
+    - <https://fortran-lang.discourse.group/t/the-maturity-of-the-fortran-open-source-ecosystem/7563/2>
+    - <https://github.com/perazz/fortran-regex>
+    - Fork, add asserts and tests? Or just use as-is to get started faster?
+- Sensitivity analysis for model parameters.
+    - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
+    - Use AD for sensitivity analysis for important inputs? Make it possible to turn off AD for these inputs during "production" runs for speed.
+- Smart pointers
+    - Develop smart pointers before reverse mode AD.
+- Test case reduction program for Fortran (freduce?). Just delete lines to reduce test cases.
+    - <https://gcc.gnu.org/pipermail/fortran/2009-October/030302.html>
+- Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
