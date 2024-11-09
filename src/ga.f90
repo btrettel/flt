@@ -49,7 +49,7 @@ type, public :: indiv_type
     real(WP), allocatable :: chromo(:)
     
     ! whether the objective function has been set (`.false.` by default)
-    logical :: f_set = .false.
+    logical :: set = .false.
     
     ! objective function value
     real(WP) :: f
@@ -100,10 +100,10 @@ subroutine init_pop(config, rng, pop)
         end do gene_loop
     end do pop_loop
     
-    pop%best_pop_indiv%f      = huge(1.0_WP)
-    pop%best_pop_indiv%f_set  = .true.
-    pop%best_ever_indiv%f     = huge(1.0_WP)
-    pop%best_ever_indiv%f_set = .true.
+    pop%best_pop_indiv%f    = huge(1.0_WP)
+    pop%best_pop_indiv%set  = .true.
+    pop%best_ever_indiv%f   = huge(1.0_WP)
+    pop%best_ever_indiv%set = .true.
 end subroutine init_pop
 
 pure subroutine mutate_indiv(config, rng, indiv)
@@ -146,7 +146,7 @@ pure subroutine mutate_indiv(config, rng, indiv)
             end do
             
             indiv%chromo(i_gene) = indiv%chromo(i_gene) + nu
-            indiv%f_set = .false.
+            indiv%set = .false.
             
             call assert(indiv%chromo(i_gene) >= config%lb(i_gene), "ga (mutate_indiv): lower bound violated")
             call assert(indiv%chromo(i_gene) <= config%ub(i_gene), "ga (mutate_indiv): upper bound violated")
@@ -185,8 +185,8 @@ pure subroutine cross_two_indivs(config, rng, indiv_1, indiv_2)
             indiv_1%chromo(i_gene) = indiv_2%chromo(i_gene)
             indiv_2%chromo(i_gene) = gene_temp
             
-            indiv_1%f_set = .false.
-            indiv_2%f_set = .false.
+            indiv_1%set = .false.
+            indiv_2%set = .false.
         end if
     end do
 end subroutine cross_two_indivs
@@ -209,11 +209,11 @@ pure subroutine select_indiv(config, rng, pop, indiv)
     
     call rng%int(1, config%n_pop, nu)
     indiv = pop%indivs(nu)
-    call assert(indiv%f_set, "ga (select_indiv): objective function not set (1)")
+    call assert(indiv%set, "ga (select_indiv): objective function not set (1)")
     do i_pop = 2, config%n_select ! SERIAL
         call rng%int(1, config%n_pop, nu)
         
-        call assert(pop%indivs(nu)%f_set, "ga (select_indiv): objective function not set (2)")
+        call assert(pop%indivs(nu)%set, "ga (select_indiv): objective function not set (2)")
         
         if (pop%indivs(nu)%f < indiv%f) then
             indiv = pop%indivs(nu)
@@ -243,18 +243,21 @@ subroutine evaluate(config, objfun, pop)
     end interface
     
     call assert(config%n_pop == size(pop%indivs), "ga (evaluate): config%n_pop == size(pop%indivs) violated")
-    call assert(pop%best_ever_indiv%f_set, "ga (evaluate): pop%best_ever_indiv%f_set violated")
+    call assert(pop%best_ever_indiv%set, "ga (evaluate): pop%best_ever_indiv%set violated")
     
     f_max      = -huge(1.0_WP)
     i_pop_best = 0
     do i_pop = 1, config%n_pop ! SERIAL
-        call objfun(pop%indivs(i_pop)%chromo, pop%indivs(i_pop)%f, pop%indivs(i_pop)%sum_g)
+        if (.not. pop%indivs(i_pop)%set) then
+            call objfun(pop%indivs(i_pop)%chromo, pop%indivs(i_pop)%f, pop%indivs(i_pop)%sum_g)
+        end if
+        
         call assert(pop%indivs(i_pop)%sum_g >= 0.0_WP, "ga (evaluate): pop%indivs(i_pop)%sum_g >= 0 violated")
         
         if (is_close(pop%indivs(i_pop)%sum_g, 0.0_WP)) then
             f_max      = max(f_max, pop%indivs(i_pop)%f)
             i_pop_best = i_pop
-            pop%indivs(i_pop)%f_set = .true.
+            pop%indivs(i_pop)%set = .true.
         end if
     end do
     
@@ -277,7 +280,7 @@ subroutine evaluate(config, objfun, pop)
     do concurrent (i_pop = 1:config%n_pop)
         if (pop%indivs(i_pop)%sum_g > 0.0_WP) then
             pop%indivs(i_pop)%f     = f_max + pop%indivs(i_pop)%sum_g
-            pop%indivs(i_pop)%f_set = .true.
+            pop%indivs(i_pop)%set = .true.
         end if
     end do
     
@@ -324,8 +327,8 @@ subroutine optimize(config, rng, objfun, pop, rc)
     call assert(allocated(config%ub), "ga (optimize): allocated(config%ub) violated")
     
     allocate(next_pop%indivs(config%n_pop))
-    next_pop%best_ever_indiv      = pop%best_ever_indiv
-    next_pop%best_pop_indiv%f_set = .false.
+    next_pop%best_ever_indiv    = pop%best_ever_indiv
+    next_pop%best_pop_indiv%set = .false.
     
     if (config%progress) then
         write(unit=*, fmt="(a)") "   gener    pop best   best ever"
