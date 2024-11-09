@@ -38,6 +38,9 @@ type, public :: ga_config
     
     real(WP), allocatable :: lb(:), ub(:) ! lower and upper bounds for each gene
     
+    real(WP) :: f_max_all_infeasible   = 0.0_WP
+    logical  :: stop_if_all_unfeasible = .true.
+    
     logical          :: progress = .true.
     character(len=8) :: f_fmt = "f12.2"
 end type ga_config
@@ -246,7 +249,6 @@ subroutine evaluate(config, objfun, pop)
     i_pop_best = 0
     do i_pop = 1, config%n_pop ! SERIAL
         call objfun(pop%indivs(i_pop)%chromo, pop%indivs(i_pop)%f, pop%indivs(i_pop)%sum_g)
-        
         call assert(pop%indivs(i_pop)%sum_g >= 0.0_WP, "ga (evaluate): pop%indivs(i_pop)%sum_g >= 0 violated")
         
         if (is_close(pop%indivs(i_pop)%sum_g, 0.0_WP)) then
@@ -256,7 +258,19 @@ subroutine evaluate(config, objfun, pop)
         end if
     end do
     
-    call assert(i_pop_best > 0, "ga (evaluate): i_pop_best > 0 violated")
+    call assert(i_pop_best >= 0, "ga (evaluate): i_pop_best >= 0 violated")
+    
+    ! deb_efficient_2000 p. 317: > If no feasible solution exists in a population, $f_max$ is set to zero.
+    ! I don't like this as `f` could normally be above 0.
+    ! I decided to stop with an error by default in this situation.
+    if (i_pop_best == 0) then
+        if (config%stop_if_all_unfeasible) then
+            error stop "ga (evaluate): all individuals violate constraints " // &
+                            "(can override with config%stop_if_all_unfeasible=.false."
+        else
+            f_max = config%f_max_all_infeasible
+        end if
+    end if
     
     ! set `f` for indivs that had constraint violations
     ! See deb_efficient_2000 eq. 4.

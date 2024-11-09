@@ -3,8 +3,6 @@
 Priorities:
 
 - ga.f90:
-    - deb_efficient_2000 p. 317: > If no feasible solution exists in a population, $f_max$ is set to zero.
-        - Set to zero by default but have ability to override with `config%f_infeasible`
     - Make infeasible individuals have their fitness recalculated based on the current population to avoid issues from the fitness depending on the population.
     - `config%openmp` to enable parallel `evaluate`
     - `write_restart_file` and `read_restart_file`
@@ -12,7 +10,14 @@ Priorities:
     - `config%stop_f` option to make GA stop at a particular value of `f`
     - `config%stop_time`
     - different return codes depending on how `optimize` stopped
+        - `rc <= 0`: success
+            - 0: stopped due to `n_gener`
+            - -1: stopped due to `stop_now` file
+            - -2: stopped due to `stop_f`
+            - -3: stopped due to `stop_time`
+        - `rc >= 1`: failure
     - `integer` chromosome in addition
+    - population statistics: mean, standard deviation
 - returncodes.f90: A module containing `errno` codes, other internal return codes.
     - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
         - <https://fortranwiki.org/fortran/show/iso_fortran_env>
