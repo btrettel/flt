@@ -282,7 +282,7 @@ subroutine evaluate(config, objfun, pop)
             ! Infeasible individuals have their fitness recalculated based on the current population.
             ! This is regardless of whether they were `set` before `evaluate` was called.
             ! This avoid issues from the fitness depending on the population.
-            pop%indivs(i_pop)%f     = f_max + pop%indivs(i_pop)%sum_g
+            pop%indivs(i_pop)%f   = f_max + pop%indivs(i_pop)%sum_g
             pop%indivs(i_pop)%set = .true.
         end if
     end do
