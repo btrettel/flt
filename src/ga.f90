@@ -64,7 +64,7 @@ type, public :: pop_type
     type(indiv_type) :: best_pop_indiv, best_ever_indiv
 end type pop_type
 
-public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate, optimize
+public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate, optimize_ga
 
 contains
 
@@ -279,6 +279,9 @@ subroutine evaluate(config, objfun, pop)
     ! See deb_efficient_2000 eq. 4.
     do concurrent (i_pop = 1:config%n_pop)
         if (pop%indivs(i_pop)%sum_g > 0.0_WP) then
+            ! Infeasible individuals have their fitness recalculated based on the current population.
+            ! This is regardless of whether they were `set` before `evaluate` was called.
+            ! This avoid issues from the fitness depending on the population.
             pop%indivs(i_pop)%f     = f_max + pop%indivs(i_pop)%sum_g
             pop%indivs(i_pop)%set = .true.
         end if
@@ -293,8 +296,7 @@ subroutine evaluate(config, objfun, pop)
     end if
 end subroutine evaluate
 
-subroutine optimize(config, rng, objfun, pop, rc)
-    ! Tournament selection
+subroutine optimize_ga(config, rng, objfun, pop, rc)
     ! Follows luke_essentials_2013 Algorithm 20, p. 37.
     
     use purerng, only: rng_type
@@ -362,6 +364,6 @@ subroutine optimize(config, rng, objfun, pop, rc)
             write(unit=*, fmt="(2" // trim(config%f_fmt) // ")") pop%best_pop_indiv%f, pop%best_ever_indiv%f
         end if
     end do
-end subroutine optimize
+end subroutine optimize_ga
 
 end module ga

@@ -3,7 +3,6 @@
 Priorities:
 
 - ga.f90:
-    - Make infeasible individuals have their fitness recalculated based on the current population to avoid issues from the fitness depending on the population.
     - `config%openmp` to enable parallel `evaluate`
     - `write_restart_file` and `read_restart_file`
     - `stop_now` file can stop GA
