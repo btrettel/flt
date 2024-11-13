@@ -24,6 +24,7 @@ call test_select_indiv(tests)
 call test_evaluate_1(tests)
 call test_evaluate_2(tests)
 call test_optimize_ga(tests)
+call test_comparison_constraints(tests)
 
 call tests%end_tests()
 call logger%close()
@@ -376,5 +377,30 @@ subroutine test_optimize_ga(tests)
     ! characterization test
     call tests%real_eq(pop%best_ever_indiv%f, 2.8404480517590853_WP, "optimize, pop%best_ever_indiv%f", abs_tol=1.0e-12_WP)
 end subroutine test_optimize_ga
+
+subroutine test_comparison_constraints(tests)
+    use prec, only: WP
+    use ga, only: constraint_lt, constraint_gt
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    real(WP) :: sum_g
+    
+    sum_g = 0.0_WP
+    call constraint_lt(0.0_WP, 1.0_WP, sum_g)
+    call tests%real_eq(sum_g, 0.0_WP, "constraint_lt 1")
+    
+    sum_g = 0.0_WP
+    call constraint_lt(1.0_WP, 0.0_WP, sum_g)
+    call tests%real_eq(sum_g, 1.0_WP, "constraint_lt 2")
+    
+    sum_g = 0.0_WP
+    call constraint_gt(0.0_WP, 1.0_WP, sum_g)
+    call tests%real_eq(sum_g, 1.0_WP, "constraint_gt 1")
+    
+    sum_g = 0.0_WP
+    call constraint_gt(1.0_WP, 0.0_WP, sum_g)
+    call tests%real_eq(sum_g, 0.0_WP, "constraint_gt 2")
+end subroutine test_comparison_constraints
 
 end program test_ga

@@ -17,6 +17,7 @@ Priorities:
         - `rc >= 1`: failure
     - `integer` chromosome in addition
     - population statistics: mean, standard deviation
+        - `call pop_stats(...)`
 - returncodes.f90: A module containing `errno` codes, other internal return codes.
     - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
         - <https://fortranwiki.org/fortran/show/iso_fortran_env>

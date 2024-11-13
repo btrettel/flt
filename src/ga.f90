@@ -15,6 +15,9 @@ use prec, only: WP
 implicit none
 private
 
+public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate, optimize_ga
+public :: constraint_lt, constraint_gt
+
 integer, parameter          :: MAX_SAMPLES = 10000
 character(len=*), parameter :: GENER_FMT = "(i8)"
 
@@ -52,7 +55,7 @@ type, public :: indiv_type
     logical :: set = .false.
     
     ! objective function value
-    real(WP) :: f
+    real(WP) :: f = huge(1.0_WP)
     
     ! sum of constraint violations
     real(WP) :: sum_g = 0.0_WP
@@ -63,8 +66,6 @@ type, public :: pop_type
     
     type(indiv_type) :: best_pop_indiv, best_ever_indiv
 end type pop_type
-
-public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate, optimize_ga
 
 contains
 
@@ -365,5 +366,23 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
         end if
     end do
 end subroutine optimize_ga
+
+pure subroutine constraint_lt(x, y, sum_g)
+    real(WP), intent(in)     :: x, y
+    real(WP), intent(in out) :: sum_g
+    
+    if (.not. (x < y)) then
+        sum_g = sum_g + (x - y)
+    end if
+end subroutine constraint_lt
+
+pure subroutine constraint_gt(x, y, sum_g)
+    real(WP), intent(in)     :: x, y
+    real(WP), intent(in out) :: sum_g
+    
+    if (.not. (x > y)) then
+        sum_g = sum_g + (y - x)
+    end if
+end subroutine constraint_gt
 
 end module ga
