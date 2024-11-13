@@ -435,12 +435,12 @@ regexp-rules:
     # Using `fmt="(a)"` on ELF90 seems to result in the first letter being cut off for strings, but `fmt=*` does not.
 
   integer-kind-on-real:
-    message: Don't use integer kind on real.
-    regexp: \breal\(kind=IP\)
+    message: Don't use integer kind on a real.
+    regexp: \breal\(I
 
   real-kind-on-integer:
-    message: Don't use real kind on integer.
-    regexp: \binteger\(kind=RP\)
+    message: Don't use real kind on an integer.
+    regexp: \binteger\(WP\)
 
   use-only:
     message: Always use the only option to get extra checks in gfortran.

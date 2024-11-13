@@ -368,21 +368,33 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
 end subroutine optimize_ga
 
 pure subroutine constraint_lt(x, y, sum_g)
+    use checks, only: assert
+    
     real(WP), intent(in)     :: x, y
     real(WP), intent(in out) :: sum_g
+    
+    call assert(sum_g >= 0.0_WP, "ga (constraint_lt): sum_g >= 0 violated (1)")
     
     if (.not. (x < y)) then
         sum_g = sum_g + (x - y)
     end if
+    
+    call assert(sum_g >= 0.0_WP, "ga (constraint_lt): sum_g >= 0 violated (2)")
 end subroutine constraint_lt
 
 pure subroutine constraint_gt(x, y, sum_g)
+    use checks, only: assert
+    
     real(WP), intent(in)     :: x, y
     real(WP), intent(in out) :: sum_g
+    
+    call assert(sum_g >= 0.0_WP, "ga (constraint_gt): sum_g >= 0 violated (1)")
     
     if (.not. (x > y)) then
         sum_g = sum_g + (y - x)
     end if
+    
+    call assert(sum_g >= 0.0_WP, "ga (constraint_gt): sum_g >= 0 violated (2)")
 end subroutine constraint_gt
 
 end module ga
