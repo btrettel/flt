@@ -18,6 +18,9 @@ Priorities:
     - `integer` chromosome in addition
     - population statistics: mean, standard deviation
         - `call pop_stats(...)`
+    - Assert that objective values are finite. This will help catch bugs in objective functions and ensure that the population statistics are meaningful.
+    - Add ability to insert an arbitrary number of pre-specified seeds to the initial population.
+    - Break `g_sum` into `g_sum_pre` for before the solver is run and `g_sum_post` for after the solver is run. Some constraint violations may make running the solver impossible. Individuals which have non-zero `g_sum_pre` will take `g_sum_post` values equal to the maximum `g_sum_post` value. This will incentivize satisfying the pre-constraints.
 - returncodes.f90: A module containing `errno` codes, other internal return codes.
     - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
         - <https://fortranwiki.org/fortran/show/iso_fortran_env>

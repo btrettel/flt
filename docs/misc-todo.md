@@ -91,6 +91,7 @@
     - Use fuzzing primarily to find assertion violations with integration tests.
     - I guess the objective function includes the code coverage and whether or not an assertion violation occurred.
     - For speed, incentivize causing assertion failures as quickly as possible. The objective function is a function of both whether the code ran successfully or not and how quickly it failed if it did fail.
+    - Keep track of error messages to know which are triggered and which are not. The ones which are not triggered are potentially buggy.
 - port.f90
     - Get all tests to pass on Windows.
     - Wrapper for `execute_command_line` that handles `./` on \*nix vs. nothing on Windows and file extension (nothing vs. `.exe`).
