@@ -2,6 +2,7 @@
 
 Priorities:
 
+- Switch `make check` to `make test` for consistency with folder name.
 - ga.f90:
     - `config%openmp` to enable parallel `evaluate`
     - `write_restart_file` and `read_restart_file`
@@ -14,20 +15,21 @@ Priorities:
             - -1: stopped due to `stop_now` file
             - -2: stopped due to `stop_f`
             - -3: stopped due to `stop_time`
+            - At end of optimization, report error if none satisfy constraints.
         - `rc >= 1`: failure
-    - `integer` chromosome in addition
     - population statistics: mean, standard deviation
         - `call pop_stats(...)`
     - Assert that objective values are finite. This will help catch bugs in objective functions and ensure that the population statistics are meaningful.
     - Add ability to insert an arbitrary number of pre-specified seeds to the initial population.
     - Break `g_sum` into `g_sum_pre` for before the solver is run and `g_sum_post` for after the solver is run. Some constraint violations may make running the solver impossible. Individuals which have non-zero `g_sum_pre` will take `g_sum_post` values equal to the maximum `g_sum_post` value. This will incentivize satisfying the pre-constraints.
+    - Report fraction of population not satisfying constraints in printout.
+    - Check notes on testing optimization algorithms for more ideas.
+    - `config%log = .true.` (`.false.` by default) will write `pop.nml` containing information about every individual.
+    - Latin hypercube sampling for initial population
+        - <https://youtu.be/0ewU1frjoL8?list=PLj6pNSgoumyfNUw0T_dOv5g6QzDf6tHmq&t=1236>
+        - martins_engineering_2021 p. 377-- (pdf pp. 384--)
+    - Test `standard_ga_config`
 - returncodes.f90: A module containing `errno` codes, other internal return codes.
-    - Make a table of `iostat` values in different Fortran compilers so that you know which values to pick to not conflict with any compiler.
-        - <https://fortranwiki.org/fortran/show/iso_fortran_env>
-            - `iostat_end`, `iostat_eor`
-        - <https://www.scivision.dev/oneapi-fortran-iostat-codes/>
-        - <https://www.ibm.com/docs/en/xl-fortran-linux/16.1.1?topic=inputoutput-conditions-iostat-values>
-        - <https://groups.google.com/g/comp.lang.fortran/c/l8UJoI-x9PM>
 - fmad.f90 and units.f90
     - `is_close`
 - unittest.f90

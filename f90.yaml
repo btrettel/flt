@@ -436,10 +436,12 @@ regexp-rules:
 
   integer-kind-on-real:
     message: Don't use integer kind on a real.
-    regexp: \breal\(I
+    case-sensitive: true
+    regexp: \breal\(I\d
 
   real-kind-on-integer:
     message: Don't use real kind on an integer.
+    case-sensitive: true
     regexp: \binteger\(WP\)
 
   use-only:

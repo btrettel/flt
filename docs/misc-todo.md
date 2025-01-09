@@ -60,6 +60,7 @@
                 - `iteration=2200 residual=0.0937`
             - This is good for long lists because the column header in the table can go off-screen.
         - Look into how other CFD softwares output iterative progress for ideas. Which metrics do they output?
+            - <https://twitter.com/HiroNishikawa/status/1858803904164839621>
 - latex.f90:
     - Calculated numbers in papers: Write procedure to output LaTeX code to a file (appending by default) with a particular number format. Could pass in a Fortran format string.
     - Include in io.f90?

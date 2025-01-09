@@ -17,17 +17,25 @@ private
 
 public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate, optimize_ga
 public :: constraint_lt, constraint_gt
+public :: standard_ga_config
 
 integer, parameter          :: MAX_SAMPLES = 10000
 character(len=*), parameter :: GENER_FMT = "(i8)"
 
 type, public :: ga_config
-    ! `n_pop`, `p_cross`, and `p_mutate` defaults based on:
-    ! de_jong_analysis_1975 pp. 68, 70 (pdf pp. 83, 85): for n_pop = 50, p_mutate = 0.02 is about optimal
+    integer :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
+    
+    ! martins_engineering_2021 p. 309:
+    ! > As a rule of thumb, the population size should be approximately one order of magnitude larger than the number of design
+    ! > variables, and this size should be tuned.
+    ! I guess `n_pop = 50` is a decent starting point.
+    integer :: n_pop = 50 ! number of indivs in population
+    
+    ! de_jong_analysis_1975 p. 68 (pdf pp. 83):
+    ! > a mutation rate of the same order of magnitude as `1/POP_SIZE` seems to be about the best setting
+    ! de_jong_analysis_1975 p. 70 (pdf pp. 85): for n_pop = 50, p_mutate = 0.02 is about optimal
     ! de_jong_analysis_1975 pp. 75 (pdf pp. 90): p_cross_indiv = 0.6 is about optimal
-    ! It's not exactly clear to me how large a population is ideal, but I guess `n_pop = 50` is a decent starting point.
-    integer  :: n_pop = 50 ! number of indivs in population
-    real(WP) :: p_cross_indiv = 0.5_WP, p_mutate = 0.02_WP
+    real(WP) :: p_cross_indiv = 0.6_WP, p_mutate = 0.02_WP
     
     ! `n_select = 2` is most popular according to luke_essentials_2013 p. 45.
     integer :: n_select = 2
@@ -37,7 +45,6 @@ type, public :: ga_config
     
     integer  :: n_gener = 20
     real(WP) :: rel_b   = 0.2_WP ! `b` parameter for Cauchy dist., relative to range of variable determined from `lb` and `ub`
-    integer  :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
     
     real(WP), allocatable :: lb(:), ub(:) ! lower and upper bounds for each gene
     
@@ -82,16 +89,18 @@ subroutine init_pop(config, rng, pop)
     call assert(allocated(config%lb), "ga (init_pop): allocated(config%lb) violated")
     call assert(allocated(config%ub), "ga (init_pop): allocated(config%ub) violated")
     
+    ! The assertions on `pop` are pointless because `pop` is `intent(out)`.
+    
     call assert(.not. allocated(pop%indivs), "ga (init_pop): .not. allocated(pop%indivs) violated")
     allocate(pop%indivs(config%n_pop))
     
     call assert(config%n_genes > 0, "ga (init_pop): config%n_genes > 0 violated")
     
-    pop_loop: do concurrent (i_pop = 1:config%n_pop)
+    pop_loop: do i_pop = 1, config%n_pop ! SERIAL
         call assert(.not. allocated(pop%indivs(i_pop)%chromo), "ga (init_pop): .not. allocated(pop%indivs(i_pop)%chromo)")
         allocate(pop%indivs(i_pop)%chromo(config%n_genes))
         
-        gene_loop: do concurrent (i_gene = 1:config%n_genes)
+        gene_loop: do i_gene = 1, config%n_genes ! SERIAL
             call assert(config%lb(i_gene) <= config%ub(i_gene), "ga (init_pop): lb > ub?")
             
             call rng%uniform(config%lb(i_gene), config%ub(i_gene), pop%indivs(i_pop)%chromo(i_gene))
@@ -124,7 +133,7 @@ pure subroutine mutate_indiv(config, rng, indiv)
     call assert(allocated(config%lb), "ga (mutate_indiv): allocated(config%lb) violated")
     call assert(allocated(config%ub), "ga (mutate_indiv): allocated(config%ub) violated")
     
-    do concurrent (i_gene = 1:config%n_genes)
+    do i_gene = 1, config%n_genes ! SERIAL
         call rng%random_number(nu)
         if (config%p_mutate >= nu) then
             call assert(config%lb(i_gene) <= config%ub(i_gene), "ga (mutation): lb > ub?")
@@ -174,7 +183,7 @@ pure subroutine cross_two_indivs(config, rng, indiv_1, indiv_2)
     call assert(allocated(config%lb), "ga (cross_two_indivs): allocated(config%lb) violated")
     call assert(allocated(config%ub), "ga (cross_two_indivs): allocated(config%ub) violated")
     
-    do concurrent (i_gene = 1:config%n_genes)
+    do i_gene = 1, config%n_genes ! SERIAL
         call rng%random_number(nu)
         if (config%p_cross_indiv >= nu) then
             call assert(indiv_1%chromo(i_gene) >= config%lb(i_gene), "ga (cross_two_indivs): lower bound violated (1)")
@@ -323,11 +332,13 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
         end subroutine objfun
     end interface
     
-    call assert(config%n_pop == size(pop%indivs), "ga (optimize): config%n_pop == size(pop%indivs) violated")
-    call assert(config%n_genes > 0, "ga (optimize): config%n_genes > 0 violated")
-    call assert(config%n_gener > 0, "ga (optimize): config%n_gener > 0 violated")
-    call assert(allocated(config%lb), "ga (optimize): allocated(config%lb) violated")
-    call assert(allocated(config%ub), "ga (optimize): allocated(config%ub) violated")
+    call assert(allocated(pop%indivs), "ga (optimize_ga): allocated(pop%indivs) violated")
+    call assert(config%n_pop == size(pop%indivs), "ga (optimize_ga): config%n_pop == size(pop%indivs) violated")
+    call assert(config%n_pop > 0, "ga (optimize_ga): config%n_pop > 0 violated")
+    call assert(config%n_genes > 0, "ga (optimize_ga): config%n_genes > 0 violated")
+    call assert(config%n_gener > 0, "ga (optimize_ga): config%n_gener > 0 violated")
+    call assert(allocated(config%lb), "ga (optimize_ga): allocated(config%lb) violated")
+    call assert(allocated(config%ub), "ga (optimize_ga): allocated(config%ub) violated")
     
     allocate(next_pop%indivs(config%n_pop))
     next_pop%best_ever_indiv    = pop%best_ever_indiv
@@ -396,5 +407,21 @@ pure subroutine constraint_gt(x, y, sum_g)
     
     call assert(sum_g >= 0.0_WP, "ga (constraint_gt): sum_g >= 0 violated (2)")
 end subroutine constraint_gt
+
+pure subroutine standard_ga_config(n_genes, config)
+    integer, intent(in)          :: n_genes
+    type(ga_config), intent(out) :: config
+    
+    config%n_genes = n_genes
+    
+    ! martins_engineering_2021 p. 309:
+    ! > As a rule of thumb, the population size should be approximately one order of magnitude larger than the number of design
+    ! > variables, and this size should be tuned.
+    config%n_pop = 10*n_genes
+    
+    ! de_jong_analysis_1975 p. 68 (pdf pp. 83):
+    ! > a mutation rate of the same order of magnitude as `1/POP_SIZE` seems to be about the best setting
+    config%p_mutate = 1.0_WP/real(config%n_pop, WP)
+end subroutine standard_ga_config
 
 end module ga

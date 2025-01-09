@@ -12,6 +12,7 @@
 # <https://innolitics.com/articles/make-delete-on-error/>
 .DELETE_ON_ERROR:
 MAKEFLAGS = --warn-undefined-variables
+# Later, when Make 4.4 is available, add `--shuffle` to `MAKEFLAGS`.
 
 # Detect the operating system so that this can work under both Windows and Linux.
 # <https://stackoverflow.com/a/12099167/1124489>
