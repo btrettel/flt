@@ -32,7 +32,7 @@
     - <https://www.tensorflow.org/guide/core/optimizers_core>
         - Help plan interface to gradient descent
     - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only.
-    - Works with units.f90? Might be more trouble than it's worth, but give it a shot.
+    - Add procedures to make doing interior penalty methods easy?
 - input validation
     - Write module to ease input validation. For example, a subroutine to write a message about a variable being out of bounds.
     - `call validate_bounds(x, "x", rc, lower=0, lower_inclusive=.true.)`

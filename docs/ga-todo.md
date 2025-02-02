@@ -5,4 +5,5 @@
 - Won't initially for simplicity: `chromo%out(:)` (for non-objective function outputs that may be of interest). Make type a `class(*)` variable so that I can put any output I want in there.
 - Hybridize: Nelder-Mead method for local search when genetic algorithm has stalled.
 - Procedure to round to values in an array, and related procedure to get array from text file.
-- `integer` chromosome in addition
+- `integer` chromosome in addition?
+- Maybe change `rel_b` to something like `rel_mut_size`.

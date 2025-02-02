@@ -11,3 +11,5 @@
 - Richardson extrapolation procedure?
 - Check for ideas: marshall_scientific_2011
 - Have ability to produce convergence rate plot like smitherman_calculation_2007 fig. 8. This could be useful to help pinpoint what is wrong when debugging.
+- Check other convergence test codes for ideas:
+    - <https://github.com/reggie-framework/reggie2.0/#h-convergence-test>

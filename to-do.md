@@ -2,6 +2,7 @@
 
 Priorities:
 
+- fmad.f90: Change `%dv` to `%d`
 - Switch `make check` to `make test` for consistency with folder name.
 - ga.f90:
     - `config%openmp` to enable parallel `evaluate`
@@ -33,7 +34,7 @@ Priorities:
 - fmad.f90 and units.f90
     - `is_close`
 - unittest.f90
-    - maybe: Instead of `integer_eq`, `real_eq`, use generic `eq`?
+    - Instead of `integer_eq`, `real_eq`, use generic `eq`.
     - Ensure that all test messages are unique.
     - Keep track of test results so that you know whether a test has ever failed, and thus whether it is discriminating. (bowes_how_2017 p. 3L)
         - Also track which assertions have never failed?

@@ -11,3 +11,4 @@
 - <https://en.wikipedia.org/wiki/Tornado_diagram>
 - Modify your AD to use SIMD vectorization. Use `do concurrent` with OpenMP or OpenACC directives? See personal notes on automatic differentiation for other speed ideas too.
 - Can declare certain derivatives as "active" or "inactive to easily enable or disable (respectively) differentiation with respect to particular variables at compile or run time for speed. Not yet sure how to pick `dv` indices in this case. With allocatable `dv`, this can be done at run time.
+- Add description array for each differentiable variable?
