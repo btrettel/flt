@@ -17,8 +17,8 @@ public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
 type, public :: ad
-    real(WP)              :: v     ! function value
-    real(WP), allocatable :: dv(:) ! function derivatives value
+    real(WP)              :: v     ! value
+    real(WP), allocatable :: dv(:) ! derivative values
 contains
     procedure :: init
     procedure :: init_const

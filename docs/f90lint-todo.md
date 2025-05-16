@@ -21,5 +21,5 @@
     - `forrtl: error`
     - `NaN`
     - `Infinity`
-- Systematically go through all variables with a checklist to make comprehensive assertions. Add a mark so that f90lint knows the variable was checked?
+- Systematically go through all variables (or just procedure argument variables?) with a checklist to make comprehensive assertions. Add a mark so that f90lint knows the variable was checked?
 - Make f90lint check for conditional statements inside `do concurrent` loops.

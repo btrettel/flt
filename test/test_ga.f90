@@ -221,7 +221,7 @@ subroutine test_select_indiv(tests)
     call tests%real_eq(indiv%f, 0.0_WP, "select_indiv, indiv%f (3)")
 end subroutine test_select_indiv
 
-subroutine rosenbrock(chromo, f, sum_g)
+pure subroutine rosenbrock(chromo, f, sum_g)
     ! <https://en.wikipedia.org/wiki/Rosenbrock_function>
     
     use prec, only: WP
@@ -330,7 +330,7 @@ subroutine test_evaluate_2(tests)
     call tests%logical_true(pop%indivs(4)%set, "evaluate (2), pop%indivs(4)%set")
 end subroutine test_evaluate_2
 
-subroutine evaluate_2(chromo, f, sum_g)
+pure subroutine evaluate_2(chromo, f, sum_g)
     use prec, only: WP
     use checks, only: assert
     

@@ -1,5 +1,6 @@
 # unittest.f90 and testing to-do
 
+- Change procedure names to be genetic. `real_eq` and `integer_eq` to just `eq`, etc.
 - Make `test_concurrent` more reliable. I think this problem might only appear for Intel. And is it only for release mode as an assertion should catch this? Why don't the assertions fail in that case?
     - ```./test_purerng
     real returned = -3999.7052

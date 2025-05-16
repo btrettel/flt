@@ -9,6 +9,9 @@
 ! Instead of "fitness" or "quality", I am using the term objective function.
 ! In contrast to luke_essentials_2013, lower objective function values are better.
 
+! Make the simulation fully specified by the chromosome.
+! Then no additional `config` type needs to be passed in beyond the genetic algorithm configuration.
+
 module ga
 
 use prec, only: WP
@@ -238,11 +241,12 @@ subroutine evaluate(config, objfun, pop)
     type(ga_config), intent(in)    :: config
     type(pop_type), intent(in out) :: pop
     
-    integer  :: i_pop, i_pop_best
+    integer  :: i_pop
     real(WP) :: f_max
+    logical  :: best_pop_indiv_set
     
     interface
-        subroutine objfun(chromo, f, sum_g)
+        pure subroutine objfun(chromo, f, sum_g)
             use prec, only: WP
             
             ! Passing in all `real`s means that the objective function does not need any of this module's derived types.
@@ -255,31 +259,36 @@ subroutine evaluate(config, objfun, pop)
     call assert(config%n_pop == size(pop%indivs), "ga (evaluate): config%n_pop == size(pop%indivs) violated")
     call assert(pop%best_ever_indiv%set, "ga (evaluate): pop%best_ever_indiv%set violated")
     
-    f_max      = -huge(1.0_WP)
-    i_pop_best = 0
-    do i_pop = 1, config%n_pop ! SERIAL
+    do concurrent (i_pop = 1:config%n_pop)
         if (.not. pop%indivs(i_pop)%set) then
             call objfun(pop%indivs(i_pop)%chromo, pop%indivs(i_pop)%f, pop%indivs(i_pop)%sum_g)
         end if
         
         call assert(pop%indivs(i_pop)%sum_g >= 0.0_WP, "ga (evaluate): pop%indivs(i_pop)%sum_g >= 0 violated")
-        
-        if (is_close(pop%indivs(i_pop)%sum_g, 0.0_WP)) then
-            f_max      = max(f_max, pop%indivs(i_pop)%f)
-            i_pop_best = i_pop
-            pop%indivs(i_pop)%set = .true.
-        end if
     end do
     
-    call assert(i_pop_best >= 0, "ga (evaluate): i_pop_best >= 0 violated")
+    f_max                = -huge(1.0_WP)
+    pop%best_pop_indiv%f = huge(1.0_WP)
+    best_pop_indiv_set   = .false.
+    do i_pop = 1, config%n_pop ! SERIAL
+        if (is_close(pop%indivs(i_pop)%sum_g, 0.0_WP)) then
+            f_max      = max(f_max, pop%indivs(i_pop)%f)
+            pop%indivs(i_pop)%set = .true.
+            
+            if (pop%best_pop_indiv%f > pop%indivs(i_pop)%f) then
+                pop%best_pop_indiv = pop%indivs(i_pop)
+                best_pop_indiv_set = .true.
+            end if
+        end if
+    end do
     
     ! deb_efficient_2000 p. 317: > If no feasible solution exists in a population, $f_max$ is set to zero.
     ! I don't like this as `f` could normally be above 0.
     ! I decided to stop with an error by default in this situation.
-    if (i_pop_best == 0) then
+    if (.not. best_pop_indiv_set) then
         if (config%stop_if_all_unfeasible) then
             error stop "ga (evaluate): all individuals violate constraints " // &
-                            "(can override with config%stop_if_all_unfeasible=.false."
+                            "(can override with config%stop_if_all_unfeasible=.false.)"
         else
             f_max = config%f_max_all_infeasible
         end if
@@ -296,9 +305,6 @@ subroutine evaluate(config, objfun, pop)
             pop%indivs(i_pop)%set = .true.
         end if
     end do
-    
-    ! pick pop best individual
-    pop%best_pop_indiv = pop%indivs(i_pop_best)
     
     ! set best ever individual
     if (pop%best_ever_indiv%f > pop%best_pop_indiv%f) then
@@ -322,7 +328,7 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
     type(pop_type) :: next_pop
     
     interface
-        subroutine objfun(chromo, f, sum_g)
+        pure subroutine objfun(chromo, f, sum_g)
             use prec, only: WP
             
             ! Passing in all `real`s means that the objective function does not need any of this module's derived types.

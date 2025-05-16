@@ -146,3 +146,4 @@
 - Test case reduction program for Fortran (freduce?). Just delete lines to reduce test cases.
     - <https://gcc.gnu.org/pipermail/fortran/2009-October/030302.html>
 - Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
+- Make cli.f90 print where OpenMP is used more clearly. Looking at the list of compiler flags is not ideal.

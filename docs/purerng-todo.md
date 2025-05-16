@@ -1,6 +1,7 @@
 # purerng.f90 to-do
 
 - <https://en.wikipedia.org/wiki/Quasi-Monte_Carlo_method>
+    - <https://en.wikipedia.org/wiki/Halton_sequence>
 - Add more rigorous tests for random number generators. (Low priority as I just implemented a common random number generator, which should be good enough to get started.)
 - Make xoshiro256** only work with `REAL64` and `INT64` with radix 2 as it seems designed around those based on the bit manipulation.
 - Change `I10` to `INT64` to work with xoshiro256**.
