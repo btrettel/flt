@@ -23,6 +23,8 @@ STATIC = no
 !include mk\ifort_windows.mk
 !elseif "$(FC)" == "ifx"
 !include mk\ifx_windows.mk
+!elseif "$(FC)" == "gfortran"
+!include mk\gfortran.mk
 !else
 !error Invalid FC: $(FC)
 !endif
@@ -54,6 +56,13 @@ FFLAGS = $(FFLAGS)
 !else
 !error Set STATIC to either yes or no. STATIC=$(STATIC)
 !endif
+
+# jom needs the folders manually specified.
+# NMAKE does not require this if the folder is the same for both.
+# <https://learn.microsoft.com/en-us/cpp/build/reference/inference-rules?view=msvc-170#search-paths-in-rules>
+# <https://forums.freebsd.org/threads/a-surprising-thing-about-bsd-make-suffix-rules.89767/>
+{src}.f90{src}.$(OBJEXT):
+	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $<
 
 !include mk\before.mk
 !include mk\common.mk

@@ -23,6 +23,9 @@ include mk/linux_defaults.mk
 include mk/gfortran.mk
 FFLAGS ::= $(FFLAGS) $(DFLAGS)
 
+.f90.$(OBJEXT):
+	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $<
+
 include mk/before.mk
 include mk/common.mk
 include mk/manual.mk

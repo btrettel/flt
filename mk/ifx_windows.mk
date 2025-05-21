@@ -5,5 +5,7 @@ AFLAGS   =
 NFLAGS   = /QxHost
 SFLAGS   = /static
 OMPFLAGS = /Qiopenmp
+OFLAG    = /o
+OBJFLAGS = /c /o
 
 # Removed: `/Qdiag-error-limit:1`

@@ -84,6 +84,9 @@ FFLAGS +=
 
 .include <mk/before.mk>
 .include <mk/common.mk>
+# This needs to be after (or in) common.mk or else it won't work with BSD Make.
+.f90.$(OBJEXT):
+	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $<
 .include <mk/manual.mk>
 .include <mk/depends.mk>
 .include <mk/linux_2.mk>

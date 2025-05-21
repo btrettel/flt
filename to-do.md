@@ -7,6 +7,7 @@ Priorities:
 - ga.f90:
     - Add more tests for flt ga.f90 in general
         - Add test to check that `pop%best_pop_indiv` is set correctly.
+        - Add test for constrained optimization.
     - `write_restart_file` and `read_restart_file`
     - `stop_now` file can stop GA
     - `config%stop_f` option to make GA stop at a particular value of `f`

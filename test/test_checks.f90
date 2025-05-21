@@ -158,7 +158,10 @@ if (DEBUG) then ! IBM XLF comment start
     close(unit=test_assert_false_unit, status="delete")
 else
     ! Check that `assert(.false.)` does not terminate with a non-zero exit code for release mode.
-    call tests%exit_code_eq("./test_assert_false", 0, "assert, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_eq("./test_assert_false_1", 0, "assert, .false., message, exit code (release)", &
+                                ASSERT_FALSE_OUTPUT)
+    call tests%exit_code_eq("./test_assert_false_2", 0, "assert, array, .false., message, exit code (release)", &
+                                ASSERT_FALSE_OUTPUT)
 end if ! IBM XLF comment end
 
 ! `assert_dimension`

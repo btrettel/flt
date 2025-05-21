@@ -21,10 +21,6 @@ make FC=ifx BUILD=debug check
 make clean
 make FC=ifx BUILD=release check
 make clean
-make FC=ifort BUILD=debug check
-make clean
-make FC=ifort BUILD=release check
-make clean
 make FC=nvfortran BUILD=debug check
 make clean
 make FC=nvfortran BUILD=release check
@@ -37,10 +33,6 @@ bmake -f BSDmakefile clean
 bmake -f BSDmakefile FC=ifx BUILD=debug check
 bmake -f BSDmakefile clean
 bmake -f BSDmakefile FC=ifx BUILD=release check
-bmake -f BSDmakefile clean
-bmake -f BSDmakefile FC=ifort BUILD=debug check
-bmake -f BSDmakefile clean
-bmake -f BSDmakefile FC=ifort BUILD=release check
 bmake -f BSDmakefile clean
 bmake -f BSDmakefile FC=nvfortran BUILD=debug check
 bmake -f BSDmakefile clean

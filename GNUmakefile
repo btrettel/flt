@@ -19,9 +19,12 @@ MAKEFLAGS = --warn-undefined-variables
 OS ?=
 ifeq ($(OS),Windows_NT)
 OS_FILENAME = windows
+$(error GNU Make building is disabled at the moment on Windows due to weird problems. Try NMAKE or jom.)
+# Why use NMAKE or jom on Windows? Some things about GNU Make don't work as well. [Windows directory separators require escaping in a weird way], and [sometimes you need to specify the shell on Windows](https://stackoverflow.com/a/47896799/1124489) as GNU Make will want to use sh.exe. And if you do specify the shell, GNU Make will exit into a new shell.
 else
 # Despite saying Linux here, I expect this to work on Mac OS and BSD.
 OS_FILENAME = linux
+include mk/linux_defaults.mk
 endif
 
 # defaults
@@ -38,30 +41,29 @@ endif
 BUILD  = debug
 OPENMP = no
 STATIC = no
-include mk/linux_defaults.mk
 
 #############
 # Compilers #
 #############
 
 ifeq ($(FC),gfortran)
-include mk/gfortran.mk
+include mk$(DIR_SEP)gfortran.mk
 else ifeq ($(FC),ifx)
-include mk/ifx_$(OS_FILENAME).mk
+include mk$(DIR_SEP)ifx_$(OS_FILENAME).mk
 else ifeq ($(FC),ifort)
-include mk/ifort_$(OS_FILENAME).mk
+include mk$(DIR_SEP)ifort_$(OS_FILENAME).mk
 else ifeq ($(FC),nvfortran)
-include mk/nvfortran.mk
+include mk$(DIR_SEP)nvfortran.mk
 else ifeq ($(FC),lfortran)
-include mk/lfortran.mk
+include mk$(DIR_SEP)lfortran.mk
 else ifeq ($(FC),crayftn)
-include mk/crayftn.mk
+include mk$(DIR_SEP)crayftn.mk
 else ifeq ($(FC),ftn)
-include mk/crayftn.mk
+include mk$(DIR_SEP)crayftn.mk
 else ifeq ($(FC),xlf2008)
-include mk/xlf.mk
+include mk$(DIR_SEP)xlf.mk
 else ifeq ($(FC),nagfor)
-include mk/nagfor.mk
+include mk$(DIR_SEP)nagfor.mk
 #else
 #$(error Invalid FC: $(FC))
 endif
@@ -94,8 +96,11 @@ else
 $(error Set STATIC to either yes or no. STATIC=$(STATIC))
 endif
 
-include mk/before.mk
-include mk/common.mk
-include mk/manual.mk
-include mk/depends.mk
-include mk/$(OS_FILENAME)_2.mk
+.f90.$(OBJEXT):
+	$(FC) $(OBJFLAGS) $@ $(FFLAGS) $<
+
+include mk$(DIR_SEP)before.mk
+include mk$(DIR_SEP)common.mk
+include mk$(DIR_SEP)manual.mk
+include mk$(DIR_SEP)depends.mk
+include mk$(DIR_SEP)$(OS_FILENAME)_2.mk
