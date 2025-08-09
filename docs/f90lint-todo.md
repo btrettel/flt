@@ -23,3 +23,4 @@
     - `Infinity`
 - Systematically go through all variables (or just procedure argument variables?) with a checklist to make comprehensive assertions. Add a mark so that f90lint knows the variable was checked?
 - Make f90lint check for conditional statements inside `do concurrent` loops.
+- When gfortran in Ubuntu reaches version 15.1 and locality specifiers are supported, make `do concurrent default(none)` required.

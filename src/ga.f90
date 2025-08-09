@@ -36,9 +36,12 @@ type, public :: ga_config
     
     ! de_jong_analysis_1975 p. 68 (pdf pp. 83):
     ! > a mutation rate of the same order of magnitude as `1/POP_SIZE` seems to be about the best setting
+    ! So you could try `p_mutate = min(1.0, p_mutate_factor/real(n_pop, WP))`.
     ! de_jong_analysis_1975 p. 70 (pdf pp. 85): for n_pop = 50, p_mutate = 0.02 is about optimal
+    real(WP) :: p_mutate = 0.02_WP
+    
     ! de_jong_analysis_1975 pp. 75 (pdf pp. 90): p_cross_indiv = 0.6 is about optimal
-    real(WP) :: p_cross_indiv = 0.6_WP, p_mutate = 0.02_WP
+    real(WP) :: p_cross_indiv = 0.6_WP
     
     ! `n_select = 2` is most popular according to luke_essentials_2013 p. 45.
     integer :: n_select = 2

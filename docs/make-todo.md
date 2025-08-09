@@ -39,3 +39,7 @@
 - Intel and Cray compilers: make variable to switch between address and thread sanitizers, compile with both when doing `make all` (`SFLAGS`?)
 - `PFLAGS` make macro to switch between GPU and CPU for ifx, nvfortran, etc.
 - Makefile documentation: Explain `DFLAGS`, `RFLAGS`, `AFLAGS` (architecture flags), `NFLAGS` (native architecture flags).
+- ifx: Add ability to use address, memory, or thread sanitizers.
+    - Can all 3 be used at once? I recall false positives with the memory sanitizer
+    - Which ones can be used on Windows?
+    - <https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2024-2/fsanitize.html>

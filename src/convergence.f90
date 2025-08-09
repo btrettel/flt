@@ -22,6 +22,7 @@ interface dnorm
     ! <https://www.petercheng.me/blog/discrete-L2-norm>
     ! <https://scicomp.stackexchange.com/questions/5095/discrete-lp-norms-for-non-uniform-grid>
     ! roy_review_2005 eq. 7: the discrete norm takes into account `n` so that it's comparable to a point-wise value.
+    ! <https://youtu.be/v9OnNeYH4Ok?t=2216>
     
     module procedure dnorm_real_rank_1
     module procedure dnorm_ad_rank_1

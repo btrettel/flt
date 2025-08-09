@@ -8,7 +8,7 @@
 
 # defaults
 !ifndef FC
-FC=ifort
+FC=ifx
 !endif
 BUILD  = debug
 OPENMP = no
