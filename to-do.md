@@ -9,7 +9,6 @@ Priorities:
 - <https://en.wikipedia.org/wiki/Sterbenz_lemma>: Make `assert_sterbenz` to assert that the conditions of the Sterbenz lemma are satisfied.
     - In `fmad` and `genunits`, create an operator that automatically enforces this? `.minus.`?
     - Other operators in `fmad` could benefit from this too. Anywhere a subtraction occurs (like the derivatives for division) could have a Sterbenz assertions version.
-- fmad.f90: Change `%dv` to `%d`
 - Switch `make check` to `make test` for consistency with folder name.
 - convergence.f90:
     - <https://www.grc.nasa.gov/WWW/wind/valid/tutorial/verify.f90>

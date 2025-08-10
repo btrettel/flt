@@ -58,102 +58,102 @@ subroutine test_scalars(tests)
     call z%init_const(-3.3_WP, N_DV)
 
     call tests%real_eq(x%v, 5.0_WP, "ad, value")
-    call tests%real_eq(x%dv(1), 1.0_WP, "ad, derivative (dv 1)")
-    call tests%real_eq(x%dv(2), 0.0_WP, "ad, derivative (dv 2)")
+    call tests%real_eq(x%d(1), 1.0_WP, "ad, derivative (dv 1)")
+    call tests%real_eq(x%d(2), 0.0_WP, "ad, derivative (dv 2)")
 
     call tests%real_eq(z%v, -3.3_WP, "init_const, value")
-    call tests%real_eq(z%dv(1), 0.0_WP, "init_const, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "init_const, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 0.0_WP, "init_const, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "init_const, derivative (dv 2)")
 
-    call tests%integer_eq(size(x%dv), N_DV, "size(x%dv) = N_DV")
-    call tests%integer_eq(size(y%dv), N_DV, "size(y%dv) = N_DV")
-    call tests%integer_eq(size(z%dv), N_DV, "size(z%dv) = N_DV")
+    call tests%integer_eq(size(x%d), N_DV, "size(x%d) = N_DV")
+    call tests%integer_eq(size(y%d), N_DV, "size(y%d) = N_DV")
+    call tests%integer_eq(size(z%d), N_DV, "size(z%d) = N_DV")
 
     z = x + y
     call tests%real_eq(z%v, 6.5_WP, "ad+ad, value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad+ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 1.0_WP, "ad+ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad+ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 1.0_WP, "ad+ad, derivative (dv 2)")
 
     z = x + a
     call tests%real_eq(z%v, 12.0_WP, "ad+real, value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad+real, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad+real, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad+real, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad+real, derivative (dv 2)")
 
     z = b + x
     call tests%real_eq(z%v, 17.0_WP, "ad+real, value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad+real, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad+real, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad+real, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad+real, derivative (dv 2)")
 
     z = +x
     call tests%real_eq(z%v, 5.0_WP, "+ad, value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "+ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "+ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "+ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "+ad, derivative (dv 2)")
 
     z = x - y
     call tests%real_eq(z%v, 3.5_WP, "ad+ad, value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad+ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), -1.0_WP, "ad+ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad+ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), -1.0_WP, "ad+ad, derivative (dv 2)")
 
     z = x - a
     call tests%real_eq(z%v, -2.0_WP, "ad+ad, value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad+ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad+ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad+ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad+ad, derivative (dv 2)")
 
     z = b - x
     call tests%real_eq(z%v, 7.0_WP, "ad+ad, value")
-    call tests%real_eq(z%dv(1), -1.0_WP, "ad+ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad+ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), -1.0_WP, "ad+ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad+ad, derivative (dv 2)")
 
     z = -x
     call tests%real_eq(z%v, -5.0_WP, "-ad, value")
-    call tests%real_eq(z%dv(1), -1.0_WP, "-ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "-ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), -1.0_WP, "-ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "-ad, derivative (dv 2)")
 
     z = x * y
     call tests%real_eq(z%v, 5.0_WP*1.5_WP, "ad*ad, value")
-    call tests%real_eq(z%dv(1), 1.5_WP, "ad*ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 5.0_WP, "ad*ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.5_WP, "ad*ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 5.0_WP, "ad*ad, derivative (dv 2)")
 
     z = a * x
     call tests%real_eq(z%v, 7.0_WP*5.0_WP, "real*ad, value")
-    call tests%real_eq(z%dv(1), 7.0_WP, "real*ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "real*ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 7.0_WP, "real*ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "real*ad, derivative (dv 2)")
 
     z = x * b
     call tests%real_eq(z%v, 5.0_WP*12.0_WP, "ad*real, value")
-    call tests%real_eq(z%dv(1), 12.0_WP, "ad*real, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad*real, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 12.0_WP, "ad*real, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad*real, derivative (dv 2)")
 
     z = x / y
     call tests%real_eq(z%v, 5.0_WP/1.5_WP, "ad/ad, value")
-    call tests%real_eq(z%dv(1), 1.0_WP/1.5_WP, "ad/ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), -5.0_WP/(1.5_WP**2), "ad/ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP/1.5_WP, "ad/ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), -5.0_WP/(1.5_WP**2), "ad/ad, derivative (dv 2)")
 
     z = x / a
     call tests%real_eq(z%v, 5.0_WP/7.0_WP, "ad/real, value")
-    call tests%real_eq(z%dv(1), 1.0_WP/7.0_WP, "ad/real, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad/real, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP/7.0_WP, "ad/real, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad/real, derivative (dv 2)")
 
     z = b / x
     call tests%real_eq(z%v, 12.0_WP/5.0_WP, "real/ad, value")
-    call tests%real_eq(z%dv(1), -12.0_WP/(5.0_WP**2), "real/ad, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "real/ad, derivative (dv 2)")
+    call tests%real_eq(z%d(1), -12.0_WP/(5.0_WP**2), "real/ad, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "real/ad, derivative (dv 2)")
 
     z = x**a
     call tests%real_eq(z%v, 5.0_WP**7.0_WP, "ad**real, value")
-    call tests%real_eq(z%dv(1), 7.0_WP * (5.0_WP**6.0_WP), "ad**real, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad**real, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 7.0_WP * (5.0_WP**6.0_WP), "ad**real, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad**real, derivative (dv 2)")
 
     c = 7
     z = x**c
     call tests%real_eq(z%v, 5.0_WP**7.0_WP, "ad**integer, value")
-    call tests%real_eq(z%dv(1), 7.0_WP * (5.0_WP**6.0_WP), "ad**integer, derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad**integer, derivative (dv 2)")
+    call tests%real_eq(z%d(1), 7.0_WP * (5.0_WP**6.0_WP), "ad**integer, derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad**integer, derivative (dv 2)")
 
     z = f(x, y)
     call tests%real_eq(z%v, (2.0_WP * 5.0_WP * 1.5_WP - 5.0_WP**2) / 1.5_WP + 1.5_WP, "f(ad, ad), value")
-    call tests%real_eq(z%dv(1), 2.0_WP - 2.0_WP * 5.0_WP / 1.5_WP, "f(ad, ad), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), -(2.0_WP * 5.0_WP * 1.5_WP - 5.0_WP**2) / (1.5_WP**2) &
+    call tests%real_eq(z%d(1), 2.0_WP - 2.0_WP * 5.0_WP / 1.5_WP, "f(ad, ad), derivative (dv 1)")
+    call tests%real_eq(z%d(2), -(2.0_WP * 5.0_WP * 1.5_WP - 5.0_WP**2) / (1.5_WP**2) &
                                         + 2.0_WP * 5.0_WP / 1.5_WP + 1.0_WP, &
                                         "f(ad, ad), derivative (dv 2)")
 end subroutine test_scalars
@@ -176,11 +176,11 @@ subroutine test_arrays(tests)
     w = u + 2.0_WP * v
 
     call tests%real_eq(w(1)%v, 1.0_WP, "ad array, 1, value")
-    call tests%real_eq(w(1)%dv(1), 1.0_WP, "ad, 1, derivative (dv 1)")
-    call tests%real_eq(w(1)%dv(2), 0.0_WP, "ad, 1, derivative (dv 2)")
+    call tests%real_eq(w(1)%d(1), 1.0_WP, "ad, 1, derivative (dv 1)")
+    call tests%real_eq(w(1)%d(2), 0.0_WP, "ad, 1, derivative (dv 2)")
     call tests%real_eq(w(2)%v, 7.0_WP, "ad array, 2, value")
-    call tests%real_eq(w(2)%dv(1), 0.0_WP, "ad, 2, derivative (dv 1)")
-    call tests%real_eq(w(2)%dv(2), 1.0_WP, "ad, 2, derivative (dv 2)")
+    call tests%real_eq(w(2)%d(1), 0.0_WP, "ad, 2, derivative (dv 1)")
+    call tests%real_eq(w(2)%d(2), 1.0_WP, "ad, 2, derivative (dv 2)")
 
     ! Make sure that `assert_dimension` works for `ad`.
 
@@ -200,8 +200,8 @@ subroutine test_sqrt(tests)
     y = sqrt(4.0_WP * x)
 
     call tests%real_eq(y%v, sqrt(8.0_WP), "ad sqrt, value")
-    call tests%real_eq(y%dv(1), 1.0_WP / sqrt(2.0_WP), "ad sqrt, derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad sqrt, derivative (dv 2)")
+    call tests%real_eq(y%d(1), 1.0_WP / sqrt(2.0_WP), "ad sqrt, derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad sqrt, derivative (dv 2)")
 end subroutine test_sqrt
 
 subroutine test_tanh(tests)
@@ -215,8 +215,8 @@ subroutine test_tanh(tests)
     y = tanh(2.0_WP * x)
 
     call tests%real_eq(y%v, tanh(2.0_WP), "ad tanh, value")
-    call tests%real_eq(y%dv(1), 2.0_WP * (1 - tanh(2.0_WP)**2), "ad tanh, derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad tanh, derivative (dv 2)")
+    call tests%real_eq(y%d(1), 2.0_WP * (1 - tanh(2.0_WP)**2), "ad tanh, derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad tanh, derivative (dv 2)")
 end subroutine test_tanh
 
 subroutine test_log(tests)
@@ -230,8 +230,8 @@ subroutine test_log(tests)
     y = 4.0_WP * log(2.0_WP * x)
 
     call tests%real_eq(y%v, 4.0_WP * log(2.0_WP), "ad log, value")
-    call tests%real_eq(y%dv(1), 4.0_WP, "ad log, derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad log, derivative (dv 2)")
+    call tests%real_eq(y%d(1), 4.0_WP, "ad log, derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad log, derivative (dv 2)")
 end subroutine test_log
 
 subroutine test_exp(tests)
@@ -245,8 +245,8 @@ subroutine test_exp(tests)
     y = 7.0_WP * exp(0.5_WP * x)
 
     call tests%real_eq(y%v, 7.0_WP*exp(0.5_WP), "ad exp, value")
-    call tests%real_eq(y%dv(1), 3.5_WP * exp(0.5_WP), "ad exp, derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad exp, derivative (dv 2)")
+    call tests%real_eq(y%d(1), 3.5_WP * exp(0.5_WP), "ad exp, derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad exp, derivative (dv 2)")
 end subroutine test_exp
 
 subroutine test_merge(tests)
@@ -261,13 +261,13 @@ subroutine test_merge(tests)
     
     z = merge(x, y, .true.)
     call tests%real_eq(z%v, 1.0_WP, "ad merge, .true., value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad merge, .true., derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad merge, .true., derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad merge, .true., derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad merge, .true., derivative (dv 2)")
     
     z = merge(x, y, .false.)
     call tests%real_eq(z%v, -1.0_WP, "ad merge, .false., value")
-    call tests%real_eq(z%dv(1), 0.0_WP, "ad merge, .false., derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 1.0_WP, "ad merge, .false., derivative (dv 2)")
+    call tests%real_eq(z%d(1), 0.0_WP, "ad merge, .false., derivative (dv 1)")
+    call tests%real_eq(z%d(2), 1.0_WP, "ad merge, .false., derivative (dv 2)")
 end subroutine test_merge
 
 subroutine test_max(tests)
@@ -282,37 +282,37 @@ subroutine test_max(tests)
     
     z = max(x, y)
     call tests%real_eq(z%v, 1.0_WP, "ad max (1), value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad max (1), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad max (1), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad max (1), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad max (1), derivative (dv 2)")
     
-    deallocate(y%dv)
+    deallocate(y%d)
     call y%init(2.0_WP, 2, N_DV)
     z = max(x, y)
     call tests%real_eq(z%v, 2.0_WP, "ad max (2), value")
-    call tests%real_eq(z%dv(1), 0.0_WP, "ad max (2), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 1.0_WP, "ad max (2), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 0.0_WP, "ad max (2), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 1.0_WP, "ad max (2), derivative (dv 2)")
     
     z = max(0.0_WP, x)
     call tests%real_eq(z%v, 1.0_WP, "ad max (3), value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad max (3), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad max (3), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad max (3), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad max (3), derivative (dv 2)")
     
-    deallocate(x%dv)
+    deallocate(x%d)
     call x%init(-1.0_WP, 2, N_DV)
     z = max(0.0_WP, x)
     call tests%real_eq(z%v, 0.0_WP, "ad max (4), value")
-    call tests%real_eq(z%dv(1), 0.0_WP, "ad max (4), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad max (4), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 0.0_WP, "ad max (4), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad max (4), derivative (dv 2)")
     
     ! test at the switching point
     ! The first argument is used.
-    deallocate(x%dv, y%dv)
+    deallocate(x%d, y%d)
     call x%init(1.0_WP, 1, N_DV)
     call y%init(1.0_WP, 2, N_DV)
     z = max(x, y)
     call tests%real_eq(z%v, 1.0_WP, "ad max (5), value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad max (5), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad max (5), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad max (5), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad max (5), derivative (dv 2)")
 end subroutine test_max
 
 subroutine test_min(tests)
@@ -327,37 +327,37 @@ subroutine test_min(tests)
     
     z = min(x, y)
     call tests%real_eq(z%v, -1.0_WP, "ad min (1), value")
-    call tests%real_eq(z%dv(1), 0.0_WP, "ad min (1), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 1.0_WP, "ad min (1), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 0.0_WP, "ad min (1), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 1.0_WP, "ad min (1), derivative (dv 2)")
     
-    deallocate(x%dv)
+    deallocate(x%d)
     call x%init(-2.0_WP, 1, N_DV)
     z = min(x, y)
     call tests%real_eq(z%v, -2.0_WP, "ad min (2), value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad min (2), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad min (2), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad min (2), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad min (2), derivative (dv 2)")
     
     z = min(0.0_WP, x)
     call tests%real_eq(z%v, -2.0_WP, "ad min (3), value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad min (3), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad min (3), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad min (3), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad min (3), derivative (dv 2)")
     
-    deallocate(x%dv)
+    deallocate(x%d)
     call x%init(1.0_WP, 2, N_DV)
     z = min(0.0_WP, x)
     call tests%real_eq(z%v, 0.0_WP, "ad min (4), value")
-    call tests%real_eq(z%dv(1), 0.0_WP, "ad min (4), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad min (4), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 0.0_WP, "ad min (4), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad min (4), derivative (dv 2)")
     
     ! test at the switching point
     ! The first argument is used.
-    deallocate(x%dv, y%dv)
+    deallocate(x%d, y%d)
     call x%init(1.0_WP, 1, N_DV)
     call y%init(1.0_WP, 2, N_DV)
     z = min(x, y)
     call tests%real_eq(z%v, 1.0_WP, "ad min (5), value")
-    call tests%real_eq(z%dv(1), 1.0_WP, "ad min (5), derivative (dv 1)")
-    call tests%real_eq(z%dv(2), 0.0_WP, "ad min (5), derivative (dv 2)")
+    call tests%real_eq(z%d(1), 1.0_WP, "ad min (5), derivative (dv 1)")
+    call tests%real_eq(z%d(2), 0.0_WP, "ad min (5), derivative (dv 2)")
 end subroutine test_min
 
 subroutine test_abs(tests)
@@ -370,22 +370,22 @@ subroutine test_abs(tests)
     call x%init(2.0_WP, 1, N_DV)
     y = abs(x)
     call tests%real_eq(y%v, 2.0_WP, "ad abs (positive), value")
-    call tests%real_eq(y%dv(1), 1.0_WP, "ad abs (positive), derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad abs (positive), derivative (dv 2)")
+    call tests%real_eq(y%d(1), 1.0_WP, "ad abs (positive), derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad abs (positive), derivative (dv 2)")
 
-    deallocate(x%dv)
+    deallocate(x%d)
     call x%init(-4.0_WP, 2, N_DV)
     y = abs(x)
     call tests%real_eq(y%v, 4.0_WP, "ad abs (negative), value")
-    call tests%real_eq(y%dv(1), 0.0_WP, "ad abs (negative), derivative (dv 1)")
-    call tests%real_eq(y%dv(2), -1.0_WP, "ad abs (negative), derivative (dv 2)")
+    call tests%real_eq(y%d(1), 0.0_WP, "ad abs (negative), derivative (dv 1)")
+    call tests%real_eq(y%d(2), -1.0_WP, "ad abs (negative), derivative (dv 2)")
 
-    deallocate(x%dv)
+    deallocate(x%d)
     call x%init(0.0_WP, 1, N_DV)
     y = abs(x)
     call tests%real_eq(y%v, 0.0_WP, "ad abs (zero), value")
-    call tests%real_eq(y%dv(1), 0.0_WP, "ad abs (zero), derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad abs (zero), derivative (dv 2)")
+    call tests%real_eq(y%d(1), 0.0_WP, "ad abs (zero), derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad abs (zero), derivative (dv 2)")
 end subroutine test_abs
 
 subroutine test_comparison(tests)
@@ -400,7 +400,7 @@ subroutine test_comparison(tests)
     call tests%logical_false(x < y, "ad < (1)")
     call tests%logical_false(x <= y, "ad <= (1)")
     
-    deallocate(x%dv, y%dv)
+    deallocate(x%d, y%d)
     call x%init(2.0_WP, 1, N_DV)
     call y%init(2.0_WP, 2, N_DV)
     call tests%logical_false(x > y, "ad > (2)")
@@ -408,7 +408,7 @@ subroutine test_comparison(tests)
     call tests%logical_false(x < y, "ad < (2)")
     call tests%logical_true(x <= y, "ad <= (2)")
     
-    deallocate(x%dv, y%dv)
+    deallocate(x%d, y%d)
     call x%init(1.0_WP, 1, N_DV)
     call y%init(2.0_WP, 2, N_DV)
     call tests%logical_false(x > y, "ad > (3)")
@@ -427,22 +427,22 @@ subroutine test_trig(tests)
     call x%init(0.0_WP, 1, N_DV)
     y = 2.0_WP * sin(x)
     call tests%real_eq(y%v, 0.0_WP, "ad sin, value")
-    call tests%real_eq(y%dv(1), 2.0_WP, "ad sin, derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad sin, derivative (dv 2)")
+    call tests%real_eq(y%d(1), 2.0_WP, "ad sin, derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad sin, derivative (dv 2)")
     
-    deallocate(x%dv, y%dv)
+    deallocate(x%d, y%d)
     call x%init(0.0_WP, 1, N_DV)
     y = 3.0_WP*cos(x)
     call tests%real_eq(y%v, 3.0_WP, "ad cos, value")
-    call tests%real_eq(y%dv(1), 0.0_WP, "ad cos, derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad cos, derivative (dv 2)")
+    call tests%real_eq(y%d(1), 0.0_WP, "ad cos, derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad cos, derivative (dv 2)")
     
-    deallocate(x%dv, y%dv)
+    deallocate(x%d, y%d)
     call x%init(0.0_WP, 1, N_DV)
     y = -tan(x)
     call tests%real_eq(y%v, 0.0_WP, "ad tan, value")
-    call tests%real_eq(y%dv(1), -1.0_WP, "ad tan, derivative (dv 1)")
-    call tests%real_eq(y%dv(2), 0.0_WP, "ad tan, derivative (dv 2)")
+    call tests%real_eq(y%d(1), -1.0_WP, "ad tan, derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad tan, derivative (dv 2)")
     
     ! TODO: Add more tests where the function value is known exactly.
 end subroutine test_trig
@@ -454,11 +454,11 @@ subroutine test_disabled(tests)
 
     call x%init(-1.0_WP, 1, 0)
     call tests%real_eq(x%v, -1.0_WP, "ad disabled, value")
-    call tests%integer_eq(size(x%dv), 0, "ad disabled, size(dv)")
+    call tests%integer_eq(size(x%d), 0, "ad disabled, size(dv)")
 
     call y%init_const(2.0_WP, 0)
     call tests%real_eq(y%v, 2.0_WP, "ad disabled, const value")
-    call tests%integer_eq(size(y%dv), 0, "ad disabled, const size(dv)")
+    call tests%integer_eq(size(y%d), 0, "ad disabled, const size(dv)")
 end subroutine test_disabled
 
 subroutine test_fosm(tests)
@@ -473,20 +473,20 @@ subroutine test_fosm(tests)
                     y_expected(N_X), z_expected(N_X)
 
     call x%init_const(0.0_WP, N_DV)
-    x(1)%dv(1) = -2.0_WP
-    x(1)%dv(1) = 3.0_WP
-    x(2)%dv(1) = 1.0_WP
-    x(2)%dv(1) = 1.0_WP
-    x(3)%dv(1) = 0.0_WP
-    x(3)%dv(1) = 0.0_WP
+    x(1)%d(1) = -2.0_WP
+    x(1)%d(1) = 3.0_WP
+    x(2)%d(1) = 1.0_WP
+    x(2)%d(1) = 1.0_WP
+    x(3)%d(1) = 0.0_WP
+    x(3)%d(1) = 0.0_WP
     sigmas(1) = 1.5_WP
     sigmas(2) = 3.0_WP
     
     y = var(x, sigmas)
     z = stdev(x, sigmas)
-    y_expected(1) = (x(1)%dv(1)*sigmas(1) + x(1)%dv(2)*sigmas(2))**2
-    y_expected(2) = (x(2)%dv(1)*sigmas(1) + x(2)%dv(2)*sigmas(2))**2
-    y_expected(3) = (x(3)%dv(1)*sigmas(1) + x(3)%dv(2)*sigmas(2))**2
+    y_expected(1) = (x(1)%d(1)*sigmas(1) + x(1)%d(2)*sigmas(2))**2
+    y_expected(2) = (x(2)%d(1)*sigmas(1) + x(2)%d(2)*sigmas(2))**2
+    y_expected(3) = (x(3)%d(1)*sigmas(1) + x(3)%d(2)*sigmas(2))**2
     z_expected = sqrt(y_expected)
     
     call tests%real_eq(y(1), y_expected(1), "fmad var(1)")

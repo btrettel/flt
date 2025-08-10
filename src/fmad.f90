@@ -17,8 +17,8 @@ public :: f
 
 ! Both the dependent and independent variables need to be of type `ad`.
 type, public :: ad
-    real(WP)              :: v     ! value
-    real(WP), allocatable :: dv(:) ! derivative values
+    real(WP)              :: v    ! value
+    real(WP), allocatable :: d(:) ! derivative values
 contains
     procedure :: init
     procedure :: init_const
@@ -111,16 +111,16 @@ elemental subroutine init(x, v, n, n_dv)
     
     x%v = v
     
-    allocate(x%dv(n_dv))
+    allocate(x%d(n_dv))
     
     if (n_dv > 0) then
         call assert(n >= 1, "fmad (init): n must be 1 or more")
         call assert(n <= n_dv, "fmad (init): n must be n_dv or less")
         do concurrent (i_dv = 1:n_dv)
-            x%dv(i_dv) = merge(1.0_WP, 0.0_WP, i_dv == n)
+            x%d(i_dv) = merge(1.0_WP, 0.0_WP, i_dv == n)
         end do
-        call assert(any(is_close(x%dv, 1.0_WP)), "fmad (init): at least one derivative set")
-        call assert(any(is_close(x%dv, 0.0_WP)) .or. (n_dv <= 1), "fmad (init): at least one derivative not set")
+        call assert(any(is_close(x%d, 1.0_WP)), "fmad (init): at least one derivative set")
+        call assert(any(is_close(x%d, 0.0_WP)) .or. (n_dv <= 1), "fmad (init): at least one derivative not set")
     end if
 end subroutine init
 
@@ -133,11 +133,11 @@ elemental subroutine init_const(x, v, n_dv)
     
     call assert(n_dv >= 0, "fmad (init): n_dv must be zero or more")
     
-    allocate(x%dv(n_dv))
+    allocate(x%d(n_dv))
 
     x%v  = v
     if (n_dv > 0) then
-        x%dv = 0.0_WP
+        x%d = 0.0_WP
     end if
 end subroutine init_const
 
@@ -153,11 +153,11 @@ elemental function ad_ad_add(ad_left, ad_right)
     
     type(ad) :: ad_ad_add
     
-    call assert(allocated(ad_left%dv), "fmad (ad_ad_add): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (ad_ad_add): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ad_ad_add): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (ad_ad_add): ad_right%d must be allocated")
     
     ad_ad_add%v  = ad_left%v  + ad_right%v
-    ad_ad_add%dv = ad_left%dv + ad_right%dv
+    ad_ad_add%d = ad_left%d + ad_right%d
 end function ad_ad_add
 
 elemental function ad_real_add(ad_in, real_in)
@@ -170,10 +170,10 @@ elemental function ad_real_add(ad_in, real_in)
     
     type(ad) :: ad_real_add
     
-    call assert(allocated(ad_in%dv), "fmad (ad_real_add): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_real_add): ad_in%d must be allocated")
 
     ad_real_add%v  = ad_in%v + real_in
-    ad_real_add%dv = ad_in%dv
+    ad_real_add%d = ad_in%d
 end function ad_real_add
 
 elemental function real_ad_add(real_left, ad_right)
@@ -186,10 +186,10 @@ elemental function real_ad_add(real_left, ad_right)
     
     type(ad) :: real_ad_add
     
-    call assert(allocated(ad_right%dv), "fmad (real_ad_add): ad_right%dv must be allocated")
+    call assert(allocated(ad_right%d), "fmad (real_ad_add): ad_right%d must be allocated")
 
     real_ad_add%v  = real_left + ad_right%v
-    real_ad_add%dv = ad_right%dv
+    real_ad_add%d = ad_right%d
 end function real_ad_add
 
 elemental function ad_ad_subtract(ad_left, ad_right)
@@ -201,11 +201,11 @@ elemental function ad_ad_subtract(ad_left, ad_right)
     
     type(ad) :: ad_ad_subtract
     
-    call assert(allocated(ad_left%dv), "fmad (ad_ad_subtract): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (ad_ad_subtract): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ad_ad_subtract): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (ad_ad_subtract): ad_right%d must be allocated")
 
     ad_ad_subtract%v  = ad_left%v  - ad_right%v
-    ad_ad_subtract%dv = ad_left%dv - ad_right%dv
+    ad_ad_subtract%d = ad_left%d - ad_right%d
 end function ad_ad_subtract
 
 elemental function ad_real_subtract(ad_left, real_right)
@@ -218,10 +218,10 @@ elemental function ad_real_subtract(ad_left, real_right)
     
     type(ad) :: ad_real_subtract
     
-    call assert(allocated(ad_left%dv), "fmad (ad_real_subtract): ad_left%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ad_real_subtract): ad_left%d must be allocated")
 
     ad_real_subtract%v  = ad_left%v - real_right
-    ad_real_subtract%dv = ad_left%dv
+    ad_real_subtract%d = ad_left%d
 end function ad_real_subtract
 
 elemental function real_ad_subtract(real_left, ad_right)
@@ -234,10 +234,10 @@ elemental function real_ad_subtract(real_left, ad_right)
     
     type(ad) :: real_ad_subtract
     
-    call assert(allocated(ad_right%dv), "fmad (real_ad_subtract): ad_right%dv must be allocated")
+    call assert(allocated(ad_right%d), "fmad (real_ad_subtract): ad_right%d must be allocated")
     
     real_ad_subtract%v  = real_left - ad_right%v
-    real_ad_subtract%dv = -ad_right%dv
+    real_ad_subtract%d = -ad_right%d
 end function real_ad_subtract
 
 elemental function ad_subtract_unary(ad_in)
@@ -249,10 +249,10 @@ elemental function ad_subtract_unary(ad_in)
     
     type(ad) :: ad_subtract_unary
     
-    call assert(allocated(ad_in%dv), "fmad (ad_subtract_unary): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_subtract_unary): ad_in%d must be allocated")
 
     ad_subtract_unary%v  = -ad_in%v
-    ad_subtract_unary%dv = -ad_in%dv
+    ad_subtract_unary%d = -ad_in%d
 end function ad_subtract_unary
 
 elemental function ad_add_unary(ad_in)
@@ -264,10 +264,10 @@ elemental function ad_add_unary(ad_in)
     
     type(ad) :: ad_add_unary
     
-    call assert(allocated(ad_in%dv), "fmad (ad_add_unary): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_add_unary): ad_in%d must be allocated")
 
     ad_add_unary%v  = ad_in%v
-    ad_add_unary%dv = ad_in%dv
+    ad_add_unary%d = ad_in%d
 end function ad_add_unary
 
 elemental function ad_ad_multiply(ad_left, ad_right)
@@ -279,11 +279,11 @@ elemental function ad_ad_multiply(ad_left, ad_right)
     
     type(ad) :: ad_ad_multiply
     
-    call assert(allocated(ad_left%dv), "fmad (ad_ad_multiply): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (ad_ad_multiply): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ad_ad_multiply): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (ad_ad_multiply): ad_right%d must be allocated")
 
     ad_ad_multiply%v  = ad_left%v * ad_right%v
-    ad_ad_multiply%dv = ad_left%dv * ad_right%v + ad_left%v * ad_right%dv
+    ad_ad_multiply%d = ad_left%d * ad_right%v + ad_left%v * ad_right%d
 end function ad_ad_multiply
 
 elemental function ad_real_multiply(ad_left, real_right)
@@ -296,10 +296,10 @@ elemental function ad_real_multiply(ad_left, real_right)
     
     type(ad) :: ad_real_multiply
     
-    call assert(allocated(ad_left%dv), "fmad (ad_real_multiply): ad_left%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ad_real_multiply): ad_left%d must be allocated")
     
     ad_real_multiply%v  = ad_left%v * real_right
-    ad_real_multiply%dv = ad_left%dv * real_right
+    ad_real_multiply%d = ad_left%d * real_right
 end function ad_real_multiply
 
 elemental function real_ad_multiply(real_left, ad_right)
@@ -312,10 +312,10 @@ elemental function real_ad_multiply(real_left, ad_right)
     
     type(ad) :: real_ad_multiply
     
-    call assert(allocated(ad_right%dv), "fmad (real_ad_multiply): ad_right%dv must be allocated")
+    call assert(allocated(ad_right%d), "fmad (real_ad_multiply): ad_right%d must be allocated")
     
     real_ad_multiply%v  = real_left * ad_right%v
-    real_ad_multiply%dv = real_left * ad_right%dv
+    real_ad_multiply%d = real_left * ad_right%d
 end function real_ad_multiply
 
 elemental function ad_ad_divide(ad_left, ad_right)
@@ -327,11 +327,11 @@ elemental function ad_ad_divide(ad_left, ad_right)
     
     type(ad) :: ad_ad_divide
     
-    call assert(allocated(ad_left%dv), "fmad (ad_ad_divide): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (ad_ad_divide): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ad_ad_divide): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (ad_ad_divide): ad_right%d must be allocated")
     
     ad_ad_divide%v  = ad_left%v / ad_right%v
-    ad_ad_divide%dv = (ad_left%dv * ad_right%v - ad_left%v * ad_right%dv) / (ad_right%v**2)
+    ad_ad_divide%d = (ad_left%d * ad_right%v - ad_left%v * ad_right%d) / (ad_right%v**2)
 end function ad_ad_divide
 
 elemental function ad_real_divide(ad_left, real_right)
@@ -344,10 +344,10 @@ elemental function ad_real_divide(ad_left, real_right)
     
     type(ad) :: ad_real_divide
     
-    call assert(allocated(ad_left%dv), "fmad (ad_real_divide): ad_left%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ad_real_divide): ad_left%d must be allocated")
     
     ad_real_divide%v  = ad_left%v / real_right
-    ad_real_divide%dv = ad_left%dv / real_right
+    ad_real_divide%d = ad_left%d / real_right
 end function ad_real_divide
 
 elemental function real_ad_divide(real_left, ad_right)
@@ -360,10 +360,10 @@ elemental function real_ad_divide(real_left, ad_right)
     
     type(ad) :: real_ad_divide
     
-    call assert(allocated(ad_right%dv), "fmad (real_ad_divide): ad_right%dv must be allocated")
+    call assert(allocated(ad_right%d), "fmad (real_ad_divide): ad_right%d must be allocated")
     
     real_ad_divide%v  = real_left / ad_right%v
-    real_ad_divide%dv = -real_left * ad_right%dv / (ad_right%v**2)
+    real_ad_divide%d = -real_left * ad_right%d / (ad_right%v**2)
 end function real_ad_divide
 
 elemental function ad_real_exponentiate(ad_in, real_in)
@@ -378,10 +378,10 @@ elemental function ad_real_exponentiate(ad_in, real_in)
     
     call assert(.not. (is_close(ad_in%v, 0.0_WP) .and. (real_in <= 0.0_WP)), &
                     "fmad (ad_real_exponentiate): exponent is negative or zero and argument is zero")
-    call assert(allocated(ad_in%dv), "fmad (ad_real_exponentiate): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_real_exponentiate): ad_in%d must be allocated")
     
     ad_real_exponentiate%v  = ad_in%v**real_in
-    ad_real_exponentiate%dv = real_in*(ad_in%v**(real_in - 1.0_WP))*ad_in%dv
+    ad_real_exponentiate%d = real_in*(ad_in%v**(real_in - 1.0_WP))*ad_in%d
 end function ad_real_exponentiate
 
 elemental function ad_integer_exponentiate(ad_in, integer_in)
@@ -396,10 +396,10 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
     
     call assert(.not. (is_close(ad_in%v, 0.0_WP) .and. (integer_in <= 0)), &
                     "fmad (ad_integer_exponentiate): exponent is negative or zero and argument is zero")
-    call assert(allocated(ad_in%dv), "fmad (ad_integer_exponentiate): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_integer_exponentiate): ad_in%d must be allocated")
 
     ad_integer_exponentiate%v  = ad_in%v**integer_in
-    ad_integer_exponentiate%dv = real(integer_in, WP)*(ad_in%v**(integer_in - 1))*ad_in%dv
+    ad_integer_exponentiate%d = real(integer_in, WP)*(ad_in%v**(integer_in - 1))*ad_in%d
 end function ad_integer_exponentiate
 
 ! No `rd**rd` as that's not likely to happen in CFD.
@@ -414,8 +414,8 @@ elemental function lt_ad(ad_left, ad_right)
     
     lt_ad = ad_left%v < ad_right%v
     
-    call assert(allocated(ad_left%dv), "fmad (lt_ad): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (lt_ad): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (lt_ad): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (lt_ad): ad_right%d must be allocated")
 end function lt_ad
 
 elemental function le_ad(ad_left, ad_right)
@@ -428,8 +428,8 @@ elemental function le_ad(ad_left, ad_right)
     
     le_ad = ad_left%v <= ad_right%v
     
-    call assert(allocated(ad_left%dv), "fmad (le_ad): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (le_ad): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (le_ad): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (le_ad): ad_right%d must be allocated")
 end function le_ad
 
 elemental function gt_ad(ad_left, ad_right)
@@ -442,8 +442,8 @@ elemental function gt_ad(ad_left, ad_right)
     
     gt_ad = ad_left%v > ad_right%v
     
-    call assert(allocated(ad_left%dv), "fmad (gt_ad): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (gt_ad): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (gt_ad): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (gt_ad): ad_right%d must be allocated")
 end function gt_ad
 
 elemental function ge_ad(ad_left, ad_right)
@@ -456,8 +456,8 @@ elemental function ge_ad(ad_left, ad_right)
     
     ge_ad = ad_left%v >= ad_right%v
     
-    call assert(allocated(ad_left%dv), "fmad (ge_ad): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (ge_ad): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ge_ad): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (ge_ad): ad_right%d must be allocated")
 end function ge_ad
 
 elemental function ad_sqrt(ad_in)
@@ -470,10 +470,10 @@ elemental function ad_sqrt(ad_in)
     type(ad) :: ad_sqrt
     
     call assert(ad_in%v > 0.0_WP, "fmad (ad_sqrt): argument is zero or negative")
-    call assert(allocated(ad_in%dv), "fmad (ad_sqrt): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_sqrt): ad_in%d must be allocated")
     
     ad_sqrt%v  = sqrt(ad_in%v)
-    ad_sqrt%dv = ad_in%dv/(2.0_WP * sqrt(ad_in%v))
+    ad_sqrt%d = ad_in%d/(2.0_WP * sqrt(ad_in%v))
 end function ad_sqrt
 
 elemental function ad_tanh(ad_in)
@@ -483,10 +483,10 @@ elemental function ad_tanh(ad_in)
     
     type(ad) :: ad_tanh
     
-    call assert(allocated(ad_in%dv), "fmad (ad_tanh): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_tanh): ad_in%d must be allocated")
     
     ad_tanh%v  = tanh(ad_in%v)
-    ad_tanh%dv = ad_in%dv*(1.0_WP - tanh(ad_in%v)**2)
+    ad_tanh%d = ad_in%d*(1.0_WP - tanh(ad_in%v)**2)
 end function ad_tanh
 
 elemental function ad_log(ad_in)
@@ -497,10 +497,10 @@ elemental function ad_log(ad_in)
     type(ad) :: ad_log
     
     call assert(ad_in%v > 0.0_WP, "fmad (ad_log): argument is zero or negative")
-    call assert(allocated(ad_in%dv), "fmad (ad_log): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_log): ad_in%d must be allocated")
     
     ad_log%v  = log(ad_in%v)
-    ad_log%dv = ad_in%dv/ad_in%v
+    ad_log%d = ad_in%d/ad_in%v
 end function ad_log
 
 elemental function ad_exp(ad_in)
@@ -510,10 +510,10 @@ elemental function ad_exp(ad_in)
     
     type(ad) :: ad_exp
     
-    call assert(allocated(ad_in%dv), "fmad (ad_exp): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_exp): ad_in%d must be allocated")
     
     ad_exp%v  = exp(ad_in%v)
-    ad_exp%dv = ad_in%dv*exp(ad_in%v)
+    ad_exp%d = ad_in%d*exp(ad_in%v)
 end function ad_exp
 
 pure function ad_ad_merge(ad_left, ad_right, mask)
@@ -524,8 +524,8 @@ pure function ad_ad_merge(ad_left, ad_right, mask)
     
     type(ad) :: ad_ad_merge
     
-    call assert(allocated(ad_left%dv), "fmad (ad_ad_merge): ad_left%dv must be allocated")
-    call assert(allocated(ad_right%dv), "fmad (ad_ad_merge): ad_right%dv must be allocated")
+    call assert(allocated(ad_left%d), "fmad (ad_ad_merge): ad_left%d must be allocated")
+    call assert(allocated(ad_right%d), "fmad (ad_ad_merge): ad_right%d must be allocated")
     
     if (mask) then
         ad_ad_merge = ad_left
@@ -556,7 +556,7 @@ pure function real_ad_max_2(real_left, ad_right)
     
     type(ad) :: ad_left
     
-    call ad_left%init_const(real_left, size(ad_right%dv))
+    call ad_left%init_const(real_left, size(ad_right%d))
     real_ad_max_2 = ad_ad_max_2(ad_left, ad_right)
 end function real_ad_max_2
 
@@ -580,7 +580,7 @@ pure function real_ad_min_2(real_left, ad_right)
     
     type(ad) :: ad_left
     
-    call ad_left%init_const(real_left, size(ad_right%dv))
+    call ad_left%init_const(real_left, size(ad_right%d))
     real_ad_min_2 = ad_ad_min_2(ad_left, ad_right)
 end function real_ad_min_2
 
@@ -591,13 +591,13 @@ elemental function ad_abs(ad_in)
     
     type(ad) :: ad_abs
     
-    call assert(allocated(ad_in%dv), "fmad (ad_abs): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_abs): ad_in%d must be allocated")
     
     if (.not. is_close(ad_in%v, 0.0_WP)) then
         ad_abs%v  = abs(ad_in%v)
-        ad_abs%dv = ad_in%dv*(ad_in%v/abs(ad_in%v))
+        ad_abs%d = ad_in%d*(ad_in%v/abs(ad_in%v))
     else
-        call ad_abs%init_const(0.0_WP, size(ad_in%dv))
+        call ad_abs%init_const(0.0_WP, size(ad_in%d))
     end if
     
     call assert(ad_abs%v >= 0.0_WP, "fmad (ad_abs): value is negative")
@@ -610,10 +610,10 @@ elemental function ad_sin(ad_in)
     
     type(ad) :: ad_sin
     
-    call assert(allocated(ad_in%dv), "fmad (ad_sin): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_sin): ad_in%d must be allocated")
     
     ad_sin%v  = sin(ad_in%v)
-    ad_sin%dv = ad_in%dv*cos(ad_in%v)
+    ad_sin%d = ad_in%d*cos(ad_in%v)
 end function ad_sin
 
 elemental function ad_cos(ad_in)
@@ -623,10 +623,10 @@ elemental function ad_cos(ad_in)
     
     type(ad) :: ad_cos
     
-    call assert(allocated(ad_in%dv), "fmad (ad_cos): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_cos): ad_in%d must be allocated")
     
     ad_cos%v  = cos(ad_in%v)
-    ad_cos%dv = -ad_in%dv*sin(ad_in%v)
+    ad_cos%d = -ad_in%d*sin(ad_in%v)
 end function ad_cos
 
 elemental function ad_tan(ad_in)
@@ -636,10 +636,10 @@ elemental function ad_tan(ad_in)
     
     type(ad) :: ad_tan
     
-    call assert(allocated(ad_in%dv), "fmad (ad_tan): ad_in%dv must be allocated")
+    call assert(allocated(ad_in%d), "fmad (ad_tan): ad_in%d must be allocated")
     
     ad_tan%v  = tan(ad_in%v)
-    ad_tan%dv = ad_in%dv/(cos(ad_in%v)**2)
+    ad_tan%d = ad_in%d/(cos(ad_in%v)**2)
 end function ad_tan
 
 pure function var(x, sigmas)
@@ -661,9 +661,9 @@ pure function var(x, sigmas)
     allocate(var(size(x)))
     var = 0.0_WP
     do concurrent (i_x = 1:size(x))
-        call assert_dimension(x(i_x)%dv, sigmas)
-        do i_dv = 1, size(x(1)%dv) ! SERIAL
-            var(i_x) = var(i_x) + (x(i_x)%dv(i_dv) * sigmas(i_dv))**2
+        call assert_dimension(x(i_x)%d, sigmas)
+        do i_dv = 1, size(x(1)%d) ! SERIAL
+            var(i_x) = var(i_x) + (x(i_x)%d(i_dv) * sigmas(i_dv))**2
         end do
     end do
     

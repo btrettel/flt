@@ -109,7 +109,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
             n_var = size(ne_i_n)
             allocate(ne(n_n, n_var))
             allocate(p_v(n_var))
-            n_dv = size(ne_i_n(1)%dv)
+            n_dv = size(ne_i_n(1)%d)
             allocate(p_dv(n_var, n_dv))
             allocate(ne_dv(n_n, n_var, n_dv))
             call assert_dimension(p_v, p_expected)
@@ -174,7 +174,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
         
         do i_dv = 1, n_dv ! SERIAL
             write(unit=i_dv_string, fmt="(i0)") i_dv
-            call tests%real_eq(p_v(i_var)%dv(i_dv), 0.0_WP, message // ", p_v%dv(" // trim(i_dv_string) &
+            call tests%real_eq(p_v(i_var)%d(i_dv), 0.0_WP, message // ", p_v%d(" // trim(i_dv_string) &
                                     // ")=0, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
             call tests%real_eq(p_dv(i_var, i_dv), p_expected(i_var), message // ", p_dv(" // trim(i_dv_string) &
                                     // ")=expected, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
@@ -291,7 +291,7 @@ pure function dnorm_ad_rank_1(x, ord, lower, upper)
     call assert(upper_ <= ubound(x, dim=1), "convergence (dnorm_ad_rank_1): upper index bound must be >= ubound")
     call assert(lower_ < upper_, "convergence (dnorm_ad_rank_1): lower index bound must be above upper index bound")
     
-    call dnorm_ad_rank_1%init_const(0.0_WP, size(x(1)%dv))
+    call dnorm_ad_rank_1%init_const(0.0_WP, size(x(1)%d))
     if (ord_ == huge(1)) then
         ! $l_\infty$ norm
         

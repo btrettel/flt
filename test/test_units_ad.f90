@@ -30,16 +30,16 @@ call tests%start_tests(logger)
 call x%v%init(2.0_WP, 1, N_DV)
 x = -1.0_WP*x
 call tests%real_eq(x%v%v, -2.0_WP, "units value, -1.0_WP*x")
-call tests%real_eq(x%v%dv(1), -1.0_WP, "units dv(1), -1.0_WP*x")
-call tests%real_eq(x%v%dv(2), 0.0_WP, "units dv(2), -1.0_WP*x")
+call tests%real_eq(x%v%d(1), -1.0_WP, "units dv(1), -1.0_WP*x")
+call tests%real_eq(x%v%d(2), 0.0_WP, "units dv(2), -1.0_WP*x")
 
-deallocate(x%v%dv)
+deallocate(x%v%d)
 call u%v%init_const(2.0_WP, N_DV)
 call x%v%init(1.0_WP, 2, N_DV)
 x = u*x
 call tests%real_eq(x%v%v, 2.0_WP, "units value, u*x")
-call tests%real_eq(x%v%dv(1), 0.0_WP, "units dv(1), u*x")
-call tests%real_eq(x%v%dv(2), 2.0_WP, "units dv(2), u*x")
+call tests%real_eq(x%v%d(1), 0.0_WP, "units dv(1), u*x")
+call tests%real_eq(x%v%d(2), 2.0_WP, "units dv(2), u*x")
 
 call tests%end_tests()
 call logger%close()
