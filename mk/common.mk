@@ -22,9 +22,6 @@ check: $(TESTNML)
 clean:
 	-$(RM) $(CLEAN) $(CLEAN_MANUAL)
 
-# jom needs explicit dependencies listed for all files.
-src$(DIR_SEP)rev.$(OBJEXT): src$(DIR_SEP)rev.f90
-
 ###########################
 # Portable Python scripts #
 ###########################

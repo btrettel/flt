@@ -2,6 +2,10 @@
 
 Priorities:
 
+- Switch pure logger to use `allocatable` variables. This will make flang-new complain less.
+    - Remove `target` attribute as appropriate too.
+        - unittest.f90, `start_tests`
+        - test_ga.f90
 - <https://en.wikipedia.org/wiki/Sterbenz_lemma>: Make `assert_sterbenz` to assert that the conditions of the Sterbenz lemma are satisfied.
     - In `fmad` and `genunits`, create an operator that automatically enforces this? `.minus.`?
     - Other operators in `fmad` could benefit from this too. Anywhere a subtraction occurs (like the derivatives for division) could have a Sterbenz assertions version.
