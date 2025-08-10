@@ -64,6 +64,8 @@ else ifeq ($(FC),xlf2008)
 include mk$(DIR_SEP)xlf.mk
 else ifeq ($(FC),nagfor)
 include mk$(DIR_SEP)nagfor.mk
+else ifeq ($(FC),flang-new-19)
+include mk$(DIR_SEP)flang.mk
 #else
 #$(error Invalid FC: $(FC))
 endif

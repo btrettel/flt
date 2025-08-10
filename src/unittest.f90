@@ -808,7 +808,7 @@ subroutine start_tests(tests, logger)
     
     class(test_results_type), intent(out) :: tests
     
-    type(log_type), intent(in), target :: logger
+    type(log_type), intent(in out), target :: logger
     
     logical :: unit_open
     

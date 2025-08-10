@@ -50,6 +50,8 @@ STATIC = no
 .include <mk/xlf.mk>
 .elif $(FC) == nagfor
 .include <mk/nagfor.mk>
+.elif $(FC) == flang-new-19
+.include <mk/flang.mk>
 #.else
 #.error Invalid FC: $(FC)
 .endif
