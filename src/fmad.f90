@@ -8,6 +8,7 @@
 module fmad
 
 use prec, only: WP
+use checks, only: assert
 implicit none
 private
 
@@ -98,12 +99,12 @@ contains
 ! ---------------------
 
 elemental subroutine init(x, v, n, n_dv)
-    use checks, only: assert, is_close
+    use checks, only: is_close
     
     class(ad), intent(in out) :: x    ! `class` can't be `intent(out)` and `pure`?!?
-    real(WP), intent(in) :: v    ! value of variable to set
-    integer, intent(in)  :: n, & ! variable number represented (sets the appropriate derivative)
-                            n_dv ! total number of differentiable variables
+    real(WP), intent(in)      :: v    ! value of variable to set
+    integer, intent(in)       :: n, & ! variable number represented (sets the appropriate derivative)
+                                 n_dv ! total number of differentiable variables
 
     integer :: i_dv ! loop index
     
@@ -125,8 +126,6 @@ elemental subroutine init(x, v, n, n_dv)
 end subroutine init
 
 elemental subroutine init_const(x, v, n_dv)
-    use checks, only: assert
-    
     class(ad), intent(in out) :: x ! `class` can't be `intent(out)` and `pure`?!?
     real(WP), intent(in) :: v    ! value of constant to set
     integer, intent(in)  :: n_dv ! total number of differentiable variables
@@ -147,8 +146,6 @@ end subroutine init_const
 elemental function ad_ad_add(ad_left, ad_right)
     ! Adds two `ad`s.
     
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_add
@@ -156,14 +153,12 @@ elemental function ad_ad_add(ad_left, ad_right)
     call assert(allocated(ad_left%d), "fmad (ad_ad_add): ad_left%d must be allocated")
     call assert(allocated(ad_right%d), "fmad (ad_ad_add): ad_right%d must be allocated")
     
-    ad_ad_add%v  = ad_left%v  + ad_right%v
+    ad_ad_add%v = ad_left%v + ad_right%v
     ad_ad_add%d = ad_left%d + ad_right%d
 end function ad_ad_add
 
 elemental function ad_real_add(ad_in, real_in)
     ! Adds an `ad` and a `real`.
-    
-    use checks, only: assert
     
     class(ad), intent(in) :: ad_in
     real(WP), intent(in)  :: real_in
@@ -172,14 +167,12 @@ elemental function ad_real_add(ad_in, real_in)
     
     call assert(allocated(ad_in%d), "fmad (ad_real_add): ad_in%d must be allocated")
 
-    ad_real_add%v  = ad_in%v + real_in
+    ad_real_add%v = ad_in%v + real_in
     ad_real_add%d = ad_in%d
 end function ad_real_add
 
 elemental function real_ad_add(real_left, ad_right)
     ! Adds a `real` and an `ad`.
-    
-    use checks, only: assert
     
     real(WP), intent(in)  :: real_left
     class(ad), intent(in) :: ad_right
@@ -188,14 +181,12 @@ elemental function real_ad_add(real_left, ad_right)
     
     call assert(allocated(ad_right%d), "fmad (real_ad_add): ad_right%d must be allocated")
 
-    real_ad_add%v  = real_left + ad_right%v
+    real_ad_add%v = real_left + ad_right%v
     real_ad_add%d = ad_right%d
 end function real_ad_add
 
 elemental function ad_ad_subtract(ad_left, ad_right)
     ! Subtracts two `ad`s.
-    
-    use checks, only: assert
     
     class(ad), intent(in) :: ad_left, ad_right
     
@@ -204,14 +195,12 @@ elemental function ad_ad_subtract(ad_left, ad_right)
     call assert(allocated(ad_left%d), "fmad (ad_ad_subtract): ad_left%d must be allocated")
     call assert(allocated(ad_right%d), "fmad (ad_ad_subtract): ad_right%d must be allocated")
 
-    ad_ad_subtract%v  = ad_left%v  - ad_right%v
+    ad_ad_subtract%v = ad_left%v - ad_right%v
     ad_ad_subtract%d = ad_left%d - ad_right%d
 end function ad_ad_subtract
 
 elemental function ad_real_subtract(ad_left, real_right)
     ! Subtracts a `real` from an `ad`.
-    
-    use checks, only: assert
     
     class(ad), intent(in) :: ad_left
     real(WP), intent(in)  :: real_right
@@ -220,15 +209,13 @@ elemental function ad_real_subtract(ad_left, real_right)
     
     call assert(allocated(ad_left%d), "fmad (ad_real_subtract): ad_left%d must be allocated")
 
-    ad_real_subtract%v  = ad_left%v - real_right
+    ad_real_subtract%v = ad_left%v - real_right
     ad_real_subtract%d = ad_left%d
 end function ad_real_subtract
 
 elemental function real_ad_subtract(real_left, ad_right)
     ! Subtracts a `real` from an `ad`.
 
-    use checks, only: assert
-    
     real(WP), intent(in)  :: real_left
     class(ad), intent(in) :: ad_right
     
@@ -236,14 +223,12 @@ elemental function real_ad_subtract(real_left, ad_right)
     
     call assert(allocated(ad_right%d), "fmad (real_ad_subtract): ad_right%d must be allocated")
     
-    real_ad_subtract%v  = real_left - ad_right%v
+    real_ad_subtract%v = real_left - ad_right%v
     real_ad_subtract%d = -ad_right%d
 end function real_ad_subtract
 
 elemental function ad_subtract_unary(ad_in)
     ! Returns `-rd`.
-    
-    use checks, only: assert
     
     class(ad), intent(in) :: ad_in
     
@@ -251,29 +236,25 @@ elemental function ad_subtract_unary(ad_in)
     
     call assert(allocated(ad_in%d), "fmad (ad_subtract_unary): ad_in%d must be allocated")
 
-    ad_subtract_unary%v  = -ad_in%v
+    ad_subtract_unary%v = -ad_in%v
     ad_subtract_unary%d = -ad_in%d
 end function ad_subtract_unary
 
 elemental function ad_add_unary(ad_in)
     ! Returns `+rd`.
     
-    use checks, only: assert
-
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_add_unary
     
     call assert(allocated(ad_in%d), "fmad (ad_add_unary): ad_in%d must be allocated")
 
-    ad_add_unary%v  = ad_in%v
+    ad_add_unary%v = ad_in%v
     ad_add_unary%d = ad_in%d
 end function ad_add_unary
 
 elemental function ad_ad_multiply(ad_left, ad_right)
     ! Multiplies two `ad`s.
-    
-    use checks, only: assert
     
     class(ad), intent(in) :: ad_left, ad_right
     
@@ -282,14 +263,12 @@ elemental function ad_ad_multiply(ad_left, ad_right)
     call assert(allocated(ad_left%d), "fmad (ad_ad_multiply): ad_left%d must be allocated")
     call assert(allocated(ad_right%d), "fmad (ad_ad_multiply): ad_right%d must be allocated")
 
-    ad_ad_multiply%v  = ad_left%v * ad_right%v
+    ad_ad_multiply%v = ad_left%v * ad_right%v
     ad_ad_multiply%d = ad_left%d * ad_right%v + ad_left%v * ad_right%d
 end function ad_ad_multiply
 
 elemental function ad_real_multiply(ad_left, real_right)
     ! Multiplies an `ad` by a `real`.
-    
-    use checks, only: assert
     
     class(ad), intent(in) :: ad_left
     real(WP), intent(in)  :: real_right
@@ -298,15 +277,13 @@ elemental function ad_real_multiply(ad_left, real_right)
     
     call assert(allocated(ad_left%d), "fmad (ad_real_multiply): ad_left%d must be allocated")
     
-    ad_real_multiply%v  = ad_left%v * real_right
+    ad_real_multiply%v = ad_left%v * real_right
     ad_real_multiply%d = ad_left%d * real_right
 end function ad_real_multiply
 
 elemental function real_ad_multiply(real_left, ad_right)
     ! Multiplies a `real` by an `ad`.
     
-    use checks, only: assert
-
     real(WP), intent(in)  :: real_left
     class(ad), intent(in) :: ad_right
     
@@ -314,14 +291,12 @@ elemental function real_ad_multiply(real_left, ad_right)
     
     call assert(allocated(ad_right%d), "fmad (real_ad_multiply): ad_right%d must be allocated")
     
-    real_ad_multiply%v  = real_left * ad_right%v
+    real_ad_multiply%v = real_left * ad_right%v
     real_ad_multiply%d = real_left * ad_right%d
 end function real_ad_multiply
 
 elemental function ad_ad_divide(ad_left, ad_right)
     ! Divides two `ad`.
-    
-    use checks, only: assert
     
     class(ad), intent(in) :: ad_left, ad_right
     
@@ -330,15 +305,13 @@ elemental function ad_ad_divide(ad_left, ad_right)
     call assert(allocated(ad_left%d), "fmad (ad_ad_divide): ad_left%d must be allocated")
     call assert(allocated(ad_right%d), "fmad (ad_ad_divide): ad_right%d must be allocated")
     
-    ad_ad_divide%v  = ad_left%v / ad_right%v
+    ad_ad_divide%v = ad_left%v / ad_right%v
     ad_ad_divide%d = (ad_left%d * ad_right%v - ad_left%v * ad_right%d) / (ad_right%v**2)
 end function ad_ad_divide
 
 elemental function ad_real_divide(ad_left, real_right)
     ! Divides an `ad` by a `real`.
     
-    use checks, only: assert
-
     class(ad), intent(in) :: ad_left
     real(WP), intent(in)  :: real_right
     
@@ -346,15 +319,13 @@ elemental function ad_real_divide(ad_left, real_right)
     
     call assert(allocated(ad_left%d), "fmad (ad_real_divide): ad_left%d must be allocated")
     
-    ad_real_divide%v  = ad_left%v / real_right
+    ad_real_divide%v = ad_left%v / real_right
     ad_real_divide%d = ad_left%d / real_right
 end function ad_real_divide
 
 elemental function real_ad_divide(real_left, ad_right)
     ! Divides a `real` by an `ad`.
     
-    use checks, only: assert
-
     real(WP), intent(in)  :: real_left
     class(ad), intent(in) :: ad_right
     
@@ -362,14 +333,14 @@ elemental function real_ad_divide(real_left, ad_right)
     
     call assert(allocated(ad_right%d), "fmad (real_ad_divide): ad_right%d must be allocated")
     
-    real_ad_divide%v  = real_left / ad_right%v
+    real_ad_divide%v = real_left / ad_right%v
     real_ad_divide%d = -real_left * ad_right%d / (ad_right%v**2)
 end function real_ad_divide
 
 elemental function ad_real_exponentiate(ad_in, real_in)
-    ! Exponentiates an `ad` by a `real`.
+    use checks, only: is_close
     
-    use checks, only: assert, is_close
+    ! Exponentiates an `ad` by a `real`.
     
     class(ad), intent(in) :: ad_in
     real(WP), intent(in)  :: real_in
@@ -380,14 +351,14 @@ elemental function ad_real_exponentiate(ad_in, real_in)
                     "fmad (ad_real_exponentiate): exponent is negative or zero and argument is zero")
     call assert(allocated(ad_in%d), "fmad (ad_real_exponentiate): ad_in%d must be allocated")
     
-    ad_real_exponentiate%v  = ad_in%v**real_in
+    ad_real_exponentiate%v = ad_in%v**real_in
     ad_real_exponentiate%d = real_in*(ad_in%v**(real_in - 1.0_WP))*ad_in%d
 end function ad_real_exponentiate
 
 elemental function ad_integer_exponentiate(ad_in, integer_in)
-    ! Exponentiates an `ad` by an `integer`.
+    use checks, only: is_close
     
-    use checks, only: assert, is_close
+    ! Exponentiates an `ad` by an `integer`.
     
     class(ad), intent(in) :: ad_in
     integer, intent(in)   :: integer_in
@@ -398,15 +369,13 @@ elemental function ad_integer_exponentiate(ad_in, integer_in)
                     "fmad (ad_integer_exponentiate): exponent is negative or zero and argument is zero")
     call assert(allocated(ad_in%d), "fmad (ad_integer_exponentiate): ad_in%d must be allocated")
 
-    ad_integer_exponentiate%v  = ad_in%v**integer_in
+    ad_integer_exponentiate%v = ad_in%v**integer_in
     ad_integer_exponentiate%d = real(integer_in, WP)*(ad_in%v**(integer_in - 1))*ad_in%d
 end function ad_integer_exponentiate
 
 ! No `rd**rd` as that's not likely to happen in CFD.
 
 elemental function lt_ad(ad_left, ad_right)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_left
     type(ad), intent(in)  :: ad_right
     
@@ -419,8 +388,6 @@ elemental function lt_ad(ad_left, ad_right)
 end function lt_ad
 
 elemental function le_ad(ad_left, ad_right)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_left
     type(ad), intent(in)  :: ad_right
     
@@ -433,8 +400,6 @@ elemental function le_ad(ad_left, ad_right)
 end function le_ad
 
 elemental function gt_ad(ad_left, ad_right)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_left
     type(ad), intent(in)  :: ad_right
     
@@ -447,8 +412,6 @@ elemental function gt_ad(ad_left, ad_right)
 end function gt_ad
 
 elemental function ge_ad(ad_left, ad_right)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_left
     type(ad), intent(in)  :: ad_right
     
@@ -463,8 +426,6 @@ end function ge_ad
 elemental function ad_sqrt(ad_in)
     ! Takes the square root of an `ad`.
     
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_sqrt
@@ -477,8 +438,6 @@ elemental function ad_sqrt(ad_in)
 end function ad_sqrt
 
 elemental function ad_tanh(ad_in)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_tanh
@@ -490,8 +449,6 @@ elemental function ad_tanh(ad_in)
 end function ad_tanh
 
 elemental function ad_log(ad_in)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_log
@@ -504,8 +461,6 @@ elemental function ad_log(ad_in)
 end function ad_log
 
 elemental function ad_exp(ad_in)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_exp
@@ -517,8 +472,6 @@ elemental function ad_exp(ad_in)
 end function ad_exp
 
 pure function ad_ad_merge(ad_left, ad_right, mask)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_left, ad_right
     logical, intent(in)   :: mask
     
@@ -535,8 +488,6 @@ pure function ad_ad_merge(ad_left, ad_right, mask)
 end function ad_ad_merge
 
 pure function ad_ad_max_2(ad_left, ad_right)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_max_2
@@ -546,8 +497,6 @@ end function ad_ad_max_2
 
 pure function real_ad_max_2(real_left, ad_right)
     ! Related: <https://en.wikipedia.org/wiki/Rectifier_(neural_networks)>
-    
-    use checks, only: assert
     
     real(WP), intent(in)  :: real_left
     class(ad), intent(in) :: ad_right
@@ -561,8 +510,6 @@ pure function real_ad_max_2(real_left, ad_right)
 end function real_ad_max_2
 
 pure function ad_ad_min_2(ad_left, ad_right)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_left, ad_right
     
     type(ad) :: ad_ad_min_2
@@ -571,8 +518,6 @@ pure function ad_ad_min_2(ad_left, ad_right)
 end function ad_ad_min_2
 
 pure function real_ad_min_2(real_left, ad_right)
-    use checks, only: assert
-    
     real(WP), intent(in)  :: real_left
     class(ad), intent(in) :: ad_right
     
@@ -585,7 +530,7 @@ pure function real_ad_min_2(real_left, ad_right)
 end function real_ad_min_2
 
 elemental function ad_abs(ad_in)
-    use checks, only: assert, is_close
+    use checks, only: is_close
     
     class(ad), intent(in) :: ad_in
     
@@ -604,8 +549,6 @@ elemental function ad_abs(ad_in)
 end function ad_abs
 
 elemental function ad_sin(ad_in)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_sin
@@ -617,8 +560,6 @@ elemental function ad_sin(ad_in)
 end function ad_sin
 
 elemental function ad_cos(ad_in)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_cos
@@ -630,8 +571,6 @@ elemental function ad_cos(ad_in)
 end function ad_cos
 
 elemental function ad_tan(ad_in)
-    use checks, only: assert
-    
     class(ad), intent(in) :: ad_in
     
     type(ad) :: ad_tan
@@ -647,7 +586,7 @@ pure function var(x, sigmas)
     ! Assumes each random variable is independent.
     ! See putko_approach_2001 section 2.2.
     
-    use checks, only: assert, assert_dimension
+    use checks, only: assert_dimension
     
     type(ad), intent(in) :: x(:)
     real(WP), intent(in) :: sigmas(:)
@@ -671,8 +610,6 @@ pure function var(x, sigmas)
 end function var
 
 pure function stdev(x, sigmas)
-    use checks, only: assert
-    
     type(ad), intent(in) :: x(:)
     real(WP), intent(in) :: sigmas(:)
     
@@ -684,8 +621,6 @@ pure function stdev(x, sigmas)
 end function stdev
 
 pure function f(x, y)
-    use checks, only: assert
-    
     ! Test function. It's here because nvfortran has a bug if it's an internal procedure in the tests.
     
     type(ad), intent(in) :: x, y
