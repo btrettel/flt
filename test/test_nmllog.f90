@@ -404,13 +404,13 @@ end subroutine test_check
 subroutine test_stdout_prefix()
     ! LATER: Check that stdout doesn't have the prefix. Right now I do that manually.
     
-    use nmllog, only: log_type
+    use nmllog, only: log_type, NO_PREFIX
     
     type(log_type) :: test_logger
     
     call test_logger%open(TEST_FILENAME)
 
-    test_logger%stdout_prefix = .false.
+    test_logger%stdout_prefix = NO_PREFIX
     call test_logger%warning(NO_PREFIX_MESSAGE)
     
     call test_logger%close()

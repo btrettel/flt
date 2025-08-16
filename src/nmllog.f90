@@ -30,6 +30,10 @@ integer, public, parameter :: WARNING_LEVEL  = 30
 integer, public, parameter :: ERROR_LEVEL    = 40
 integer, public, parameter :: CRITICAL_LEVEL = 50
 
+integer, public, parameter :: TIME_AND_LEVEL = 0
+integer, public, parameter :: LEVEL_ONLY     = 1
+integer, public, parameter :: NO_PREFIX      = 2
+
 character(len=*), public, parameter :: NOT_SET_STRING  = "not set"
 character(len=*), public, parameter :: DEBUG_STRING    = "debug"
 character(len=*), public, parameter :: INFO_STRING     = "info"
@@ -42,7 +46,7 @@ type, public :: log_type
     integer :: unit          = UNIT_CLOSED
     integer :: file_level    = WARNING_LEVEL
     integer :: stdout_level  = WARNING_LEVEL ! also used for stderr
-    logical :: stdout_prefix = .true.
+    integer :: stdout_prefix = LEVEL_ONLY
 contains
     procedure :: open => log_open
     procedure :: close => log_close
@@ -220,11 +224,16 @@ subroutine log_writer(this, message_in, level_code)
     end if
     
     if (level_code >= this%stdout_level) then
-        if (this%stdout_prefix) then
-            write(unit=print_unit, fmt="(5a)") timestamp, " [", level, "] ", message
-        else
-            write(unit=print_unit, fmt="(a)") message
-        end if
+        select case (this%stdout_prefix)
+            case (TIME_AND_LEVEL)
+                write(unit=print_unit, fmt="(5a)") timestamp, " [", level, "] ", message
+            case (LEVEL_ONLY)
+                write(unit=print_unit, fmt="(4a)") "[", level, "] ", message
+            case (NO_PREFIX)
+                write(unit=print_unit, fmt="(a)") message
+            case default
+                error stop "nmllog (log_writer): invalid stdout_prefix"
+        end select
     end if
     
     call assert(this%file_level >= 0, "nmllog (log_writer): file_level is negative")
