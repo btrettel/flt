@@ -12,11 +12,9 @@ use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 
-call logger%open("prec.nml")
-call tests%start_tests(logger)
+call tests%start_tests("prec.nml")
 
 call tests%integer_ge(range(1), 5, "default integer exponent range")
 call tests%integer_ge(range(1_I5), 5, "integer kind I5 exponent range")
@@ -32,6 +30,5 @@ call tests%integer_eq(ACCEPTABLE_LOG10_SPACING_JUMP, 3, "real kind WP ACCEPTABLE
 call tests%real_eq(3.141592653589793_WP, PI, "PI value")
 
 call tests%end_tests()
-call logger%close()
 
 end program test_prec

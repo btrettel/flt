@@ -8,8 +8,7 @@
 module unittest
 
 use prec, only: WP
-use nmllog, only: log_type, now, TIMESTAMP_LEN, DEBUG_LEVEL
-use timer, only: timer_type
+use timer, only: timer_type, now, TIMESTAMP_LEN
 use checks, only: assert
 implicit none
 private
@@ -18,11 +17,17 @@ public :: validate_timestamp
 
 character(len=70), parameter :: LONG_LINE = "----------------------------------------------------------------------"
 
+! Needed or else ifort truncates namelist file lines and can't read them back correctly.
+! 10000 is arbitrary. Just pick a number larger than anything you expect to use.
+! gfortran had a strange run-time error with 1000.
+integer, public, parameter :: NML_RECL = 10000
+
 type, public :: test_results_type
-    integer                 :: n_failures = 0
-    integer                 :: n_tests    = 0
-    type(timer_type)        :: wtime
-    type(log_type), pointer :: logger => null()
+    integer          :: n_failures = 0
+    integer          :: n_tests    = 0
+    logical          :: stdout     = .true.
+    integer          :: unit
+    type(timer_type) :: wtime
 contains
     procedure :: logical_true => logical_true
     procedure :: logical_false => logical_false
@@ -74,12 +79,12 @@ subroutine logical_true(tests, condition, message_in)
     compared_logical = .true.
     
     test_passes = condition
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
@@ -115,12 +120,12 @@ subroutine logical_false(tests, condition, message_in)
     compared_logical = .false.
     
     test_passes = .not. condition
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
         end if
     end if
@@ -171,12 +176,12 @@ subroutine real_eq(tests, returned_real, compared_real, message_in, abs_tol)
         tolerance = abs_tolerance(returned_real, compared_real)
     end if
     
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real expected = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "    tolerance = ", tolerance
@@ -236,12 +241,12 @@ subroutine real_ne(tests, returned_real, compared_real, message_in, abs_tol)
         tolerance = abs_tolerance(returned_real, compared_real)
     end if
     
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "      /= real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "    tolerance = ", tolerance
@@ -288,12 +293,12 @@ subroutine real_gt(tests, returned_real, compared_real, message_in)
     
     test_passes = returned_real > compared_real
     
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "       > real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -333,12 +338,12 @@ subroutine real_lt(tests, returned_real, compared_real, message_in)
     
     test_passes = returned_real < compared_real
     
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "       < real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -378,12 +383,12 @@ subroutine real_ge(tests, returned_real, compared_real, message_in)
     
     test_passes = returned_real >= compared_real
     
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "      >= real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -423,12 +428,12 @@ subroutine real_le(tests, returned_real, compared_real, message_in)
     
     test_passes = returned_real <= compared_real
     
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "real returned = ", returned_real
             write(unit=ERROR_UNIT, fmt="(a, g0.8)") "      >= real = ", compared_real
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -466,12 +471,12 @@ subroutine integer5_eq(tests, returned_integer, compared_integer, message_in)
     test_operator = "=="
     
     test_passes = (returned_integer == compared_integer)
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer expected = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      difference = ", abs(returned_integer - compared_integer)
@@ -511,12 +516,12 @@ subroutine integer10_eq(tests, returned_integer, compared_integer, message_in)
     test_operator = "=="
     
     test_passes = (returned_integer == compared_integer)
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, i11)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i11)") "integer expected = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, i11)") "      difference = ", abs(returned_integer - compared_integer)
@@ -556,12 +561,12 @@ subroutine integer_ne(tests, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer /= compared_integer)
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      /= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -600,12 +605,12 @@ subroutine integer5_ge(tests, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer >= compared_integer)
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      >= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -645,12 +650,12 @@ subroutine integer10_ge(tests, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer >= compared_integer)
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, i11)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i11)") "      >= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -689,12 +694,12 @@ subroutine integer5_le(tests, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer <= compared_integer)
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      <= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -734,12 +739,12 @@ subroutine integer10_le(tests, returned_integer, compared_integer, message_in)
     message       = message_in
     
     test_passes = (returned_integer <= compared_integer)
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a, i7)") "integer returned = ", returned_integer
             write(unit=ERROR_UNIT, fmt="(a, i7)") "      <= integer = ", compared_integer
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -783,12 +788,12 @@ subroutine character_eq(tests, returned_character_in, compared_character_in, mes
     ! The namelist file will have a lot of spaces otherwise.
     
     test_passes = (trim(returned_character) == trim(compared_character))
-    write(unit=tests%logger%unit, nml=test_result)
+    write(unit=tests%unit, nml=test_result)
     
     if (.not. test_passes) then
         tests%n_failures = tests%n_failures + 1
         
-        if (DEBUG_LEVEL >= tests%logger%stdout_level) then
+        if (tests%stdout) then
             write(unit=ERROR_UNIT, fmt="(a)") "character returned = " // returned_character
             write(unit=ERROR_UNIT, fmt="(a)") "character expected = " // compared_character
             write(unit=ERROR_UNIT, fmt="(a, a, a)") "fail: ", message, new_line("a")
@@ -802,24 +807,23 @@ subroutine character_eq(tests, returned_character_in, compared_character_in, mes
     call assert(tests%n_failures <= tests%n_tests, "unittest (character_eq): number of failures exceeds number of tests")
 end subroutine character_eq
 
-subroutine start_tests(tests, logger)
+subroutine start_tests(tests, filename)
     use checks, only: assert
-    use nmllog, only: DEBUG_LEVEL
     
     class(test_results_type), intent(out) :: tests
+    character(len=*), intent(in)          :: filename
     
-    type(log_type), intent(in out), target :: logger
-    
-    logical :: unit_open
-    
-    inquire(unit=logger%unit, opened=unit_open)
-    call assert(unit_open, "unittest (start_tests): logger unit must be open to start tests")
+    open(newunit=tests%unit, &
+            action="write", &
+            status="replace", &
+            position="rewind", &
+            file=trim(filename), &
+            delim="quote", &
+            recl=NML_RECL)
     
     call tests%wtime%start()
     
-    tests%logger              => logger
-    tests%logger%stdout_level =  DEBUG_LEVEL
-    tests%logger%file_level   =  DEBUG_LEVEL
+    tests%stdout = .true.
 end subroutine start_tests
 
 subroutine end_tests(tests)
@@ -837,22 +841,21 @@ subroutine end_tests(tests)
     call assert(tests%n_tests >= 0, "unittest (end_tests): negative number of tests")
     call assert(tests%n_failures >= 0, "unittest (end_tests): negative number of failures")
     call assert(tests%n_failures <= tests%n_tests, "unittest (end_tests): number of failures exceeds number of tests")
-    call assert(associated(tests%logger), "unittest (end_tests): logger is not associated")
-    inquire(unit=tests%logger%unit, opened=unit_open)
+    inquire(unit=tests%unit, opened=unit_open)
     call assert(unit_open, "unittest (end_tests): logger unit must be open to end tests")
     
     call tests%wtime%stop()
     duration      = tests%wtime%read()
     n_tests       = tests%n_tests
     n_failures    = tests%n_failures
-    write(unit=tests%logger%unit, nml=tests_summary)
+    write(unit=tests%unit, nml=tests_summary)
     
     write(unit=*, fmt="(a, i0, a, f0.3, a)") "Ran ", tests%n_tests, " tests in ", duration, "s"
     
     if (tests%n_failures /= 0) then
         write(unit=ERROR_UNIT, fmt="(a, i0, a)") "FAILED (failures=", tests%n_failures, ")"
         write(unit=ERROR_UNIT, fmt="(a)") LONG_LINE
-        call tests%logger%close()
+        close(unit=tests%unit)
         stop 1
     else
         write(unit=*, fmt="(a, a)") "All tests passed.", new_line("a")
@@ -860,7 +863,7 @@ subroutine end_tests(tests)
         write(unit=*, fmt="(a)") LONG_LINE
     end if
     
-    nullify(tests%logger)
+    close(unit=tests%unit)
 end subroutine end_tests
 
 subroutine validate_timestamp(tests, timestamp, message)
