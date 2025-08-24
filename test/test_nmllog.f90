@@ -23,29 +23,14 @@ character(len=*), parameter :: NO_PREFIX_MESSAGE = "No prefix test"
 
 call tests%start_tests("nmllog.nml")
 
-call test_now(tests)
 call test_log_subroutines(tests)
 call test_log_debug_info(tests)
 call test_pure_log(tests)
-call test_check(tests)
 call test_stdout_prefix()
 
 call tests%end_tests()
 
 contains
-
-subroutine test_now(tests)
-    use nmllog, only: now
-    use unittest, only: validate_timestamp
-    
-    type(test_results_type), intent(in out) :: tests
-    
-    character(len=TIMESTAMP_LEN) :: timestamp
-    
-    timestamp = now()
-    
-    call validate_timestamp(tests, timestamp, "now")
-end subroutine test_now
 
 subroutine test_log_subroutines(tests)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END
@@ -360,41 +345,6 @@ pure subroutine pure_logging_subroutine(pure_logger)
     call pure_logger%error(ERROR_MESSAGE)
     call pure_logger%critical(CRITICAL_MESSAGE)
 end subroutine pure_logging_subroutine
-
-subroutine test_check(tests)
-    use nmllog, only: pure_log_type, log_type
-    
-    type(test_results_type), intent(in out) :: tests
-    
-    type(log_type)      :: impure_logger
-    type(pure_log_type) :: pure_logger
-    
-    integer :: rc_check
-    
-    call impure_logger%open(TEST_FILENAME)
-    call pure_logger%open(impure_logger)
-    
-    ! TODO: Check the log itself for these messages too.
-    
-    rc_check = 0
-    call impure_logger%check(.true., "impure check, .true.", rc_check)
-    call tests%integer_eq(rc_check, 0, "impure check, .true.")
-
-    rc_check = 0
-    call impure_logger%check(.false., "impure check, .false.", rc_check)
-    call tests%integer_eq(rc_check, 1, "impure check, .false.")
-    
-    rc_check = 0
-    call pure_logger%check(.true., "pure check, .true.", rc_check)
-    call tests%integer_eq(rc_check, 0, "impure check, .true.")
-
-    rc_check = 0
-    call pure_logger%check(.false., "pure check, .false.", rc_check)
-    call tests%integer_eq(rc_check, 1, "impure check, .false.")
-    
-    call pure_logger%close()
-    call impure_logger%close()
-end subroutine test_check
 
 subroutine test_stdout_prefix()
     ! LATER: Check that stdout doesn't have the prefix. Right now I do that manually.

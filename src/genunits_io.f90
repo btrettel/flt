@@ -8,7 +8,6 @@
 module genunits_io
 
 use prec, only: WP
-use nmllog, only: log_type
 use genunits_data, only: MAX_LABEL_LEN, BASE_UNIT_LEN, unit_type
 implicit none
 private
@@ -20,8 +19,6 @@ public :: in_exponent_bounds, denominator_matches, &
             write_exponentiation_interfaces, write_exponentiation_function, &
             write_intrinsic_interfaces, write_intrinsic_function, &
             write_module
-
-character(len=*), parameter :: GENUNITS_LOG = "genunits.nml"
 
 integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the most the ifx will compile as of 2024-05-12.
                               DEFAULT_MAX_ITER    = 50, &
@@ -39,8 +36,6 @@ type, public :: config_type
     
     integer :: max_n_units, max_iter !, max_n_interfaces
     logical :: tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
-    
-    type(log_type) :: logger
     
     character(len=BASE_UNIT_LEN), allocatable :: base_units(:)
     
@@ -65,7 +60,6 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     use prec, only: CL
     use checks, only: assert, is_close
-    use nmllog, only: INFO_LEVEL
     
     class(config_type), intent(out) :: config_out
     character(len=*), intent(in)    :: filename
@@ -84,8 +78,6 @@ subroutine read_config_namelist(config_out, filename, rc)
     namelist /config/ output_file, base_units, type_definition, use_line, kind_parameter, module_name, &
                         min_exponents, max_exponents, denominators, &
                         max_n_units, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
-    
-    call config_out%logger%open(GENUNITS_LOG, level=INFO_LEVEL)
     
     n_failures = 0
     

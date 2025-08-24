@@ -185,6 +185,34 @@ else
                                 "assert_dimension, real, rank 3, .false., exit code (release)", ASSERT_FALSE_OUTPUT)
 end if ! IBM XLF comment end
 
+call test_check(tests)
+
 call tests%end_tests()
+
+contains
+
+subroutine test_check(tests)
+    use checks, only: check
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    integer :: rc_check
+    
+    rc_check = 0
+    call check(.true., "impure check, .true.", rc_check)
+    call tests%integer_eq(rc_check, 0, "impure check, .true.")
+
+    rc_check = 0
+    call check(.false., "impure check, .false.", rc_check)
+    call tests%integer_eq(rc_check, 1, "impure check, .false.")
+    
+!    rc_check = 0
+!    call pure_logger%check(.true., "pure check, .true.", rc_check)
+!    call tests%integer_eq(rc_check, 0, "impure check, .true.")
+
+!    rc_check = 0
+!    call pure_logger%check(.false., "pure check, .false.", rc_check)
+!    call tests%integer_eq(rc_check, 1, "impure check, .false.")
+end subroutine test_check
 
 end program test_checks

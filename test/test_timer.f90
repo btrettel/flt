@@ -42,6 +42,8 @@ timeit_duration_seconds = timeit(timeit_test, number=10)
 call tests%real_gt(timeit_duration_seconds, 0.1_WP, "timeit, minimum")
 call tests%real_eq(timeit_duration_seconds, 0.1_WP, "timeit (absolute)", abs_tol=0.01_WP)
 
+call test_now(tests)
+
 call tests%end_tests()
 
 contains
@@ -49,5 +51,18 @@ contains
 subroutine timeit_test()
     call sleep(0.01_WP)
 end subroutine timeit_test
+
+subroutine test_now(tests)
+    use timer, only: TIMESTAMP_LEN, now
+    use unittest, only: validate_timestamp
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    character(len=TIMESTAMP_LEN) :: timestamp
+    
+    timestamp = now()
+    
+    call validate_timestamp(tests, timestamp, "now")
+end subroutine test_now
 
 end program test_timer
