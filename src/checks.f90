@@ -20,6 +20,7 @@ public :: is_close, all_close
 public :: assert
 public :: assert_dimension
 public :: check
+public :: print, write, flush
 
 interface all_close
     module procedure all_close_rank_1
@@ -37,8 +38,14 @@ end interface assert_dimension
 
 interface check
     module procedure impure_check
-    !module procedure pure_check
+    module procedure pure_check
 end interface check
+
+type, public :: logger_type
+    integer                        :: unit
+    character(:), allocatable      :: message
+    type(logger_type), allocatable :: history
+end type logger_type
 
 contains
 
@@ -222,16 +229,18 @@ end subroutine assert_dimension_rank_3
 ! This is used for input validation and other non-assertion checks.
 ! Making `rc` increment is useful to string up multiple `check`s
 ! without adding too much logic. The details of the `check` are
-! logged, so there's `rc` does not need to be meaningful beyond
+! printed or logged, so `rc` does not need to be meaningful beyond
 ! pass/fail.
 
 subroutine impure_check(condition, message, rc)
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    
     logical, intent(in)          :: condition ! condition to check
     character(len=*), intent(in) :: message   ! error message to print if `condition` is `.false.`
     integer, intent(in out)      :: rc        ! number of errors encountered
     
     if (.not. condition) then
-        print "(a)", message
+        write(unit=ERROR_UNIT, fmt="(a)") message
         
         rc = rc + 1
     end if
@@ -239,19 +248,68 @@ subroutine impure_check(condition, message, rc)
     call assert(rc >= 0, "checks (impure_check): negative rc should be impossible")
 end subroutine impure_check
 
-!pure subroutine pure_check(logger, condition, message, rc)
-!    class(pure_log_type), intent(in out) :: logger
-!    logical, intent(in)                  :: condition ! condition to check
-!    character(len=*), intent(in)         :: message   ! error message to print if `condition` is `.false.`
-!    integer, intent(in out)              :: rc        ! number of errors encountered
+pure subroutine pure_check(condition, message, rc, logger)
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     
-!    if (.not. condition) then
-!        call logger%error(message)
+    logical, intent(in)                            :: condition ! condition to check
+    character(len=*), intent(in)                   :: message   ! error message to print if `condition` is `.false.`
+    integer, intent(in out)                        :: rc        ! number of errors encountered
+    type(logger_type), intent(in out), allocatable :: logger
+    
+    if (.not. condition) then
+        call write(ERROR_UNIT, message, logger)
         
-!        rc = rc + 1
-!    end if
+        rc = rc + 1
+    end if
     
-!    call assert(rc >= 0, "checks (pure_check): negative rc should be impossible")
-!end subroutine pure_check
+    call assert(rc >= 0, "checks (pure_check): negative rc should be impossible")
+end subroutine pure_check
+
+! Pure logger
+! -----------
+
+! I would make these type-bound procedures, but it seems you can't make
+! type-bound procedures for `allocatable` variables.
+
+pure subroutine print(message, logger)
+    use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT
+    
+    character(len=*), intent(in)                   :: message
+    type(logger_type), intent(in out), allocatable :: logger
+    
+    call write(OUTPUT_UNIT, message, logger)
+end subroutine print
+
+pure subroutine write(unit, message, logger)
+    integer, intent(in)                            :: unit
+    character(len=*), intent(in)                   :: message
+    type(logger_type), intent(in out), allocatable :: logger
+    
+    type(logger_type), allocatable :: temp
+    
+    allocate(temp)
+    
+    temp%unit    = unit
+    temp%message = message
+    
+    call move_alloc(logger, temp%history)
+    call move_alloc(temp,   logger)
+end subroutine write
+
+subroutine flush(logger)
+    type(logger_type), intent(in out), allocatable :: logger
+    
+    if (allocated(logger)) then
+        call logger_print(logger)
+        deallocate(logger)
+    end if
+end subroutine flush
+
+recursive subroutine logger_print(logger)
+    type(logger_type), intent(in), allocatable :: logger
+    
+    if (allocated(logger%history)) call logger_print(logger%history)
+    write(unit=logger%unit, fmt="(a)") logger%message
+end subroutine logger_print
 
 end module checks

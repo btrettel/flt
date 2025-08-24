@@ -186,33 +186,67 @@ else
 end if ! IBM XLF comment end
 
 call test_check(tests)
+call test_logger(tests)
 
 call tests%end_tests()
 
 contains
 
 subroutine test_check(tests)
-    use checks, only: check
+    use checks, only: check, logger_type, flush
     
     type(test_results_type), intent(in out) :: tests
+    
+    type(logger_type), allocatable :: logger
     
     integer :: rc_check
     
     rc_check = 0
-    call check(.true., "impure check, .true.", rc_check)
+    call check(.true., "impure check, .true. (should not print)", rc_check)
     call tests%integer_eq(rc_check, 0, "impure check, .true.")
 
     rc_check = 0
-    call check(.false., "impure check, .false.", rc_check)
+    call check(.false., "impure check, .false. (should print)", rc_check)
     call tests%integer_eq(rc_check, 1, "impure check, .false.")
     
-!    rc_check = 0
-!    call pure_logger%check(.true., "pure check, .true.", rc_check)
-!    call tests%integer_eq(rc_check, 0, "impure check, .true.")
+    rc_check = 0
+    call check(.true., "pure check, .true. (should not print)", rc_check, logger)
+    call tests%integer_eq(rc_check, 0, "impure check, .true.")
 
-!    rc_check = 0
-!    call pure_logger%check(.false., "pure check, .false.", rc_check)
-!    call tests%integer_eq(rc_check, 1, "impure check, .false.")
+    rc_check = 0
+    call check(.false., "pure check, .false. (should print)", rc_check, logger)
+    call tests%integer_eq(rc_check, 1, "impure check, .false.")
+    call flush(logger)
 end subroutine test_check
+
+subroutine test_logger(tests)
+    use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT, ERROR_UNIT
+    
+    use checks, only: logger_type, flush
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(logger_type), allocatable :: logger
+    
+    call pure_logger(logger)
+    
+    call tests%integer_eq(logger%unit, ERROR_UNIT, "logger, write unit")
+    call tests%character_eq(logger%message, "write message", "logger, write message")
+    call tests%integer_eq(logger%history%unit, OUTPUT_UNIT, "logger, print unit")
+    call tests%character_eq(logger%history%message, "print message", "logger, print message")
+    
+    call flush(logger)
+end subroutine test_logger
+
+pure subroutine pure_logger(logger)
+    use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
+    
+    use checks, only: logger_type, print, write
+    
+    type(logger_type), intent(in out), allocatable :: logger
+    
+    call print("print message", logger)
+    call write(ERROR_UNIT, "write message", logger)
+end subroutine pure_logger
 
 end program test_checks
