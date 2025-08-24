@@ -55,11 +55,11 @@ end type config_type
 contains
 
 subroutine read_config_namelist(config_out, filename, rc)
-    use, intrinsic :: iso_fortran_env, only: IOSTAT_END
+    use, intrinsic :: iso_fortran_env, only: IOSTAT_END, ERROR_UNIT
     use genunits_data, only: MAX_BASE_UNITS, BASE_UNIT_LEN
     
     use prec, only: CL
-    use checks, only: assert, is_close
+    use checks, only: assert, is_close, check
     
     class(config_type), intent(out) :: config_out
     character(len=*), intent(in)    :: filename
@@ -111,7 +111,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     close(unit=nml_unit)
     
     if ((rc_nml /= 0) .and. (rc_nml /= IOSTAT_END)) then
-        call config_out%logger%error(trim(nml_error_message))
+        write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)
         rc = rc_nml
         return
     end if
@@ -143,7 +143,7 @@ subroutine read_config_namelist(config_out, filename, rc)
         end if
     end do
     call assert(n_use_lines >= 0, "genunits_io (read_config_namelist): n_use_lines is negative")
-    call config_out%logger%check(index(use_line, ";") == 0, "use_line contains too many semicolons.", n_failures)
+    call check(index(use_line, ";") == 0, "use_line contains too many semicolons.", n_failures)
     
     ! Copy the data to the configuration type.
     config_out%output_file     = trim(output_file)
@@ -173,29 +173,29 @@ subroutine read_config_namelist(config_out, filename, rc)
     config_out%intrinsics      = intrinsics ! Whether one argument intrinsics will be written.
     config_out%dtio            = dtio ! Whether derived type I/O will be written. Experimental, doesn't work right in all compilers.
     
-    call config_out%logger%check(len(config_out%output_file) > 0, "output_file must be defined", n_failures)
-    call config_out%logger%check(n_base_units > 0, "base_units must have 1 or more members", n_failures)
-    call config_out%logger%check(len(type_definition) >= 1, "type_definition must have 1 or more characters", n_failures)
-    call config_out%logger%check(all(denominators >= 1), "all denominators must be 1 or more", n_failures)
-    call config_out%logger%check(index(config_out%module_name, " ") == 0, "module_name can not contain spaces", n_failures)
-    call config_out%logger%check(len(config_out%module_name) >= 1, "module_name must not be empty", n_failures)
-    call config_out%logger%check(len(config_out%module_name) <= 31, &
+    call check(len(config_out%output_file) > 0, "output_file must be defined", n_failures)
+    call check(n_base_units > 0, "base_units must have 1 or more members", n_failures)
+    call check(len(type_definition) >= 1, "type_definition must have 1 or more characters", n_failures)
+    call check(all(denominators >= 1), "all denominators must be 1 or more", n_failures)
+    call check(index(config_out%module_name, " ") == 0, "module_name can not contain spaces", n_failures)
+    call check(len(config_out%module_name) >= 1, "module_name must not be empty", n_failures)
+    call check(len(config_out%module_name) <= 31, &
                                     "module_name must be 31 characters or less to meet the Fortran standard", n_failures)
     
     do i_base_unit = 1, n_base_units ! SERIAL
-        call config_out%logger%check(.not. is_close(min_exponents(i_base_unit), -huge(1.0_WP)), &
+        call check(.not. is_close(min_exponents(i_base_unit), -huge(1.0_WP)), &
                                         "min_exponents is not set properly?", n_failures)
-        call config_out%logger%check(.not. is_close(max_exponents(i_base_unit), huge(1.0_WP)), &
+        call check(.not. is_close(max_exponents(i_base_unit), huge(1.0_WP)), &
                                         "max_exponents is not set properly?", n_failures)
-        call config_out%logger%check(min_exponents(i_base_unit) <= max_exponents(i_base_unit), &
+        call check(min_exponents(i_base_unit) <= max_exponents(i_base_unit), &
                                         "a minimum exponent is larger than a maximum exponent", n_failures)
     end do
     
-    call config_out%logger%check(config_out%max_n_units > 0, "max_n_units must be 1 or greater.", n_failures)
+    call check(config_out%max_n_units > 0, "max_n_units must be 1 or greater.", n_failures)
     
     call assert(n_failures >= 0, "genunits_io (read_config_namelist): n_failures is negative")
     if (n_failures > 0) then
-        call config_out%logger%error("config namelist input validation error(s)")
+        write(unit=ERROR_UNIT, fmt="(a)") "config namelist input validation error(s)"
         rc = n_failures
     else
         rc = 0
@@ -203,8 +203,8 @@ subroutine read_config_namelist(config_out, filename, rc)
 end subroutine read_config_namelist
 
 subroutine read_seed_unit_namelists(config, filename, rc)
-    use, intrinsic :: iso_fortran_env, only: IOSTAT_END
-    use checks, only: assert, is_close, all_close
+    use, intrinsic :: iso_fortran_env, only: IOSTAT_END, ERROR_UNIT
+    use checks, only: assert, is_close, all_close, check
     use prec, only: CL
     use genunits_data, only: MAX_BASE_UNITS, MAX_LABEL_LEN
     
@@ -240,7 +240,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         if (rc_nml == IOSTAT_END) then
             exit
         else if (rc_nml /= 0) then
-            call config%logger%error(trim(nml_error_message))
+            write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)
             rc = rc_nml
             close(unit=nml_unit)
             return
@@ -250,10 +250,10 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     end do
     
     call assert(n_seed_units >= 0, "genunits_io (read_seed_unit_namelists): n_seed_units is negative")
-    call config%logger%check(n_seed_units > 0, "At least one seed unit is required.", n_failures)
+    call check(n_seed_units > 0, "At least one seed unit is required.", n_failures)
     write(unit=n_seed_units_string, fmt="(i0)") n_seed_units
     write(unit=max_n_units_string, fmt="(i0)") config%max_n_units
-    call config%logger%check(n_seed_units <= config%max_n_units, &
+    call check(n_seed_units <= config%max_n_units, &
                                     "The number of seed units (" // trim(n_seed_units_string) &
                                     // ") exceed max_n_units, the maximum number of units allowed (" // trim(max_n_units_string) &
                                     // "). Either increase max_n_units or reduce the number of seed units.", &
@@ -272,7 +272,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         if (rc_nml == IOSTAT_END) then
             exit
         else if (rc_nml /= 0) then
-            call config%logger%error(trim(nml_error_message))
+            write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)
             rc = rc_nml
             close(unit=nml_unit)
             return
@@ -286,10 +286,10 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         
         write(unit=i_seed_unit_string, fmt="(i0)") i_seed_unit
         
-        call config%logger%check(len(trim(label)) /= 0, &
+        call check(len(trim(label)) /= 0, &
                                         "seed_unit #" // trim(i_seed_unit_string) // " has an empty label.", n_failures)
         
-        call config%logger%check(index(trim(label), " ") == 0, &
+        call check(index(trim(label), " ") == 0, &
                                         "seed_unit #" // trim(i_seed_unit_string) // " with label '" // trim(label) // &
                                         "' has spaces in its label. " // &
                                         "Replace spaces with underscores or something else that can be in a Fortran type name", &
@@ -297,12 +297,12 @@ subroutine read_seed_unit_namelists(config, filename, rc)
 
         do j_seed_unit = 1, i_seed_unit - 1 ! SERIAL
             write(unit=j_seed_unit_string, fmt="(i0)") j_seed_unit
-            call config%logger%check(trim(label) /= config%seed_labels(j_seed_unit), &
+            call check(trim(label) /= config%seed_labels(j_seed_unit), &
                                             "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                                 // trim(config%seed_labels(i_seed_unit)) &
                                                 // '" has the same label as seed_unit #' // trim(j_seed_unit_string) // ".", &
                                                 n_failures)
-            call config%logger%check(.not. all_close(config%seed_units(i_seed_unit)%e, config%seed_units(j_seed_unit)%e), &
+            call check(.not. all_close(config%seed_units(i_seed_unit)%e, config%seed_units(j_seed_unit)%e), &
                                             "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                                 // trim(config%seed_labels(i_seed_unit)) &
                                                 // '" has the same exponents as seed_unit #' // trim(j_seed_unit_string) &
@@ -311,16 +311,16 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         
         do i_base_unit = 1, size(config%base_units) ! SERIAL
             write(unit=i_base_unit_string, fmt="(i0)") i_base_unit
-            call config%logger%check(.not. is_close(config%seed_units(i_seed_unit)%e(i_base_unit), huge(1.0_WP)), &
+            call check(.not. is_close(config%seed_units(i_seed_unit)%e(i_base_unit), huge(1.0_WP)), &
                                             "In seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                             // trim(config%seed_labels(i_seed_unit)) &
                                             // '", exponent #' // trim(i_base_unit_string) // " has not been set.", n_failures)
-            call config%logger%check(config%seed_units(i_seed_unit)%e(i_base_unit) >= config%min_exponents(i_base_unit), &
+            call check(config%seed_units(i_seed_unit)%e(i_base_unit) >= config%min_exponents(i_base_unit), &
                                             "In seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                             // trim(config%seed_labels(i_seed_unit)) &
                                             // '", exponent #' // trim(i_base_unit_string) // " is below the minimum exponent.", &
                                             n_failures)
-            call config%logger%check(config%seed_units(i_seed_unit)%e(i_base_unit) <= config%max_exponents(i_base_unit), &
+            call check(config%seed_units(i_seed_unit)%e(i_base_unit) <= config%max_exponents(i_base_unit), &
                                             "In seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                             // trim(config%seed_labels(i_seed_unit)) &
                                             // '", exponent #' // trim(i_base_unit_string) // " is above the maximum exponent.", &
@@ -331,7 +331,7 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     
     call assert(n_failures >= 0, "genunits_io (read_seed_unit_namelists): n_failures is negative")
     if (n_failures > 0) then
-        call config%logger%error("seed namelist input validation error(s)")
+        write(unit=ERROR_UNIT, fmt="(a)") "seed namelist input validation error(s)"
         rc = n_failures
     else
         rc = 0
@@ -1381,7 +1381,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     logical           :: use_sqrt, use_cbrt, use_square
     
     write(unit=n_char, fmt="(i0)") size(unit_system%units)
-    call config%logger%info("Generated " // trim(n_char) // " physical dimensions. Writing " // config%output_file // "...")
+    print "(a)", "Generated " // trim(n_char) // " physical dimensions. Writing " // config%output_file // "..."
     
     ! Now actually write the module.
     
@@ -1710,7 +1710,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
     write(unit=file_unit, fmt="(2a)") "end module ", config%module_name
     
     write(unit=n_char, fmt="(i0)") n_interfaces
-    call config%logger%info("Generated " // trim(n_char) // " interfaces.")
+    print "(a)", "Generated " // trim(n_char) // " interfaces."
     
     rc = 0
     

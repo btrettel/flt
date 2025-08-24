@@ -35,6 +35,4 @@ if (rc_module /= 0) then
     error stop
 end if
 
-call config%logger%close()
-
 end program genunits

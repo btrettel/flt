@@ -18,7 +18,7 @@ src$(DIR_SEP)ga.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJ
 
 src$(DIR_SEP)genunits_data.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)genunits_data.f90
 
-src$(DIR_SEP)genunits_io.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)genunits_io.f90
+src$(DIR_SEP)genunits_io.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)genunits_io.f90
 
 src$(DIR_SEP)nmllog.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)nmllog.f90
 
@@ -44,8 +44,8 @@ src$(DIR_SEP)unittest.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec
 # Program dependencies #
 ########################
 
-genunits$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)genunits.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)genunits.f90
+genunits$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)genunits.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)genunits.f90
 
 test_assert_dimension_false_1$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_1.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_1.f90
@@ -92,8 +92,8 @@ test_genunits_data$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks
 genunits_data.nml: test_genunits_data$(BINEXT)
 	$(RUN)test_genunits_data$(BINEXT)
 
-test_genunits_io$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_genunits_io.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)nmllog.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_genunits_io.f90
+test_genunits_io$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_genunits_io.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) test$(DIR_SEP)test_genunits_io.f90
 
 genunits_io.nml: test_genunits_io$(BINEXT)
 	$(RUN)test_genunits_io$(BINEXT)
