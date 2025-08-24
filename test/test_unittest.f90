@@ -8,12 +8,11 @@
 program test_unittest
 
 use checks, only: TOL_FACTOR
-use nmllog, only: log_type, CRITICAL_LEVEL
+use nmllog, only: log_type
 use prec, only: WP, I10
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests, failing_tests
 
 integer, parameter :: N_FAILING = 19
@@ -22,9 +21,8 @@ character(len=*), parameter :: EXIT_CODE_FILE = "exit_code.txt"
 logical :: exit_code_file_exists
 integer :: exit_code_file_unit
 
-call logger%open("unittest.nml")
-call tests%start_tests(logger)
-call failing_tests%start_tests(logger) ! These are for tests which should fail.
+call tests%start_tests("unittest.nml")
+call failing_tests%start_tests("unittest_failing_1.nml") ! These are for tests which should fail.
 
 call tests%integer_eq(tests%n_failures, 0, "tests%n_failures at start")
 call tests%integer_eq(tests%n_tests, 1, "tests%n_tests at start")
@@ -128,7 +126,7 @@ end if
 ! tests which should fail
 
 ! Don't print these to stdout.
-failing_tests%logger%stdout_level = CRITICAL_LEVEL + 1
+failing_tests%stdout = .false.
 
 call failing_tests%logical_true(.false., "logical_true, failure")
 
@@ -193,13 +191,11 @@ call test_validate_timestamp(tests)
 call test_read_unittest_nml(tests)
 
 call tests%end_tests()
-call logger%close()
 
 contains
 
 subroutine test_validate_timestamp(tests)
     use unittest, only: validate_timestamp
-    use nmllog, only: CRITICAL_LEVEL
     
     type(test_results_type), intent(in out) :: tests
     
@@ -208,8 +204,8 @@ subroutine test_validate_timestamp(tests)
     
     integer :: n_tests, n_failing
     
-    call failing_tests%start_tests(tests%logger)
-    failing_tests%logger%stdout_level=CRITICAL_LEVEL
+    call failing_tests%start_tests("unittest_failing_2.nml")
+    failing_tests%stdout = .false.
     n_tests   = 0
     n_failing = 0
     
@@ -368,15 +364,14 @@ subroutine test_validate_timestamp(tests)
 end subroutine test_validate_timestamp
 
 subroutine test_read_unittest_nml(tests)
-    use prec, only: WP, CL
+    use prec, only: WP, CL, NML_RECL
     use unittest, only: validate_timestamp
-    use nmllog, only: TIMESTAMP_LEN, NML_RECL
+    use timer, only: TIMESTAMP_LEN
     
     type(test_results_type), intent(in out) :: tests
     
     character(len=*), parameter :: TEST_FILENAME = "test.nml"
     type(test_results_type)     :: nml_tests
-    type(log_type)              :: logger
     integer                     :: nml_unit
     
     character(len=TIMESTAMP_LEN) :: timestamp
@@ -415,10 +410,10 @@ subroutine test_read_unittest_nml(tests)
     compared_character = ""
     
     ! logical_true (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%logical_true(.true., "logical_true (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -430,11 +425,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_true (pass), compared_logical")
     
     ! logical_true (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%logical_true(.false., "logical_true (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -446,10 +440,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_true (fail), compared_logical")
     
     ! logical_false (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%logical_true(.true., "logical_false (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -461,11 +455,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_false (pass), compared_logical")
     
     ! logical_false (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%logical_true(.false., "logical_false (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -477,10 +470,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_false (fail), compared_logical")
     
     ! real_eq (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%real_eq(1.0_WP, 1.0_WP, "real_eq (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -492,11 +485,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%real_eq(compared_real, 1.0_WP, "test_read_unittest_nml, real_eq (pass), compared_real")
     
     ! real_eq (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%real_eq(3.0_WP, 2.0_WP, "real_eq (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -508,10 +500,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%real_eq(compared_real, 2.0_WP, "test_read_unittest_nml, real_eq (fail), compared_real")
     
     ! real_ne (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%real_ne(0.0_WP, 1.0_WP, "real_ne (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -523,11 +515,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%real_eq(compared_real, 1.0_WP, "test_read_unittest_nml, real_ne (pass), compared_real")
     
     ! real_ne (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%real_ne(3.0_WP, 3.0_WP, "real_ne (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -539,10 +530,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%real_eq(compared_real, 3.0_WP, "test_read_unittest_nml, real_ne (fail), compared_real")
     
     ! integer_eq (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%integer_eq(2, 2, "integer_eq (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -554,11 +545,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%integer_eq(compared_integer, 2, "test_read_unittest_nml, integer_eq (pass), compared_integer")
     
     ! integer_eq (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%integer_eq(-1, 4, "integer_eq (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -570,10 +560,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_eq (fail), compared_integer")
     
     ! integer_ne (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%integer_ne(2, 1, "integer_ne (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -585,11 +575,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_ne (pass), compared_integer")
     
     ! integer_ne (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%integer_ne(4, 4, "integer_ne (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -601,10 +590,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_ne (fail), compared_integer")
     
     ! integer_ge (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%integer_ge(2, 1, "integer_ge (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -616,11 +605,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_ge (pass), compared_integer")
     
     ! integer_ge (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%integer_ge(3, 4, "integer_ge (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -632,10 +620,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_ge (fail), compared_integer")
     
     ! integer_le (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%integer_le(0, 1, "integer_le (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -647,11 +635,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_le (pass), compared_integer")
     
     ! integer_le (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%integer_le(5, 2, "integer_le (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -663,10 +650,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%integer_eq(compared_integer, 2, "test_read_unittest_nml, integer_le (fail), compared_integer")
     
     ! character_eq (pass)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .true.
     call nml_tests%character_eq("a", "a", "character_eq (pass)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")
@@ -678,11 +665,10 @@ subroutine test_read_unittest_nml(tests)
     call tests%character_eq(compared_character, "a", "test_read_unittest_nml, character_eq (pass), compared_character")
     
     ! character_eq (fail)
-    call logger%open(TEST_FILENAME)
-    call nml_tests%start_tests(logger)
-    nml_tests%logger%stdout_level=CRITICAL_LEVEL
+    call nml_tests%start_tests(TEST_FILENAME)
+    nml_tests%stdout = .false.
     call nml_tests%character_eq("a", "b", "character_eq (fail)")
-    call logger%close()
+    call nml_tests%end_tests()
     open(newunit=nml_unit, file=TEST_FILENAME, status="old", action="read", delim="quote", recl=NML_RECL)
     read(unit=nml_unit, nml=test_result)
     close(unit=nml_unit, status="delete")

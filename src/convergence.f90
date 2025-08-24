@@ -33,7 +33,6 @@ contains
 subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use checks, only: assert, assert_dimension
-    use nmllog, only: CRITICAL_LEVEL
     use unittest, only: test_results_type
     use fmad, only: log
     
@@ -71,12 +70,13 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     integer               :: i_n, n_n     ! index of `n_arr` and size of `n_arr`
     integer               :: i_var, n_var ! index for dependent variables and number of dependent variables
     integer               :: i_dv, n_dv   ! index for derivatives and number of derivatives
-    integer               :: stdout_level, n_failures
+    integer               :: n_failures
     type(ad), allocatable :: ne_i_n(:), ne(:, :) ! ne(n_n, n_var)
     real(WP), allocatable :: ne_dv_i_n(:, :), ne_dv(:, :, :) ! ne_dv(n_n, n_var, n_dv)
     type(ad), allocatable :: p_v(:)
     real(WP), allocatable :: p_tol_(:), p_dv(:, :)
     character(len=32)     :: i_var_string, i_dv_string
+    logical               :: stdout
     
     if (present(p_tol)) then
         p_tol_ = p_tol
@@ -95,9 +95,9 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     n_n = size(n_arr)
     
     ! Suppress test messages while printing the table.
-    stdout_level = tests%logger%stdout_level
-    tests%logger%stdout_level = CRITICAL_LEVEL + 1
-    n_failures = tests%n_failures
+    stdout       = tests%stdout
+    tests%stdout = .false.
+    n_failures   = tests%n_failures
     
     print "(2a)", message, ":"
     print "(3a6, 2a14)", "n", "var #", "v/dv", "ne", "p"
@@ -161,7 +161,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     if (tests%n_failures > n_failures) then
         write(unit=ERROR_UNIT, fmt="(a)") "One or more test failures were suppressed during convergence test. Check the test log."
     end if
-    tests%logger%stdout_level = stdout_level
+    tests%stdout = stdout
     
     ! Check that the orders of accuracy are as expected.
     do i_var = 1, n_var ! SERIAL

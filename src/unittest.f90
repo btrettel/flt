@@ -17,11 +17,6 @@ public :: validate_timestamp
 
 character(len=70), parameter :: LONG_LINE = "----------------------------------------------------------------------"
 
-! Needed or else ifort truncates namelist file lines and can't read them back correctly.
-! 10000 is arbitrary. Just pick a number larger than anything you expect to use.
-! gfortran had a strange run-time error with 1000.
-integer, public, parameter :: NML_RECL = 10000
-
 type, public :: test_results_type
     integer          :: n_failures = 0
     integer          :: n_tests    = 0
@@ -809,6 +804,7 @@ end subroutine character_eq
 
 subroutine start_tests(tests, filename)
     use checks, only: assert
+    use prec, only: NML_RECL
     
     class(test_results_type), intent(out) :: tests
     character(len=*), intent(in)          :: filename

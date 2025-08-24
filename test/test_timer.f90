@@ -7,19 +7,16 @@
 
 program test_timer
 
-use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
 use timer, only: timer_type, timeit, sleep
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 type(timer_type)        :: wtime
 real(WP)                :: duration_seconds, timeit_duration_seconds
 
-call logger%open("timer.nml")
-call tests%start_tests(logger)
+call tests%start_tests("timer.nml")
 
 call tests%integer_eq(int(wtime%sum_count, kind=kind(1)), 0, "timer_type, default sum_count")
 call tests%logical_false(wtime%active, "timer_type, active before start")
@@ -46,7 +43,6 @@ call tests%real_gt(timeit_duration_seconds, 0.1_WP, "timeit, minimum")
 call tests%real_eq(timeit_duration_seconds, 0.1_WP, "timeit (absolute)", abs_tol=0.01_WP)
 
 call tests%end_tests()
-call logger%close()
 
 contains
 

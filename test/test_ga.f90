@@ -7,15 +7,12 @@
 
 program test_ga
 
-use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 
-call logger%open("ga.nml")
-call tests%start_tests(logger)
+call tests%start_tests("ga.nml")
 
 call test_init_pop(tests)
 call test_mutate_indiv(tests)
@@ -27,7 +24,6 @@ call test_optimize_ga(tests)
 call test_comparison_constraints(tests)
 
 call tests%end_tests()
-call logger%close()
 
 contains
 

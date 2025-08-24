@@ -9,14 +9,12 @@ program test_checks
 
 use build, only: DEBUG
 use checks, only: TOL_FACTOR, abs_tolerance, is_close, all_close, assert, assert_dimension
-use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
 implicit none
 
 character(len=*), parameter :: ASSERT_FALSE_OUTPUT = "test_assert_false.txt"
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 integer                 :: test_assert_false_unit
 logical                 :: is_close_array(2), test_assert_false_exists
@@ -26,8 +24,7 @@ real(WP) :: a1(5),    b1(5),    &
             a2(5, 5), b2(5, 5), &
             a3(5, 5), b3(5, 5)
 
-call logger%open("checks.nml")
-call tests%start_tests(logger)
+call tests%start_tests("checks.nml")
 
 call tests%real_gt(abs_tolerance(0.0_WP, 0.0_WP), 0.0_WP, "abs_tolerance is greater than zero at arguments of 0")
 
@@ -189,6 +186,5 @@ else
 end if ! IBM XLF comment end
 
 call tests%end_tests()
-call logger%close()
 
 end program test_checks

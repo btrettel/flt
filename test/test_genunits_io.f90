@@ -12,11 +12,9 @@ program test_genunits_io
 use genunits_io, only: config_type, in_exponent_bounds, denominator_matches
 use genunits_data, only: unit_type, unit_system_type
 use prec, only: WP
-use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 type(config_type)       :: config
 integer                 :: rc
@@ -26,8 +24,7 @@ integer                 :: i_base_unit
 
 character(len=*), parameter :: TEST_INPUT_FILE = "test/genunits_input.nml"
 
-call logger%open("genunits_io.nml")
-call tests%start_tests(logger)
+call tests%start_tests("genunits_io.nml")
 
 call config%read_config_namelist(TEST_INPUT_FILE, rc)
 
@@ -97,6 +94,5 @@ call tests%logical_false(denominator_matches(5.0_WP/3.0_WP, 2), "denominator_mat
 !call config%write_type(OUTPUT_UNIT, 1, unit_system)
 
 call tests%end_tests()
-call logger%close()
 
 end program test_genunits_io

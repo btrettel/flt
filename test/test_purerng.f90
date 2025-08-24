@@ -7,15 +7,12 @@
 
 program test_purerng
 
-use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 
-call logger%open("purerng.nml")
-call tests%start_tests(logger)
+call tests%start_tests("purerng.nml")
 
 call test_unique(tests)
 call test_lecuyer(tests)
@@ -26,7 +23,6 @@ call test_uniform(tests)
 call test_cauchy(tests)
 
 call tests%end_tests()
-call logger%close()
 
 contains
 

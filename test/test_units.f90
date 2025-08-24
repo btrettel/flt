@@ -20,15 +20,12 @@ use units, only: unitless           => unit_p00000_p00000_p00000, &
                  si_energy_per_area => unit_p00000_p10000_m20000, &
                  unit, sin, cos, tan, exp, log, abs, max, min, sqrt, cbrt, square
 use prec, only: WP, CL
-use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 
-call logger%open("units.nml")
-call tests%start_tests(logger)
+call tests%start_tests("units.nml")
 
 call test_basic(tests)
 call test_dtio(tests)
@@ -37,7 +34,6 @@ call test_intrinsics(tests)
 call test_timing(tests)
 
 call tests%end_tests()
-call logger%close()
 
 contains
 

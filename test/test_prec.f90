@@ -8,7 +8,6 @@
 program test_prec
 
 use prec, only: I5, I9, WP, PI, ACCEPTABLE_LOG10_SPACING_JUMP
-use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 

@@ -9,17 +9,14 @@ program test_genunits_data
 
 use genunits_data, only: unit_type, unit_system_type, m_unit, d_unit, sqrt_unit, cbrt_unit, square_unit
 use prec, only: WP
-use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 type(unit_type)         :: unit1, unit2, unit_out
 type(unit_system_type)  :: unit_system
 
-call logger%open("genunits_data.nml")
-call tests%start_tests(logger)
+call tests%start_tests("genunits_data.nml")
 
 unit_system%base_units   = ["kg", "m ", "s "]
 unit_system%n_base_units = size(unit_system%base_units)
@@ -128,7 +125,6 @@ call test_real_to_rational(tests)
 call test_rational_string(tests)
 
 call tests%end_tests()
-call logger%close()
 
 contains
 

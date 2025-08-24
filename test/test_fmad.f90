@@ -7,19 +7,16 @@
 
 program test_fmad
 
-use nmllog, only: log_type
 use prec, only: WP
 use unittest, only: test_results_type
 use fmad, only: ad
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 
 integer, parameter :: N_DV = 2
 
-call logger%open("fmad.nml")
-call tests%start_tests(logger)
+call tests%start_tests("fmad.nml")
 
 call test_scalars(tests)
 call test_arrays(tests)
@@ -37,7 +34,6 @@ call test_disabled(tests)
 call test_fosm(tests)
 
 call tests%end_tests()
-call logger%close()
 
 contains
 

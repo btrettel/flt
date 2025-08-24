@@ -14,7 +14,6 @@ use unittest, only: test_results_type
 use prec, only: WP
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 
 type(unitless)  :: u
@@ -22,8 +21,7 @@ type(si_length) :: x
 
 integer, parameter :: N_DV = 2
 
-call logger%open("units_ad.nml")
-call tests%start_tests(logger)
+call tests%start_tests("units_ad.nml")
 
 ! TODO: Won't work yet due to AD: x = unitless(2.0_WP)*x
 
@@ -42,6 +40,5 @@ call tests%real_eq(x%v%d(1), 0.0_WP, "units dv(1), u*x")
 call tests%real_eq(x%v%d(2), 2.0_WP, "units dv(2), u*x")
 
 call tests%end_tests()
-call logger%close()
 
 end program test_units_ad

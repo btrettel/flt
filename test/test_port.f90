@@ -9,18 +9,15 @@ program test_port
 
 use port, only: PLATFORM_UNKNOWN, PLATFORM_UNIXLIKE, PLATFORM_WINDOWS, DIR_SEPS, platform, path_join
 use prec, only: CL
-use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 character(len=CL)       :: path, path_array(2)
 
 integer :: min_platform, max_platform
 
-call logger%open("port.nml")
-call tests%start_tests(logger)
+call tests%start_tests("port.nml")
 
 min_platform = min(PLATFORM_UNKNOWN, PLATFORM_UNIXLIKE, PLATFORM_WINDOWS)
 max_platform = max(PLATFORM_UNKNOWN, PLATFORM_UNIXLIKE, PLATFORM_WINDOWS)
@@ -37,6 +34,5 @@ path = path_join(path_array)
 call tests%character_eq(path, "test" // DIR_SEPS(platform()) // "file.txt", "path_join")
 
 call tests%end_tests()
-call logger%close()
 
 end program test_port

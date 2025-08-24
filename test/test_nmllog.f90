@@ -11,7 +11,6 @@ use nmllog, only: log_type, UNIT_CLOSED, WARNING_LEVEL, TIMESTAMP_LEN
 use unittest, only: test_results_type
 implicit none
 
-type(log_type), target  :: logger
 type(test_results_type) :: tests
 
 character(len=*), parameter :: TEST_FILENAME     = "test.nml"
@@ -22,8 +21,7 @@ character(len=*), parameter :: ERROR_MESSAGE     = "Error level test"
 character(len=*), parameter :: CRITICAL_MESSAGE  = "Critical level test"
 character(len=*), parameter :: NO_PREFIX_MESSAGE = "No prefix test"
 
-call logger%open("nmllog.nml")
-call tests%start_tests(logger)
+call tests%start_tests("nmllog.nml")
 
 call test_now(tests)
 call test_log_subroutines(tests)
@@ -33,7 +31,6 @@ call test_check(tests)
 call test_stdout_prefix()
 
 call tests%end_tests()
-call logger%close()
 
 contains
 
@@ -108,8 +105,7 @@ subroutine test_log_subroutines(tests)
         if (rc_nml == IOSTAT_END) then
             exit
         else if (rc_nml /= 0) then
-            call tests%integer_eq(rc_nml, 0, "reading nmllog, error")
-            call tests%logger%error(trim(nml_error_message))
+            call tests%integer_eq(rc_nml, 0, "reading nmllog, error: " // trim(nml_error_message))
             exit
         end if
         
@@ -297,8 +293,7 @@ subroutine test_pure_log(tests)
         if (rc_nml == IOSTAT_END) then
             exit
         else if (rc_nml /= 0) then
-            call tests%integer_eq(rc_nml, 0, "reading nmllog, error")
-            call tests%logger%error(trim(nml_error_message))
+            call tests%integer_eq(rc_nml, 0, "reading nmllog, error: " // trim(nml_error_message))
             exit
         end if
         
