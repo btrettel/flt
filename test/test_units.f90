@@ -18,7 +18,7 @@ use units, only: unitless           => unit_p00000_p00000_p00000, &
                  si_frequency       => unit_p00000_p00000_m10000, &
                  si_energy          => unit_p20000_p10000_m20000, &
                  si_energy_per_area => unit_p00000_p10000_m20000, &
-                 unit, sin, cos, tan, exp, log, abs, max, min, sqrt, cbrt, square
+                 sin, cos, tan, exp, log, abs, max, min, sqrt, cbrt, square
 use prec, only: WP, CL
 use unittest, only: test_results_type
 implicit none
@@ -38,6 +38,7 @@ call tests%end_tests()
 contains
 
 subroutine test_basic(tests)
+    use units, only: unit ! Needed to make ifx happy. Perhaps naming this `unit` was a bad idea...
     type(test_results_type), intent(in out) :: tests
     
     type(unitless)     :: u
