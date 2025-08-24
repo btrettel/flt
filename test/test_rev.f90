@@ -8,7 +8,6 @@
 program test_rev
 
 use rev, only: REVISION, REVISION_DATE
-use nmllog, only: log_type
 use unittest, only: test_results_type
 implicit none
 

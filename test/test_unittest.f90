@@ -8,7 +8,6 @@
 program test_unittest
 
 use checks, only: TOL_FACTOR
-use nmllog, only: log_type
 use prec, only: WP, I10
 use unittest, only: test_results_type
 implicit none
