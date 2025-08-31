@@ -56,7 +56,7 @@ contains
 
 subroutine read_config_namelist(config_out, filename, rc)
     use, intrinsic :: iso_fortran_env, only: IOSTAT_END, ERROR_UNIT
-    use genunits_data, only: MAX_BASE_UNITS, BASE_UNIT_LEN
+    use genunits_data, only: MAX_BASE_UNITS, BASE_UNIT_LEN, EXPONENT_LEN
     
     use prec, only: CL
     use checks, only: assert, is_close, check
@@ -123,7 +123,8 @@ subroutine read_config_namelist(config_out, filename, rc)
         end if
     end do
     ! A check that `n_base_units > 0` is done later.
-    call assert(n_base_units <= MAX_BASE_UNITS, "genunits_io (read_config_namelist): n_base_units is too high")
+    call assert(n_base_units <= MAX_BASE_UNITS, "genunits_io (read_config_namelist): n_base_units is impossibly high?")
+    ! Maybe later: enforce maximum number of units to prevent labels from getting too long.
     
     ! Replace semicolons with new lines in the `use_line` variable so that multiple `use` lines can be written.
     n_use_lines = 0
@@ -181,6 +182,18 @@ subroutine read_config_namelist(config_out, filename, rc)
     call check(len(config_out%module_name) >= 1, "module_name must not be empty", n_failures)
     call check(len(config_out%module_name) <= 31, &
                                     "module_name must be 31 characters or less to meet the Fortran standard", n_failures)
+    
+    ! Check that all denominators can be distinguished given `EXPONENT_LEN`.
+    call check(log(real(maxval(config_out%denominators), WP)) / log(10.0_WP) < real(EXPONENT_LEN - 1, WP), &
+                    "largest denominator is too high and can not be represented given EXPONENT_LEN. " &
+                    // "genunits could be modified to increase EXPONENT_LEN to handle the denominators.", &
+                    n_failures)
+    
+    ! Check that maximum exponent absolute value is below 10 to avoid overflow in the label.
+    call check(max(maxval(abs(config_out%max_exponents)), maxval(abs(config_out%min_exponents))) < 10.0_WP, &
+                "largest exponent absolute value requires more than 1 digit, which would overflow the label. " &
+                // "Reduce the largest exponent absolute value or modify genunits to change the labels.", &
+                n_failures)
     
     do i_base_unit = 1, n_base_units ! SERIAL
         call check(.not. is_close(min_exponents(i_base_unit), -huge(1.0_WP)), &
@@ -850,7 +863,8 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
     end if
     
     call assert(len(binary_operator_procedure) <= MAX_LABEL_LEN, "genunits_io (write_binary_operator): " &
-                        // "binary_operator_procedure name is too long and won't meet the Fortran 2003 standard")
+                        // "binary_operator_procedure name is too long and won't meet the Fortran 2003 standard: " &
+                        // binary_operator_procedure)
     
     if (len(config%kind_parameter) == 0) then
         real_type = "real"

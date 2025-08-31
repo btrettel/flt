@@ -180,6 +180,8 @@ pure function all_close_rank_1_rank_0(input_real_1, input_real_2, rel_tol, abs_t
 end function all_close_rank_1_rank_0
 
 elemental subroutine assert(condition, message)
+    ! To get line number and specific values of variables, use a debugger.
+    
     use build, only: DEBUG
     
     logical, intent(in)          :: condition

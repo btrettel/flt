@@ -17,7 +17,7 @@ character(len=*), parameter :: UNIT_PREFIX    = "unit"
 integer, public, parameter  :: MAX_BASE_UNITS = 10, &
                                MAX_LABEL_LEN  = 63, &
                                BASE_UNIT_LEN  = 10, &
-                               EXPONENT_LEN   = 5
+                               EXPONENT_LEN   = 2 ! This should be sufficient in most instances.
 
 type, public :: unit_type
     real(WP), allocatable :: e(:)
@@ -61,7 +61,8 @@ pure function label(unit)
     
     ! Ensure that the `unit_label` won't be too long to be valid in Fortran 2003.
     call assert(len(trim(label)) > 0, "genunits_data (label): label has zero length")
-    call assert(len(trim(label)) <= MAX_LABEL_LEN, "genunits_data (label): label is too long")
+    call assert(len(trim(label)) <= floor(real(MAX_LABEL_LEN, WP)/2.0_WP), &
+                    "genunits_data (label): label is too long: " // trim(label))
 end function label
 
 pure function readable(unit, unit_system)

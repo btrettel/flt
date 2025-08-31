@@ -40,7 +40,7 @@ unit1%e(1) = 1.0_WP
 unit1%e(2) = 1.5_WP
 unit1%e(3) = -2.0_WP
 
-call tests%character_eq(unit1%label(), "unit_p10000_p15000_m20000", "unit%label")
+call tests%character_eq(unit1%label(), "unit_p10_p15_m20", "unit%label")
 call tests%character_eq(unit1%readable(unit_system), "kg.m(3/2)/s2", "unit%readable (1)")
 
 unit1%e(1) = 0.0_WP
