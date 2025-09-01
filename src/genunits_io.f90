@@ -1527,24 +1527,18 @@ subroutine write_module(config, unit_system, file_unit, rc)
             write(unit=file_unit, fmt=trim(use_format), advance="no") trim(config%seed_labels(i_seed_unit)), &
                                                                         "=> ", &
                                                                         trim(config%seed_units(i_seed_unit)%label())
-            if (config%intrinsics .or. use_sqrt .or. use_cbrt .or. use_square) then
-                write(unit=file_unit, fmt="(a)") ", &"
-            else
-                if (i_seed_unit /= size(config%seed_labels)) then
-                    write(unit=file_unit, fmt="(a)") ", &"
-                else
-                    write(unit=file_unit, fmt="(a)") ""
-                end if
-            end if
+            write(unit=file_unit, fmt="(a)") ", &"
         end do
         
         write(unit=file_unit, fmt="(a)", advance="no") "!"
         do i_space = 1, 12 + len(config%module_name) ! SERIAL
             write(unit=file_unit, fmt="(a)", advance="no") " "
         end do
-        write(unit=file_unit, fmt="(a)", advance="no") "unit, "
+        write(unit=file_unit, fmt="(a)", advance="no") "unit"
         
         if (config%intrinsics) then
+            write(unit=file_unit, fmt="(a)", advance="no") ", "
+            
             if (size(INTRINSIC_1ARG_UNITLESS) > 0) then
                 do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
                     if (i_intrinsic /= size(INTRINSIC_1ARG_UNITLESS)) then
@@ -1582,35 +1576,13 @@ subroutine write_module(config, unit_system, file_unit, rc)
                     end if
                 end do
             end if
-            
-            if ((size(INTRINSIC_1ARG_UNITLESS) > 0) &
-                    .or. (size(INTRINSIC_1ARG_WITHUNITS) > 0) &
-                    .or. (size(INTRINSIC_2ARG_WITHUNITS) > 0)) then
-                if (use_sqrt .or. use_cbrt .or. use_square) then
-                    write(unit=file_unit, fmt="(a)", advance="no") ", "
-                end if
-            end if
         end if
         
-        if (use_sqrt) then
-            write(unit=file_unit, fmt="(a)", advance="no") "sqrt"
-            
-            if (use_cbrt .or. use_square) then
-                write(unit=file_unit, fmt="(a)", advance="no") ", "
-            end if
-        end if
+        if (use_sqrt) write(unit=file_unit, fmt="(a)", advance="no") ", sqrt"
         
-        if (use_cbrt) then
-            write(unit=file_unit, fmt="(a)", advance="no") "cbrt"
-            
-            if (use_square) then
-                write(unit=file_unit, fmt="(a)", advance="no") ", "
-            end if
-        end if
+        if (use_cbrt) write(unit=file_unit, fmt="(a)", advance="no") ", cbrt"
         
-        if (use_square) then
-            write(unit=file_unit, fmt="(a)", advance="no") "square"
-        end if
+        if (use_square) write(unit=file_unit, fmt="(a)", advance="no") ", square"
         
         if (use_sqrt .or. use_cbrt .or. use_square .or. config%intrinsics) then
             write(unit=file_unit, fmt="(a)") ""
