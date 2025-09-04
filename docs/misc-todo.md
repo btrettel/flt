@@ -147,3 +147,11 @@
     - <https://gcc.gnu.org/pipermail/fortran/2009-October/030302.html>
 - Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
 - Make cli.f90 print where OpenMP is used more clearly. Looking at the list of compiler flags is not ideal.
+- datatest.f90
+    - <https://statmodeling.stat.columbia.edu/2013/04/17/data-problems-coding-errors-what-can-be-done/#comment-144934>
+        - > 4. Add noise to the data and see if it will drastically alter your conclusions. If it does you’ve to exercise even more caution.
+        - Write subroutine to read CSV file and add noise to it.
+    - Checks bounds on data when reading in a CSV file, prints useful error localizing the error and all others in the file. (Does not stop once it identifies one error.)
+    - Find the data that is most sensitive to perturbations? The sensitivity analysis should take into account the uncertainty. Try 95% uncertainty perturbations or something like that. Otherwise, there's no reasonable scale to pick for the perturbations.
+    - Subroutines to help estimate uncertainty in a standardized way.
+        - For example, if ambient temperature is unknown, have some constants and procedures to help estimate the effect of this on the uncertainty.

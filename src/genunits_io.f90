@@ -35,7 +35,7 @@ type, public :: config_type
     integer, allocatable          :: denominators(:)
     
     integer :: max_n_units, max_iter !, max_n_interfaces
-    logical :: tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
+    logical :: debug, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     character(len=BASE_UNIT_LEN), allocatable :: base_units(:)
     
@@ -73,11 +73,11 @@ subroutine read_config_namelist(config_out, filename, rc)
     character(len=BASE_UNIT_LEN) :: base_units(MAX_BASE_UNITS)
     real(WP)                     :: min_exponents(MAX_BASE_UNITS), max_exponents(MAX_BASE_UNITS)
     integer                      :: denominators(MAX_BASE_UNITS), max_n_units, max_iter
-    logical                      :: tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
+    logical                      :: debug, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     namelist /config/ output_file, base_units, type_definition, use_line, kind_parameter, module_name, &
                         min_exponents, max_exponents, denominators, &
-                        max_n_units, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
+                        max_n_units, debug, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     n_failures = 0
     
@@ -165,6 +165,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     config_out%max_n_units     = max_n_units ! The maximum number of units in the unit system.
     config_out%max_iter        = max_iter ! The maximum number of iterations when generating the unit system.
     config_out%base_units      = base_units(1:n_base_units) ! The base units.
+    config_out%debug           = debug ! Whether debugging info will be printed.
     config_out%tests           = tests ! Whether tests will be written. (Not used at the moment.)
     config_out%comparison      = comparison ! Whether comparison operators will be written.
     config_out%unary           = unary ! Whether unary operators will be written.
@@ -394,7 +395,7 @@ pure function denominator_matches(e, d)
     denominator_matches = is_close(real(nint(ed), WP), ed)
 end function denominator_matches
 
-pure subroutine process_trial_unit(config, trial_unit, units, n_units, rc)
+subroutine process_trial_unit(config, trial_unit, units, n_units, rc)
     ! If trial unit is within bounds and not in the previous array of units, add it.
     
     use genunits_data, only: unit_type
@@ -427,9 +428,11 @@ pure subroutine process_trial_unit(config, trial_unit, units, n_units, rc)
     end do
     
     if (within_bounds .and. unseen .and. denominator_valid) then
-        n_units = n_units + 1
+        n_units        = n_units + 1
         units(n_units) = trial_unit
     end if
+    
+    if (config%debug) print *, "Processing: ", trim(trial_unit%label()), n_units, within_bounds, unseen, denominator_valid
 end subroutine process_trial_unit
 
 subroutine generate_system(config, unit_system)

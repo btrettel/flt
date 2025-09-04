@@ -126,15 +126,15 @@ elemental subroutine init(x, v, n, n_dv)
 end subroutine init
 
 elemental subroutine init_const(x, v, n_dv)
-    class(ad), intent(in out) :: x ! `class` can't be `intent(out)` and `pure`?!?
-    real(WP), intent(in) :: v    ! value of constant to set
-    integer, intent(in)  :: n_dv ! total number of differentiable variables
+    class(ad), intent(in out) :: x    ! `class` can't be `intent(out)` and `pure`?!?
+    real(WP), intent(in)      :: v    ! value of constant to set
+    integer, intent(in)       :: n_dv ! total number of differentiable variables
     
     call assert(n_dv >= 0, "fmad (init): n_dv must be zero or more")
     
     allocate(x%d(n_dv))
 
-    x%v  = v
+    x%v = v
     if (n_dv > 0) then
         x%d = 0.0_WP
     end if
