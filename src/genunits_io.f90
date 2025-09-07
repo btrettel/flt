@@ -25,7 +25,7 @@ integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the mo
                               DEFAULT_DENOMINATOR = 1,  &
                               MAX_USE_LINES       = 10
 
-character(len=4), parameter :: INTRINSIC_1ARG_UNITLESS(5)  = ["sin", "cos", "tan", "exp", "log"]
+character(len=4), parameter :: INTRINSIC_1ARG_UNITLESS(6)  = ["sin ", "cos ", "tan ", "exp ", "log ", "tanh"]
 character(len=4), parameter :: INTRINSIC_1ARG_WITHUNITS(1) = ["abs"]
 character(len=4), parameter :: INTRINSIC_2ARG_WITHUNITS(2) = ["min", "max"]
 
@@ -97,6 +97,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     denominators    = DEFAULT_DENOMINATOR
     max_n_units     = DEFAULT_MAX_N_UNITS
     max_iter        = DEFAULT_MAX_ITER
+    debug           = .false.
     tests           = .false.
     comparison      = .true.
     unary           = .true.
