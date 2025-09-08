@@ -1441,7 +1441,7 @@ subroutine write_module(config, unit_system, file_unit, rc)
         end do
         
         do i_unit = 1, size(unit_system%units) ! SERIAL
-            if (config%cbrt) then
+            if (config%square) then
                 trial_unit = square_unit(unit_system%units(i_unit))
                 if (trial_unit%is_in(unit_system%units)) then
                     use_square = .true.
