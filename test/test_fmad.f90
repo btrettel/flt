@@ -38,6 +38,63 @@ call tests%end_tests()
 
 contains
 
+subroutine test_num_deriv(fun, prefactor, x, message, tests, abs_tol)
+    ! Using an optimal 3 point stencil from ash_optimal_1981 eq. 2 to minimize the error.
+    
+    ! function to be evaluated: `fun(prefactor * x)`
+    real(WP), intent(in)                    :: prefactor, x
+    character(len=*), intent(in)            :: message
+    type(test_results_type), intent(in out) :: tests
+    real(WP), intent(in), optional          :: abs_tol
+    
+    ! step size, picked as around here seems be around optimal in prentice_truncation_2011 fig. 1
+    real(WP), parameter :: H = 1.0e-4_WP
+    
+    ! Stencil configuration from ash_optimal_1981 eq. 2.
+    real(WP), parameter :: A_1 = -(3.0_WP + 2.0_WP*sqrt(3.0_WP))/6.0_WP
+    real(WP), parameter :: A_2 = (4.0_WP*sqrt(3.0_WP))/6.0_WP
+    real(WP), parameter :: A_3 = (3.0_WP - 2.0_WP*sqrt(3.0_WP))/6.0_WP
+    real(WP), parameter :: B_1 = sqrt(3.0_WP)/3.0_WP - 1.0_WP
+    real(WP), parameter :: B_2 = sqrt(3.0_WP)/3.0_WP
+    real(WP), parameter :: B_3 = sqrt(3.0_WP)/3.0_WP + 1.0_WP
+    
+    type(ad) :: x_ad, f, f_1, f_2, f_3
+    real(WP) :: abs_tol_, deriv_ad, deriv_num
+    
+    interface
+        pure function fun(x)
+            use fmad, only: ad
+            
+            class(ad), intent(in) :: x
+            
+            type(ad) :: fun
+        end function fun
+    end interface
+    
+    if (present(abs_tol)) then
+        abs_tol_ = abs_tol
+    else
+        abs_tol_ = 1.0e-4_WP
+    end if
+    
+    call x_ad%init(x, 1, N_DV)
+    
+    f         = fun(prefactor*x_ad)
+    deriv_ad  = f%d(1)
+    
+    f_1       = fun(prefactor*(x_ad + B_1*H))
+    f_2       = fun(prefactor*(x_ad + B_2*H))
+    f_3       = fun(prefactor*(x_ad + B_3*H))
+    deriv_num = (A_3*f_3%v + A_2*f_2%v + A_1*f_1%v)/H
+    
+    ! For testing: Forward Euler
+    !f_1       = f
+    !f_2       = fun(prefactor*(x_ad + H))
+    !deriv_num = (f_2%v - f_1%v)/H
+    
+    call tests%real_eq(deriv_ad, deriv_num, message, abs_tol=abs_tol_)
+end subroutine test_num_deriv
+
 subroutine test_scalars(tests)
     use fmad, only: f
     
@@ -199,7 +256,19 @@ subroutine test_sqrt(tests)
     call tests%real_eq(y%v, sqrt(8.0_WP), "ad sqrt, value")
     call tests%real_eq(y%d(1), 1.0_WP / sqrt(2.0_WP), "ad sqrt, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad sqrt, derivative (dv 2)")
+    
+    call test_num_deriv(ad_sqrt, 4.0_WP, 2.0_WP, "ad sqrt, comparison with numerical derivative", tests)
 end subroutine test_sqrt
+
+pure function ad_sqrt(x)
+    use fmad, only: sqrt
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_sqrt
+    
+    ad_sqrt = sqrt(x)
+end function ad_sqrt
 
 subroutine test_tanh(tests)
     use fmad, only: tanh
@@ -214,7 +283,19 @@ subroutine test_tanh(tests)
     call tests%real_eq(y%v, tanh(2.0_WP), "ad tanh, value")
     call tests%real_eq(y%d(1), 2.0_WP * (1.0_WP - tanh(2.0_WP)**2), "ad tanh, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad tanh, derivative (dv 2)")
+    
+    call test_num_deriv(ad_tanh, 2.0_WP, 1.0_WP, "ad tanh, comparison with numerical derivative", tests)
 end subroutine test_tanh
+
+pure function ad_tanh(x)
+    use fmad, only: tanh
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_tanh
+    
+    ad_tanh = tanh(x)
+end function ad_tanh
 
 subroutine test_atanh(tests)
     use fmad, only: atanh
@@ -229,7 +310,19 @@ subroutine test_atanh(tests)
     call tests%real_eq(y%v, atanh(0.5_WP), "ad atanh, value")
     call tests%real_eq(y%d(1), 2.0_WP / (1.0_WP - 4.0_WP*(0.25_WP**2)), "ad atanh, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad atanh, derivative (dv 2)")
+    
+    call test_num_deriv(ad_atanh, 2.0_WP, 0.25_WP, "ad atanh, comparison with numerical derivative", tests)
 end subroutine test_atanh
+
+pure function ad_atanh(x)
+    use fmad, only: atanh
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_atanh
+    
+    ad_atanh = atanh(x)
+end function ad_atanh
 
 subroutine test_log(tests)
     use fmad, only: log
@@ -244,7 +337,19 @@ subroutine test_log(tests)
     call tests%real_eq(y%v, 4.0_WP * log(2.0_WP), "ad log, value")
     call tests%real_eq(y%d(1), 4.0_WP, "ad log, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad log, derivative (dv 2)")
+    
+    call test_num_deriv(ad_log, 2.0_WP, 1.0_WP, "ad log, comparison with numerical derivative", tests)
 end subroutine test_log
+
+pure function ad_log(x)
+    use fmad, only: log
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_log
+    
+    ad_log = log(x)
+end function ad_log
 
 subroutine test_exp(tests)
     use fmad, only: exp
@@ -259,7 +364,19 @@ subroutine test_exp(tests)
     call tests%real_eq(y%v, 7.0_WP*exp(0.5_WP), "ad exp, value")
     call tests%real_eq(y%d(1), 3.5_WP * exp(0.5_WP), "ad exp, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad exp, derivative (dv 2)")
+    
+    call test_num_deriv(ad_exp, 2.0_WP, 1.0_WP, "ad exp, comparison with numerical derivative", tests)
 end subroutine test_exp
+
+pure function ad_exp(x)
+    use fmad, only: exp
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_exp
+    
+    ad_exp = exp(x)
+end function ad_exp
 
 subroutine test_merge(tests)
     use fmad, only: merge
@@ -442,12 +559,16 @@ subroutine test_trig(tests)
     call tests%real_eq(y%d(1), 2.0_WP, "ad sin, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad sin, derivative (dv 2)")
     
+    call test_num_deriv(ad_sin, 2.0_WP, 1.0_WP, "ad sin, comparison with numerical derivative", tests)
+    
     deallocate(x%d, y%d)
     call x%init(0.0_WP, 1, N_DV)
     y = 3.0_WP*cos(x)
     call tests%real_eq(y%v, 3.0_WP, "ad cos, value")
     call tests%real_eq(y%d(1), 0.0_WP, "ad cos, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad cos, derivative (dv 2)")
+    
+    call test_num_deriv(ad_cos, 2.0_WP, 1.0_WP, "ad cos, comparison with numerical derivative", tests)
     
     deallocate(x%d, y%d)
     call x%init(0.0_WP, 1, N_DV)
@@ -456,8 +577,40 @@ subroutine test_trig(tests)
     call tests%real_eq(y%d(1), -1.0_WP, "ad tan, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad tan, derivative (dv 2)")
     
+    call test_num_deriv(ad_tan, 2.0_WP, 1.0_WP, "ad tan, comparison with numerical derivative", tests)
+    
     ! TODO: Add more tests where the function value is known exactly.
 end subroutine test_trig
+
+pure function ad_sin(x)
+    use fmad, only: sin
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_sin
+    
+    ad_sin = sin(x)
+end function ad_sin
+
+pure function ad_cos(x)
+    use fmad, only: cos
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_cos
+    
+    ad_cos = cos(x)
+end function ad_cos
+
+pure function ad_tan(x)
+    use fmad, only: tan
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_tan
+    
+    ad_tan = tan(x)
+end function ad_tan
 
 subroutine test_disabled(tests)
     type(test_results_type), intent(in out) :: tests
