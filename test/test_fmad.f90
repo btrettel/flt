@@ -22,6 +22,7 @@ call test_scalars(tests)
 call test_arrays(tests)
 call test_sqrt(tests)
 call test_tanh(tests)
+call test_atanh(tests)
 call test_log(tests)
 call test_exp(tests)
 call test_merge(tests)
@@ -211,9 +212,24 @@ subroutine test_tanh(tests)
     y = tanh(2.0_WP * x)
 
     call tests%real_eq(y%v, tanh(2.0_WP), "ad tanh, value")
-    call tests%real_eq(y%d(1), 2.0_WP * (1 - tanh(2.0_WP)**2), "ad tanh, derivative (dv 1)")
+    call tests%real_eq(y%d(1), 2.0_WP * (1.0_WP - tanh(2.0_WP)**2), "ad tanh, derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad tanh, derivative (dv 2)")
 end subroutine test_tanh
+
+subroutine test_atanh(tests)
+    use fmad, only: atanh
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    type(ad) :: x, y
+
+    call x%init(0.25_WP, 1, N_DV)
+    y = atanh(2.0_WP * x)
+
+    call tests%real_eq(y%v, atanh(0.5_WP), "ad atanh, value")
+    call tests%real_eq(y%d(1), 2.0_WP / (1.0_WP - 4.0_WP*(0.25_WP**2)), "ad atanh, derivative (dv 1)")
+    call tests%real_eq(y%d(2), 0.0_WP, "ad atanh, derivative (dv 2)")
+end subroutine test_atanh
 
 subroutine test_log(tests)
     use fmad, only: log
