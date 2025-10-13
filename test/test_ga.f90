@@ -297,33 +297,52 @@ subroutine test_evaluate_2(tests)
     pop%best_ever_indiv%f   = huge(1.0_WP)
     pop%best_pop_indiv%set  = .true.
     pop%best_pop_indiv%f    = huge(1.0_WP)
-    pop%indivs(1)%f   = 5.0_WP ! won't be changed
-    pop%indivs(1)%set = .true.
-    pop%indivs(2)%f   = 6.0_WP ! will be changed
-    pop%indivs(2)%set = .false.
-    pop%indivs(3)%f   = 7.0_WP ! will be changed, but still used for `f_max` calculation
-    pop%indivs(3)%set = .true.
-    pop%indivs(4)%f   = 8.0_WP ! will be changed
-    pop%indivs(4)%set = .false.
+    
+    ! `f` won't be changed
+    pop%indivs(1)%f         = 5.0_WP
+    pop%indivs(3)%sum_g     = 0.0_WP
+    pop%indivs(1)%set       = .true.
     pop%indivs(1)%chromo(1) = 0.0_WP
     pop%indivs(1)%chromo(2) = 0.0_WP
+    
+    ! `f` will be changed
+    pop%indivs(2)%f         = 6.0_WP
+    pop%indivs(3)%sum_g     = 0.0_WP
+    pop%indivs(2)%set       = .false.
     pop%indivs(2)%chromo(1) = 1.0_WP
     pop%indivs(2)%chromo(2) = 0.0_WP
+    
+    ! `f` won't be changed despite constraint violation, will set `f_max` to 7
+    pop%indivs(3)%f         = 7.0_WP
+    pop%indivs(3)%sum_g     = 0.0_WP
+    pop%indivs(3)%set       = .true.
     pop%indivs(3)%chromo(1) = 3.0_WP
-    pop%indivs(3)%chromo(2) = 9.0_WP
+    pop%indivs(3)%chromo(2) = 0.5_WP
+    
+    ! `f` will be changed due to constraint violation
+    pop%indivs(4)%f         = 8.0_WP
+    pop%indivs(3)%sum_g     = 0.0_WP
+    pop%indivs(4)%set       = .false.
     pop%indivs(4)%chromo(1) = 4.0_WP
-    pop%indivs(4)%chromo(2) = 10.0_WP
+    pop%indivs(4)%chromo(2) = 1.0_WP
     
     call evaluate(config, evaluate_2, pop)
     
-    call tests%real_eq(pop%indivs(1)%f, 5.0_WP, "evaluate (2), pop%indivs(1)%f")
-    call tests%logical_true(pop%indivs(1)%set, "evaluate (2), pop%indivs(1)%set")
-    call tests%real_eq(pop%indivs(2)%f, 1.0_WP, "evaluate (2), pop%indivs(2)%f")
-    call tests%logical_true(pop%indivs(2)%set, "evaluate (2), pop%indivs(2)%set")
-    call tests%real_eq(pop%indivs(3)%f, 7.0_WP, "evaluate (2), pop%indivs(3)%f")
-    call tests%logical_true(pop%indivs(3)%set, "evaluate (2), pop%indivs(3)%set")
-    call tests%real_eq(pop%indivs(4)%f, 7.0_WP + 10.0_WP, "evaluate (2), pop%indivs(4)%f")
-    call tests%logical_true(pop%indivs(4)%set, "evaluate (2), pop%indivs(4)%set")
+    call tests%real_eq(pop%indivs(1)%f, 5.0_WP, "evaluate_2, pop%indivs(1)%f")
+    call tests%real_eq(pop%indivs(1)%sum_g, 0.0_WP, "evaluate_2, pop%indivs(1)%sum_g")
+    call tests%logical_true(pop%indivs(1)%set, "evaluate_2, pop%indivs(1)%set")
+    
+    call tests%real_eq(pop%indivs(2)%f, 1.0_WP, "evaluate_2, pop%indivs(2)%f")
+    call tests%real_eq(pop%indivs(2)%sum_g, 0.0_WP, "evaluate_2, pop%indivs(2)%sum_g")
+    call tests%logical_true(pop%indivs(2)%set, "evaluate_2, pop%indivs(2)%set")
+    
+    call tests%real_eq(pop%indivs(3)%f, 7.0_WP, "evaluate_2, pop%indivs(3)%f")
+    call tests%real_eq(pop%indivs(3)%sum_g, 0.0_WP, "evaluate_2, pop%indivs(3)%sum_g")
+    call tests%logical_true(pop%indivs(3)%set, "evaluate_2, pop%indivs(3)%set")
+    
+    call tests%real_eq(pop%indivs(4)%f, 7.0_WP + 1.0_WP*7.0_WP, "evaluate (2), pop%indivs(4)%f")
+    call tests%real_eq(pop%indivs(4)%sum_g, 1.0_WP, "evaluate_2, pop%indivs(4)%sum_g")
+    call tests%logical_true(pop%indivs(4)%set, "evaluate_2, pop%indivs(4)%set")
 end subroutine test_evaluate_2
 
 pure subroutine evaluate_2(chromo, f, sum_g)
@@ -380,20 +399,28 @@ subroutine test_comparison_constraints(tests)
     real(WP) :: sum_g
     
     sum_g = 0.0_WP
-    call constraint_lt(0.0_WP, 1.0_WP, sum_g)
-    call tests%real_eq(sum_g, 0.0_WP, "constraint_lt 1")
+    call constraint_lt(0.0_WP, 1.0_WP, 1.0_WP, sum_g)
+    call tests%real_eq(sum_g, 0.0_WP, "constraint_lt 1 (not violated)")
     
     sum_g = 0.0_WP
-    call constraint_lt(1.0_WP, 0.0_WP, sum_g)
-    call tests%real_eq(sum_g, 1.0_WP, "constraint_lt 2")
+    call constraint_lt(1.0_WP, 0.0_WP, 1.0_WP, sum_g)
+    call tests%real_eq(sum_g, 1.0_WP, "constraint_lt 2 (violated)")
     
     sum_g = 0.0_WP
-    call constraint_gt(0.0_WP, 1.0_WP, sum_g)
-    call tests%real_eq(sum_g, 1.0_WP, "constraint_gt 1")
+    call constraint_lt(-1.0_WP, -2.0_WP, 1.0_WP, sum_g)
+    call tests%real_eq(sum_g, 1.0_WP, "constraint_lt 3 (violated, negative)")
     
     sum_g = 0.0_WP
-    call constraint_gt(1.0_WP, 0.0_WP, sum_g)
-    call tests%real_eq(sum_g, 0.0_WP, "constraint_gt 2")
+    call constraint_gt(0.0_WP, 1.0_WP, 1.0_WP, sum_g)
+    call tests%real_eq(sum_g, 1.0_WP, "constraint_gt 1 (violated)")
+    
+    sum_g = 0.0_WP
+    call constraint_gt(1.0_WP, 0.0_WP, 1.0_WP, sum_g)
+    call tests%real_eq(sum_g, 0.0_WP, "constraint_gt 2 (not violated)")
+    
+    sum_g = 0.0_WP
+    call constraint_gt(-2.0_WP, -1.0_WP, 1.0_WP, sum_g)
+    call tests%real_eq(sum_g, 1.0_WP, "constraint_gt 3 (violated, negative)")
 end subroutine test_comparison_constraints
 
 end program test_ga

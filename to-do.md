@@ -14,11 +14,7 @@ Priorities:
 - ga.f90:
     - If all are infeasible, select pop best from infeasible. `f_max_infeasible`
     - Instead of `sum_g`, make `g` an array so you can identify which constraints are violated and assert that each component is >= 0
-    - Note to make components of `sum_g` all order 1 to prevent underflow.
-        - Assert that `sum_g` is not larger than 100 and not smaller than 1e-2. Assertions can be disabled with `check_sum_g=.false.` in `config`.
-        - Make constraint subroutines automatically scale `sum_g` appropriately.
-    - In `evaluate`, for infeasible individuals `f = f_max + sum_g*abs(f_max)` is better from a round-off error perspective if `sum_g` is far smaller than `f_max` and `sum_g` is order 1.
-    - Add more tests for flt ga.f90 in general
+    - Add more tests for ga.f90 in general
         - Add test to check that `pop%best_pop_indiv` is set correctly.
         - Add test for constrained optimization.
             - <https://tutorial.math.lamar.edu/classes/calciii/lagrangemultipliers.aspx>

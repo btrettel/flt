@@ -11,6 +11,9 @@
     - Iterative: 20 lines
     - Decomposition: 41 lines
     - Russian peasant: 23 lines
+    - <https://github.com/stan-dev/cmdstan/issues/941#issuecomment-717916207>
+    - <https://groups.google.com/g/stan-dev/c/C8xa0hiSWLY/m/WuRrVE3K5ZQJ>
+    - <https://statmodeling.stat.columbia.edu/2020/12/24/dream-investigation-results-official-report-by-the-minecraft-speedrunning-team/#comment-1623088>
 - `set_determ`: Convenience function to convert `real` array to `RNG_DETERM` seed
 - Create `stats` module with `mean` and `std` to do some basic tests on the `RNG_LECUYER` random number generator.
     - <https://stdlib.fortran-lang.org/page/specs/stdlib_stats.html>
