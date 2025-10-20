@@ -25,7 +25,8 @@ integer, public, parameter :: DEFAULT_MAX_N_UNITS = 28, & ! This is about the mo
                               DEFAULT_DENOMINATOR = 1,  &
                               MAX_USE_LINES       = 10
 
-character(len=5), parameter :: INTRINSIC_1ARG_UNITLESS(7)  = ["sin  ", "cos  ", "tan  ", "exp  ", "log  ", "tanh ", "atanh"]
+character(len=5), parameter :: INTRINSIC_1ARG_UNITLESS(8)  = ["sin  ", "cos  ", "tan  ", "exp  ", "log  ", "tanh ", "atanh", &
+                                                              "sqrt "]
 character(len=4), parameter :: INTRINSIC_1ARG_WITHUNITS(1) = ["abs"]
 character(len=4), parameter :: INTRINSIC_2ARG_WITHUNITS(2) = ["min", "max"]
 
