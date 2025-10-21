@@ -77,7 +77,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     namelist /config/ output_file, base_units, type_definition, use_line, kind_parameter, module_name, &
                         min_exponents, max_exponents, denominators, &
-                        max_n_units, debug, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
+                        max_n_units, max_iter, debug, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     n_failures = 0
     
