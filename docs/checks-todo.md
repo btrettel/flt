@@ -6,3 +6,4 @@
     - Can make `assert_all` use `do_concurrent` to have a faster assertion.
 - To-do routine in code to cause compilation to fail.
 - Make pure logger have a finalizer to check that it was printed. This might not be possible if the logger itself is allocatable.
+- Maybe: Add `assert_always` for assertions that are never turned off.
