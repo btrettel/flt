@@ -8,9 +8,9 @@
 program test_units_fail_4
 
 use prec, only: WP
-use units, only: unitless  => unit_p00000_p00000_p00000, &
-                 si_length => unit_p10000_p00000_p00000, &
-                 si_time   => unit_p00000_p00000_p10000
+use units, only: unitless  => unit_p00_p00_p00, &
+                 si_length => unit_p10_p00_p00, &
+                 si_time   => unit_p00_p00_p10
 implicit none
 
 type(unitless)  :: x

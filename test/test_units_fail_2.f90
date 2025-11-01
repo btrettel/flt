@@ -8,10 +8,10 @@
 program test_units_fail_2
 
 use prec, only: WP
-use units, only: length => unit_p10000_p00000_p00000, sqrt
+use units, only: si_length => unit_p10_p00_p00, sqrt
 implicit none
 
-type(length) :: x, z
+type(si_length) :: x, z
 
 x%v = 1.0_WP
 

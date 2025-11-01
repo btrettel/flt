@@ -8,12 +8,12 @@
 program test_units_fail_3
 
 use prec, only: WP
-use units, only: length   => unit_p10000_p00000_p00000, &
-                 time     => unit_p00000_p00000_p10000
+use units, only: si_length   => unit_p10_p00_p00, &
+                 si_time     => unit_p00_p00_p10
 implicit none
 
-type(length) :: x
-type(time)   :: t
+type(si_length) :: x
+type(si_time)   :: t
 
 x%v = 0.0_WP
 t%v = 1.0_WP
