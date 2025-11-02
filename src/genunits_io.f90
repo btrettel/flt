@@ -235,8 +235,9 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     ! `seed_unit` namelist group
     character(len=MAX_LABEL_LEN) :: label
     real(WP)                     :: e(MAX_BASE_UNITS)
+    logical                      :: sterile
     
-    namelist /seed_unit/ label, e
+    namelist /seed_unit/ label, e, sterile
     
     call assert(allocated(config%base_units), "genunits_io (read_seed_unit_namelists): base units must be allocated")
     call assert(.not. allocated(config%seed_units), "genunits_io (read_seed_unit_namelists): seed units must not be allocated")
@@ -248,8 +249,9 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     n_seed_units = 0
     n_failures   = 0
     do ! SERIAL
-        label = ""
-        e = 0.0_WP
+        label   = ""
+        e       = 0.0_WP
+        sterile = .false.
         read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
         
         if (rc_nml == IOSTAT_END) then
@@ -280,8 +282,9 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     allocate(config%seed_units(n_seed_units))
     i_seed_unit = 0
     do ! SERIAL
-        label = ""
-        e     = huge(1.0_WP)
+        label   = ""
+        e       = huge(1.0_WP)
+        sterile = .false.
         read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
         
         if (rc_nml == IOSTAT_END) then
@@ -296,8 +299,9 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         i_seed_unit = i_seed_unit + 1
         
         !write(unit=*, fmt=*) i_seed_unit, trim(label), e(1:size(config%base_units))
-        config%seed_labels(i_seed_unit)  = trim(label)
-        config%seed_units(i_seed_unit)%e = e(1:size(config%base_units))
+        config%seed_labels(i_seed_unit)        = trim(label)
+        config%seed_units(i_seed_unit)%e       = e(1:size(config%base_units))
+        config%seed_units(i_seed_unit)%sterile = sterile
         
         write(unit=i_seed_unit_string, fmt="(i0)") i_seed_unit
         
@@ -459,8 +463,12 @@ subroutine generate_system(config, unit_system)
         n_units_prev = n_units
         
         do i_units = 1, n_units_prev ! SERIAL
+            if (units(i_units)%sterile) cycle
+            
             ! binary operators
             do j_units = 1, n_units_prev ! SERIAL
+                if (units(j_units)%sterile) cycle
+                
                 ! multiplication
                 trial_unit = m_unit(units(i_units), units(j_units))
                 call process_trial_unit(config, trial_unit, units, n_units, rc)
@@ -472,7 +480,7 @@ subroutine generate_system(config, unit_system)
                 if (rc /= 0) exit genunit_loop
             end do
             
-            ! unary operators: These don't generate new units.
+            ! unary operators
             
             if (config%sqrt) then
                 ! square root

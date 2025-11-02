@@ -21,6 +21,7 @@ integer, public, parameter  :: MAX_BASE_UNITS = 10, &
 
 type, public :: unit_type
     real(WP), allocatable :: e(:)
+    logical :: sterile = .false.
 contains
     procedure :: label
     procedure :: readable
