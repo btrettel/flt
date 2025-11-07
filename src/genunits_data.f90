@@ -22,6 +22,7 @@ integer, public, parameter  :: MAX_BASE_UNITS = 10, &
 type, public :: unit_type
     real(WP), allocatable :: e(:)
     logical :: sterile = .false.
+    character(len=MAX_LABEL_LEN), allocatable :: label_override
 contains
     procedure :: label
     procedure :: readable
@@ -47,18 +48,22 @@ pure function label(unit)
     
     integer :: i_base_unit
     
-    label = UNIT_PREFIX
-    write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN
-    do i_base_unit = 1, size(unit%e) ! SERIAL
-        if (unit%e(i_base_unit) < 0.0_WP) then
-            exponent_sign = "m"
-        else
-            exponent_sign = "p"
-        end if
-        write(unit=label, fmt="(a, a, a, i0." // exponent_len_string // ")") trim(label), "_", exponent_sign, &
-                                                        nint(10.0_WP**(EXPONENT_LEN - 1) * abs(unit%e(i_base_unit)))
-        call assert(len(trim(adjustl(label))) < CL, "genunits_data (label): overflow, too much to write in the string")
-    end do
+    if (allocated(unit%label_override)) then
+        label = unit%label_override
+    else
+        label = UNIT_PREFIX
+        write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN
+        do i_base_unit = 1, size(unit%e) ! SERIAL
+            if (unit%e(i_base_unit) < 0.0_WP) then
+                exponent_sign = "m"
+            else
+                exponent_sign = "p"
+            end if
+            write(unit=label, fmt="(a, a, a, i0." // exponent_len_string // ")") trim(label), "_", exponent_sign, &
+                                                            nint(10.0_WP**(EXPONENT_LEN - 1) * abs(unit%e(i_base_unit)))
+            call assert(len(trim(adjustl(label))) < CL, "genunits_data (label): overflow, too much to write in the string")
+        end do
+    end if
     
     ! Ensure that the `unit_label` won't be too long to be valid in Fortran 2003.
     call assert(len(trim(label)) > 0, "genunits_data (label): label has zero length")
