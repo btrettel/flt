@@ -21,12 +21,13 @@ integer, public, parameter  :: MAX_BASE_UNITS = 10, &
 
 type, public :: unit_type
     real(WP), allocatable :: e(:)
-    logical :: sterile = .false.
-    character(len=MAX_LABEL_LEN), allocatable :: label_override
+    logical :: sterile = .false., override_label = .false.
+    character(len=MAX_LABEL_LEN) :: label_override
 contains
     procedure :: label
     procedure :: readable
     procedure :: is_in
+    procedure :: update_label
 end type unit_type
 
 type, public :: unit_system_type
@@ -48,8 +49,8 @@ pure function label(unit)
     
     integer :: i_base_unit
     
-    if (allocated(unit%label_override)) then
-        label = unit%label_override
+    if (unit%override_label) then
+        label = trim(unit%label_override)
     else
         label = UNIT_PREFIX
         write(unit=exponent_len_string, fmt="(i1)") EXPONENT_LEN
@@ -213,6 +214,23 @@ pure function is_in(unit, units)
         call assert(.not. is_in, "genunits_data (is_in): did not exit at the right time")
     end do
 end function is_in
+
+pure subroutine update_label(unit, units)
+    use checks, only: all_close
+    
+    class(unit_type), intent(in out) :: unit
+    type(unit_type), intent(in)      :: units(:)
+    
+    integer :: i_unit
+    
+    do i_unit = 1, size(units) ! SERIAL
+        if (all_close(unit%e, units(i_unit)%e) .and. units(i_unit)%override_label) then
+            unit%override_label = .true.
+            unit%label_override = trim(units(i_unit)%label_override)
+            exit
+        end if
+    end do
+end subroutine update_label
 
 ! unit calculus
 

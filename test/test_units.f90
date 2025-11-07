@@ -8,17 +8,7 @@
 program test_units
 
 use, intrinsic :: iso_fortran_env, only: compiler_version
-use units, only: unitless           => unit_p00_p00_p00, &
-                 si_length          => unit_p10_p00_p00, &
-                 si_time            => unit_p00_p00_p10, &
-                 si_velocity        => unit_p10_p00_m10, &
-                 si_area            => unit_p20_p00_p00, &
-                 si_volume          => unit_p30_p00_p00, &
-                 si_density         => unit_m30_p10_p00, &
-                 si_frequency       => unit_p00_p00_m10, &
-                 si_energy          => unit_p20_p10_m20, &
-                 si_energy_per_area => unit_p00_p10_m20, &
-                 sin, cos, tan, exp, log, abs, max, min, sqrt, cbrt, square
+use units
 use prec, only: WP, CL
 use unittest, only: test_results_type
 implicit none
@@ -38,7 +28,6 @@ call tests%end_tests()
 contains
 
 subroutine test_basic(tests)
-    use units, only: unit ! Needed to make ifx happy. Perhaps naming this `unit` was a bad idea...
     type(test_results_type), intent(in out) :: tests
     
     type(unitless)     :: u

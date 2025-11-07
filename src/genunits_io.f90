@@ -235,9 +235,9 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     ! `seed_unit` namelist group
     character(len=MAX_LABEL_LEN) :: label
     real(WP)                     :: e(MAX_BASE_UNITS)
-    logical                      :: sterile
+    logical                      :: sterile, no_label
     
-    namelist /seed_unit/ label, e, sterile
+    namelist /seed_unit/ label, e, sterile, no_label
     
     call assert(allocated(config%base_units), "genunits_io (read_seed_unit_namelists): base units must be allocated")
     call assert(.not. allocated(config%seed_units), "genunits_io (read_seed_unit_namelists): seed units must not be allocated")
@@ -249,9 +249,10 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     n_seed_units = 0
     n_failures   = 0
     do ! SERIAL
-        label   = ""
-        e       = 0.0_WP
-        sterile = .false.
+        label    = ""
+        e        = 0.0_WP
+        sterile  = .false.
+        no_label = .false.
         read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
         
         if (rc_nml == IOSTAT_END) then
@@ -282,9 +283,10 @@ subroutine read_seed_unit_namelists(config, filename, rc)
     allocate(config%seed_units(n_seed_units))
     i_seed_unit = 0
     do ! SERIAL
-        label   = ""
-        e       = huge(1.0_WP)
-        sterile = .false.
+        label    = ""
+        e        = huge(1.0_WP)
+        sterile  = .false.
+        no_label = .false.
         read(unit=nml_unit, nml=seed_unit, iostat=rc_nml, iomsg=nml_error_message)
         
         if (rc_nml == IOSTAT_END) then
@@ -305,22 +307,29 @@ subroutine read_seed_unit_namelists(config, filename, rc)
         
         write(unit=i_seed_unit_string, fmt="(i0)") i_seed_unit
         
-        call check(len(trim(label)) /= 0, &
-                                        "seed_unit #" // trim(i_seed_unit_string) // " has an empty label.", n_failures)
-        
-        call check(index(trim(label), " ") == 0, &
-                                        "seed_unit #" // trim(i_seed_unit_string) // " with label '" // trim(label) // &
-                                        "' has spaces in its label. " // &
-                                        "Replace spaces with underscores or something else that can be in a Fortran type name", &
-                                        n_failures)
+        if (.not. no_label) then
+            call check(len(trim(label)) /= 0, &
+                                            "seed_unit #" // trim(i_seed_unit_string) // " has an empty label.", n_failures)
+            
+            call check(index(trim(label), " ") == 0, &
+                                            "seed_unit #" // trim(i_seed_unit_string) // " with label '" // trim(label) // &
+                                            "' has spaces in its label. " // &
+                                            "Replace spaces with underscores or something else that can be in a Fortran " // &
+                                            "type name", n_failures)
+            
+            config%seed_units(i_seed_unit)%override_label = .true.
+            config%seed_units(i_seed_unit)%label_override = trim(label)
+        end if
 
         do j_seed_unit = 1, i_seed_unit - 1 ! SERIAL
             write(unit=j_seed_unit_string, fmt="(i0)") j_seed_unit
-            call check(trim(label) /= config%seed_labels(j_seed_unit), &
+            if (.not. no_label) then
+                call check(trim(label) /= config%seed_labels(j_seed_unit), &
                                             "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                                 // trim(config%seed_labels(i_seed_unit)) &
                                                 // '" has the same label as seed_unit #' // trim(j_seed_unit_string) // ".", &
                                                 n_failures)
+            end if
             call check(.not. all_close(config%seed_units(i_seed_unit)%e, config%seed_units(j_seed_unit)%e), &
                                             "seed_unit #" // trim(i_seed_unit_string) // ' labeled "' &
                                                 // trim(config%seed_labels(i_seed_unit)) &
@@ -756,6 +765,7 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
     
     ! multiply
     unit_m = m_unit(unit_left, unit_right)
+    call unit_m%update_label(unit_system%units)
     if (unit_m%is_in(unit_system%units)) then
         call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_m, "*")
         n_interfaces = n_interfaces + 1
@@ -775,6 +785,7 @@ subroutine write_md_operators(config, unit_system, file_unit, unit_left, unit_ri
     
     ! divide
     unit_d = d_unit(unit_left, unit_right)
+    call unit_d%update_label(unit_system%units)
     if (unit_d%is_in(unit_system%units)) then
         call write_binary_operator(config, unit_system, file_unit, unit_left, unit_right, unit_d, "/")
         n_interfaces = n_interfaces + 1
@@ -1159,6 +1170,7 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
         write(unit=file_unit, fmt="(a)") "interface sqrt"
         do i_unit = 1, size(unit_system%units) ! SERIAL
             trial_unit = sqrt_unit(unit_system%units(i_unit))
+            call trial_unit%update_label(unit_system%units)
             if (trial_unit%is_in(unit_system%units)) then
                 write(unit=file_unit, fmt="(2a)") "    module procedure sqrt_", trim(unit_system%units(i_unit)%label())
             else
@@ -1172,6 +1184,7 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
         write(unit=file_unit, fmt="(a)") "interface cbrt"
         do i_unit = 1, size(unit_system%units) ! SERIAL
             trial_unit = cbrt_unit(unit_system%units(i_unit))
+            call trial_unit%update_label(unit_system%units)
             if (trial_unit%is_in(unit_system%units)) then
                 write(unit=file_unit, fmt="(2a)") "    module procedure cbrt_", trim(unit_system%units(i_unit)%label())
             else
@@ -1185,6 +1198,7 @@ subroutine write_exponentiation_interfaces(use_sqrt, use_cbrt, use_square, unit_
         write(unit=file_unit, fmt="(a)") "interface square"
         do i_unit = 1, size(unit_system%units) ! SERIAL
             trial_unit = square_unit(unit_system%units(i_unit))
+            call trial_unit%update_label(unit_system%units)
             if (trial_unit%is_in(unit_system%units)) then
                 write(unit=file_unit, fmt="(2a)") "    module procedure square_", trim(unit_system%units(i_unit)%label())
             else
@@ -1221,6 +1235,7 @@ subroutine write_exponentiation_function(config, unit_system, file_unit, unit, o
             op_post = ")"
             
             unit_result = sqrt_unit(unit)
+            call unit_result%update_label(unit_system%units)
         case ("cbrt")
             ! <https://community.intel.com/t5/Intel-Fortran-Compiler/Fast-cube-root/m-p/1171728>
             ! <https://www.reddit.com/r/fortran/comments/t9qkqd/cuberoot_and_my_dissent_into_madness/>
@@ -1229,11 +1244,13 @@ subroutine write_exponentiation_function(config, unit_system, file_unit, unit, o
             op_post = ")**(1.0" // config%kind_parameter // "/3.0" // config%kind_parameter // ")"
             
             unit_result = cbrt_unit(unit)
+            call unit_result%update_label(unit_system%units)
         case ("square")
             op_pre = "("
             op_post = ")**2"
             
             unit_result = square_unit(unit)
+            call unit_result%update_label(unit_system%units)
         case default
             error stop "write_exponentiation_function: invalid op"
     end select
@@ -1400,9 +1417,8 @@ subroutine write_module(config, unit_system, file_unit, rc)
     integer, intent(in)                 :: file_unit
     integer, intent(out)                :: rc
     
-    integer           :: i_seed_unit, i_unit, j_unit, max_label_len, n_interfaces, i_space, i_intrinsic, j_intrinsic
+    integer           :: i_unit, j_unit, n_interfaces, i_intrinsic, j_intrinsic
     character(len=10) :: n_char
-    character(len=20) :: use_format
     type(unit_type)   :: trial_unit
     logical           :: use_sqrt, use_cbrt, use_square
     
@@ -1512,94 +1528,6 @@ subroutine write_module(config, unit_system, file_unit, rc)
     end if
     
     if (use_sqrt .or. use_cbrt .or. use_square .or. config%intrinsics) then
-        write(unit=file_unit, fmt="(a)") ""
-    end if
-    
-    ! Write `use` lines as comments.
-    if (size(config%seed_labels) > 0) then
-        write(unit=file_unit, fmt="(3a)", advance="no") "!use ", config%module_name, ", only: "
-        
-        max_label_len = 0
-        do i_seed_unit = 1, size(config%seed_labels) ! SERIAL
-            max_label_len = max(max_label_len, len(trim(config%seed_labels(i_seed_unit))))
-        end do
-        
-        do i_seed_unit = 1, size(config%seed_labels) ! SERIAL
-            if (i_seed_unit /= 1) then
-                write(unit=file_unit, fmt="(a)", advance="no") "!"
-                do i_space = 1, 12 + len(config%module_name) ! SERIAL
-                    write(unit=file_unit, fmt="(a)", advance="no") " "
-                end do
-            end if
-            
-            ! Align the `=>` and left-justify the labels.
-            ! <https://fortran-lang.discourse.group/t/left-justification-of-strings/345>
-            write(unit=use_format, fmt="(a, i0, a)") "(a, tr", max_label_len &
-                                                                    - len(trim(config%seed_labels(i_seed_unit))) + 1, ", 2a)"
-            write(unit=file_unit, fmt=trim(use_format), advance="no") trim(config%seed_labels(i_seed_unit)), &
-                                                                        "=> ", &
-                                                                        trim(config%seed_units(i_seed_unit)%label())
-            write(unit=file_unit, fmt="(a)") ", &"
-        end do
-        
-        write(unit=file_unit, fmt="(a)", advance="no") "!"
-        do i_space = 1, 12 + len(config%module_name) ! SERIAL
-            write(unit=file_unit, fmt="(a)", advance="no") " "
-        end do
-        write(unit=file_unit, fmt="(a)", advance="no") "unit"
-        
-        if (config%intrinsics) then
-            write(unit=file_unit, fmt="(a)", advance="no") ", "
-            
-            if (size(INTRINSIC_1ARG_UNITLESS) > 0) then
-                do i_intrinsic = 1, size(INTRINSIC_1ARG_UNITLESS) ! SERIAL
-                    if (i_intrinsic /= size(INTRINSIC_1ARG_UNITLESS)) then
-                        write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic)), ", "
-                    else
-                        write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_UNITLESS(i_intrinsic))
-                    end if
-                end do
-            end if
-            
-            if (size(INTRINSIC_1ARG_WITHUNITS) > 0) then
-                if (size(INTRINSIC_1ARG_WITHUNITS) > 0) then
-                    write(unit=file_unit, fmt="(a)", advance="no") ", "
-                end if
-                
-                do i_intrinsic = 1, size(INTRINSIC_1ARG_WITHUNITS) ! SERIAL
-                    if (i_intrinsic /= size(INTRINSIC_1ARG_WITHUNITS)) then
-                        write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic)), ", "
-                    else
-                        write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_1ARG_WITHUNITS(i_intrinsic))
-                    end if
-                end do
-            end if
-            
-            if (size(INTRINSIC_2ARG_WITHUNITS) > 0) then
-                if (size(INTRINSIC_2ARG_WITHUNITS) > 0) then
-                    write(unit=file_unit, fmt="(a)", advance="no") ", "
-                end if
-                
-                do i_intrinsic = 1, size(INTRINSIC_2ARG_WITHUNITS) ! SERIAL
-                    if (i_intrinsic /= size(INTRINSIC_2ARG_WITHUNITS)) then
-                        write(unit=file_unit, fmt="(2a)", advance="no") trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic)), ", "
-                    else
-                        write(unit=file_unit, fmt="(a)", advance="no") trim(INTRINSIC_2ARG_WITHUNITS(i_intrinsic))
-                    end if
-                end do
-            end if
-        end if
-        
-        if (use_sqrt) write(unit=file_unit, fmt="(a)", advance="no") ", sqrt"
-        
-        if (use_cbrt) write(unit=file_unit, fmt="(a)", advance="no") ", cbrt"
-        
-        if (use_square) write(unit=file_unit, fmt="(a)", advance="no") ", square"
-        
-        if (use_sqrt .or. use_cbrt .or. use_square .or. config%intrinsics) then
-            write(unit=file_unit, fmt="(a)") ""
-        end if
-        
         write(unit=file_unit, fmt="(a)") ""
     end if
     
