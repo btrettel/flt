@@ -8,7 +8,7 @@
 program test_units_fail_2
 
 use prec, only: WP
-use units, only: si_length => unit_p10_p00_p00, sqrt
+use units
 implicit none
 
 type(si_length) :: x, z

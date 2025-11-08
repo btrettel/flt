@@ -8,8 +8,7 @@
 program test_units_fail_3
 
 use prec, only: WP
-use units, only: si_length   => unit_p10_p00_p00, &
-                 si_time     => unit_p00_p00_p10
+use units
 implicit none
 
 type(si_length) :: x

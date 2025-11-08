@@ -7,8 +7,7 @@
 
 program test_units_ad
 
-use units_ad, only: unitless  => unit_p00_p00_p00, &
-                    si_length => unit_p10_p00_p00
+use units_ad
 use unittest, only: test_results_type
 use prec, only: WP
 implicit none
