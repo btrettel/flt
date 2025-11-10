@@ -203,6 +203,11 @@ subroutine test_scalars(tests)
     call tests%real_eq(z%v, 5.0_WP**7.0_WP, "ad**integer, value")
     call tests%real_eq(z%d(1), 7.0_WP * (5.0_WP**6.0_WP), "ad**integer, derivative (dv 1)")
     call tests%real_eq(z%d(2), 0.0_WP, "ad**integer, derivative (dv 2)")
+    
+    z = x**y
+    call tests%real_eq(z%v, 5.0_WP**1.5_WP, "ad**ad, value")
+    ! The derivatives are complicated, so I'll just do the numerical test.
+    call test_num_deriv(ad_pow, 1.0_WP, 5.0_WP, "ad **, comparison with numerical derivative", tests)
 
     z = f(x, y)
     call tests%real_eq(z%v, (2.0_WP * 5.0_WP * 1.5_WP - 5.0_WP**2) / 1.5_WP + 1.5_WP, "f(ad, ad), value")
@@ -211,6 +216,20 @@ subroutine test_scalars(tests)
                                         + 2.0_WP * 5.0_WP / 1.5_WP + 1.0_WP, &
                                         "f(ad, ad), derivative (dv 2)")
 end subroutine test_scalars
+
+pure function ad_pow(x)
+    use fmad, only: sqrt
+    
+    class(ad), intent(in) :: x
+    
+    type(ad) :: ad_pow
+    
+    type(ad) :: y
+    
+    call y%init(1.5_WP, 2, N_DV)
+    
+    ad_pow = x**y
+end function ad_pow
 
 subroutine test_arrays(tests)
     use checks, only: assert_dimension

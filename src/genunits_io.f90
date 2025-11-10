@@ -77,7 +77,8 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     namelist /config/ output_file, base_units, type_definition, use_line, kind_parameter, module_name, &
                         min_exponents, max_exponents, denominators, &
-                        max_n_units, max_iter, debug, tests, comparison, unary, sqrt, cbrt, square, intrinsics, dtio
+                        max_n_units, max_iter, debug, tests, &
+                        comparison, unary, sqrt, cbrt, square, intrinsics, dtio
     
     n_failures = 0
     
@@ -578,6 +579,13 @@ subroutine write_type(config, file_unit, i_unit, unit_system)
     write(unit=file_unit, fmt="(4a)") "    generic, public :: operator(-) => s_", &
         trim(unit_system%units(i_unit)%label()), "_", trim(unit_system%units(i_unit)%label())
     
+    if (all_close(unit_system%units(i_unit)%e, 0.0_WP)) then
+        write(unit=file_unit, fmt="(a)") "    procedure, private :: e_unitless_unitless"
+        write(unit=file_unit, fmt="(a)") "    generic, public :: operator(**) => e_unitless_unitless"
+        write(unit=file_unit, fmt="(a)") "    procedure, private :: e_unitless_real"
+        write(unit=file_unit, fmt="(a)") "    generic, public :: operator(**) => e_unitless_real"
+    end if
+    
     ! Allow using `real`s as unitless in some situations.
     if (all_close(unit_system%units(i_unit)%e, 0.0_WP)) then
         write(unit=file_unit, fmt="(3a)") "    procedure, private, pass(left) :: s_", &
@@ -851,9 +859,9 @@ subroutine write_binary_operator(config, unit_system, file_unit, unit_left, unit
         case ("/")
             op_label = "d"
             conditional = .false.
-!        case ("**")
-!            op_label = "e"
-!            conditional = .false.
+        case ("**")
+            op_label = "e"
+            conditional = .false.
         case ("<")
             op_label = "lt"
             conditional = .true.
@@ -1551,6 +1559,15 @@ subroutine write_module(config, unit_system, file_unit, rc)
         if (config%dtio) then
             call write_unit_wf(unit_system, file_unit, unit_system%units(i_unit))
             call write_unit_rf(unit_system, file_unit, unit_system%units(i_unit))
+            n_interfaces = n_interfaces + 2
+        end if
+        
+        if (all_close(unit_system%units(i_unit)%e, 0.0_WP)) then
+            call write_binary_operator(config, unit_system, file_unit, unit_system%units(i_unit), &
+                                        unit_system%units(i_unit), unit_system%units(i_unit), "**")
+            call write_binary_operator(config, unit_system, file_unit, unit_system%units(i_unit), &
+                                        unit_system%units(i_unit), unit_system%units(i_unit), "**", &
+                                        unitless_is_real_right=.true.)
             n_interfaces = n_interfaces + 2
         end if
         

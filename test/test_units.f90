@@ -67,6 +67,10 @@ subroutine test_basic(tests)
     v = x / t
     call tests%real_eq(v%v, 0.5_WP, "units value, division")
 
+    u%v = 2.0_WP
+    u = u**1.5_WP
+    call tests%real_eq(u%v, 2.0_WP**1.5_WP, "units value, exponentiation")
+
     a%v = 4.0_WP
     x   = sqrt(a)
     call tests%real_eq(x%v, 2.0_WP, "units value, sqrt")
