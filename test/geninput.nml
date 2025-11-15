@@ -1,0 +1,10 @@
+&config
+output_file = "src/genunit_demo.f90"
+/
+
+&input_parameter
+parameter_name  = "test"
+type_definition = "real"
+tex_unit        = "m"
+tex_description = "blah"
+/

@@ -24,6 +24,8 @@ with open(os.path.join("src", "rev.f90"), "w") as output_handler:
     else:
         output_handler.write(".true.\n")
     
+    # Use Git tags to put version numbers in the program.
+    # Example: `git tag -a v0.1.0 -m "version 0.1.0"`
     output_handler.write("character(len=*), public, parameter :: TAG = \"")
     result = run(["git", "describe", "--tags"], stdout=PIPE, stderr=PIPE, universal_newlines=True)
     tag = result.stdout.strip()

@@ -210,9 +210,11 @@ cython_debug/
 modtable.txt
 *.nml
 !genunits_input.nml
+!geninput.nml
 test_*
 !test_*.f90
 genunits
+geninput
 src/rev.f90
 src/units.f90
 src/units_ad.f90
