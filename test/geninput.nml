@@ -1,5 +1,6 @@
 &config
-output_file = "src/genunit_demo.f90"
+output_file = "src/geninput_demo.f90"
+namelist_group = "testing"
 /
 
 &input_parameter

@@ -13,6 +13,14 @@ use prec, only: CL, WP
 use checks, only: assert, check
 implicit none
 
+type :: config_type
+    character(len=CL) :: output_file
+    character(len=CL) :: namelist_group
+    
+    ! Write code for multiple namelist groups of the same name, like in `read_input_parameter_namelists` here
+    ! TODO: multiple_namelist_groups
+end type config_type
+
 type :: input_parameter_type
     character(len=CL) :: parameter_name
     character(len=CL) :: type_definition
@@ -30,16 +38,15 @@ type :: input_parameter_type
     character(len=CL) :: tex_description
 end type input_parameter_type
 
-character(len=:), allocatable           :: input_file, output_file
-integer                                 :: rc_config, rc_input_parameters!, out_unit, rc_code
+character(len=:), allocatable           :: input_file
+integer                                 :: rc_config, rc_input_parameters, out_unit, rc_code
+type(config_type)                       :: config
 type(input_parameter_type), allocatable :: input_parameters(:)
 
 call get_input_file_name_from_cli("geninput", input_file)
 
-print *, "Input file: ", trim(input_file)
-
 ! Read all namelists and exit if any have issues.
-call read_config_namelist(input_file, output_file, rc_config)
+call read_config_namelist(input_file, config, rc_config)
 if (rc_config /= 0) then
     error stop
 end if
@@ -49,28 +56,31 @@ if (rc_input_parameters /= 0) then
     error stop
 end if
 
-print *, size(input_parameters)
-
-!open(newunit=out_unit, action="write", status="replace", position="rewind", file=trim(output_file))
-!call write_input_code(input_parameters, out_unit, rc_code)
-!close(unit=out_unit)
-!if (rc_module /= 0) then
-!    error stop
-!end if
+open(newunit=out_unit, action="write", status="replace", position="rewind", file=trim(config%output_file))
+call write_input_code(config, input_parameters, out_unit, rc_code)
+close(unit=out_unit)
+if (rc_code /= 0) then
+    error stop
+end if
 
 contains
 
-subroutine read_config_namelist(input_file, output_file_, rc)
-    character(len=*), intent(in)               :: input_file
-    character(len=:), allocatable, intent(out) :: output_file_
-    integer, intent(out)                       :: rc
+subroutine read_config_namelist(input_file, config_out, rc)
+    character(len=*), intent(in)   :: input_file
+    type(config_type), intent(out) :: config_out
+    integer, intent(out)           :: rc
     
     integer           :: nml_unit, rc_nml
-    character(len=CL) :: output_file, nml_error_message
+    character(len=CL) :: nml_error_message
     
-    namelist /config/ output_file
+    ! `config` namelist group
+    character(len=CL) :: output_file
+    character(len=CL) :: namelist_group
     
-    output_file = ""
+    namelist /config/ output_file, namelist_group
+    
+    output_file    = ""
+    namelist_group = ""
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
@@ -84,9 +94,10 @@ subroutine read_config_namelist(input_file, output_file_, rc)
     
     rc = 0
     call check(len(trim(output_file)) > 0, "output_file must be defined", rc)
+    call check(len(trim(namelist_group)) > 0, "namelist_group must be defined", rc)
     
-    ! Convert to allocatable.
-    output_file_ = trim(output_file)
+    config_out%output_file    = trim(output_file)
+    config_out%namelist_group = trim(namelist_group)
 end subroutine read_config_namelist
 
 subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
@@ -229,5 +240,38 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         rc = 0
     end if
 end subroutine read_input_parameter_namelists
+
+subroutine write_input_code(config, input_parameters, out_unit, rc)
+    type(config_type), intent(in)                       :: config
+    type(input_parameter_type), allocatable, intent(in) :: input_parameters(:)
+    integer, intent(in)                                 :: out_unit
+    integer, intent(out)                                :: rc
+    
+    integer :: n, i
+    
+    ! TODO: Write `type` to a different file?
+    
+    n = size(input_parameters)
+    
+    write(unit=out_unit, fmt="(a)") "! `" // trim(config%namelist_group) // "` namelist group"
+    do i = 1, n
+        write(unit=out_unit, fmt="(a)") trim(input_parameters(i)%type_definition) &
+                                            // " :: " // trim(input_parameters(i)%parameter_name)
+    end do
+    write(unit=out_unit, fmt="(a)") ""
+    
+    write(unit=out_unit, fmt="(a)", advance="no") "namelist /" // trim(config%namelist_group) // "/ "
+    do i = 1, n
+        write(unit=out_unit, fmt="(a)", advance="no") trim(input_parameters(i)%parameter_name)
+        
+        if (i /= n) then
+            write(unit=out_unit, fmt="(a)", advance="no") ", "
+        else
+            write(unit=out_unit, fmt="(a)") ""
+        end if
+    end do
+    
+    rc = 0
+end subroutine write_input_code
 
 end program geninput
