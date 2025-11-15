@@ -38,6 +38,8 @@ type :: input_parameter_type
     character(len=CL) :: tex_description
 end type input_parameter_type
 
+integer, parameter :: MAX_LINE_LENGTH = 132
+
 character(len=:), allocatable           :: input_file
 integer                                 :: rc_config, rc_input_parameters, out_unit, rc_code
 type(config_type)                       :: config
@@ -105,9 +107,9 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     type(input_parameter_type), allocatable, intent(out) :: input_parameters(:)
     integer, intent(out)                                 :: rc
     
-    integer           :: nml_unit, rc_nml, n_input_parameters, i_input_parameter, n_failures
+    integer           :: nml_unit, rc_nml, n_input_parameters, i, j, n_failures
     character(len=CL) :: nml_error_message
-    character(len=3)  :: i_input_parameter_string
+    character(len=3)  :: i_string, j_string
     
     ! `seed_unit` namelist group
     character(len=CL) :: parameter_name
@@ -156,7 +158,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     ! Once the arrays are sized properly, go back and read all of the seed units.
     rewind nml_unit
     allocate(input_parameters(n_input_parameters))
-    i_input_parameter = 0
+    i = 0
     do ! SERIAL
         parameter_name            = ""
         type_definition           = ""
@@ -183,52 +185,62 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
             return
         end if
         
-        i_input_parameter = i_input_parameter + 1
+        i = i + 1
         
-        input_parameters(i_input_parameter)%parameter_name            = trim(parameter_name)
-        input_parameters(i_input_parameter)%type_definition           = trim(type_definition)
-        input_parameters(i_input_parameter)%default_value             = trim(default_value)
-        input_parameters(i_input_parameter)%add_to_type               = add_to_type
-        input_parameters(i_input_parameter)%lower_bound_active        = lower_bound_active
-        input_parameters(i_input_parameter)%lower_bound_or_equal      = lower_bound_or_equal
-        input_parameters(i_input_parameter)%lower_bound               = lower_bound
-        input_parameters(i_input_parameter)%lower_bound_error_message = trim(lower_bound_error_message)
-        input_parameters(i_input_parameter)%upper_bound_active        = upper_bound_active
-        input_parameters(i_input_parameter)%upper_bound_or_equal      = upper_bound_or_equal
-        input_parameters(i_input_parameter)%upper_bound               = upper_bound
-        input_parameters(i_input_parameter)%upper_bound_error_message = trim(upper_bound_error_message)
-        input_parameters(i_input_parameter)%tex_unit                  = trim(tex_unit)
-        input_parameters(i_input_parameter)%tex_description           = trim(tex_description)
+        input_parameters(i)%parameter_name            = trim(parameter_name)
+        input_parameters(i)%type_definition           = trim(type_definition)
+        input_parameters(i)%default_value             = trim(default_value)
+        input_parameters(i)%add_to_type               = add_to_type
+        input_parameters(i)%lower_bound_active        = lower_bound_active
+        input_parameters(i)%lower_bound_or_equal      = lower_bound_or_equal
+        input_parameters(i)%lower_bound               = lower_bound
+        input_parameters(i)%lower_bound_error_message = trim(lower_bound_error_message)
+        input_parameters(i)%upper_bound_active        = upper_bound_active
+        input_parameters(i)%upper_bound_or_equal      = upper_bound_or_equal
+        input_parameters(i)%upper_bound               = upper_bound
+        input_parameters(i)%upper_bound_error_message = trim(upper_bound_error_message)
+        input_parameters(i)%tex_unit                  = trim(tex_unit)
+        input_parameters(i)%tex_description           = trim(tex_description)
         
-        write(unit=i_input_parameter_string, fmt="(i0)") i_input_parameter
+        write(unit=i_string, fmt="(i0)") i
         
-        call check(len(trim(parameter_name)) > 0, "input_parameter #" // trim(i_input_parameter_string) &
+        call check(len(trim(parameter_name)) > 0, "input_parameter #" // trim(i_string) &
                                                 // "has an empty parameter_name.", n_failures)
-        call check(len(trim(type_definition)) > 0, "input_parameter #" // trim(i_input_parameter_string) &
+        call check(len(trim(type_definition)) > 0, "input_parameter #" // trim(i_string) &
                                                     // " with parameter_name '" // trim(parameter_name) &
                                                     // "' has an empty type_definition.", n_failures)
-        call check(len(trim(tex_unit)) > 0, "input_parameter #" // trim(i_input_parameter_string) &
+        call check(len(trim(tex_unit)) > 0, "input_parameter #" // trim(i_string) &
                                                     // " with parameter_name '" // trim(parameter_name) &
                                                     // "' has an empty tex_unit.", n_failures)
-        call check(len(trim(tex_description)) > 0, "input_parameter #" // trim(i_input_parameter_string) &
+        call check(len(trim(tex_description)) > 0, "input_parameter #" // trim(i_string) &
                                                     // " with parameter_name '" // trim(parameter_name) &
                                                     // "' has an empty tex_description.", n_failures)
         
         call check(.not. ((.not. lower_bound_active) .and. lower_bound_or_equal), &
-                    "input_parameter #" // trim(i_input_parameter_string) &
+                    "input_parameter #" // trim(i_string) &
                     // " with parameter_name '" // trim(parameter_name) &
                     // "': lower_bound_or_equal can not be .true. unless lower_bound_active=.true.", n_failures)
         
         call check(.not. ((.not. upper_bound_active) .and. upper_bound_or_equal), &
-                    "input_parameter #" // trim(i_input_parameter_string) &
+                    "input_parameter #" // trim(i_string) &
                     // " with parameter_name '" // trim(parameter_name) &
                     // "': upper_bound_or_equal can not be .true. unless upper_bound_active=.true.", n_failures)
         
         if (lower_bound_active .and. upper_bound_active) then
-            call check(lower_bound < upper_bound, "input_parameter #" // trim(i_input_parameter_string) &
+            call check(lower_bound < upper_bound, "input_parameter #" // trim(i_string) &
                                                     // " with parameter_name '" // trim(parameter_name) &
                                                     // "': lower_bound < upper_bound violated.", n_failures)
         end if
+        
+        do j = 1, i - 1
+            write(unit=j_string, fmt="(i0)") j
+            call check(trim(input_parameters(j)%parameter_name) /= trim(input_parameters(i)%parameter_name), &
+                        "input_parameter #" // trim(i_string) &
+                        // " with parameter_name '" // trim(parameter_name) &
+                        // "' has the same parameter_name as " &
+                        // "input_parameter #" // trim(j_string) // ".", &
+                        n_failures)
+        end do
     end do
     close(unit=nml_unit)
     
@@ -247,7 +259,8 @@ subroutine write_input_code(config, input_parameters, out_unit, rc)
     integer, intent(in)                                 :: out_unit
     integer, intent(out)                                :: rc
     
-    integer :: n, i
+    integer       :: n, i, line_length
+    character(CL) :: line
     
     ! TODO: Write `type` to a different file?
     
@@ -260,12 +273,21 @@ subroutine write_input_code(config, input_parameters, out_unit, rc)
     end do
     write(unit=out_unit, fmt="(a)") ""
     
-    write(unit=out_unit, fmt="(a)", advance="no") "namelist /" // trim(config%namelist_group) // "/ "
+    line = "namelist /" // trim(config%namelist_group) // "/"
+    write(unit=out_unit, fmt="(a)", advance="no") trim(line) // " "
+    line_length = len(trim(line)) + 1
     do i = 1, n
+        line_length = line_length + len(trim(input_parameters(i)%parameter_name))
+        if (line_length > (MAX_LINE_LENGTH - 3)) then ! The 3 accounts for `, &`
+            write(unit=out_unit, fmt="(a)") "&"
+            line_length = len(trim(input_parameters(i)%parameter_name))
+        end if
+        
         write(unit=out_unit, fmt="(a)", advance="no") trim(input_parameters(i)%parameter_name)
         
         if (i /= n) then
             write(unit=out_unit, fmt="(a)", advance="no") ", "
+            line_length = line_length + 2
         else
             write(unit=out_unit, fmt="(a)") ""
         end if

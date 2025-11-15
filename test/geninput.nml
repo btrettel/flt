@@ -4,7 +4,35 @@ namelist_group = "testing"
 /
 
 &input_parameter
-parameter_name  = "test"
+parameter_name  = "test12345678"
+type_definition = "real"
+tex_unit        = "m"
+tex_description = "blah"
+/
+
+&input_parameter
+parameter_name  = "very_long_name_very_long_name_1"
+type_definition = "real"
+tex_unit        = "m"
+tex_description = "blah"
+/
+
+&input_parameter
+parameter_name  = "very_long_name_very_long_name_2"
+type_definition = "real"
+tex_unit        = "m"
+tex_description = "blah"
+/
+
+&input_parameter
+parameter_name  = "very_long_name_very_long_name_3"
+type_definition = "real"
+tex_unit        = "m"
+tex_description = "blah"
+/
+
+&input_parameter
+parameter_name  = "very_long_name_very_long_name_4"
 type_definition = "real"
 tex_unit        = "m"
 tex_description = "blah"
