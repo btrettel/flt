@@ -296,9 +296,9 @@ subroutine write_subroutine(config, input_parameters)
     
     n = size(input_parameters)
     
-    ! nml_unit
-    ! rc_nml
-    ! nml_error_message
+    write(unit=out_unit, fmt="(a)") "integer :: nml_unit, rc_nml"
+    write(unit=out_unit, fmt="(a)") "character(len=CL) :: nml_error_message"
+    write(unit=out_unit, fmt="(a)") ""
     
     write(unit=out_unit, fmt="(a)") "! `" // trim(config%namelist_group) // "` namelist group"
     do i = 1, n
@@ -366,7 +366,7 @@ subroutine write_subroutine(config, input_parameters)
     write(unit=out_unit, fmt="(a)") "close(unit=nml_unit)"
     write(unit=out_unit, fmt="(a)") ""
     write(unit=out_unit, fmt="(a)") "if ((rc_nml /= 0) .and. (rc_nml /= IOSTAT_END)) then"
-    write(unit=out_unit, fmt="(a)") "    write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)"
+    write(unit=out_unit, fmt="(a)") '    write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)'
     write(unit=out_unit, fmt="(a)") "    rc = rc_nml"
     write(unit=out_unit, fmt="(a)") "    return"
     write(unit=out_unit, fmt="(a)") "end if"
