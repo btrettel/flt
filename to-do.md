@@ -4,21 +4,18 @@ Priorities:
 
 - geninput
     - inputs
-        - variable name
-        - type (for example: `type(si_length)`, etc.
-        - genunits types are converted to reals in the namelist reader
-        - required or not required
-        - default value
         - differentiable or not
             - enables or disables the `x_stdev` variable (replace `x` with variable name)
-        - input validation lower bound
-        - input validation upper bound
         - fuzz testing lower bound
         - fuzz testing upper bound
         - TeX description for documentation
             - automatically write bounds in documentation string
+        - string sets generate a `select case` to check if outside of set
     - Write program to generate namelist reader code, AD `d` indices, input validation bounds checking code, and fuzz testing bounds (use same bounds as for input validation or different?). (Part of FLT but for BlasterSim.)
     - Namelist/AD generator allows for disabling AD for some inputs. Perhaps a second AD namelist where variables can be set to .true. if you want AD. A UQ namelist could set the standard deviation. Combining all of this, you could make a UQ namelist where not defining something in the UQ namelist disables AD for that variable. Read the UQ namelist first, then the value namelist.
+    - Alphabetically sort variable names in Markdown and TeX output
+    - Make Markdown and TeX output optional and specified in the `geninput_config` namelist
+    - Markdown output
 - <https://en.wikipedia.org/wiki/Sterbenz_lemma>: Make `assert_sterbenz` to assert that the conditions of the Sterbenz lemma are satisfied.
     - In `fmad` and `genunits`, create an operator that automatically enforces this? `.minus.`?
     - Other operators in `fmad` could benefit from this too. Anywhere a subtraction occurs (like the derivatives for division) could have a Sterbenz assertions version.

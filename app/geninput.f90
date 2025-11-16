@@ -69,9 +69,9 @@ call write_subroutine(config, input_parameters)
 
 contains
 
-subroutine read_config_namelist(input_file, config_out, rc)
+subroutine read_config_namelist(input_file, config, rc)
     character(len=*), intent(in)   :: input_file
-    type(config_type), intent(out) :: config_out
+    type(config_type), intent(out) :: config
     integer, intent(out)           :: rc
     
     integer           :: nml_unit, rc_nml
@@ -84,7 +84,7 @@ subroutine read_config_namelist(input_file, config_out, rc)
     character(len=CL) :: config_variable
     character(len=CL) :: kind_parameter
     
-    namelist /config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter
+    namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter
     
     output_file_prefix = ""
     namelist_group     = ""
@@ -93,7 +93,7 @@ subroutine read_config_namelist(input_file, config_out, rc)
     kind_parameter     = ""
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
-    read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
+    read(unit=nml_unit, nml=geninput_config, iostat=rc_nml, iomsg=nml_error_message)
     close(unit=nml_unit)
     
     if ((rc_nml /= 0) .and. (rc_nml /= IOSTAT_END)) then
@@ -108,11 +108,11 @@ subroutine read_config_namelist(input_file, config_out, rc)
     call check(len(trim(type_name)) > 0, "type_name must be defined", rc)
     call check(len(trim(config_variable)) > 0, "config_variable must be defined", rc)
     
-    config_out%output_file_prefix = trim(output_file_prefix)
-    config_out%namelist_group     = trim(namelist_group)
-    config_out%type_name          = trim(type_name)
-    config_out%config_variable    = trim(config_variable)
-    config_out%kind_parameter     = trim(kind_parameter)
+    config%output_file_prefix = trim(output_file_prefix)
+    config%namelist_group     = trim(namelist_group)
+    config%type_name          = trim(type_name)
+    config%config_variable    = trim(config_variable)
+    config%kind_parameter     = trim(kind_parameter)
 end subroutine read_config_namelist
 
 subroutine read_input_parameter_namelists(input_file, input_parameters, rc)

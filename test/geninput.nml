@@ -1,4 +1,4 @@
-&config
+&geninput_config
 output_file_prefix = "src/geninput"
 namelist_group     = "springer"
 type_name          = "springer_config_type"

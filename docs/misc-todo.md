@@ -83,6 +83,7 @@
     - <https://github.com/urbanjost/M_CLI?tab=readme-ov-file>
     - <https://fortranwiki.org/fortran/show/get_namelist>
 - nmlfuzz.f90: namelist fuzz tester
+    - `nmlfuzz_config` namelist in the same input file as geninput.
     - Intentionally pick inputs which pass input validation but cause the program to fail.
     - Make depend on ga.f90
         - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
