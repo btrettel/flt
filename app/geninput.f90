@@ -18,6 +18,7 @@ type :: config_type
     character(len=CL) :: namelist_group
     character(len=CL) :: type_name
     character(len=CL) :: config_variable
+    character(len=CL) :: kind_parameter
     
     ! Write code for multiple namelist groups of the same name, like in `read_input_parameter_namelists` here
     ! TODO: multiple_namelist_groups
@@ -26,14 +27,15 @@ end type config_type
 type :: input_parameter_type
     character(len=CL) :: parameter_name
     character(len=CL) :: type_definition
-    character(len=CL) :: default_value
+    character(len=CL) :: default_value ! do not include the kind parameter as this will be added automatically
+    logical           :: required
     logical           :: add_to_type
     logical           :: lower_bound_active
-    logical           :: lower_bound_or_equal
+    logical           :: lower_bound_not_equal
     real(WP)          :: lower_bound
     character(len=CL) :: lower_bound_error_message
     logical           :: upper_bound_active
-    logical           :: upper_bound_or_equal
+    logical           :: upper_bound_not_equal
     real(WP)          :: upper_bound
     character(len=CL) :: upper_bound_error_message
     character(len=CL) :: tex_unit
@@ -80,13 +82,15 @@ subroutine read_config_namelist(input_file, config_out, rc)
     character(len=CL) :: namelist_group
     character(len=CL) :: type_name
     character(len=CL) :: config_variable
+    character(len=CL) :: kind_parameter
     
-    namelist /config/ output_file_prefix, namelist_group, type_name, config_variable
+    namelist /config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter
     
     output_file_prefix = ""
     namelist_group     = ""
     type_name          = ""
     config_variable    = ""
+    kind_parameter     = ""
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
@@ -108,6 +112,7 @@ subroutine read_config_namelist(input_file, config_out, rc)
     config_out%namelist_group     = trim(namelist_group)
     config_out%type_name          = trim(type_name)
     config_out%config_variable    = trim(config_variable)
+    config_out%kind_parameter     = trim(kind_parameter)
 end subroutine read_config_namelist
 
 subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
@@ -118,26 +123,29 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     integer           :: nml_unit, rc_nml, n_input_parameters, i, j, n_failures
     character(len=CL) :: nml_error_message
     character(len=3)  :: i_string, j_string
+    logical           :: outside_of_lower_bound, outside_of_upper_bound
+    real(WP)          :: default_value_real
     
     ! `input_parameter` namelist group
     character(len=CL) :: parameter_name
     character(len=CL) :: type_definition
     character(len=CL) :: default_value
+    logical           :: required
     logical           :: add_to_type
     logical           :: lower_bound_active
-    logical           :: lower_bound_or_equal
+    logical           :: lower_bound_not_equal
     real(WP)          :: lower_bound
     character(len=CL) :: lower_bound_error_message
     logical           :: upper_bound_active
-    logical           :: upper_bound_or_equal
+    logical           :: upper_bound_not_equal
     real(WP)          :: upper_bound
     character(len=CL) :: upper_bound_error_message
     character(len=CL) :: tex_unit
     character(len=CL) :: tex_description
     
-    namelist /input_parameter/ parameter_name, type_definition, default_value, add_to_type, &
-                                lower_bound_active, lower_bound_or_equal, lower_bound, lower_bound_error_message, &
-                                upper_bound_active, upper_bound_or_equal, upper_bound, upper_bound_error_message, &
+    namelist /input_parameter/ parameter_name, type_definition, default_value, required, add_to_type, &
+                                lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
+                                upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
                                 tex_unit, tex_description
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
@@ -171,13 +179,14 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         parameter_name            = ""
         type_definition           = ""
         default_value             = ""
+        required                  = .false.
         add_to_type               = .true.
         lower_bound_active        = .false.
-        lower_bound_or_equal      = .false.
+        lower_bound_not_equal     = .false.
         lower_bound               = 0.0_WP
         lower_bound_error_message = ""
         upper_bound_active        = .false.
-        upper_bound_or_equal      = .false.
+        upper_bound_not_equal     = .false.
         upper_bound               = 0.0_WP
         upper_bound_error_message = ""
         tex_unit                  = ""
@@ -199,13 +208,14 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         input_parameters(i)%parameter_name            = trim(parameter_name)
         input_parameters(i)%type_definition           = trim(type_definition)
         input_parameters(i)%default_value             = trim(default_value)
+        input_parameters(i)%required                  = required
         input_parameters(i)%add_to_type               = add_to_type
         input_parameters(i)%lower_bound_active        = lower_bound_active
-        input_parameters(i)%lower_bound_or_equal      = lower_bound_or_equal
+        input_parameters(i)%lower_bound_not_equal     = lower_bound_not_equal
         input_parameters(i)%lower_bound               = lower_bound
         input_parameters(i)%lower_bound_error_message = trim(lower_bound_error_message)
         input_parameters(i)%upper_bound_active        = upper_bound_active
-        input_parameters(i)%upper_bound_or_equal      = upper_bound_or_equal
+        input_parameters(i)%upper_bound_not_equal     = upper_bound_not_equal
         input_parameters(i)%upper_bound               = upper_bound
         input_parameters(i)%upper_bound_error_message = trim(upper_bound_error_message)
         input_parameters(i)%tex_unit                  = trim(tex_unit)
@@ -218,27 +228,62 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         call check(len(trim(type_definition)) > 0, "input_parameter #" // trim(i_string) &
                                                     // " with parameter_name '" // trim(parameter_name) &
                                                     // "' has an empty type_definition.", n_failures)
-        call check(len(trim(tex_unit)) > 0, "input_parameter #" // trim(i_string) &
-                                                    // " with parameter_name '" // trim(parameter_name) &
-                                                    // "' has an empty tex_unit.", n_failures)
         call check(len(trim(tex_description)) > 0, "input_parameter #" // trim(i_string) &
                                                     // " with parameter_name '" // trim(parameter_name) &
                                                     // "' has an empty tex_description.", n_failures)
         
-        call check(.not. ((.not. lower_bound_active) .and. lower_bound_or_equal), &
+        call check(.not. ((.not. lower_bound_active) .and. lower_bound_not_equal), &
                     "input_parameter #" // trim(i_string) &
                     // " with parameter_name '" // trim(parameter_name) &
-                    // "': lower_bound_or_equal can not be .true. unless lower_bound_active=.true.", n_failures)
+                    // "': lower_bound_not_equal can not be .true. unless lower_bound_active=.true.", n_failures)
         
-        call check(.not. ((.not. upper_bound_active) .and. upper_bound_or_equal), &
+        call check(.not. ((.not. upper_bound_active) .and. upper_bound_not_equal), &
                     "input_parameter #" // trim(i_string) &
                     // " with parameter_name '" // trim(parameter_name) &
-                    // "': upper_bound_or_equal can not be .true. unless upper_bound_active=.true.", n_failures)
+                    // "': upper_bound_not_equal can not be .true. unless upper_bound_active=.true.", n_failures)
         
         if (lower_bound_active .and. upper_bound_active) then
             call check(lower_bound < upper_bound, "input_parameter #" // trim(i_string) &
                                                     // " with parameter_name '" // trim(parameter_name) &
                                                     // "': lower_bound < upper_bound violated.", n_failures)
+        end if
+        
+        if (((input_parameters(i)%type_definition(1:4) == "real") &
+                .or. (input_parameters(i)%type_definition(1:4) == "type") &
+                .or. (input_parameters(i)%type_definition(1:4) == "inte")) &
+                    .and. input_parameters(i)%required) then
+            call check(len(trim(tex_unit)) > 0, "input_parameter #" // trim(i_string) &
+                                                    // " with parameter_name '" // trim(parameter_name) &
+                                                    // "' is numeric and has an empty tex_unit.", n_failures)
+            call check(input_parameters(i)%lower_bound_active .or. input_parameters(i)%upper_bound_active, &
+                        "input_parameter #" // trim(i_string) &
+                        // " with parameter_name '" // trim(parameter_name) &
+                        // "': bounds must be set if numeric and required, " &
+                        // "otherwise Fortran can not detect if a variable is not set.", n_failures)
+            call check(len(trim(input_parameters(i)%default_value)) > 0, &
+                        "input_parameter #" // trim(i_string) &
+                        // " with parameter_name '" // trim(parameter_name) &
+                        // "': default_value must be set if numeric and required, " &
+                        // "otherwise Fortran can not detect if a variable is not set.", n_failures)
+            if ((input_parameters(i)%lower_bound_active .or. input_parameters(i)%upper_bound_active) &
+                    .and. (len(trim(input_parameters(i)%default_value)) > 0)) then
+                read(unit=input_parameters(i)%default_value, fmt="(f16.8)") default_value_real 
+                outside_of_lower_bound = default_value_real < input_parameters(i)%lower_bound
+                outside_of_upper_bound = default_value_real > input_parameters(i)%upper_bound
+                
+                call check(outside_of_lower_bound .or. outside_of_upper_bound, &
+                        "input_parameter #" // trim(i_string) &
+                        // " with parameter_name '" // trim(parameter_name) &
+                        // "': default_value must be outside bounds if numeric and required, " &
+                        // "otherwise Fortran can not detect if a variable is not set.", n_failures)
+            end if
+        end if
+        
+        if (input_parameters(i)%type_definition(1:4) == "logi") then
+            call check(len(trim(input_parameters(i)%default_value)) > 0, &
+                        "input_parameter #" // trim(i_string) &
+                        // " with parameter_name '" // trim(parameter_name) &
+                        // "': default_value must be set for logical input parameters.", n_failures)
         end if
         
         do j = 1, i - 1
@@ -305,6 +350,11 @@ subroutine write_subroutine(config, input_parameters)
         ! genunits types should be converted to `real` for the namelists
         if (input_parameters(i)%type_definition(1:4) == "type") then
             type_definition = "real(WP)" ! TODO: Assumes `WP`
+            if (len(trim(config%kind_parameter)) == 0) then
+                type_definition = "real(" // trim(config%kind_parameter) // ")"
+            else
+                type_definition = "real"
+            end if
         else
             type_definition = input_parameters(i)%type_definition
         end if
@@ -321,7 +371,8 @@ subroutine write_subroutine(config, input_parameters)
         line_length = line_length + len(trim(input_parameters(i)%parameter_name))
         if (line_length > (MAX_LINE_LENGTH - 3)) then ! The 3 accounts for `, &`
             write(unit=out_unit, fmt="(a)") "&"
-            line_length = len(trim(input_parameters(i)%parameter_name))
+            line_length = 4 + len(trim(input_parameters(i)%parameter_name))
+            write(unit=out_unit, fmt="(a)", advance="no") "    "
         end if
         
         write(unit=out_unit, fmt="(a)", advance="no") trim(input_parameters(i)%parameter_name)
@@ -342,12 +393,17 @@ subroutine write_subroutine(config, input_parameters)
             select case (type4)
                 case ("inte")
                     default_value = "0"
-                case ("real")
-                    default_value = "0.0_WP" ! TODO: Assumes `WP`
-                case ("type")
-                    default_value = "0.0_WP" ! TODO: Assumes `WP`
+                case ("real", "type")
+                    if (len(trim(config%kind_parameter)) == 0) then
+                        default_value = "0.0_" // trim(config%kind_parameter)
+                    else
+                        default_value = "0.0"
+                    end if
                 case ("char")
                     default_value = '""'
+                case ("logi")
+                    write(unit=ERROR_UNIT, fmt="(a)") "logical variables must have default_value set"
+                    error stop
                 case default
                     write(unit=ERROR_UNIT, fmt="(a)") "Invalid type definition: " // trim(input_parameters(i)%type_definition)
                     error stop
@@ -370,6 +426,25 @@ subroutine write_subroutine(config, input_parameters)
     write(unit=out_unit, fmt="(a)") "    rc = rc_nml"
     write(unit=out_unit, fmt="(a)") "    return"
     write(unit=out_unit, fmt="(a)") "end if"
+    write(unit=out_unit, fmt="(a)") ""
+    
+    write(unit=out_unit, fmt="(a)") "rc = 0"
+    
+    do i = 1, n
+        ! Check that required strings have greater than zero length.
+        if ((input_parameters(i)%type_definition(1:4) == "char") .and. input_parameters(i)%required) then
+            write(unit=out_unit, fmt="(a)") "call check(len(trim(" // trim(input_parameters(i)%parameter_name) &
+                    // ")) > 0, " // '"' // trim(input_parameters(i)%parameter_name) // " in the " // trim(config%namelist_group) &
+                    // ' namelist group is required.", rc)'
+        end if
+        
+        ! TODO: How can I make numeric variables required? Check with `is_close` that the variable equals its default.
+    end do
+    
+    ! TODO: check bounds
+    
+    ! TODO: write to config variable
+    ! TODO: trim strings
     
     close(unit=out_unit)
 end subroutine write_subroutine

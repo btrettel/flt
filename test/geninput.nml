@@ -1,41 +1,103 @@
 &config
 output_file_prefix = "src/geninput"
-namelist_group     = "testing"
-type_name          = "geninput_type"
-config_variable    = "config"
+namelist_group     = "springer"
+type_name          = "springer_config_type"
+config_variable    = "springer_config"
+kind_parameter     = "WP"
 /
 
 &input_parameter
-parameter_name  = "test12345678"
+parameter_name  = "id"
+type_definition = "character(len=64)"
+required        = .true.
+tex_unit        = "1"
+tex_description = "blah"
+/
+
+&input_parameter
+parameter_name  = "test"
+type_definition = "logical"
+default_value   = ".true."
+tex_unit        = "1"
+tex_description = "blah"
+/
+
+&input_parameter
+parameter_name        = "d_plunger"
+type_definition       = "type(si_length)"
+required              = .true.
+tex_unit              = "m"
+tex_description       = "blah"
+lower_bound_active    = .true.
+lower_bound           = 0.0
+lower_bound_not_equal = .true.
+default_value         = "-1.0"
+/
+
+&input_parameter
+parameter_name        = "l_draw"
+type_definition       = "type(si_length)"
+required              = .true.
+tex_unit              = "m"
+tex_description       = "blah"
+lower_bound_active    = .true.
+lower_bound           = 0.0
+lower_bound_not_equal = .true.
+default_value         = "-1.0"
+/
+
+&input_parameter
+parameter_name  = "l_precompress"
 type_definition = "type(si_length)"
+!required        = .true.
 tex_unit        = "m"
 tex_description = "blah"
 /
 
 &input_parameter
-parameter_name  = "very_long_name_very_long_name_1"
-type_definition = "real(WP)"
-tex_unit        = "m"
-tex_description = "blah"
+parameter_name        = "d_barrel"
+type_definition       = "type(si_length)"
+required              = .true.
+tex_unit              = "m"
+tex_description       = "blah"
+lower_bound_active    = .true.
+lower_bound           = 0.0
+lower_bound_not_equal = .true.
+default_value         = "-1.0"
 /
 
 &input_parameter
-parameter_name  = "very_long_name_very_long_name_2"
-type_definition = "real(WP)"
-tex_unit        = "m"
-tex_description = "blah"
+parameter_name        = "l_barrel"
+type_definition       = "type(si_length)"
+required              = .true.
+tex_unit              = "m"
+tex_description       = "blah"
+lower_bound_active    = .true.
+lower_bound           = 0.0
+lower_bound_not_equal = .true.
+default_value         = "-1.0"
 /
 
 &input_parameter
-parameter_name  = "very_long_name_very_long_name_3"
-type_definition = "real(WP)"
-tex_unit        = "m"
-tex_description = "blah"
+parameter_name        = "vol_dead"
+type_definition       = "type(si_volume)"
+required              = .true.
+tex_unit              = "m$^3$"
+tex_description       = "blah"
+lower_bound_active    = .true.
+lower_bound           = 0.0
+lower_bound_not_equal = .true.
+default_value         = "-1.0"
 /
 
 &input_parameter
-parameter_name  = "very_long_name_very_long_name_4"
-type_definition = "real(WP)"
-tex_unit        = "m"
-tex_description = "blah"
+parameter_name        = "k"
+type_definition       = "type(si_stiffness)"
+required              = .true.
+tex_unit              = "N/m"
+tex_description       = "blah"
+lower_bound_active    = .true.
+lower_bound           = 0.0
+lower_bound_not_equal = .true.
+default_value         = "-1.0"
 /
