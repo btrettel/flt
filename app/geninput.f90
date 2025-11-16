@@ -10,7 +10,7 @@ program geninput
 use cli, only: get_input_file_name_from_cli
 use, intrinsic :: iso_fortran_env, only: IOSTAT_END, ERROR_UNIT
 use prec, only: CL, WP
-use checks, only: assert, check
+use checks, only: assert, check, is_close
 implicit none
 
 type :: config_type
@@ -19,6 +19,7 @@ type :: config_type
     character(len=CL) :: type_name
     character(len=CL) :: config_variable
     character(len=CL) :: kind_parameter
+    logical           :: write_tex, write_md
     
     ! Write code for multiple namelist groups of the same name, like in `read_input_parameter_namelists` here
     ! TODO: multiple_namelist_groups
@@ -65,7 +66,8 @@ end if
 call write_type(config, input_parameters)
 call write_subroutine(config, input_parameters)
 
-! TODO: write_tex
+! TODO if (config%write_tex) call write_tex(config, input_parameters)
+! TODO if (config%write_md) call write_md(config, input_parameters)
 
 contains
 
@@ -120,7 +122,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     type(input_parameter_type), allocatable, intent(out) :: input_parameters(:)
     integer, intent(out)                                 :: rc
     
-    integer           :: nml_unit, rc_nml, n_input_parameters, i, j, n_failures
+    integer           :: nml_unit, rc_nml, n_input_parameters, i, j, n_failures, default_value_integer
     character(len=CL) :: nml_error_message
     character(len=3)  :: i_string, j_string
     logical           :: outside_of_lower_bound, outside_of_upper_bound
@@ -258,7 +260,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
             call check(input_parameters(i)%lower_bound_active .or. input_parameters(i)%upper_bound_active, &
                         "input_parameter #" // trim(i_string) &
                         // " with parameter_name '" // trim(parameter_name) &
-                        // "': bounds must be set if numeric and required, " &
+                        // "': one or more bounds must be set if numeric and required, " &
                         // "otherwise Fortran can not detect if a variable is not set.", n_failures)
             call check(len(trim(input_parameters(i)%default_value)) > 0, &
                         "input_parameter #" // trim(i_string) &
@@ -267,9 +269,15 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
                         // "otherwise Fortran can not detect if a variable is not set.", n_failures)
             if ((input_parameters(i)%lower_bound_active .or. input_parameters(i)%upper_bound_active) &
                     .and. (len(trim(input_parameters(i)%default_value)) > 0)) then
-                read(unit=input_parameters(i)%default_value, fmt="(f16.8)") default_value_real 
-                outside_of_lower_bound = default_value_real < input_parameters(i)%lower_bound
-                outside_of_upper_bound = default_value_real > input_parameters(i)%upper_bound
+                if (input_parameters(i)%type_definition(1:4) == "inte") then
+                    read(unit=input_parameters(i)%default_value, fmt="(i8)") default_value_integer
+                    outside_of_lower_bound = default_value_integer < nint(input_parameters(i)%lower_bound)
+                    outside_of_upper_bound = default_value_integer > nint(input_parameters(i)%upper_bound)
+                else
+                    read(unit=input_parameters(i)%default_value, fmt="(f16.8)") default_value_real 
+                    outside_of_lower_bound = default_value_real < input_parameters(i)%lower_bound
+                    outside_of_upper_bound = default_value_real > input_parameters(i)%upper_bound
+                end if
                 
                 call check(outside_of_lower_bound .or. outside_of_upper_bound, &
                         "input_parameter #" // trim(i_string) &
@@ -285,6 +293,24 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
                         // " with parameter_name '" // trim(parameter_name) &
                         // "': default_value must be set for logical input parameters.", n_failures)
         end if
+        
+        if ((input_parameters(i)%type_definition(1:4) == "inte") .and. input_parameters(i)%lower_bound_active) then
+            call check(is_close(input_parameters(i)%lower_bound, real(nint(input_parameters(i)%lower_bound), WP)), &
+                        "input_parameter #" // trim(i_string) &
+                        // " with parameter_name '" // trim(parameter_name) &
+                        // "': integer input parameter must have integer lower bound.", n_failures)
+        end if
+        
+        if ((input_parameters(i)%type_definition(1:4) == "inte") .and. input_parameters(i)%upper_bound_active) then
+            call check(is_close(input_parameters(i)%upper_bound, real(nint(input_parameters(i)%upper_bound), WP)), &
+                        "input_parameter #" // trim(i_string) &
+                        // " with parameter_name '" // trim(parameter_name) &
+                        // "': integer input parameter must have integer upper bound.", n_failures)
+        end if
+        
+        ! I could check that the `default_value` for an integer is an integer.
+        ! But apparently `-1` converted to `(f16.8)` format is 0.0!
+        ! I'd need to add a decimal point to get the right number.
         
         do j = 1, i - 1
             write(unit=j_string, fmt="(i0)") j
@@ -333,7 +359,7 @@ subroutine write_subroutine(config, input_parameters)
     type(input_parameter_type), allocatable, intent(in) :: input_parameters(:)
     
     integer       :: out_unit, n, i, line_length
-    character(CL) :: type_definition, line, default_value
+    character(CL) :: type_definition, line, default_value, underscore_kind_parameter
     character(4)  :: type4
     
     open(newunit=out_unit, action="write", status="replace", position="rewind", &
@@ -438,10 +464,32 @@ subroutine write_subroutine(config, input_parameters)
                     // ' namelist group is required.", rc)'
         end if
         
-        ! TODO: How can I make numeric variables required? Check with `is_close` that the variable equals its default.
+        ! How can I make numeric variables required?
+        ! Check with `==` for integers and `is_close` otherwise that the variable equals its default.
+        if ((input_parameters(i)%type_definition(1:4) == "inte") .and. input_parameters(i)%required) then
+            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_parameters(i)%parameter_name) &
+                    // " /= " // trim(input_parameters(i)%default_value) // ", " // '"' &
+                    // trim(input_parameters(i)%parameter_name) // " in the " // trim(config%namelist_group) &
+                    // ' namelist group is required.", rc)'
+        end if
+        
+        if (((input_parameters(i)%type_definition(1:4) == "real") .or. (input_parameters(i)%type_definition(1:4) == "type")) &
+                .and. input_parameters(i)%required) then
+            if (trim(input_parameters(i)%type_definition) == "real") then
+                underscore_kind_parameter = ""
+            else
+                underscore_kind_parameter = "_" // trim(config%kind_parameter)
+            end if
+            
+            write(unit=out_unit, fmt="(a)") "call check(is_close(" // trim(input_parameters(i)%parameter_name) &
+                    // ", " // trim(input_parameters(i)%default_value) // trim(underscore_kind_parameter) // "), " // '"' &
+                    // trim(input_parameters(i)%parameter_name) // " in the " // trim(config%namelist_group) &
+                    // ' namelist group is required.", rc)'
+        end if
     end do
     
     ! TODO: check bounds
+    ! TODO: for integers, convert bounds to integer
     
     ! TODO: write to config variable
     ! TODO: trim strings

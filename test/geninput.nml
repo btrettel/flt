@@ -23,6 +23,17 @@ tex_description = "blah"
 /
 
 &input_parameter
+parameter_name  = "int_test"
+type_definition = "integer"
+required        = .true.
+tex_unit        = "1"
+tex_description = "blah"
+lower_bound_active = .true.
+lower_bound        = 0
+default_value      = "-1"
+/
+
+&input_parameter
 parameter_name        = "d_plunger"
 type_definition       = "type(si_length)"
 required              = .true.
@@ -49,9 +60,13 @@ default_value         = "-1.0"
 &input_parameter
 parameter_name  = "l_precompress"
 type_definition = "type(si_length)"
-!required        = .true.
+required        = .true.
 tex_unit        = "m"
 tex_description = "blah"
+lower_bound_active    = .true.
+lower_bound           = 0.0
+lower_bound_not_equal = .true.
+default_value         = "-1.0"
 /
 
 &input_parameter

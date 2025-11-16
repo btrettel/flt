@@ -4,6 +4,7 @@ Priorities:
 
 - geninput
     - inputs
+        - Check that every member of the derived type is used.
         - differentiable or not
             - enables or disables the `x_stdev` variable (replace `x` with variable name)
         - fuzz testing lower bound
