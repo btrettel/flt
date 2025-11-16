@@ -14,8 +14,10 @@ use checks, only: assert, check
 implicit none
 
 type :: config_type
-    character(len=CL) :: output_file
+    character(len=CL) :: output_file_prefix
     character(len=CL) :: namelist_group
+    character(len=CL) :: type_name
+    character(len=CL) :: config_variable
     
     ! Write code for multiple namelist groups of the same name, like in `read_input_parameter_namelists` here
     ! TODO: multiple_namelist_groups
@@ -41,7 +43,7 @@ end type input_parameter_type
 integer, parameter :: MAX_LINE_LENGTH = 132
 
 character(len=:), allocatable           :: input_file
-integer                                 :: rc_config, rc_input_parameters, out_unit, rc_code
+integer                                 :: rc_config, rc_input_parameters
 type(config_type)                       :: config
 type(input_parameter_type), allocatable :: input_parameters(:)
 
@@ -58,12 +60,10 @@ if (rc_input_parameters /= 0) then
     error stop
 end if
 
-open(newunit=out_unit, action="write", status="replace", position="rewind", file=trim(config%output_file))
-call write_input_code(config, input_parameters, out_unit, rc_code)
-close(unit=out_unit)
-if (rc_code /= 0) then
-    error stop
-end if
+call write_type(config, input_parameters)
+call write_subroutine(config, input_parameters)
+
+! TODO: write_tex
 
 contains
 
@@ -76,13 +76,17 @@ subroutine read_config_namelist(input_file, config_out, rc)
     character(len=CL) :: nml_error_message
     
     ! `config` namelist group
-    character(len=CL) :: output_file
+    character(len=CL) :: output_file_prefix
     character(len=CL) :: namelist_group
+    character(len=CL) :: type_name
+    character(len=CL) :: config_variable
     
-    namelist /config/ output_file, namelist_group
+    namelist /config/ output_file_prefix, namelist_group, type_name, config_variable
     
-    output_file    = ""
-    namelist_group = ""
+    output_file_prefix = ""
+    namelist_group     = ""
+    type_name          = ""
+    config_variable    = ""
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=config, iostat=rc_nml, iomsg=nml_error_message)
@@ -95,11 +99,15 @@ subroutine read_config_namelist(input_file, config_out, rc)
     end if
     
     rc = 0
-    call check(len(trim(output_file)) > 0, "output_file must be defined", rc)
+    call check(len(trim(output_file_prefix)) > 0, "output_file_prefix must be defined", rc)
     call check(len(trim(namelist_group)) > 0, "namelist_group must be defined", rc)
+    call check(len(trim(type_name)) > 0, "type_name must be defined", rc)
+    call check(len(trim(config_variable)) > 0, "config_variable must be defined", rc)
     
-    config_out%output_file    = trim(output_file)
-    config_out%namelist_group = trim(namelist_group)
+    config_out%output_file_prefix = trim(output_file_prefix)
+    config_out%namelist_group     = trim(namelist_group)
+    config_out%type_name          = trim(type_name)
+    config_out%config_variable    = trim(config_variable)
 end subroutine read_config_namelist
 
 subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
@@ -111,7 +119,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     character(len=CL) :: nml_error_message
     character(len=3)  :: i_string, j_string
     
-    ! `seed_unit` namelist group
+    ! `input_parameter` namelist group
     character(len=CL) :: parameter_name
     character(len=CL) :: type_definition
     character(len=CL) :: default_value
@@ -174,6 +182,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         upper_bound_error_message = ""
         tex_unit                  = ""
         tex_description           = ""
+        
         read(unit=nml_unit, nml=input_parameter, iostat=rc_nml, iomsg=nml_error_message)
         
         if (rc_nml == IOSTAT_END) then
@@ -253,22 +262,54 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     end if
 end subroutine read_input_parameter_namelists
 
-subroutine write_input_code(config, input_parameters, out_unit, rc)
+subroutine write_type(config, input_parameters)
     type(config_type), intent(in)                       :: config
     type(input_parameter_type), allocatable, intent(in) :: input_parameters(:)
-    integer, intent(in)                                 :: out_unit
-    integer, intent(out)                                :: rc
     
-    integer       :: n, i, line_length
-    character(CL) :: line
+    integer :: out_unit, n, i
     
-    ! TODO: Write `type` to a different file?
+    open(newunit=out_unit, action="write", status="replace", position="rewind", &
+            file=trim(config%output_file_prefix) // "_type.f90")
     
     n = size(input_parameters)
     
+    write(unit=out_unit, fmt="(a)") "type :: " // trim(config%type_name)
+    do i = 1, n
+        write(unit=out_unit, fmt="(a)") "    " // trim(input_parameters(i)%type_definition) &
+                                            // " :: " // trim(input_parameters(i)%parameter_name)
+    end do
+    write(unit=out_unit, fmt="(a)") "end type " // trim(config%type_name)
+    
+    close(unit=out_unit)
+end subroutine write_type
+
+subroutine write_subroutine(config, input_parameters)
+    type(config_type), intent(in)                       :: config
+    type(input_parameter_type), allocatable, intent(in) :: input_parameters(:)
+    
+    integer       :: out_unit, n, i, line_length
+    character(CL) :: type_definition, line, default_value
+    character(4)  :: type4
+    
+    open(newunit=out_unit, action="write", status="replace", position="rewind", &
+            file=trim(config%output_file_prefix) // "_subroutine.f90")
+    
+    n = size(input_parameters)
+    
+    ! nml_unit
+    ! rc_nml
+    ! nml_error_message
+    
     write(unit=out_unit, fmt="(a)") "! `" // trim(config%namelist_group) // "` namelist group"
     do i = 1, n
-        write(unit=out_unit, fmt="(a)") trim(input_parameters(i)%type_definition) &
+        ! genunits types should be converted to `real` for the namelists
+        if (input_parameters(i)%type_definition(1:4) == "type") then
+            type_definition = "real(WP)" ! TODO: Assumes `WP`
+        else
+            type_definition = input_parameters(i)%type_definition
+        end if
+        
+        write(unit=out_unit, fmt="(a)") trim(type_definition) &
                                             // " :: " // trim(input_parameters(i)%parameter_name)
     end do
     write(unit=out_unit, fmt="(a)") ""
@@ -293,7 +334,44 @@ subroutine write_input_code(config, input_parameters, out_unit, rc)
         end if
     end do
     
-    rc = 0
-end subroutine write_input_code
+    write(unit=out_unit, fmt="(a)") ""
+    write(unit=out_unit, fmt="(a)") "! defaults"
+    do i = 1, n
+        if (len(trim(input_parameters(i)%default_value)) == 0) then
+            type4 = input_parameters(i)%type_definition(1:4)
+            select case (type4)
+                case ("inte")
+                    default_value = "0"
+                case ("real")
+                    default_value = "0.0_WP" ! TODO: Assumes `WP`
+                case ("type")
+                    default_value = "0.0_WP" ! TODO: Assumes `WP`
+                case ("char")
+                    default_value = '""'
+                case default
+                    write(unit=ERROR_UNIT, fmt="(a)") "Invalid type definition: " // trim(input_parameters(i)%type_definition)
+                    error stop
+            end select
+        else
+            default_value = input_parameters(i)%default_value
+        end if
+        
+        write(unit=out_unit, fmt="(a)") trim(input_parameters(i)%parameter_name) // " = " // trim(default_value)
+    end do
+    write(unit=out_unit, fmt="(a)") ""
+    
+    write(unit=out_unit, fmt="(a)") 'open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")'
+    write(unit=out_unit, fmt="(a)") "read(unit=nml_unit, nml=" // trim(config%namelist_group) &
+                                        // ", iostat=rc_nml, iomsg=nml_error_message)"
+    write(unit=out_unit, fmt="(a)") "close(unit=nml_unit)"
+    write(unit=out_unit, fmt="(a)") ""
+    write(unit=out_unit, fmt="(a)") "if ((rc_nml /= 0) .and. (rc_nml /= IOSTAT_END)) then"
+    write(unit=out_unit, fmt="(a)") "    write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)"
+    write(unit=out_unit, fmt="(a)") "    rc = rc_nml"
+    write(unit=out_unit, fmt="(a)") "    return"
+    write(unit=out_unit, fmt="(a)") "end if"
+    
+    close(unit=out_unit)
+end subroutine write_subroutine
 
 end program geninput

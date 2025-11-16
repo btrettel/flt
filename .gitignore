@@ -218,7 +218,9 @@ geninput
 src/rev.f90
 src/units.f90
 src/units_ad.f90
-src/geninput_demo.f90
+src/geninput_type.f90
+src/geninput_subroutine.f90
+src/geninput.tex
 missed.txt
 *.opt.yaml
 *.optrpt

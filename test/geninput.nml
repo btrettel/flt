@@ -1,39 +1,41 @@
 &config
-output_file = "src/geninput_demo.f90"
-namelist_group = "testing"
+output_file_prefix = "src/geninput"
+namelist_group     = "testing"
+type_name          = "geninput_type"
+config_variable    = "config"
 /
 
 &input_parameter
 parameter_name  = "test12345678"
-type_definition = "real"
+type_definition = "type(si_length)"
 tex_unit        = "m"
 tex_description = "blah"
 /
 
 &input_parameter
 parameter_name  = "very_long_name_very_long_name_1"
-type_definition = "real"
+type_definition = "real(WP)"
 tex_unit        = "m"
 tex_description = "blah"
 /
 
 &input_parameter
 parameter_name  = "very_long_name_very_long_name_2"
-type_definition = "real"
+type_definition = "real(WP)"
 tex_unit        = "m"
 tex_description = "blah"
 /
 
 &input_parameter
 parameter_name  = "very_long_name_very_long_name_3"
-type_definition = "real"
+type_definition = "real(WP)"
 tex_unit        = "m"
 tex_description = "blah"
 /
 
 &input_parameter
 parameter_name  = "very_long_name_very_long_name_4"
-type_definition = "real"
+type_definition = "real(WP)"
 tex_unit        = "m"
 tex_description = "blah"
 /
