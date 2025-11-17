@@ -63,6 +63,8 @@ if (rc_input_parameters /= 0) then
     error stop
 end if
 
+call sort_input_parameters(input_parameters)
+
 call write_type(config, input_parameters)
 call write_subroutine(config, input_parameters)
 
@@ -496,5 +498,68 @@ subroutine write_subroutine(config, input_parameters)
     
     close(unit=out_unit)
 end subroutine write_subroutine
+
+subroutine sort_input_parameters(input_parameters)
+    type(input_parameter_type), intent(in out) :: input_parameters(:)
+    
+    integer :: i, n, j, i_switch, j_min
+    type(input_parameter_type) :: temp_input_parameter
+    
+    n = size(input_parameters)
+    
+    ! Separate input_parameters into first the required input parameters and then the optional input_parameters.
+    outer_separate: do i = 1, n
+        if (input_parameters(i)%required) cycle outer_separate
+        
+        do j = i + 1, n
+            if (input_parameters(j)%required) then
+                temp_input_parameter = input_parameters(i)
+                input_parameters(i)  = input_parameters(j)
+                input_parameters(j)  = temp_input_parameter
+                cycle outer_separate
+            end if
+        end do
+    end do outer_separate
+    
+    ! Then alphabetically sort the two within each section.
+    
+    ! Determine where the switch from required to optional is.
+    do i = 1, n
+        if (.not. input_parameters(i)%required) then
+            i_switch = i
+            exit
+        end if
+    end do
+    
+    do i = 1, i_switch - 1
+        j_min = i
+        do j = i + 1, i_switch - 1
+            if (input_parameters(j)%parameter_name < input_parameters(j_min)%parameter_name) then
+                j_min = j
+            end if
+        end do
+        
+        if (j_min /= i) then
+            temp_input_parameter    = input_parameters(i)
+            input_parameters(i)     = input_parameters(j_min)
+            input_parameters(j_min) = temp_input_parameter
+        end if
+    end do
+    
+    do i = i_switch, n
+        j_min = i
+        do j = i + 1, n
+            if (input_parameters(j)%parameter_name < input_parameters(j_min)%parameter_name) then
+                j_min = j
+            end if
+        end do
+        
+        if (j_min /= i) then
+            temp_input_parameter    = input_parameters(i)
+            input_parameters(i)     = input_parameters(j_min)
+            input_parameters(j_min) = temp_input_parameter
+        end if
+    end do
+end subroutine sort_input_parameters
 
 end program geninput
