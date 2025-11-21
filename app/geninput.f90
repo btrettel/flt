@@ -473,7 +473,9 @@ subroutine write_subroutine(config, input_parameters)
     write(unit=out_unit, fmt="(a)") ""
     
     write(unit=out_unit, fmt="(a)") "rc = 0"
+    write(unit=out_unit, fmt="(a)") ""
     
+    ! Check if required input parameters are defined.
     do i = 1, n
         ! Check that required strings have greater than zero length.
         if ((input_parameters(i)%type_definition(1:4) == "char") .and. input_parameters(i)%required) then
@@ -506,7 +508,8 @@ subroutine write_subroutine(config, input_parameters)
         end if
     end do
     
-    ! TODO: check bounds
+    write(unit=out_unit, fmt="(a)") ""
+    ! Check if input parameters are within the bounds.
     do i = 1, n
         if (input_parameters(i)%lower_bound_active) then
             select case (input_parameters(i)%type_definition(1:4))
