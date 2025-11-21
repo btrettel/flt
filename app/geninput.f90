@@ -19,10 +19,11 @@ type :: config_type
     character(len=CL) :: type_name
     character(len=CL) :: config_variable
     character(len=CL) :: kind_parameter
-    logical           :: write_tex, write_md
+    logical           :: write_tex, write_md ! whether to enable writing TeX or Markdown documentation
+    logical           :: uq, ga ! whether to enable uncertainty quantification or the genetic algorithm respectively
     
     ! Write code for multiple namelist groups of the same name, like in `read_input_parameter_namelists` here
-    ! TODO: multiple_namelist_groups
+    ! TODO: `logical :: multiple_namelist_groups`
 end type config_type
 
 type :: input_parameter_type
@@ -82,11 +83,14 @@ subroutine read_config_namelist(input_file, config, rc)
     character(len=CL) :: nml_error_message
     
     ! `config` namelist group
+    ! See type definition above for some comments on these.
     character(len=CL) :: output_file_prefix
     character(len=CL) :: namelist_group
     character(len=CL) :: type_name
     character(len=CL) :: config_variable
     character(len=CL) :: kind_parameter
+    logical           :: write_tex, write_md
+    logical           :: uq, ga
     
     namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter
     
@@ -95,6 +99,10 @@ subroutine read_config_namelist(input_file, config, rc)
     type_name          = ""
     config_variable    = ""
     kind_parameter     = ""
+    write_tex          = .false.
+    write_md           = .false.
+    uq                 = .false.
+    ga                 = .false.
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=geninput_config, iostat=rc_nml, iomsg=nml_error_message)
@@ -117,6 +125,10 @@ subroutine read_config_namelist(input_file, config, rc)
     config%type_name          = trim(type_name)
     config%config_variable    = trim(config_variable)
     config%kind_parameter     = trim(kind_parameter)
+    config%write_tex          = write_tex
+    config%write_md           = write_md
+    config%uq                 = uq
+    config%ga                 = ga
 end subroutine read_config_namelist
 
 subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
@@ -276,7 +288,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
                     outside_of_lower_bound = default_value_integer < nint(input_parameters(i)%lower_bound)
                     outside_of_upper_bound = default_value_integer > nint(input_parameters(i)%upper_bound)
                 else
-                    read(unit=input_parameters(i)%default_value, fmt="(f16.8)") default_value_real 
+                    read(unit=input_parameters(i)%default_value, fmt="(f16.8)") default_value_real
                     outside_of_lower_bound = default_value_real < input_parameters(i)%lower_bound
                     outside_of_upper_bound = default_value_real > input_parameters(i)%upper_bound
                 end if
@@ -294,6 +306,11 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
                         "input_parameter #" // trim(i_string) &
                         // " with parameter_name '" // trim(parameter_name) &
                         // "': default_value must be set for logical input parameters.", n_failures)
+            call check(.not. input_parameters(i)%required, &
+                        "input_parameter #" // trim(i_string) &
+                        // " with parameter_name '" // trim(parameter_name) &
+                        // "': logical parameters can not be required as there is no way to check in a Fortran namelist.", &
+                        n_failures)
         end if
         
         if ((input_parameters(i)%type_definition(1:4) == "inte") .and. input_parameters(i)%lower_bound_active) then
@@ -361,8 +378,9 @@ subroutine write_subroutine(config, input_parameters)
     type(input_parameter_type), allocatable, intent(in) :: input_parameters(:)
     
     integer       :: out_unit, n, i, line_length
-    character(CL) :: type_definition, line, default_value, underscore_kind_parameter
+    character(CL) :: type_definition, line, default_value, underscore_kind_parameter, bound_string
     character(4)  :: type4
+    character(2)  :: op
     
     open(newunit=out_unit, action="write", status="replace", position="rewind", &
             file=trim(config%output_file_prefix) // "_subroutine.f90")
@@ -430,11 +448,9 @@ subroutine write_subroutine(config, input_parameters)
                 case ("char")
                     default_value = '""'
                 case ("logi")
-                    write(unit=ERROR_UNIT, fmt="(a)") "logical variables must have default_value set"
-                    error stop
+                    error stop "logical variables must have default_value set"
                 case default
-                    write(unit=ERROR_UNIT, fmt="(a)") "Invalid type definition: " // trim(input_parameters(i)%type_definition)
-                    error stop
+                    error stop "Invalid type definition: " // trim(input_parameters(i)%type_definition)
             end select
         else
             default_value = input_parameters(i)%default_value
@@ -491,7 +507,65 @@ subroutine write_subroutine(config, input_parameters)
     end do
     
     ! TODO: check bounds
-    ! TODO: for integers, convert bounds to integer
+    do i = 1, n
+        if (input_parameters(i)%lower_bound_active) then
+            select case (input_parameters(i)%type_definition(1:4))
+                case ("real", "type")
+                    if (trim(input_parameters(i)%type_definition) == "real") then
+                        write(unit=bound_string, fmt="(g0)") input_parameters(i)%lower_bound
+                    else
+                        write(unit=bound_string, fmt="(g0, a, a)") input_parameters(i)%lower_bound, &
+                                                                    "_", trim(config%kind_parameter)
+                    end if
+                case ("inte")
+                    write(unit=bound_string, fmt="(i0)") nint(input_parameters(i)%lower_bound)
+                case default
+                    write(unit=ERROR_UNIT, fmt="(a)") "This type of input parameter can't have a bound."
+                    error stop
+            end select
+            
+            if (input_parameters(i)%lower_bound_not_equal) then
+                op = ">"
+            else
+                op = ">="
+            end if
+            
+            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_parameters(i)%parameter_name) &
+                     // " " // trim(op) // " " // trim(bound_string) // "), " // '"' &
+                    // trim(input_parameters(i)%parameter_name) // " in the " // trim(config%namelist_group) &
+                    // ' namelist group violates the lower bound.", rc)'
+            ! TODO: Add numbers to the error message
+        end if
+        
+        if (input_parameters(i)%upper_bound_active) then
+            select case (input_parameters(i)%type_definition(1:4))
+                case ("real", "type")
+                    if (trim(input_parameters(i)%type_definition) == "real") then
+                        write(unit=bound_string, fmt="(g0)") input_parameters(i)%upper_bound
+                    else
+                        write(unit=bound_string, fmt="(g0, a, a)") input_parameters(i)%upper_bound, &
+                                                                    "_", trim(config%kind_parameter)
+                    end if
+                case ("inte")
+                    write(unit=bound_string, fmt="(i0)") nint(input_parameters(i)%upper_bound)
+                case default
+                    write(unit=ERROR_UNIT, fmt="(a)") "This type of input parameter can't have a bound."
+                    error stop
+            end select
+            
+            if (input_parameters(i)%upper_bound_not_equal) then
+                op = "<"
+            else
+                op = "<="
+            end if
+            
+            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_parameters(i)%parameter_name) &
+                     // " " // trim(op) // " " // trim(bound_string) // "), " // '"' &
+                    // trim(input_parameters(i)%parameter_name) // " in the " // trim(config%namelist_group) &
+                    // ' namelist group violates the upper bound.", rc)'
+            ! TODO: Add numbers to the error message
+        end if
+    end do
     
     ! TODO: write to config variable
     ! TODO: trim strings
@@ -500,6 +574,8 @@ subroutine write_subroutine(config, input_parameters)
 end subroutine write_subroutine
 
 subroutine sort_input_parameters(input_parameters)
+    ! <https://en.wikipedia.org/wiki/Selection_sort>
+    
     type(input_parameter_type), intent(in out) :: input_parameters(:)
     
     integer :: i, n, j, i_switch, j_min

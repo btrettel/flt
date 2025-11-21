@@ -28,9 +28,9 @@ type_definition = "integer"
 required        = .true.
 tex_unit        = "1"
 tex_description = "blah"
-lower_bound_active = .true.
-lower_bound        = 0
-default_value      = "-1"
+upper_bound_active = .true.
+upper_bound        = 10
+default_value      = "100"
 /
 
 &input_parameter
