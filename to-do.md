@@ -4,6 +4,8 @@ Priorities:
 
 - Make Fortran Wiki page on unit checking.
 - geninput
+    - Use custom bound error messages.
+    - Use `bound_fmt`
     - inputs
         - Check that every member of the derived type is used.
         - fuzz testing lower bound
@@ -18,6 +20,7 @@ Priorities:
         - optimization bounds
     - Make Markdown and TeX output optional and specified in the `geninput_config` namelist
     - Markdown output
+    - How can conditional defaults be made? Break the subroutine into parts and manually insert code between the parts?
 - <https://en.wikipedia.org/wiki/Sterbenz_lemma>: Make `assert_sterbenz` to assert that the conditions of the Sterbenz lemma are satisfied.
     - In `fmad` and `genunits`, create an operator that automatically enforces this? `.minus.`?
     - Other operators in `fmad` could benefit from this too. Anywhere a subtraction occurs (like the derivatives for division) could have a Sterbenz assertions version.

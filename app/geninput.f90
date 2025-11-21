@@ -40,6 +40,7 @@ type :: input_parameter_type
     logical           :: upper_bound_not_equal
     real(WP)          :: upper_bound
     character(len=CL) :: upper_bound_error_message
+    character(len=CL) :: bound_fmt
     character(len=CL) :: tex_unit
     character(len=CL) :: tex_description
 end type input_parameter_type
@@ -131,6 +132,71 @@ subroutine read_config_namelist(input_file, config, rc)
     config%ga                 = ga
 end subroutine read_config_namelist
 
+subroutine sort_input_parameters(input_parameters)
+    ! <https://en.wikipedia.org/wiki/Selection_sort>
+    
+    type(input_parameter_type), intent(in out) :: input_parameters(:)
+    
+    integer :: i, n, j, i_switch, j_min
+    type(input_parameter_type) :: temp_input_parameter
+    
+    n = size(input_parameters)
+    
+    ! Separate input_parameters into first the required input parameters and then the optional input_parameters.
+    outer_separate: do i = 1, n
+        if (input_parameters(i)%required) cycle outer_separate
+        
+        do j = i + 1, n
+            if (input_parameters(j)%required) then
+                temp_input_parameter = input_parameters(i)
+                input_parameters(i)  = input_parameters(j)
+                input_parameters(j)  = temp_input_parameter
+                cycle outer_separate
+            end if
+        end do
+    end do outer_separate
+    
+    ! Then alphabetically sort the two within each section.
+    
+    ! Determine where the switch from required to optional is.
+    do i = 1, n
+        if (.not. input_parameters(i)%required) then
+            i_switch = i
+            exit
+        end if
+    end do
+    
+    do i = 1, i_switch - 1
+        j_min = i
+        do j = i + 1, i_switch - 1
+            if (input_parameters(j)%parameter_name < input_parameters(j_min)%parameter_name) then
+                j_min = j
+            end if
+        end do
+        
+        if (j_min /= i) then
+            temp_input_parameter    = input_parameters(i)
+            input_parameters(i)     = input_parameters(j_min)
+            input_parameters(j_min) = temp_input_parameter
+        end if
+    end do
+    
+    do i = i_switch, n
+        j_min = i
+        do j = i + 1, n
+            if (input_parameters(j)%parameter_name < input_parameters(j_min)%parameter_name) then
+                j_min = j
+            end if
+        end do
+        
+        if (j_min /= i) then
+            temp_input_parameter    = input_parameters(i)
+            input_parameters(i)     = input_parameters(j_min)
+            input_parameters(j_min) = temp_input_parameter
+        end if
+    end do
+end subroutine sort_input_parameters
+
 subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     character(len=*), intent(in)                         :: input_file
     type(input_parameter_type), allocatable, intent(out) :: input_parameters(:)
@@ -156,6 +222,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     logical           :: upper_bound_not_equal
     real(WP)          :: upper_bound
     character(len=CL) :: upper_bound_error_message
+    character(len=CL) :: bound_fmt
     character(len=CL) :: tex_unit
     character(len=CL) :: tex_description
     
@@ -205,6 +272,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         upper_bound_not_equal     = .false.
         upper_bound               = 0.0_WP
         upper_bound_error_message = ""
+        bound_fmt                 = ""
         tex_unit                  = ""
         tex_description           = ""
         
@@ -234,8 +302,20 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         input_parameters(i)%upper_bound_not_equal     = upper_bound_not_equal
         input_parameters(i)%upper_bound               = upper_bound
         input_parameters(i)%upper_bound_error_message = trim(upper_bound_error_message)
+        input_parameters(i)%bound_fmt                 = trim(bound_fmt)
         input_parameters(i)%tex_unit                  = trim(tex_unit)
         input_parameters(i)%tex_description           = trim(tex_description)
+        
+        ! Conditional defaults.
+        if ((len(trim(input_parameters(i)%bound_fmt)) == 0) .and. (input_parameters(i)%type_definition(1:4) == "inte")) then
+            input_parameters(i)%bound_fmt = "i0"
+        end if
+        
+        if ((len(trim(input_parameters(i)%bound_fmt)) == 0) &
+                .and. ((input_parameters(i)%type_definition(1:4) == "real") &
+                .or. (input_parameters(i)%type_definition(1:4) == "type"))) then
+            input_parameters(i)%bound_fmt = "g0"
+        end if
         
         write(unit=i_string, fmt="(i0)") i
         
@@ -515,13 +595,15 @@ subroutine write_subroutine(config, input_parameters)
             select case (input_parameters(i)%type_definition(1:4))
                 case ("real", "type")
                     if (trim(input_parameters(i)%type_definition) == "real") then
-                        write(unit=bound_string, fmt="(g0)") input_parameters(i)%lower_bound
+                        write(unit=bound_string, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                                input_parameters(i)%lower_bound
                     else
-                        write(unit=bound_string, fmt="(g0, a, a)") input_parameters(i)%lower_bound, &
-                                                                    "_", trim(config%kind_parameter)
+                        write(unit=bound_string, fmt="(" // trim(input_parameters(i)%bound_fmt) // ", a, a)") &
+                                input_parameters(i)%lower_bound, "_", trim(config%kind_parameter)
                     end if
                 case ("inte")
-                    write(unit=bound_string, fmt="(i0)") nint(input_parameters(i)%lower_bound)
+                    write(unit=bound_string, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                                nint(input_parameters(i)%lower_bound)
                 case default
                     write(unit=ERROR_UNIT, fmt="(a)") "This type of input parameter can't have a bound."
                     error stop
@@ -575,70 +657,5 @@ subroutine write_subroutine(config, input_parameters)
     
     close(unit=out_unit)
 end subroutine write_subroutine
-
-subroutine sort_input_parameters(input_parameters)
-    ! <https://en.wikipedia.org/wiki/Selection_sort>
-    
-    type(input_parameter_type), intent(in out) :: input_parameters(:)
-    
-    integer :: i, n, j, i_switch, j_min
-    type(input_parameter_type) :: temp_input_parameter
-    
-    n = size(input_parameters)
-    
-    ! Separate input_parameters into first the required input parameters and then the optional input_parameters.
-    outer_separate: do i = 1, n
-        if (input_parameters(i)%required) cycle outer_separate
-        
-        do j = i + 1, n
-            if (input_parameters(j)%required) then
-                temp_input_parameter = input_parameters(i)
-                input_parameters(i)  = input_parameters(j)
-                input_parameters(j)  = temp_input_parameter
-                cycle outer_separate
-            end if
-        end do
-    end do outer_separate
-    
-    ! Then alphabetically sort the two within each section.
-    
-    ! Determine where the switch from required to optional is.
-    do i = 1, n
-        if (.not. input_parameters(i)%required) then
-            i_switch = i
-            exit
-        end if
-    end do
-    
-    do i = 1, i_switch - 1
-        j_min = i
-        do j = i + 1, i_switch - 1
-            if (input_parameters(j)%parameter_name < input_parameters(j_min)%parameter_name) then
-                j_min = j
-            end if
-        end do
-        
-        if (j_min /= i) then
-            temp_input_parameter    = input_parameters(i)
-            input_parameters(i)     = input_parameters(j_min)
-            input_parameters(j_min) = temp_input_parameter
-        end if
-    end do
-    
-    do i = i_switch, n
-        j_min = i
-        do j = i + 1, n
-            if (input_parameters(j)%parameter_name < input_parameters(j_min)%parameter_name) then
-                j_min = j
-            end if
-        end do
-        
-        if (j_min /= i) then
-            temp_input_parameter    = input_parameters(i)
-            input_parameters(i)     = input_parameters(j_min)
-            input_parameters(j_min) = temp_input_parameter
-        end if
-    end do
-end subroutine sort_input_parameters
 
 end program geninput
