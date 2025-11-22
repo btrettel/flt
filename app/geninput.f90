@@ -8,7 +8,7 @@
 program geninput
 
 use cli, only: get_input_file_name_from_cli
-use, intrinsic :: iso_fortran_env, only: IOSTAT_END, ERROR_UNIT
+use, intrinsic :: iso_fortran_env, only: IOSTAT_END, ERROR_UNIT, OUTPUT_UNIT
 use prec, only: CL, WP
 use checks, only: assert, check, is_close
 implicit none
@@ -460,6 +460,8 @@ subroutine write_type(config, input_parameters)
     write(unit=out_unit, fmt="(a)") "end type " // trim(config%type_name)
     
     close(unit=out_unit)
+    
+    write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // "_type.f90."
 end subroutine write_type
 
 subroutine write_subroutine(config, input_parameters)
@@ -715,6 +717,8 @@ subroutine write_subroutine(config, input_parameters)
     end if
     
     close(unit=out_unit)
+    
+    write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // "_subroutine.f90."
 end subroutine write_subroutine
 
 end program geninput
