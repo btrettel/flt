@@ -697,8 +697,18 @@ subroutine write_subroutine(config, input_parameters)
         end if
     end do
     
-    ! TODO: write to config variable
-    ! TODO: trim strings
+    write(unit=out_unit, fmt="(a)") ""
+    ! Write to config variable.
+    do i = 1, n
+        if (.not. (input_parameters(i)%type_definition(1:4) == "char")) then
+            write(unit=out_unit, fmt="(a)") "config%" // trim(input_parameters(i)%parameter_name) // " = " &
+                                                // trim(input_parameters(i)%parameter_name)
+        else
+            ! Trim strings.
+            write(unit=out_unit, fmt="(a)") "config%" // trim(input_parameters(i)%parameter_name) // " = trim(" &
+                                                // trim(input_parameters(i)%parameter_name) // ")"
+        end if
+    end do
     
     close(unit=out_unit)
 end subroutine write_subroutine
