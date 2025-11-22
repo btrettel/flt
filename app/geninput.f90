@@ -19,6 +19,7 @@ type :: config_type
     character(len=CL) :: type_name
     character(len=CL) :: config_variable
     character(len=CL) :: kind_parameter
+    logical           :: use_type
     logical           :: write_tex, write_md ! whether to enable writing TeX or Markdown documentation
     logical           :: uq, ga ! whether to enable uncertainty quantification or the genetic algorithm respectively
     
@@ -67,7 +68,7 @@ end if
 
 call sort_input_parameters(input_parameters)
 
-call write_type(config, input_parameters)
+if (config%use_type) call write_type(config, input_parameters)
 call write_subroutine(config, input_parameters)
 
 ! TODO if (config%write_tex) call write_tex(config, input_parameters)
@@ -92,6 +93,7 @@ subroutine read_config_namelist(input_file, config, rc)
     character(len=CL) :: type_name
     character(len=CL) :: config_variable
     character(len=CL) :: kind_parameter
+    logical           :: use_type
     logical           :: write_tex, write_md
     logical           :: uq, ga
     
@@ -100,7 +102,7 @@ subroutine read_config_namelist(input_file, config, rc)
     output_file_prefix = ""
     namelist_group     = ""
     type_name          = ""
-    config_variable    = ""
+    config_variable    = "config"
     kind_parameter     = ""
     write_tex          = .false.
     write_md           = .false.
@@ -120,14 +122,15 @@ subroutine read_config_namelist(input_file, config, rc)
     rc = 0
     call check(len(trim(output_file_prefix)) > 0, "output_file_prefix must be defined", rc)
     call check(len(trim(namelist_group)) > 0, "namelist_group must be defined", rc)
-    call check(len(trim(type_name)) > 0, "type_name must be defined", rc)
-    call check(len(trim(config_variable)) > 0, "config_variable must be defined", rc)
+    
+    use_type = len(trim(type_name)) > 0
     
     config%output_file_prefix = trim(output_file_prefix)
     config%namelist_group     = trim(namelist_group)
     config%type_name          = trim(type_name)
     config%config_variable    = trim(config_variable)
     config%kind_parameter     = trim(kind_parameter)
+    config%use_type           = use_type
     config%write_tex          = write_tex
     config%write_md           = write_md
     config%uq                 = uq
@@ -481,7 +484,6 @@ subroutine write_subroutine(config, input_parameters)
     do i = 1, n
         ! genunits types should be converted to `real` for the namelists
         if (input_parameters(i)%type_definition(1:4) == "type") then
-            type_definition = "real(WP)" ! TODO: Assumes `WP`
             if (len(trim(config%kind_parameter)) == 0) then
                 type_definition = "real(" // trim(config%kind_parameter) // ")"
             else
@@ -697,18 +699,20 @@ subroutine write_subroutine(config, input_parameters)
         end if
     end do
     
-    write(unit=out_unit, fmt="(a)") ""
-    ! Write to config variable.
-    do i = 1, n
-        if (.not. (input_parameters(i)%type_definition(1:4) == "char")) then
-            write(unit=out_unit, fmt="(a)") "config%" // trim(input_parameters(i)%parameter_name) // " = " &
-                                                // trim(input_parameters(i)%parameter_name)
-        else
-            ! Trim strings.
-            write(unit=out_unit, fmt="(a)") "config%" // trim(input_parameters(i)%parameter_name) // " = trim(" &
-                                                // trim(input_parameters(i)%parameter_name) // ")"
-        end if
-    end do
+    if (config%use_type) then
+        write(unit=out_unit, fmt="(a)") ""
+        ! Write to config variable.
+        do i = 1, n
+            if (.not. (input_parameters(i)%type_definition(1:4) == "char")) then
+                write(unit=out_unit, fmt="(a)") "config%" // trim(input_parameters(i)%parameter_name) // " = " &
+                                                    // trim(input_parameters(i)%parameter_name)
+            else
+                ! Trim strings.
+                write(unit=out_unit, fmt="(a)") "config%" // trim(input_parameters(i)%parameter_name) // " = trim(" &
+                                                    // trim(input_parameters(i)%parameter_name) // ")"
+            end if
+        end do
+    end if
     
     close(unit=out_unit)
 end subroutine write_subroutine
