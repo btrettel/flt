@@ -4,7 +4,6 @@ Priorities:
 
 - Make Fortran Wiki page on unit checking.
 - geninput
-    - Use custom bound error messages.
     - inputs
         - Check that every member of the derived type is used.
         - fuzz testing lower bound

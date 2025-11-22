@@ -639,10 +639,11 @@ subroutine write_subroutine(config, input_parameters)
             end if
             
             write(unit=out_unit, fmt="(a)") "call check(" // trim(input_parameters(i)%parameter_name) &
-                     // " " // trim(op) // " " // trim(bound_value_string_1) // "), " // '"' &
+                     // " " // trim(op) // " " // trim(bound_value_string_1) // ", " // '"' &
                     // trim(input_parameters(i)%parameter_name) // " in the " &
                     // trim(config%namelist_group) &
-                    // ' namelist group equals " // trim(value_string) // " but must be ' // trim(op) // " " &
+                    // ' namelist group equals " // trim(value_string) &'
+            write(unit=out_unit, fmt="(a)") '            // " but must be ' // trim(op) // " " &
                     // trim(bound_value_string_2) // ". " // trim(input_parameters(i)%lower_bound_error_message) &
                     // '", rc)'
         end if
@@ -686,10 +687,11 @@ subroutine write_subroutine(config, input_parameters)
             end if
             
             write(unit=out_unit, fmt="(a)") "call check(" // trim(input_parameters(i)%parameter_name) &
-                     // " " // trim(op) // " " // trim(bound_value_string_1) // "), " // '"' &
+                     // " " // trim(op) // " " // trim(bound_value_string_1) // ", " // '"' &
                     // trim(input_parameters(i)%parameter_name) // " in the " &
                     // trim(config%namelist_group) &
-                    // ' namelist group equals " // trim(value_string) // " but must be ' // trim(op) // " " &
+                    // ' namelist group equals " // trim(value_string) &'
+            write(unit=out_unit, fmt="(a)") '            // " but must be ' // trim(op) // " " &
                     // trim(bound_value_string_2) // ". " // trim(input_parameters(i)%lower_bound_error_message) &
                     // '", rc)'
         end if
