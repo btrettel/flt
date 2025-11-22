@@ -60,6 +60,7 @@ subroutine read_config_namelist(config_out, filename, rc)
     
     use prec, only: CL
     use checks, only: assert, is_close, check
+    use port, only: platform, PLATFORM_WINDOWS, convert_path_unix_to_win
     
     class(config_type), intent(out) :: config_out
     character(len=*), intent(in)    :: filename
@@ -215,6 +216,10 @@ subroutine read_config_namelist(config_out, filename, rc)
         rc = n_failures
     else
         rc = 0
+    end if
+    
+    if (platform() == PLATFORM_WINDOWS) then
+        call convert_path_unix_to_win(config_out%output_file)
     end if
 end subroutine read_config_namelist
 

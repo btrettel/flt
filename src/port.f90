@@ -17,7 +17,7 @@ integer, public, parameter :: PLATFORM_WINDOWS  = 2
 character(len=1), public, parameter :: DIR_SEPS(2) = ["/", achar(92)]
 ! For Windows (index 2), nvfortran thinks `\` is trying to escape something, so I need to use `achar`.
 
-public :: platform, path_join
+public :: platform, path_join, convert_path_unix_to_win
 
 contains
 
@@ -83,5 +83,33 @@ function path_join(path_array)
     
     call assert(len(trim(path_join)) >= 1, "port (path_join): joined path should have a length of at least 1")
 end function path_join
+
+subroutine convert_path_unix_to_win(path, test)
+    use checks, only: assert
+    
+    character(len=*), intent(in out) :: path
+    logical, intent(in), optional    :: test
+    
+    logical :: test_
+    integer :: i_next
+    
+    if (present(test)) then
+        test_ = test
+    else
+        test_ = .false.
+    end if
+    
+    if (.not. test_) then
+        call assert(platform() == PLATFORM_WINDOWS, "port (convert_path_unix_to_win): only should be called on Windows")
+    end if
+    
+    do
+        i_next = index(path, DIR_SEPS(PLATFORM_UNIXLIKE))
+        
+        if (i_next == 0) exit
+        
+        path(i_next:i_next) = DIR_SEPS(PLATFORM_WINDOWS)
+    end do
+end subroutine convert_path_unix_to_win
 
 end module port

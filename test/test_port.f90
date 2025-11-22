@@ -7,7 +7,7 @@
 
 program test_port
 
-use port, only: PLATFORM_UNKNOWN, PLATFORM_UNIXLIKE, PLATFORM_WINDOWS, DIR_SEPS, platform, path_join
+use port, only: PLATFORM_UNKNOWN, PLATFORM_UNIXLIKE, PLATFORM_WINDOWS, DIR_SEPS, platform, path_join, convert_path_unix_to_win
 use prec, only: CL
 use unittest, only: test_results_type
 implicit none
@@ -32,6 +32,10 @@ path_array(2) = "file.txt"
 path = path_join(path_array)
 
 call tests%character_eq(path, "test" // DIR_SEPS(platform()) // "file.txt", "path_join")
+
+path = "src/units.f90"
+call convert_path_unix_to_win(path, test=.true.)
+call tests%character_eq(path, "src\units.f90", "convert_path_unix_to_win")
 
 call tests%end_tests()
 

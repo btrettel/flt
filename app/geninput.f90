@@ -76,6 +76,8 @@ call write_subroutine(config, input_parameters)
 contains
 
 subroutine read_config_namelist(input_file, config, rc)
+    use port, only: platform, PLATFORM_WINDOWS, convert_path_unix_to_win
+    
     character(len=*), intent(in)   :: input_file
     type(config_type), intent(out) :: config
     integer, intent(out)           :: rc
@@ -130,6 +132,10 @@ subroutine read_config_namelist(input_file, config, rc)
     config%write_md           = write_md
     config%uq                 = uq
     config%ga                 = ga
+    
+    if (platform() == PLATFORM_WINDOWS) then
+        call convert_path_unix_to_win(config%output_file_prefix)
+    end if
 end subroutine read_config_namelist
 
 subroutine sort_input_parameters(input_parameters)
