@@ -30,7 +30,7 @@ subroutine get_input_file_name_from_cli(prog, input_file_name)
     
     call get_command_argument(1, value=input_file_name)
 
-    if ((len(input_file_name) == 0) .or. &
+    if ((len(trim(input_file_name)) == 0) .or. &
             (trim(input_file_name) == "--help") .or. &
             (trim(input_file_name) == "-help") .or. &
             (trim(input_file_name) == "-h") .or. &
