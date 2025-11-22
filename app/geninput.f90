@@ -47,7 +47,7 @@ end type input_parameter_type
 
 integer, parameter :: MAX_LINE_LENGTH = 132
 
-character(len=:), allocatable           :: input_file
+character(len=CL)                       :: input_file
 integer                                 :: rc_config, rc_input_parameters
 type(config_type)                       :: config
 type(input_parameter_type), allocatable :: input_parameters(:)

@@ -7,12 +7,13 @@
 
 program genunits
 
+use prec, only: CL
 use cli, only: get_input_file_name_from_cli
 use genunits_data, only: unit_system_type
 use genunits_io, only: config_type
 implicit none
 
-character(len=:), allocatable :: input_file_name
+character(len=CL)             :: input_file_name
 type(config_type)             :: config
 integer                       :: out_unit, rc_config, rc_seed, rc_module
 type(unit_system_type)        :: unit_system
@@ -20,8 +21,8 @@ type(unit_system_type)        :: unit_system
 call get_input_file_name_from_cli("genunits", input_file_name)
 
 ! Read all namelists and exit if any have issues.
-call config%read_config_namelist(input_file_name, rc_config)
-call config%read_seed_unit_namelists(input_file_name, rc_seed)
+call config%read_config_namelist(trim(input_file_name), rc_config)
+call config%read_seed_unit_namelists(trim(input_file_name), rc_seed)
 if ((rc_config /= 0) .or. (rc_seed /= 0)) then
     error stop
 end if
