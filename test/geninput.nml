@@ -43,6 +43,7 @@ lower_bound_active    = .true.
 lower_bound           = 0.0
 lower_bound_not_equal = .true.
 default_value         = "-1.0"
+bound_fmt             = "f5.3"
 /
 
 &input_parameter
@@ -55,6 +56,7 @@ lower_bound_active    = .true.
 lower_bound           = 0.0
 lower_bound_not_equal = .true.
 default_value         = "-1.0"
+bound_fmt             = "f5.3"
 /
 
 &input_parameter
@@ -67,6 +69,7 @@ lower_bound_active    = .true.
 lower_bound           = 0.0
 lower_bound_not_equal = .true.
 default_value         = "-1.0"
+bound_fmt             = "f5.3"
 /
 
 &input_parameter
@@ -79,6 +82,7 @@ lower_bound_active    = .true.
 lower_bound           = 0.0
 lower_bound_not_equal = .true.
 default_value         = "-1.0"
+bound_fmt             = "f5.3"
 /
 
 &input_parameter
@@ -91,6 +95,7 @@ lower_bound_active    = .true.
 lower_bound           = 0.0
 lower_bound_not_equal = .true.
 default_value         = "-1.0"
+bound_fmt             = "f5.3"
 /
 
 &input_parameter
@@ -103,6 +108,7 @@ lower_bound_active    = .true.
 lower_bound           = 0.0
 lower_bound_not_equal = .true.
 default_value         = "-1.0"
+bound_fmt             = "f5.3"
 /
 
 &input_parameter
@@ -115,4 +121,5 @@ lower_bound_active    = .true.
 lower_bound           = 0.0
 lower_bound_not_equal = .true.
 default_value         = "-1.0"
+bound_fmt             = "f5.3"
 /

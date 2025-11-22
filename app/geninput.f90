@@ -235,7 +235,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     namelist /input_parameter/ parameter_name, type_definition, default_value, required, add_to_type, &
                                 lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
-                                tex_unit, tex_description
+                                bound_fmt, tex_unit, tex_description
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
     
@@ -464,7 +464,7 @@ subroutine write_subroutine(config, input_parameters)
     type(input_parameter_type), allocatable, intent(in) :: input_parameters(:)
     
     integer       :: out_unit, n, i, line_length
-    character(CL) :: type_definition, line, default_value, underscore_kind_parameter, bound_string
+    character(CL) :: type_definition, line, default_value, underscore_kind_parameter, bound_value_string_1, bound_value_string_2
     character(4)  :: type4
     character(2)  :: op
     
@@ -474,7 +474,7 @@ subroutine write_subroutine(config, input_parameters)
     n = size(input_parameters)
     
     write(unit=out_unit, fmt="(a)") "integer :: nml_unit, rc_nml"
-    write(unit=out_unit, fmt="(a)") "character(len=CL) :: nml_error_message"
+    write(unit=out_unit, fmt="(a)") "character(len=CL) :: nml_error_message, value_string"
     write(unit=out_unit, fmt="(a)") ""
     
     write(unit=out_unit, fmt="(a)") "! `" // trim(config%namelist_group) // "` namelist group"
@@ -601,17 +601,34 @@ subroutine write_subroutine(config, input_parameters)
             select case (input_parameters(i)%type_definition(1:4))
                 case ("real", "type")
                     if (trim(input_parameters(i)%type_definition) == "real") then
-                        write(unit=bound_string, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                        write(unit=bound_value_string_1, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
                                 input_parameters(i)%lower_bound
                     else
-                        write(unit=bound_string, fmt="(" // trim(input_parameters(i)%bound_fmt) // ", a, a)") &
+                        write(unit=bound_value_string_1, fmt="(" // trim(input_parameters(i)%bound_fmt) // ", a, a)") &
                                 input_parameters(i)%lower_bound, "_", trim(config%kind_parameter)
                     end if
+                    write(unit=out_unit, fmt="(a)") 'write(unit=value_string, fmt="(' &
+                            // trim(input_parameters(i)%bound_fmt) // ')") ' &
+                            // trim(input_parameters(i)%parameter_name)
                 case ("inte")
-                    write(unit=bound_string, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                    write(unit=bound_value_string_1, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
                                 nint(input_parameters(i)%lower_bound)
                 case default
-                    write(unit=ERROR_UNIT, fmt="(a)") "This type of input parameter can't have a bound."
+                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_parameters(i)%parameter_name) &
+                            // ": This type of input parameter can't have a bound."
+                    error stop
+            end select
+            
+            select case (input_parameters(i)%type_definition(1:4))
+                case ("real", "type")
+                    write(unit=bound_value_string_2, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                                input_parameters(i)%lower_bound
+                case ("inte")
+                    write(unit=bound_value_string_2, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                                nint(input_parameters(i)%lower_bound)
+                case default
+                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_parameters(i)%parameter_name) &
+                            // ": This type of input parameter can't have a bound."
                     error stop
             end select
             
@@ -622,25 +639,43 @@ subroutine write_subroutine(config, input_parameters)
             end if
             
             write(unit=out_unit, fmt="(a)") "call check(" // trim(input_parameters(i)%parameter_name) &
-                     // " " // trim(op) // " " // trim(bound_string) // "), " // '"' &
-                    // trim(input_parameters(i)%parameter_name) // " in the " // trim(config%namelist_group) &
-                    // ' namelist group violates the lower bound.", rc)'
-            ! TODO: Add numbers to the error message
+                     // " " // trim(op) // " " // trim(bound_value_string_1) // "), " // '"' &
+                    // trim(input_parameters(i)%parameter_name) // " in the " &
+                    // trim(config%namelist_group) &
+                    // ' namelist group equals " // trim(value_string) // " but must be ' // trim(op) // " " &
+                    // trim(bound_value_string_2) // ". " // trim(input_parameters(i)%lower_bound_error_message) &
+                    // '", rc)'
         end if
         
         if (input_parameters(i)%upper_bound_active) then
             select case (input_parameters(i)%type_definition(1:4))
                 case ("real", "type")
                     if (trim(input_parameters(i)%type_definition) == "real") then
-                        write(unit=bound_string, fmt="(g0)") input_parameters(i)%upper_bound
+                        write(unit=bound_value_string_1, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                                input_parameters(i)%upper_bound
                     else
-                        write(unit=bound_string, fmt="(g0, a, a)") input_parameters(i)%upper_bound, &
-                                                                    "_", trim(config%kind_parameter)
+                        write(unit=bound_value_string_1, fmt="(" // trim(input_parameters(i)%bound_fmt) // ", a, a)") &
+                                input_parameters(i)%upper_bound, "_", trim(config%kind_parameter)
                     end if
                 case ("inte")
-                    write(unit=bound_string, fmt="(i0)") nint(input_parameters(i)%upper_bound)
+                    write(unit=bound_value_string_1, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                                nint(input_parameters(i)%upper_bound)
                 case default
-                    write(unit=ERROR_UNIT, fmt="(a)") "This type of input parameter can't have a bound."
+                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_parameters(i)%parameter_name) &
+                            // ": This type of input parameter can't have a bound."
+                    error stop
+            end select
+            
+            select case (input_parameters(i)%type_definition(1:4))
+                case ("real", "type")
+                    write(unit=bound_value_string_2, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                                input_parameters(i)%upper_bound
+                case ("inte")
+                    write(unit=bound_value_string_2, fmt="(" // trim(input_parameters(i)%bound_fmt) // ")") &
+                                nint(input_parameters(i)%upper_bound)
+                case default
+                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_parameters(i)%parameter_name) &
+                            // ": This type of input parameter can't have a bound."
                     error stop
             end select
             
@@ -651,10 +686,12 @@ subroutine write_subroutine(config, input_parameters)
             end if
             
             write(unit=out_unit, fmt="(a)") "call check(" // trim(input_parameters(i)%parameter_name) &
-                     // " " // trim(op) // " " // trim(bound_string) // "), " // '"' &
-                    // trim(input_parameters(i)%parameter_name) // " in the " // trim(config%namelist_group) &
-                    // ' namelist group violates the upper bound.", rc)'
-            ! TODO: Add numbers to the error message
+                     // " " // trim(op) // " " // trim(bound_value_string_1) // "), " // '"' &
+                    // trim(input_parameters(i)%parameter_name) // " in the " &
+                    // trim(config%namelist_group) &
+                    // ' namelist group equals " // trim(value_string) // " but must be ' // trim(op) // " " &
+                    // trim(bound_value_string_2) // ". " // trim(input_parameters(i)%lower_bound_error_message) &
+                    // '", rc)'
         end if
     end do
     
