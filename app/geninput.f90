@@ -31,6 +31,7 @@ type :: input_parameter_type
     character(len=CL) :: parameter_name
     character(len=CL) :: type_definition
     character(len=CL) :: default_value ! do not include the kind parameter as this will be added automatically
+    logical           :: no_kind_default_value
     logical           :: required
     logical           :: add_to_type
     logical           :: lower_bound_active
@@ -221,6 +222,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     character(len=CL) :: parameter_name
     character(len=CL) :: type_definition
     character(len=CL) :: default_value
+    logical           :: no_kind_default_value
     logical           :: required
     logical           :: add_to_type
     logical           :: lower_bound_active
@@ -235,7 +237,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     character(len=CL) :: tex_unit
     character(len=CL) :: tex_description
     
-    namelist /input_parameter/ parameter_name, type_definition, default_value, required, add_to_type, &
+    namelist /input_parameter/ parameter_name, type_definition, default_value, no_kind_default_value, required, add_to_type, &
                                 lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
                                 bound_fmt, tex_unit, tex_description
@@ -271,6 +273,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         parameter_name            = ""
         type_definition           = ""
         default_value             = ""
+        no_kind_default_value     = .false.
         required                  = .false.
         add_to_type               = .true.
         lower_bound_active        = .false.
@@ -301,6 +304,7 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         input_parameters(i)%parameter_name            = trim(parameter_name)
         input_parameters(i)%type_definition           = trim(type_definition)
         input_parameters(i)%default_value             = trim(default_value)
+        input_parameters(i)%no_kind_default_value     = no_kind_default_value
         input_parameters(i)%required                  = required
         input_parameters(i)%add_to_type               = add_to_type
         input_parameters(i)%lower_bound_active        = lower_bound_active
@@ -530,7 +534,7 @@ subroutine write_subroutine(config, input_parameters)
                 case ("inte")
                     default_value = "0"
                 case ("real", "type")
-                    if (len(trim(config%kind_parameter)) == 0) then
+                    if ((len(trim(config%kind_parameter)) == 0) .and. (.not. no_kind_default_value)) then
                         default_value = "0.0_" // trim(config%kind_parameter)
                     else
                         default_value = "0.0"

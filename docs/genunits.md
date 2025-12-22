@@ -108,6 +108,7 @@ Units to be rejected, that is, not included in the unit system.
 - Integration with automatic differentiation: `%v%v` is annoying, so perhaps I should set the members to be private and think of alternatives.
 - Compiler support for derived type I/O, particularly with namelists, varies.
 - Need for interprocedural optimization (`-flto`, `-ipo`, etc.) for inlining.
+- Handling log with units (for example: `log(x) - log(y)`) and non-integer exponentiation (for example: `(x**gamma)*(x_0**(1.0-gamma))`. Write so that log argument is unitless and non-integer exponent is unitless. Is this always possible if the output unit is a reasonable one?
 
 ## Compiler comparison table (to-do)
 

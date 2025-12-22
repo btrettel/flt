@@ -24,11 +24,10 @@ call tests%end_tests()
 
 contains
 
-subroutine fake_de(n, tests, de, de_dv)
-    integer, intent(in)                     :: n
-    type(test_results_type), intent(in out) :: tests
-    type(ad), intent(out), allocatable      :: de(:)
-    real(WP), intent(out), allocatable      :: de_dv(:, :)
+subroutine fake_de(n, de, de_dv)
+    integer, intent(in)                :: n
+    type(ad), intent(out), allocatable :: de(:)
+    real(WP), intent(out), allocatable :: de_dv(:, :)
     
     integer, parameter :: N_VAR = 1, N_DV = 1
     
@@ -37,15 +36,12 @@ subroutine fake_de(n, tests, de, de_dv)
     
     call de%init_const(1.0_WP / real(n, WP), 1)
     de_dv(1, 1) = 2.0_WP / real(n, WP)
-    
-    call tests%real_eq(1.0_WP, 1.0_WP, "fake_de, fake test")
 end subroutine fake_de
 
-subroutine fake_de2(n, tests, de, de_dv)
-    integer, intent(in)                     :: n
-    type(test_results_type), intent(in out) :: tests
-    type(ad), intent(out), allocatable      :: de(:)
-    real(WP), intent(out), allocatable      :: de_dv(:, :)
+subroutine fake_de2(n, de, de_dv)
+    integer, intent(in)                :: n
+    type(ad), intent(out), allocatable :: de(:)
+    real(WP), intent(out), allocatable :: de_dv(:, :)
     
     integer, parameter :: N_VAR = 2, N_DV = 1
     
@@ -58,8 +54,6 @@ subroutine fake_de2(n, tests, de, de_dv)
         call de(i_var)%init_const(1.0_WP / real(n, WP), 1)
         de_dv(i_var, 1) = 2.0_WP / real(n, WP)
     end do
-    
-    call tests%real_eq(1.0_WP, 1.0_WP, "fake_de2, fake test")
 end subroutine fake_de2
 
 subroutine test_convergence_test(tests)
@@ -69,7 +63,7 @@ subroutine test_convergence_test(tests)
     
     type(test_results_type) :: failing_tests
     
-    integer, parameter :: N_TESTS = 6, N_FAILING = 2
+    integer, parameter :: N_TESTS = 3, N_FAILING = 2
     logical            :: stdout
     
     call convergence_test([1, 10, 100], fake_de, [1.0_WP], "fake_de, passing", tests)

@@ -43,15 +43,13 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     real(WP), intent(in), optional          :: p_tol(:)
     
     interface
-        subroutine solver_ne(n, tests, ne, ne_dv)
-            use unittest, only: test_results_type
+        subroutine solver_ne(n, ne, ne_dv)
             use fmad, only: ad
             use prec, only: WP
             
-            integer, intent(in)                     :: n           ! number of grid cells, time steps, Monte Carlo samples, etc.
-            type(test_results_type), intent(in out) :: tests
-            type(ad), intent(out), allocatable      :: ne(:)       ! numerical error for value
-            real(WP), intent(out), allocatable      :: ne_dv(:, :) ! numerical error for derivatives (n_var, n_dv)
+            integer, intent(in)                :: n           ! number of grid cells, time steps, Monte Carlo samples, etc.
+            type(ad), intent(out), allocatable :: ne(:)       ! numerical error for value
+            real(WP), intent(out), allocatable :: ne_dv(:, :) ! numerical error for derivatives (n_var, n_dv)
             
             ! This is not `pure` to make debugging easier.
             
@@ -60,10 +58,11 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
             ! Numerical error (usually discretization error) is calculated in here.
             ! A norm can be used or a local metric can be used.
             
-            ! Additional tests can be added to be used with `tests`.
-            
             ! Instead pass out `ne` and calculate `ne_dv` in `convergence_test`?
             ! Start as-is, later figure out how to refactor to simplify.
+            
+            ! Previously, additional tests could be added to be used with `tests`.
+            ! However, I decided that feature wasn't going to be used often and wasn't worth adding here.
         end subroutine solver_ne
     end interface
     
@@ -103,7 +102,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     print "(3a6, 2a14)", "n", "var #", "v/dv", "ne", "p"
     ! MAYBE: Run convergence tests in parallel later?
     do i_n = 1, n_n ! SERIAL
-        call solver_ne(n_arr(i_n), tests, ne_i_n, ne_dv_i_n)
+        call solver_ne(n_arr(i_n), ne_i_n, ne_dv_i_n)
         
         if (i_n == 1) then
             n_var = size(ne_i_n)
