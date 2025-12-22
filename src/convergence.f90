@@ -43,13 +43,16 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     real(WP), intent(in), optional          :: p_tol(:)
     
     interface
-        subroutine solver_ne(n, ne, ne_dv)
+        subroutine solver_ne(n, ne, ne_d)
             use fmad, only: ad
             use prec, only: WP
             
-            integer, intent(in)                :: n           ! number of grid cells, time steps, Monte Carlo samples, etc.
-            type(ad), intent(out), allocatable :: ne(:)       ! numerical error for value
-            real(WP), intent(out), allocatable :: ne_dv(:, :) ! numerical error for derivatives (n_var, n_dv)
+            integer, intent(in)                :: n          ! number of grid cells, time steps, Monte Carlo samples, etc.
+            type(ad), intent(out), allocatable :: ne(:)      ! numerical error for value(s) (n_var)
+            real(WP), intent(out), allocatable :: ne_d(:, :) ! numerical error for derivatives (n_var, n_d)
+            
+            ! `n_var` is the number of variables to return numerical error for.
+            ! `n_d` is the size of the gradient vector for AD.
             
             ! This is not `pure` to make debugging easier.
             
@@ -58,7 +61,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
             ! Numerical error (usually discretization error) is calculated in here.
             ! A norm can be used or a local metric can be used.
             
-            ! Instead pass out `ne` and calculate `ne_dv` in `convergence_test`?
+            ! Instead pass out `ne` and calculate `ne_d` in `convergence_test`?
             ! Start as-is, later figure out how to refactor to simplify.
             
             ! Previously, additional tests could be added to be used with `tests`.
@@ -68,13 +71,13 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     
     integer               :: i_n, n_n     ! index of `n_arr` and size of `n_arr`
     integer               :: i_var, n_var ! index for dependent variables and number of dependent variables
-    integer               :: i_dv, n_dv   ! index for derivatives and number of derivatives
+    integer               :: i_d, n_d     ! index for derivatives and number of derivatives
     integer               :: n_failures
     type(ad), allocatable :: ne_i_n(:), ne(:, :) ! ne(n_n, n_var)
-    real(WP), allocatable :: ne_dv_i_n(:, :), ne_dv(:, :, :) ! ne_dv(n_n, n_var, n_dv)
+    real(WP), allocatable :: ne_d_i_n(:, :), ne_d(:, :, :) ! ne_d(n_n, n_var, n_d)
     type(ad), allocatable :: p_v(:)
-    real(WP), allocatable :: p_tol_(:), p_dv(:, :)
-    character(len=32)     :: i_var_string, i_dv_string
+    real(WP), allocatable :: p_tol_(:), p_d(:, :)
+    character(len=32)     :: i_var_string, i_d_string
     logical               :: stdout
     
     if (present(p_tol)) then
@@ -99,18 +102,18 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     n_failures   = tests%n_failures
     
     print "(2a)", message, ":"
-    print "(3a6, 2a14)", "n", "var #", "v/dv", "ne", "p"
+    print "(3a6, 2a14)", "n", "var #", "v/d", "ne", "p"
     ! MAYBE: Run convergence tests in parallel later?
     do i_n = 1, n_n ! SERIAL
-        call solver_ne(n_arr(i_n), ne_i_n, ne_dv_i_n)
+        call solver_ne(n_arr(i_n), ne_i_n, ne_d_i_n)
         
         if (i_n == 1) then
             n_var = size(ne_i_n)
             allocate(ne(n_n, n_var))
             allocate(p_v(n_var))
-            n_dv = size(ne_i_n(1)%d)
-            allocate(p_dv(n_var, n_dv))
-            allocate(ne_dv(n_n, n_var, n_dv))
+            n_d = size(ne_i_n(1)%d)
+            allocate(p_d(n_var, n_d))
+            allocate(ne_d(n_n, n_var, n_d))
             call assert_dimension(p_v, p_expected)
             
             do i_var = 1, n_var ! SERIAL
@@ -122,10 +125,10 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
                 else
                     print "(a6, i6, a6, es14.5)", "", i_var, "v", ne(i_n, i_var)%v
                 end if
-                do i_dv = 1, n_dv ! SERIAL
-                    call assert_numerical_error(ne_dv_i_n(i_var, i_dv), i_var, i_dv)
-                    ne_dv(i_n, i_var, i_dv) = ne_dv_i_n(i_var, i_dv)
-                    print "(a6, 2i6, es14.5)", "", i_var, i_dv, ne_dv(i_n, i_var, i_dv)
+                do i_d = 1, n_d ! SERIAL
+                    call assert_numerical_error(ne_d_i_n(i_var, i_d), i_var, i_d)
+                    ne_d(i_n, i_var, i_d) = ne_d_i_n(i_var, i_d)
+                    print "(a6, 2i6, es14.5)", "", i_var, i_d, ne_d(i_n, i_var, i_d)
                 end do
             end do
         else
@@ -143,14 +146,14 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
                     print "(a6, i6, a6, es14.5, f14.6)", "", i_var, "v", ne(i_n, i_var)%v, p_v(i_var)%v
                 end if
                 
-                do i_dv = 1, n_dv ! SERIAL
-                    call assert_numerical_error(ne_dv_i_n(i_var, i_dv), i_var, i_dv)
-                    ne_dv(i_n, i_var, i_dv) = ne_dv_i_n(i_var, i_dv)
+                do i_d = 1, n_d ! SERIAL
+                    call assert_numerical_error(ne_d_i_n(i_var, i_d), i_var, i_d)
+                    ne_d(i_n, i_var, i_d) = ne_d_i_n(i_var, i_d)
                     
                     ! order of accuracy; see roy_review_2005 eq. 6 or 8
-                    p_dv(i_var, i_dv) = log(ne_dv(i_n, i_var, i_dv) / ne_dv(i_n - 1, i_var, i_dv)) &
+                    p_d(i_var, i_d) = log(ne_d(i_n, i_var, i_d) / ne_d(i_n - 1, i_var, i_d)) &
                                             / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
-                    print "(a6, 2i6, es14.5, f14.6)", "", i_var, i_dv, ne_dv(i_n, i_var, i_dv), p_dv(i_var, i_dv)
+                    print "(a6, 2i6, es14.5, f14.6)", "", i_var, i_d, ne_d(i_n, i_var, i_d), p_d(i_var, i_d)
                 end do
             end do
         end if
@@ -171,30 +174,30 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
         call tests%real_eq(p_v(i_var)%v, p_expected(i_var), message // ", p_v=expected, var=" // trim(i_var_string), &
                                 abs_tol=p_tol_(i_var))
         
-        do i_dv = 1, n_dv ! SERIAL
-            write(unit=i_dv_string, fmt="(i0)") i_dv
-            call tests%real_eq(p_v(i_var)%d(i_dv), 0.0_WP, message // ", p_v%d(" // trim(i_dv_string) &
+        do i_d = 1, n_d ! SERIAL
+            write(unit=i_d_string, fmt="(i0)") i_d
+            call tests%real_eq(p_v(i_var)%d(i_d), 0.0_WP, message // ", p_v%d(" // trim(i_d_string) &
                                     // ")=0, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
-            call tests%real_eq(p_dv(i_var, i_dv), p_expected(i_var), message // ", p_dv(" // trim(i_dv_string) &
+            call tests%real_eq(p_d(i_var, i_d), p_expected(i_var), message // ", p_d(" // trim(i_d_string) &
                                     // ")=expected, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
         end do
     end do
 end subroutine convergence_test
 
-subroutine assert_numerical_error(ne, i_var, i_dv)
+subroutine assert_numerical_error(ne, i_var, i_d)
     use checks, only: assert, TOL_FACTOR
     
     real(WP), intent(in) :: ne
-    integer, intent(in)  :: i_var, i_dv
+    integer, intent(in)  :: i_var, i_d
     
     character(len=32) :: ne_string, arg_string
     
     write(unit=ne_string, fmt="(es14.5)") ne
     
-    if (i_dv == 0) then ! `i_dv = 0` is used for the value here.
-        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "ne(i_var=", i_var, ", i_dv=", i_dv, ")"
+    if (i_d == 0) then ! `i_d = 0` is used for the value here.
+        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "ne(i_var=", i_var, ", i_d=", i_d, ")"
     else
-        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "ne_dv(i_var=", i_var, ", i_dv=", i_dv, ")"
+        write(unit=arg_string, fmt="(a, i0, a, i0, a)") "ne_d(i_var=", i_var, ", i_d=", i_d, ")"
     end if
     
     call assert(ne > TOL_FACTOR * spacing(0.0_WP), &

@@ -24,35 +24,35 @@ call tests%end_tests()
 
 contains
 
-subroutine fake_de(n, de, de_dv)
+subroutine fake_de(n, de, de_d)
     integer, intent(in)                :: n
     type(ad), intent(out), allocatable :: de(:)
-    real(WP), intent(out), allocatable :: de_dv(:, :)
+    real(WP), intent(out), allocatable :: de_d(:, :)
     
-    integer, parameter :: N_VAR = 1, N_DV = 1
+    integer, parameter :: N_VAR = 1, N_D = 1
     
     allocate(de(N_VAR))
-    allocate(de_dv(N_VAR, N_DV))
+    allocate(de_d(N_VAR, N_D))
     
     call de%init_const(1.0_WP / real(n, WP), 1)
-    de_dv(1, 1) = 2.0_WP / real(n, WP)
+    de_d(1, 1) = 2.0_WP / real(n, WP)
 end subroutine fake_de
 
-subroutine fake_de2(n, de, de_dv)
+subroutine fake_de2(n, de, de_d)
     integer, intent(in)                :: n
     type(ad), intent(out), allocatable :: de(:)
-    real(WP), intent(out), allocatable :: de_dv(:, :)
+    real(WP), intent(out), allocatable :: de_d(:, :)
     
-    integer, parameter :: N_VAR = 2, N_DV = 1
+    integer, parameter :: N_VAR = 2, N_D = 1
     
     integer :: i_var
     
     allocate(de(N_VAR))
-    allocate(de_dv(N_VAR, N_DV))
+    allocate(de_d(N_VAR, N_D))
     
     do i_var = 1, N_VAR
         call de(i_var)%init_const(1.0_WP / real(n, WP), 1)
-        de_dv(i_var, 1) = 2.0_WP / real(n, WP)
+        de_d(i_var, 1) = 2.0_WP / real(n, WP)
     end do
 end subroutine fake_de2
 
@@ -109,7 +109,7 @@ subroutine test_dnorm(tests)
     real(WP), allocatable :: x(:)
     type(ad), allocatable :: y(:)
     
-    integer, parameter :: N_DV = 1
+    integer, parameter :: N_D = 1
     
     real(WP) :: dnorm_x, dnorm_exact
     type(ad) :: dnorm_y
@@ -120,7 +120,7 @@ subroutine test_dnorm(tests)
     x = dnorm_exact
     allocate(y(size(x)))
     do i = 1, size(x)
-        call y(i)%init_const(x(i), N_DV)
+        call y(i)%init_const(x(i), N_D)
     end do
     dnorm_x = dnorm(x)
     dnorm_y = dnorm(y)
@@ -132,7 +132,7 @@ subroutine test_dnorm(tests)
     x = [-1.0_WP, 0.0_WP, 2.0_WP]
     allocate(y(size(x)))
     do i = 1, size(x)
-        call y(i)%init_const(x(i), N_DV)
+        call y(i)%init_const(x(i), N_D)
     end do
     dnorm_x = dnorm(x)
     dnorm_y = dnorm(y)
@@ -154,7 +154,7 @@ subroutine test_dnorm(tests)
     x = [-2.0_WP, 1.0_WP, 0.0_WP]
     allocate(y(size(x)))
     do i = 1, size(x)
-        call y(i)%init_const(x(i), N_DV)
+        call y(i)%init_const(x(i), N_D)
     end do
     dnorm_x = dnorm(x)
     dnorm_y = dnorm(y)
