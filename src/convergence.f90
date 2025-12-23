@@ -188,7 +188,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
         do i_d = 1, n_d ! SERIAL
             write(unit=i_d_string, fmt="(i0)") i_d
             call tests%real_eq(p_v(i_var)%d(i_d), 0.0_WP, message // ", p_v%d(" // trim(i_d_string) &
-                                    // ")=0, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
+                                    // ")=0, var=" // trim(i_var_string), abs_tol=p_d_tol_(i_var))
             call tests%real_eq(p_d(i_var, i_d), p_expected(i_var), message // ", p_d(" // trim(i_d_string) &
                                     // ")=expected, var=" // trim(i_var_string), abs_tol=p_d_tol_(i_var))
         end do
