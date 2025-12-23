@@ -1,5 +1,16 @@
 # fmutate.py to-do
 
+- mutation analysis
+- mutation sensitivity analysis for debugging
+    - I am wondering if this is going to be pointless because basically every line will be found.
+- function to pick random line
+- function to list mutations that can be applied on a particular line
+- functions to apply mutations given RNG
+
+***
+
+Old:
+
 - Rewrite in Python to use an actual parser. Many of the bullets below will need to be updated as they assume Fortran below.
     - <https://fortran-lang.discourse.group/t/antlr-grammars-for-fortran/8673>
 - Start with deleting lines and one other mutation operator. The reason to have two is to have the infrastructure for multiple mutation operators from the start.

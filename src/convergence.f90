@@ -66,6 +66,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
             
             ! Previously, additional tests could be added to be used with `tests`.
             ! However, I decided that feature wasn't going to be used often and wasn't worth adding here.
+            ! I could use normal assertions.
         end subroutine solver_ne
     end interface
     

@@ -24,37 +24,37 @@ call tests%end_tests()
 
 contains
 
-subroutine fake_de(n, de, de_d)
+subroutine fake_ne(n, ne, ne_d)
     integer, intent(in)                :: n
-    type(ad), intent(out), allocatable :: de(:)
-    real(WP), intent(out), allocatable :: de_d(:, :)
+    type(ad), intent(out), allocatable :: ne(:)
+    real(WP), intent(out), allocatable :: ne_d(:, :)
     
     integer, parameter :: N_VAR = 1, N_D = 1
     
-    allocate(de(N_VAR))
-    allocate(de_d(N_VAR, N_D))
+    allocate(ne(N_VAR))
+    allocate(ne_d(N_VAR, N_D))
     
-    call de%init_const(1.0_WP / real(n, WP), 1)
-    de_d(1, 1) = 2.0_WP / real(n, WP)
-end subroutine fake_de
+    call ne%init_const(1.0_WP / real(n, WP), 1)
+    ne_d(1, 1) = 2.0_WP / real(n, WP)
+end subroutine fake_ne
 
-subroutine fake_de2(n, de, de_d)
+subroutine fake_ne2(n, ne, ne_d)
     integer, intent(in)                :: n
-    type(ad), intent(out), allocatable :: de(:)
-    real(WP), intent(out), allocatable :: de_d(:, :)
+    type(ad), intent(out), allocatable :: ne(:)
+    real(WP), intent(out), allocatable :: ne_d(:, :)
     
     integer, parameter :: N_VAR = 2, N_D = 1
     
     integer :: i_var
     
-    allocate(de(N_VAR))
-    allocate(de_d(N_VAR, N_D))
+    allocate(ne(N_VAR))
+    allocate(ne_d(N_VAR, N_D))
     
     do i_var = 1, N_VAR
-        call de(i_var)%init_const(1.0_WP / real(n, WP), 1)
-        de_d(i_var, 1) = 2.0_WP / real(n, WP)
+        call ne(i_var)%init_const(1.0_WP / real(n, WP), 1)
+        ne_d(i_var, 1) = 2.0_WP / real(n, WP)
     end do
-end subroutine fake_de2
+end subroutine fake_ne2
 
 subroutine test_convergence_test(tests)
     use convergence, only: convergence_test
@@ -66,13 +66,13 @@ subroutine test_convergence_test(tests)
     integer, parameter :: N_TESTS = 3, N_FAILING = 2
     logical            :: stdout
     
-    call convergence_test([1, 10, 100], fake_de, [1.0_WP], "fake_de, passing", tests)
+    call convergence_test([1, 10, 100], fake_ne, [1.0_WP], "fake_ne, passing", tests)
     
     ! `convergence_test` that fails
     call failing_tests%start_tests("convergence_failing.nml")
     stdout = failing_tests%stdout
     failing_tests%stdout = .false. ! Don't print these to stdout.
-    call convergence_test([1, 10, 100], fake_de, [2.0_WP], "fake_de, failing", failing_tests)
+    call convergence_test([1, 10, 100], fake_ne, [2.0_WP], "fake_ne, failing", failing_tests)
     failing_tests%stdout = stdout
     
     call tests%integer_eq(failing_tests%n_tests, N_TESTS, "correct number of tests expected to fail")
@@ -81,8 +81,8 @@ subroutine test_convergence_test(tests)
                                     "correct number of tests expected to fail that fail")
     
     ! To check that the output looks correct.
-    ! I want `n` to be printed once per `solver_de` subroutine call.
-    call convergence_test([1, 10, 100], fake_de2, [1.0_WP, 1.0_WP], "fake_de2, passing", tests)
+    ! I want `n` to be printed once per `solver_ne` subroutine call.
+    call convergence_test([1, 10, 100], fake_ne2, [1.0_WP, 1.0_WP], "fake_ne2, passing", tests)
 end subroutine test_convergence_test
 
 subroutine test_logspace(tests)
