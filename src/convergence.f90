@@ -30,7 +30,7 @@ end interface dnorm
 
 contains
 
-subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
+subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol, p_d_tol)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use checks, only: assert, assert_dimension
     use unittest, only: test_results_type
@@ -41,6 +41,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     character(len=*), intent(in)            :: message
     type(test_results_type), intent(in out) :: tests
     real(WP), intent(in), optional          :: p_tol(:)
+    real(WP), intent(in), optional          :: p_d_tol(:)
     
     interface
         subroutine solver_ne(n, ne, ne_d)
@@ -77,7 +78,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
     type(ad), allocatable :: ne_i_n(:), ne(:, :) ! ne(n_n, n_var)
     real(WP), allocatable :: ne_d_i_n(:, :), ne_d(:, :, :) ! ne_d(n_n, n_var, n_d)
     type(ad), allocatable :: p_v(:)
-    real(WP), allocatable :: p_tol_(:), p_d(:, :)
+    real(WP), allocatable :: p_tol_(:), p_d_tol_(:), p_d(:, :)
     character(len=32)     :: i_var_string, i_d_string
     logical               :: stdout
     
@@ -88,12 +89,21 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
         p_tol_ = 0.05_WP
     end if
     
-    call assert_dimension(p_tol_, p_expected)
+    if (present(p_d_tol)) then
+        p_d_tol_ = p_d_tol
+    else
+        allocate(p_d_tol_(size(p_expected)))
+        p_d_tol_ = 0.05_WP
+    end if
     
-    call assert(size(n_arr) >= 2, "convergence (convergence_test): n_arr should have at least 2 elements to calculate p")
-    call assert(all(n_arr > 0), "convergence (convergence_test): n can not be zero or negative")
-    call assert(len(message) > 0, "convergence (convergence_test): message can not be empty")
-    call assert(all(p_tol_ > 0.0_WP), "convergence (convergence_test): p_tol is too small")
+    call assert_dimension(p_tol_, p_expected)
+    call assert_dimension(p_d_tol_, p_expected)
+    
+    call assert(size(n_arr) >= 2,       "convergence (convergence_test): n_arr should have at least 2 elements to calculate p")
+    call assert(all(n_arr > 0),         "convergence (convergence_test): n can not be zero or negative")
+    call assert(len(message) > 0,       "convergence (convergence_test): message can not be empty")
+    call assert(all(p_tol_ > 0.0_WP),   "convergence (convergence_test): p_tol is too small")
+    call assert(all(p_d_tol_ > 0.0_WP), "convergence (convergence_test): p_d_tol is too small")
     
     n_n = size(n_arr)
     
@@ -180,7 +190,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol)
             call tests%real_eq(p_v(i_var)%d(i_d), 0.0_WP, message // ", p_v%d(" // trim(i_d_string) &
                                     // ")=0, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
             call tests%real_eq(p_d(i_var, i_d), p_expected(i_var), message // ", p_d(" // trim(i_d_string) &
-                                    // ")=expected, var=" // trim(i_var_string), abs_tol=p_tol_(i_var))
+                                    // ")=expected, var=" // trim(i_var_string), abs_tol=p_d_tol_(i_var))
         end do
     end do
 end subroutine convergence_test
