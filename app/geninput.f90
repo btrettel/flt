@@ -491,9 +491,9 @@ subroutine write_subroutine(config, input_parameters)
         ! genunits types should be converted to `real` for the namelists
         if (input_parameters(i)%type_definition(1:4) == "type") then
             if (len(trim(config%kind_parameter)) == 0) then
-                type_definition = "real(" // trim(config%kind_parameter) // ")"
-            else
                 type_definition = "real"
+            else
+                type_definition = "real(" // trim(config%kind_parameter) // ")"
             end if
         else
             type_definition = input_parameters(i)%type_definition
@@ -528,16 +528,17 @@ subroutine write_subroutine(config, input_parameters)
     write(unit=out_unit, fmt="(a)") ""
     write(unit=out_unit, fmt="(a)") "! defaults"
     do i = 1, n
+        type4 = input_parameters(i)%type_definition(1:4)
         if (len(trim(input_parameters(i)%default_value)) == 0) then
-            type4 = input_parameters(i)%type_definition(1:4)
             select case (type4)
                 case ("inte")
                     default_value = "0"
                 case ("real", "type")
-                    if ((len(trim(config%kind_parameter)) == 0) .and. (.not. no_kind_default_value)) then
-                        default_value = "0.0_" // trim(config%kind_parameter)
-                    else
+                    if ((len(trim(config%kind_parameter)) == 0) &
+                            .or. input_parameters(i)%no_kind_default_value) then
                         default_value = "0.0"
+                    else
+                        default_value = "0.0_" // trim(config%kind_parameter)
                     end if
                 case ("char")
                     default_value = '""'
@@ -547,7 +548,18 @@ subroutine write_subroutine(config, input_parameters)
                     error stop "Invalid type definition: " // trim(input_parameters(i)%type_definition)
             end select
         else
-            default_value = input_parameters(i)%default_value
+            if ((type4 == "real") .or. (type4 == "type")) then
+                if ((len(trim(config%kind_parameter)) == 0) &
+                    .or. input_parameters(i)%no_kind_default_value) then
+                    default_value = trim(input_parameters(i)%default_value)
+                else
+                    default_value = trim(input_parameters(i)%default_value) // "_" // trim(config%kind_parameter)
+                end if
+            elseif (type4 == "char") then
+                default_value = '"' // trim(input_parameters(i)%default_value) // '"'
+            else
+                default_value = trim(input_parameters(i)%default_value)
+            end if
         end if
         
         write(unit=out_unit, fmt="(a)") trim(input_parameters(i)%parameter_name) // " = " // trim(default_value)

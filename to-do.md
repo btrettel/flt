@@ -2,6 +2,7 @@
 
 Priorities:
 
+- Add optional arrays (`real`, `integer`, `logical`, `character`) to print in `assert`
 - Make Fortran Wiki page on unit checking.
 - geninput
     - inputs
@@ -10,6 +11,7 @@ Priorities:
         - fuzz testing upper bound
         - TeX description for documentation
             - automatically write bounds in documentation string
+            - print type (integer, real, logical, character) in documentation string
         - string sets generate a `select case` to check if outside of set
         - enable/disable AD (AD `d` indices)
         - enable/disable GA optimization
