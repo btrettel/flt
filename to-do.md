@@ -3,6 +3,7 @@
 Priorities:
 
 - Add optional arrays (`real`, `integer`, `logical`, `character`) to print in `assert`
+    - Add these variables to all assertions as appropriate.
 - Make Fortran Wiki page on unit checking.
 - geninput
     - inputs
