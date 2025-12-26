@@ -183,6 +183,7 @@ pure subroutine assert(condition, message, print_real, print_integer, print_logi
     ! To get line number and specific values of other variables, use a debugger.
     
     use build, only: DEBUG
+    use prec, only: CL
     
     logical, intent(in)          :: condition
     character(len=*), intent(in) :: message
@@ -194,22 +195,26 @@ pure subroutine assert(condition, message, print_real, print_integer, print_logi
     ! Maybe later add `character` arrays. This could be a problem as they can't be jagged.
     
     character(len=:), allocatable :: full_message, print_variables
+    character(len=CL) :: print_variable
     integer :: i
     
     print_variables = ""
     if (present(print_real)) then
         do i = 1, size(print_real)
-            write(unit=print_variables, fmt="(2a, i0, a, g0)") new_line("a"), "real #", i, ": ", print_real(i)
+            write(unit=print_variable, fmt="(2a, i0, a, g0)") new_line("a"), "real #", i, ": ", print_real(i)
+            print_variables = print_variables // trim(print_variable)
         end do
     end if
     if (present(print_integer)) then
         do i = 1, size(print_integer)
-            write(unit=print_variables, fmt="(2a, i0, a, i0)") new_line("a"), "integer #", i, ": ", print_integer(i)
+            write(unit=print_variable, fmt="(2a, i0, a, i0)") new_line("a"), "integer #", i, ": ", print_integer(i)
+            print_variables = print_variables // trim(print_variable)
         end do
     end if
     if (present(print_logical)) then
         do i = 1, size(print_logical)
-            write(unit=print_variables, fmt="(2a, i0, a, l1)") new_line("a"), "logical #", i, ": ", print_logical(i)
+            write(unit=print_variable, fmt="(2a, i0, a, l1)") new_line("a"), "logical #", i, ": ", print_logical(i)
+            print_variables = print_variables // trim(print_variable)
         end do
     end if
     
@@ -229,8 +234,8 @@ end subroutine assert
 pure subroutine assert_dimension_rank_1(a, b)
     class(*), intent(in) :: a(:), b(:)
     
-    call assert(all(lbound(a) == lbound(b)), "checks (assert_dimension_rank_1): lbound")
-    call assert(all(ubound(a) == ubound(b)), "checks (assert_dimension_rank_1): ubound")
+    call assert(all(lbound(a) == lbound(b)), "checks (assert_dimension_rank_1): lbound", print_integer=[lbound(a), lbound(b)])
+    call assert(all(ubound(a) == ubound(b)), "checks (assert_dimension_rank_1): ubound", print_integer=[ubound(a), ubound(b)])
 end subroutine assert_dimension_rank_1
 
 pure subroutine assert_dimension_rank_2(a, b)
