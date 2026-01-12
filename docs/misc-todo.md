@@ -61,9 +61,6 @@
             - This is good for long lists because the column header in the table can go off-screen.
         - Look into how other CFD softwares output iterative progress for ideas. Which metrics do they output?
             - <https://twitter.com/HiroNishikawa/status/1858803904164839621>
-- latex.f90:
-    - Calculated numbers in papers: Write procedure to output LaTeX code to a file (appending by default) with a particular number format. Could pass in a Fortran format string.
-    - Include in io.f90?
 - Model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
 - Multidimensional Newton solver
     - <https://web.mit.edu/18.06/www/Spring17/Multidimensional-Newton.pdf>
