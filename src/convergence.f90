@@ -30,7 +30,7 @@ end interface dnorm
 
 contains
 
-subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol, p_d_tol)
+subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol, p_d_tol, p)
     use, intrinsic :: iso_fortran_env, only: ERROR_UNIT
     use checks, only: assert, assert_dimension
     use unittest, only: test_results_type
@@ -40,8 +40,10 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
     real(WP), intent(in)                    :: p_expected(:) ! expected order of convergence
     character(len=*), intent(in)            :: message
     type(test_results_type), intent(in out) :: tests
-    real(WP), intent(in), optional          :: p_tol(:)
-    real(WP), intent(in), optional          :: p_d_tol(:)
+    
+    real(WP), intent(in), optional               :: p_tol(:)
+    real(WP), intent(in), optional               :: p_d_tol(:)
+    real(WP), intent(out), allocatable, optional :: p(:)
     
     interface
         subroutine solver_ne(n, ne, ne_d)
@@ -74,13 +76,11 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
     integer               :: i_n, n_n     ! index of `n_arr` and size of `n_arr`
     integer               :: i_var, n_var ! index for dependent variables and number of dependent variables
     integer               :: i_d, n_d     ! index for derivatives and number of derivatives
-    integer               :: n_failures
     type(ad), allocatable :: ne_i_n(:), ne(:, :) ! ne(n_n, n_var)
     real(WP), allocatable :: ne_d_i_n(:, :), ne_d(:, :, :) ! ne_d(n_n, n_var, n_d)
     type(ad), allocatable :: p_v(:)
     real(WP), allocatable :: p_tol_(:), p_d_tol_(:), p_d(:, :)
     character(len=32)     :: i_var_string, i_d_string
-    logical               :: stdout
     
     if (present(p_tol)) then
         p_tol_ = p_tol
@@ -107,11 +107,6 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
     
     n_n = size(n_arr)
     
-    ! Suppress test messages while printing the table.
-    stdout       = tests%stdout
-    tests%stdout = .false.
-    n_failures   = tests%n_failures
-    
     print "(2a)", message, ":"
     print "(3a6, 2a14)", "n", "var #", "v/d", "ne", "p"
     ! MAYBE: Run convergence tests in parallel later?
@@ -121,11 +116,16 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
         if (i_n == 1) then
             n_var = size(ne_i_n)
             allocate(ne(n_n, n_var))
-            allocate(p_v(n_var))
+            allocate(p_v(n_var)) ! `type(ad)` array with derivative information
             n_d = size(ne_i_n(1)%d)
             allocate(p_d(n_var, n_d))
             allocate(ne_d(n_n, n_var, n_d))
             call assert_dimension(p_v, p_expected)
+            
+            if (present(p)) then
+                allocate(p(n_var)) ! `real(WP)` array to optionally output
+                call assert_dimension(p_v, p)
+            end if
             
             do i_var = 1, n_var ! SERIAL
                 call assert_numerical_error(ne_i_n(i_var)%v, i_var, 0)
@@ -151,6 +151,10 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
                 p_v(i_var) = log(ne(i_n, i_var) / ne(i_n - 1, i_var)) &
                                 / log(real(n_arr(i_n - 1), WP) / real(n_arr(i_n), WP))
                 
+                if (present(p)) then
+                    p(i_var) = p_v(i_var)%v
+                end if
+                
                 if (i_var == 1) then
                     print "(2i6, a6, es14.5, f14.6)", n_arr(i_n), i_var, "v", ne(i_n, i_var)%v, p_v(i_var)%v
                 else
@@ -169,12 +173,6 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
             end do
         end if
     end do
-    
-    ! Re-enable test failure messages.
-    if (tests%n_failures > n_failures) then
-        write(unit=ERROR_UNIT, fmt="(a)") "One or more test failures were suppressed during convergence test. Check the test log."
-    end if
-    tests%stdout = stdout
     
     ! Check that the orders of accuracy are as expected.
     do i_var = 1, n_var ! SERIAL

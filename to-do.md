@@ -2,8 +2,6 @@
 
 Priorities:
 
-- Add optional arrays (`real`, `integer`, `logical`, `character`) to print in `assert`
-    - Add these variables to all assertions as appropriate.
 - Make Fortran Wiki page on unit checking.
 - geninput
     - inputs
@@ -16,6 +14,7 @@ Priorities:
         - string sets generate a `select case` to check if outside of set
         - enable/disable AD (AD `d` indices)
         - enable/disable GA optimization
+        - In the current setup, the operator for the bounds is unclear, whether `>`/`<` or `>=`/`<=`.
     - input file
         - `x_stdev` variable (replace `x` with variable name)
         - optimization bounds
