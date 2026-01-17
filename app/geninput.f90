@@ -45,6 +45,8 @@ type :: input_parameter_type
     character(len=CL) :: bound_fmt
     character(len=CL) :: tex_unit
     character(len=CL) :: tex_description
+    character(len=CL) :: tex_description_2
+    character(len=CL) :: tex_parameter_name
 end type input_parameter_type
 
 integer, parameter :: MAX_LINE_LENGTH = 132
@@ -72,7 +74,7 @@ call sort_input_parameters(input_parameters)
 if (config%use_type) call write_type(config, input_parameters)
 call write_subroutine(config, input_parameters)
 
-! TODO if (config%write_tex) call write_tex(config, input_parameters)
+if (config%write_tex) call write_tex(config, input_parameters)
 ! TODO if (config%write_md) call write_md(config, input_parameters)
 
 contains
@@ -86,6 +88,7 @@ subroutine read_config_namelist(input_file, config, rc)
     
     integer           :: nml_unit, rc_nml
     character(len=CL) :: nml_error_message
+    logical           :: use_type
     
     ! `config` namelist group
     ! See type definition above for some comments on these.
@@ -94,11 +97,11 @@ subroutine read_config_namelist(input_file, config, rc)
     character(len=CL) :: type_name
     character(len=CL) :: config_variable
     character(len=CL) :: kind_parameter
-    logical           :: use_type
     logical           :: write_tex, write_md
     logical           :: uq, ga
     
-    namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter
+    namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter, &
+                                write_tex, write_md, uq, ga
     
     output_file_prefix = ""
     namelist_group     = ""
@@ -236,11 +239,13 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
     character(len=CL) :: bound_fmt
     character(len=CL) :: tex_unit
     character(len=CL) :: tex_description
+    character(len=CL) :: tex_description_2
+    character(len=CL) :: tex_parameter_name
     
     namelist /input_parameter/ parameter_name, type_definition, default_value, no_kind_default_value, required, add_to_type, &
                                 lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
-                                bound_fmt, tex_unit, tex_description
+                                bound_fmt, tex_unit, tex_description, tex_description_2, tex_parameter_name
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
     
@@ -287,6 +292,8 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         bound_fmt                 = ""
         tex_unit                  = ""
         tex_description           = ""
+        tex_description_2         = ""
+        tex_parameter_name        = ""
         
         read(unit=nml_unit, nml=input_parameter, iostat=rc_nml, iomsg=nml_error_message)
         
@@ -318,6 +325,8 @@ subroutine read_input_parameter_namelists(input_file, input_parameters, rc)
         input_parameters(i)%bound_fmt                 = trim(bound_fmt)
         input_parameters(i)%tex_unit                  = trim(tex_unit)
         input_parameters(i)%tex_description           = trim(tex_description)
+        input_parameters(i)%tex_description_2         = trim(tex_description_2)
+        input_parameters(i)%tex_parameter_name        = trim(tex_parameter_name)
         
         ! Conditional defaults.
         if ((len(trim(input_parameters(i)%bound_fmt)) == 0) .and. (input_parameters(i)%type_definition(1:4) == "inte")) then
@@ -482,6 +491,8 @@ subroutine write_subroutine(config, input_parameters)
     
     n = size(input_parameters)
     
+    write(unit=out_unit, fmt="(a)") "! auto-generated"
+    write(unit=out_unit, fmt="(a)") ""
     write(unit=out_unit, fmt="(a)") "integer :: nml_unit, rc_nml"
     write(unit=out_unit, fmt="(a)") "character(len=CL) :: nml_error_message, value_string"
     write(unit=out_unit, fmt="(a)") ""
@@ -736,5 +747,61 @@ subroutine write_subroutine(config, input_parameters)
     
     write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // "_subroutine.f90."
 end subroutine write_subroutine
+
+function escape_parameter_name(parameter_name)
+    character(len=*), intent(in) :: parameter_name
+    
+    character(len=:), allocatable :: escape_parameter_name
+    
+    ! TODO: Make this actually escape the underscores.
+    escape_parameter_name = trim(parameter_name)
+end function escape_parameter_name
+
+subroutine write_tex(config, input_parameters)
+    type(config_type), intent(in)                       :: config
+    type(input_parameter_type), allocatable, intent(in) :: input_parameters(:)
+    
+    integer :: out_unit, n, i
+    
+    open(newunit=out_unit, action="write", status="replace", position="rewind", &
+            file=trim(config%output_file_prefix) // "_subroutine.f90")
+    
+    n = size(input_parameters)
+    
+    open(newunit=out_unit, action="write", status="replace", position="rewind", &
+            file=trim(config%output_file_prefix) // ".tex")
+    
+    write(unit=out_unit, fmt="(a)") "% auto-generated"
+    write(unit=out_unit, fmt="(a)") "\begin{itemize}"
+    
+    do i = 1, n
+        write(unit=out_unit, fmt="(a)", advance="no") "\item \texttt{"
+        write(unit=out_unit, fmt="(a)", advance="no") escape_parameter_name(input_parameters(i)%parameter_name)
+        
+        if (len(trim(input_parameters(i)%tex_parameter_name)) > 0) then
+            write(unit=out_unit, fmt="(3a)", advance="no") "} (", trim(input_parameters(i)%tex_parameter_name), "): "
+        else
+            write(unit=out_unit, fmt="(a)", advance="no") "}: "
+        end if
+        
+        write(unit=out_unit, fmt="(a)", advance="no") trim(input_parameters(i)%tex_description)
+        
+        if (len(trim(input_parameters(i)%tex_unit)) > 0) then
+            if (trim(input_parameters(i)%tex_unit) == "1") then
+                write(unit=out_unit, fmt="(3a)", advance="no") " Unitless."
+            else
+                write(unit=out_unit, fmt="(3a)", advance="no") " Units of ", trim(input_parameters(i)%tex_unit), "."
+            end if
+        end if
+        
+        write(unit=out_unit, fmt="(a)") trim(input_parameters(i)%tex_description_2)
+    end do
+    
+    write(unit=out_unit, fmt="(a)") "\end{itemize}"
+    
+    close(unit=out_unit)
+    
+    write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // ".tex."
+end subroutine write_tex
 
 end program geninput
