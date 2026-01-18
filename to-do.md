@@ -17,6 +17,7 @@ Priorities:
         - In the current setup, the operator for the bounds is unclear, whether `>`/`<` or `>=`/`<=`.
     - input file
         - `x_stdev` variable (replace `x` with variable name)
+            - Use <https://en.wikipedia.org/wiki/Bhatia%E2%80%93Davis_inequality> to check if you have both upper and lower bounds.
         - optimization bounds
     - Make Markdown and TeX output optional and specified in the `geninput_config` namelist
     - Markdown output

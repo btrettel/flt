@@ -26,8 +26,8 @@ units.nml: test$(DIR_SEP)test_units_fail_1.f90 test$(DIR_SEP)test_units_fail_2.f
 
 unittest.nml: prec.nml
 
-###########################
-# Files to manually clean #
-###########################
+#############################
+# Additional files to clean #
+#############################
 
 CLEAN_MANUAL = src$(DIR_SEP)units.f90 src$(DIR_SEP)units_ad.f90

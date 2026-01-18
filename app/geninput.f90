@@ -491,6 +491,7 @@ subroutine write_subroutine(config, input_variables)
     character(CL) :: type_definition, line, default_value, underscore_kind_parameter, bound_value_string_1, bound_value_string_2
     character(4)  :: type4
     character(2)  :: op
+    logical       :: write_new_line
     
     open(newunit=out_unit, action="write", status="replace", position="rewind", &
             file=trim(config%output_file_prefix) // "_subroutine.f90")
@@ -502,6 +503,17 @@ subroutine write_subroutine(config, input_variables)
     write(unit=out_unit, fmt="(a)") "integer :: nml_unit, rc_nml"
     write(unit=out_unit, fmt="(a)") "character(len=CL) :: nml_error_message, value_string"
     write(unit=out_unit, fmt="(a)") ""
+    
+    ! genunits types to auto-convert `real`s to genunits types
+    write_new_line = .false.
+    do i = 1, n
+        if (input_variables(i)%type_definition(1:4) == "type") then
+            write(unit=out_unit, fmt="(a)") trim(input_variables(i)%type_definition) &
+                                            // " :: " // trim(input_variables(i)%variable_name) // "_u"
+            write_new_line = .true.
+        end if
+    end do
+    if (write_new_line) write(unit=out_unit, fmt="(a)") ""
     
     write(unit=out_unit, fmt="(a)") "! `" // trim(config%namelist_group) // "` namelist group"
     do i = 1, n
@@ -754,6 +766,19 @@ subroutine write_subroutine(config, input_variables)
     write(unit=out_unit, fmt="(a)") "if (rc /= 0) then"
     write(unit=out_unit, fmt="(a)") "    return"
     write(unit=out_unit, fmt="(a)") "end if"
+    
+    ! genunits types to auto-convert `real`s to genunits types
+    write_new_line = .true.
+    do i = 1, n
+        if (input_variables(i)%type_definition(1:4) == "type") then
+            if (write_new_line) then
+                write(unit=out_unit, fmt="(a)") ""
+                write_new_line = .false.
+            end if
+            write(unit=out_unit, fmt="(a)") "call " // trim(input_variables(i)%variable_name) &
+                                                // "_u%v%init_const(" // trim(input_variables(i)%variable_name) // ", 0)"
+        end if
+    end do
     
     close(unit=out_unit)
     
