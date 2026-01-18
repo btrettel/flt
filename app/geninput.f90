@@ -28,7 +28,7 @@ type :: config_type
 end type config_type
 
 type :: input_parameter_type
-    character(len=CL) :: parameter_name
+    character(len=CL) :: variable_name
     character(len=CL) :: type_definition
     character(len=CL) :: default_value ! do not include the kind parameter as this will be added automatically
     logical           :: no_kind_default_value
@@ -162,8 +162,8 @@ subroutine sort_input_parameters(input_variables)
         do j = i + 1, n
             if (input_variables(j)%required) then
                 temp_input_parameter = input_variables(i)
-                input_variables(i)  = input_variables(j)
-                input_variables(j)  = temp_input_parameter
+                input_variables(i)   = input_variables(j)
+                input_variables(j)   = temp_input_parameter
                 cycle outer_separate
             end if
         end do
@@ -182,13 +182,13 @@ subroutine sort_input_parameters(input_variables)
     do i = 1, i_switch - 1
         j_min = i
         do j = i + 1, i_switch - 1
-            if (input_variables(j)%parameter_name < input_variables(j_min)%parameter_name) then
+            if (input_variables(j)%variable_name < input_variables(j_min)%variable_name) then
                 j_min = j
             end if
         end do
         
         if (j_min /= i) then
-            temp_input_parameter    = input_variables(i)
+            temp_input_parameter   = input_variables(i)
             input_variables(i)     = input_variables(j_min)
             input_variables(j_min) = temp_input_parameter
         end if
@@ -197,13 +197,13 @@ subroutine sort_input_parameters(input_variables)
     do i = i_switch, n
         j_min = i
         do j = i + 1, n
-            if (input_variables(j)%parameter_name < input_variables(j_min)%parameter_name) then
+            if (input_variables(j)%variable_name < input_variables(j_min)%variable_name) then
                 j_min = j
             end if
         end do
         
         if (j_min /= i) then
-            temp_input_parameter    = input_variables(i)
+            temp_input_parameter   = input_variables(i)
             input_variables(i)     = input_variables(j_min)
             input_variables(j_min) = temp_input_parameter
         end if
@@ -222,7 +222,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
     real(WP)          :: default_value_real
     
     ! `input_variable` namelist group
-    character(len=CL) :: parameter_name
+    character(len=CL) :: variable_name
     character(len=CL) :: type_definition
     character(len=CL) :: default_value
     logical           :: no_kind_default_value
@@ -242,7 +242,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
     character(len=CL) :: tex_description_2
     character(len=CL) :: tex_variable_name
     
-    namelist /input_variable/ parameter_name, type_definition, default_value, no_kind_default_value, required, add_to_type, &
+    namelist /input_variable/ variable_name, type_definition, default_value, no_kind_default_value, required, add_to_type, &
                                 lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
                                 bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name
@@ -275,7 +275,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
     allocate(input_variables(n_input_parameters))
     i = 0
     do ! SERIAL
-        parameter_name            = ""
+        variable_name             = ""
         type_definition           = ""
         default_value             = ""
         no_kind_default_value     = .false.
@@ -293,7 +293,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         tex_unit                  = ""
         tex_description           = ""
         tex_description_2         = ""
-        tex_variable_name        = ""
+        tex_variable_name         = ""
         
         read(unit=nml_unit, nml=input_variable, iostat=rc_nml, iomsg=nml_error_message)
         
@@ -308,7 +308,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         
         i = i + 1
         
-        input_variables(i)%parameter_name            = trim(parameter_name)
+        input_variables(i)%variable_name             = trim(variable_name)
         input_variables(i)%type_definition           = trim(type_definition)
         input_variables(i)%default_value             = trim(default_value)
         input_variables(i)%no_kind_default_value     = no_kind_default_value
@@ -326,7 +326,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         input_variables(i)%tex_unit                  = trim(tex_unit)
         input_variables(i)%tex_description           = trim(tex_description)
         input_variables(i)%tex_description_2         = trim(tex_description_2)
-        input_variables(i)%tex_variable_name        = trim(tex_variable_name)
+        input_variables(i)%tex_variable_name         = trim(tex_variable_name)
         
         ! Conditional defaults.
         if ((len(trim(input_variables(i)%bound_fmt)) == 0) .and. (input_variables(i)%type_definition(1:4) == "inte")) then
@@ -341,28 +341,28 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         
         write(unit=i_string, fmt="(i0)") i
         
-        call check(len(trim(parameter_name)) > 0, "input_variable #" // trim(i_string) &
-                                                // "has an empty parameter_name.", n_failures)
+        call check(len(trim(variable_name)) > 0, "input_variable #" // trim(i_string) &
+                                                // "has an empty variable_name.", n_failures)
         call check(len(trim(type_definition)) > 0, "input_variable #" // trim(i_string) &
-                                                    // " with parameter_name '" // trim(parameter_name) &
+                                                    // " with variable_name '" // trim(variable_name) &
                                                     // "' has an empty type_definition.", n_failures)
         call check(len(trim(tex_description)) > 0, "input_variable #" // trim(i_string) &
-                                                    // " with parameter_name '" // trim(parameter_name) &
+                                                    // " with variable_name '" // trim(variable_name) &
                                                     // "' has an empty tex_description.", n_failures)
         
         call check(.not. ((.not. lower_bound_active) .and. lower_bound_not_equal), &
                     "input_variable #" // trim(i_string) &
-                    // " with parameter_name '" // trim(parameter_name) &
+                    // " with variable_name '" // trim(variable_name) &
                     // "': lower_bound_not_equal can not be .true. unless lower_bound_active=.true.", n_failures)
         
         call check(.not. ((.not. upper_bound_active) .and. upper_bound_not_equal), &
                     "input_variable #" // trim(i_string) &
-                    // " with parameter_name '" // trim(parameter_name) &
+                    // " with variable_name '" // trim(variable_name) &
                     // "': upper_bound_not_equal can not be .true. unless upper_bound_active=.true.", n_failures)
         
         if (lower_bound_active .and. upper_bound_active) then
             call check(lower_bound < upper_bound, "input_variable #" // trim(i_string) &
-                                                    // " with parameter_name '" // trim(parameter_name) &
+                                                    // " with variable_name '" // trim(variable_name) &
                                                     // "': lower_bound < upper_bound violated.", n_failures)
         end if
         
@@ -371,16 +371,16 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
                 .or. (input_variables(i)%type_definition(1:4) == "inte")) &
                     .and. input_variables(i)%required) then
             call check(len(trim(tex_unit)) > 0, "input_variable #" // trim(i_string) &
-                                                    // " with parameter_name '" // trim(parameter_name) &
+                                                    // " with variable_name '" // trim(variable_name) &
                                                     // "' is numeric and has an empty tex_unit.", n_failures)
             call check(input_variables(i)%lower_bound_active .or. input_variables(i)%upper_bound_active, &
                         "input_variable #" // trim(i_string) &
-                        // " with parameter_name '" // trim(parameter_name) &
+                        // " with variable_name '" // trim(variable_name) &
                         // "': one or more bounds must be set if numeric and required, " &
                         // "otherwise Fortran can not detect if a variable is not set.", n_failures)
             call check(len(trim(input_variables(i)%default_value)) > 0, &
                         "input_variable #" // trim(i_string) &
-                        // " with parameter_name '" // trim(parameter_name) &
+                        // " with variable_name '" // trim(variable_name) &
                         // "': default_value must be set if numeric and required, " &
                         // "otherwise Fortran can not detect if a variable is not set.", n_failures)
             if ((input_variables(i)%lower_bound_active .or. input_variables(i)%upper_bound_active) &
@@ -397,7 +397,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
                 
                 call check(outside_of_lower_bound .or. outside_of_upper_bound, &
                         "input_variable #" // trim(i_string) &
-                        // " with parameter_name '" // trim(parameter_name) &
+                        // " with variable_name '" // trim(variable_name) &
                         // "': default_value must be outside bounds if numeric and required, " &
                         // "otherwise Fortran can not detect if a variable is not set.", n_failures)
             end if
@@ -406,11 +406,11 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         if (input_variables(i)%type_definition(1:4) == "logi") then
             call check(len(trim(input_variables(i)%default_value)) > 0, &
                         "input_variable #" // trim(i_string) &
-                        // " with parameter_name '" // trim(parameter_name) &
+                        // " with variable_name '" // trim(variable_name) &
                         // "': default_value must be set for logical input parameters.", n_failures)
             call check(.not. input_variables(i)%required, &
                         "input_variable #" // trim(i_string) &
-                        // " with parameter_name '" // trim(parameter_name) &
+                        // " with variable_name '" // trim(variable_name) &
                         // "': logical parameters can not be required as there is no way to check in a Fortran namelist.", &
                         n_failures)
         end if
@@ -418,14 +418,14 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         if ((input_variables(i)%type_definition(1:4) == "inte") .and. input_variables(i)%lower_bound_active) then
             call check(is_close(input_variables(i)%lower_bound, real(nint(input_variables(i)%lower_bound), WP)), &
                         "input_variable #" // trim(i_string) &
-                        // " with parameter_name '" // trim(parameter_name) &
+                        // " with variable_name '" // trim(variable_name) &
                         // "': integer input parameter must have integer lower bound.", n_failures)
         end if
         
         if ((input_variables(i)%type_definition(1:4) == "inte") .and. input_variables(i)%upper_bound_active) then
             call check(is_close(input_variables(i)%upper_bound, real(nint(input_variables(i)%upper_bound), WP)), &
                         "input_variable #" // trim(i_string) &
-                        // " with parameter_name '" // trim(parameter_name) &
+                        // " with variable_name '" // trim(variable_name) &
                         // "': integer input parameter must have integer upper bound.", n_failures)
         end if
         
@@ -435,10 +435,16 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         
         do j = 1, i - 1
             write(unit=j_string, fmt="(i0)") j
-            call check(trim(input_variables(j)%parameter_name) /= trim(input_variables(i)%parameter_name), &
+            call check(trim(input_variables(j)%variable_name) /= trim(input_variables(i)%variable_name), &
                         "input_variable #" // trim(i_string) &
-                        // " with parameter_name '" // trim(parameter_name) &
-                        // "' has the same parameter_name as " &
+                        // " with variable_name '" // trim(variable_name) &
+                        // "' has the same variable_name as " &
+                        // "input_variable #" // trim(j_string) // ".", &
+                        n_failures)
+            call check(trim(input_variables(j)%tex_variable_name) /= trim(input_variables(i)%tex_variable_name), &
+                        "input_variable #" // trim(i_string) &
+                        // " with variable_name '" // trim(variable_name) &
+                        // "' has the same tex_variable_name as " &
                         // "input_variable #" // trim(j_string) // ".", &
                         n_failures)
         end do
@@ -468,7 +474,7 @@ subroutine write_type(config, input_variables)
     write(unit=out_unit, fmt="(a)") "type :: " // trim(config%type_name)
     do i = 1, n
         write(unit=out_unit, fmt="(a)") "    " // trim(input_variables(i)%type_definition) &
-                                            // " :: " // trim(input_variables(i)%parameter_name)
+                                            // " :: " // trim(input_variables(i)%variable_name)
     end do
     write(unit=out_unit, fmt="(a)") "end type " // trim(config%type_name)
     
@@ -511,7 +517,7 @@ subroutine write_subroutine(config, input_variables)
         end if
         
         write(unit=out_unit, fmt="(a)") trim(type_definition) &
-                                            // " :: " // trim(input_variables(i)%parameter_name)
+                                            // " :: " // trim(input_variables(i)%variable_name)
     end do
     write(unit=out_unit, fmt="(a)") ""
     
@@ -519,14 +525,14 @@ subroutine write_subroutine(config, input_variables)
     write(unit=out_unit, fmt="(a)", advance="no") trim(line) // " "
     line_length = len(trim(line)) + 1
     do i = 1, n
-        line_length = line_length + len(trim(input_variables(i)%parameter_name))
+        line_length = line_length + len(trim(input_variables(i)%variable_name))
         if (line_length > (MAX_LINE_LENGTH - 3)) then ! The 3 accounts for `, &`
             write(unit=out_unit, fmt="(a)") "&"
-            line_length = 4 + len(trim(input_variables(i)%parameter_name))
+            line_length = 4 + len(trim(input_variables(i)%variable_name))
             write(unit=out_unit, fmt="(a)", advance="no") "    "
         end if
         
-        write(unit=out_unit, fmt="(a)", advance="no") trim(input_variables(i)%parameter_name)
+        write(unit=out_unit, fmt="(a)", advance="no") trim(input_variables(i)%variable_name)
         
         if (i /= n) then
             write(unit=out_unit, fmt="(a)", advance="no") ", "
@@ -573,7 +579,7 @@ subroutine write_subroutine(config, input_variables)
             end if
         end if
         
-        write(unit=out_unit, fmt="(a)") trim(input_variables(i)%parameter_name) // " = " // trim(default_value)
+        write(unit=out_unit, fmt="(a)") trim(input_variables(i)%variable_name) // " = " // trim(default_value)
     end do
     write(unit=out_unit, fmt="(a)") ""
     
@@ -596,17 +602,17 @@ subroutine write_subroutine(config, input_variables)
     do i = 1, n
         ! Check that required strings have greater than zero length.
         if ((input_variables(i)%type_definition(1:4) == "char") .and. input_variables(i)%required) then
-            write(unit=out_unit, fmt="(a)") "call check(len(trim(" // trim(input_variables(i)%parameter_name) &
-                    // ")) > 0, " // '"' // trim(input_variables(i)%parameter_name) // " in the " // trim(config%namelist_group) &
+            write(unit=out_unit, fmt="(a)") "call check(len(trim(" // trim(input_variables(i)%variable_name) &
+                    // ")) > 0, " // '"' // trim(input_variables(i)%variable_name) // " in the " // trim(config%namelist_group) &
                     // ' namelist group is required.", rc)'
         end if
         
         ! How can I make numeric variables required?
         ! Check with `==` for integers and `is_close` otherwise that the variable equals its default.
         if ((input_variables(i)%type_definition(1:4) == "inte") .and. input_variables(i)%required) then
-            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_variables(i)%parameter_name) &
+            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_variables(i)%variable_name) &
                     // " /= " // trim(input_variables(i)%default_value) // ", " // '"' &
-                    // trim(input_variables(i)%parameter_name) // " in the " // trim(config%namelist_group) &
+                    // trim(input_variables(i)%variable_name) // " in the " // trim(config%namelist_group) &
                     // ' namelist group is required.", rc)'
         end if
         
@@ -618,9 +624,9 @@ subroutine write_subroutine(config, input_variables)
                 underscore_kind_parameter = "_" // trim(config%kind_parameter)
             end if
             
-            write(unit=out_unit, fmt="(a)") "call check(is_close(" // trim(input_variables(i)%parameter_name) &
+            write(unit=out_unit, fmt="(a)") "call check(is_close(" // trim(input_variables(i)%variable_name) &
                     // ", " // trim(input_variables(i)%default_value) // trim(underscore_kind_parameter) // "), " // '"' &
-                    // trim(input_variables(i)%parameter_name) // " in the " // trim(config%namelist_group) &
+                    // trim(input_variables(i)%variable_name) // " in the " // trim(config%namelist_group) &
                     // ' namelist group is required.", rc)'
         end if
     end do
@@ -640,12 +646,12 @@ subroutine write_subroutine(config, input_variables)
                     end if
                     write(unit=out_unit, fmt="(a)") 'write(unit=value_string, fmt="(' &
                             // trim(input_variables(i)%bound_fmt) // ')") ' &
-                            // trim(input_variables(i)%parameter_name)
+                            // trim(input_variables(i)%variable_name)
                 case ("inte")
                     write(unit=bound_value_string_1, fmt="(" // trim(input_variables(i)%bound_fmt) // ")") &
                                 nint(input_variables(i)%lower_bound)
                 case default
-                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%parameter_name) &
+                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%variable_name) &
                             // ": This type of input parameter can't have a bound."
                     error stop
             end select
@@ -658,7 +664,7 @@ subroutine write_subroutine(config, input_variables)
                     write(unit=bound_value_string_2, fmt="(" // trim(input_variables(i)%bound_fmt) // ")") &
                                 nint(input_variables(i)%lower_bound)
                 case default
-                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%parameter_name) &
+                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%variable_name) &
                             // ": This type of input parameter can't have a bound."
                     error stop
             end select
@@ -669,9 +675,9 @@ subroutine write_subroutine(config, input_variables)
                 op = ">="
             end if
             
-            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_variables(i)%parameter_name) &
+            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_variables(i)%variable_name) &
                      // " " // trim(op) // " " // trim(bound_value_string_1) // ", " // '"' &
-                    // trim(input_variables(i)%parameter_name) // " in the " &
+                    // trim(input_variables(i)%variable_name) // " in the " &
                     // trim(config%namelist_group) &
                     // ' namelist group equals " // trim(value_string) &'
             write(unit=out_unit, fmt="(a)") '            // " but must be ' // trim(op) // " " &
@@ -693,7 +699,7 @@ subroutine write_subroutine(config, input_variables)
                     write(unit=bound_value_string_1, fmt="(" // trim(input_variables(i)%bound_fmt) // ")") &
                                 nint(input_variables(i)%upper_bound)
                 case default
-                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%parameter_name) &
+                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%variable_name) &
                             // ": This type of input parameter can't have a bound."
                     error stop
             end select
@@ -706,7 +712,7 @@ subroutine write_subroutine(config, input_variables)
                     write(unit=bound_value_string_2, fmt="(" // trim(input_variables(i)%bound_fmt) // ")") &
                                 nint(input_variables(i)%upper_bound)
                 case default
-                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%parameter_name) &
+                    write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%variable_name) &
                             // ": This type of input parameter can't have a bound."
                     error stop
             end select
@@ -717,9 +723,9 @@ subroutine write_subroutine(config, input_variables)
                 op = "<="
             end if
             
-            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_variables(i)%parameter_name) &
+            write(unit=out_unit, fmt="(a)") "call check(" // trim(input_variables(i)%variable_name) &
                      // " " // trim(op) // " " // trim(bound_value_string_1) // ", " // '"' &
-                    // trim(input_variables(i)%parameter_name) // " in the " &
+                    // trim(input_variables(i)%variable_name) // " in the " &
                     // trim(config%namelist_group) &
                     // ' namelist group equals " // trim(value_string) &'
             write(unit=out_unit, fmt="(a)") '            // " but must be ' // trim(op) // " " &
@@ -733,55 +739,62 @@ subroutine write_subroutine(config, input_variables)
         ! Write to config variable.
         do i = 1, n
             if (.not. (input_variables(i)%type_definition(1:4) == "char")) then
-                write(unit=out_unit, fmt="(a)") "config%" // trim(input_variables(i)%parameter_name) // " = " &
-                                                    // trim(input_variables(i)%parameter_name)
+                write(unit=out_unit, fmt="(a)") "config%" // trim(input_variables(i)%variable_name) // " = " &
+                                                    // trim(input_variables(i)%variable_name)
             else
                 ! Trim strings.
-                write(unit=out_unit, fmt="(a)") "config%" // trim(input_variables(i)%parameter_name) // " = trim(" &
-                                                    // trim(input_variables(i)%parameter_name) // ")"
+                write(unit=out_unit, fmt="(a)") "config%" // trim(input_variables(i)%variable_name) // " = trim(" &
+                                                    // trim(input_variables(i)%variable_name) // ")"
             end if
         end do
     end if
     
+    write(unit=out_unit, fmt="(a)") ""
+    write(unit=out_unit, fmt="(a)") "if (rc /= 0) then"
+    write(unit=out_unit, fmt="(a)") "    return"
+    write(unit=out_unit, fmt="(a)") "end if"
+    
     close(unit=out_unit)
     
     write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // "_subroutine.f90."
+    
+    ! TODO: Put variable names in genunits types.
 end subroutine write_subroutine
 
-function escape_parameter_name(parameter_name)
-    character(len=*), intent(in) :: parameter_name
+function texttt_escape(string)
+    character(len=*), intent(in) :: string
     
-    character(len=:), allocatable :: escape_parameter_name
+    character(len=:), allocatable :: texttt_escape
     
-    character(len=:), allocatable :: trim_parameter_name
+    character(len=:), allocatable :: trim_string
     
     integer :: i_prev, i_next
     
-    trim_parameter_name = trim(parameter_name)
+    trim_string = trim(string)
     
     i_prev = 1
     do
-        i_next = index(trim_parameter_name(i_prev:len(trim_parameter_name)), "_")
+        i_next = index(trim_string(i_prev:len(trim_string)), "_")
         
         if (i_next == 0) then
-            escape_parameter_name = escape_parameter_name // trim_parameter_name(i_prev:len(trim_parameter_name))
+            texttt_escape = texttt_escape // trim_string(i_prev:len(trim_string))
             exit
         else
-            escape_parameter_name = escape_parameter_name // trim_parameter_name(i_prev:i_next-1) // "\_"
+            texttt_escape = texttt_escape // trim_string(i_prev:i_next-1) // "\_"
         end if
         
         i_prev = i_next + 1
     end do
-end function escape_parameter_name
+end function texttt_escape
 
 subroutine write_tex(config, input_variables)
     type(config_type), intent(in)                       :: config
     type(input_parameter_type), allocatable, intent(in) :: input_variables(:)
     
     integer :: out_unit, n, i
-    
-    open(newunit=out_unit, action="write", status="replace", position="rewind", &
-            file=trim(config%output_file_prefix) // "_subroutine.f90")
+    logical :: optional_printed
+    character(4)  :: type4
+    character(CL) :: default_value
     
     n = size(input_variables)
     
@@ -789,11 +802,22 @@ subroutine write_tex(config, input_variables)
             file=trim(config%output_file_prefix) // ".tex")
     
     write(unit=out_unit, fmt="(a)") "% auto-generated"
+    write(unit=out_unit, fmt="(a)") ""
+    write(unit=out_unit, fmt="(a)") "Required input variables:"
     write(unit=out_unit, fmt="(a)") "\begin{itemize}"
     
+    optional_printed = .false.
     do i = 1, n
+        if ((.not. optional_printed) .and. (.not. input_variables(i)%required)) then
+            optional_printed = .true.
+            write(unit=out_unit, fmt="(a)") "\end{itemize}"
+            write(unit=out_unit, fmt="(a)") ""
+            write(unit=out_unit, fmt="(a)") "Optional input variables:"
+            write(unit=out_unit, fmt="(a)") "\begin{itemize}"
+        end if
+        
         write(unit=out_unit, fmt="(a)", advance="no") "\item \texttt{"
-        write(unit=out_unit, fmt="(a)", advance="no") escape_parameter_name(input_variables(i)%parameter_name)
+        write(unit=out_unit, fmt="(a)", advance="no") texttt_escape(input_variables(i)%variable_name)
         
         if (len(trim(input_variables(i)%tex_variable_name)) > 0) then
             write(unit=out_unit, fmt="(3a)", advance="no") "} (", trim(input_variables(i)%tex_variable_name), "): "
@@ -805,14 +829,37 @@ subroutine write_tex(config, input_variables)
         
         if (len(trim(input_variables(i)%tex_unit)) > 0) then
             if (trim(input_variables(i)%tex_unit) == "1") then
-                write(unit=out_unit, fmt="(3a)", advance="no") " Unitless. "
+                write(unit=out_unit, fmt="(3a)", advance="no") " Unitless."
             else
-                write(unit=out_unit, fmt="(3a)", advance="no") " Units of ", trim(input_variables(i)%tex_unit), ". "
+                write(unit=out_unit, fmt="(3a)", advance="no") " Units of ", trim(input_variables(i)%tex_unit), "."
             end if
-        else
-            write(unit=out_unit, fmt="(3a)", advance="no") " "
         end if
         
+        ! Why `.not. input_variables(i)%no_kind_default_value`?
+        ! Then parameters like `P_ATM` which are pulled from somewhere else won't print simply `P_ATM`, which is not helpful.
+        ! TODO: Figure out a way to print the actual parameter value.
+        if ((.not. input_variables(i)%required) .and. (.not. input_variables(i)%no_kind_default_value)) then
+            type4 = input_variables(i)%type_definition(1:4)
+            if ((type4 == "real") .or. (type4 == "type")) then
+                default_value = trim(input_variables(i)%default_value)
+            elseif (type4 == "char") then
+                default_value = "\texttt{" // trim(input_variables(i)%default_value) // "}"
+            else
+                default_value = trim(input_variables(i)%default_value)
+            end if
+            
+            if ((len(trim(input_variables(i)%tex_unit)) > 0) &
+                    .and. (trim(input_variables(i)%tex_unit) /= "1")) then
+                write(unit=out_unit, fmt="(5a)", advance="no") " Default value is ", trim(default_value), &
+                                                                    " ", trim(input_variables(i)%tex_unit), "."
+            else
+                write(unit=out_unit, fmt="(3a)", advance="no") " Default value is ", trim(default_value), "."
+            end if
+        end if
+        
+        if (len(trim(input_variables(i)%tex_description_2)) > 0) then
+            write(unit=out_unit, fmt="(3a)", advance="no") " "
+        end if
         write(unit=out_unit, fmt="(a)") trim(input_variables(i)%tex_description_2)
     end do
     
@@ -821,6 +868,8 @@ subroutine write_tex(config, input_variables)
     close(unit=out_unit)
     
     write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // ".tex."
+    
+    ! TODO: add lower and upper bounds to TeX output
 end subroutine write_tex
 
 end program geninput
