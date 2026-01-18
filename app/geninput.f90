@@ -494,7 +494,7 @@ subroutine write_subroutine(config, input_variables)
     logical       :: write_new_line
     
     open(newunit=out_unit, action="write", status="replace", position="rewind", &
-            file=trim(config%output_file_prefix) // "_subroutine.f90")
+            file=trim(config%output_file_prefix) // ".f90")
     
     n = size(input_variables)
     
@@ -782,34 +782,37 @@ subroutine write_subroutine(config, input_variables)
     
     close(unit=out_unit)
     
-    write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // "_subroutine.f90."
-    
-    ! TODO: Copy variable values to genunits types.
+    write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // ".f90."
 end subroutine write_subroutine
 
-function texttt_escape(string)
+pure function texttt_escape(string)
     character(len=*), intent(in) :: string
     
     character(len=:), allocatable :: texttt_escape
     
     character(len=:), allocatable :: trim_string
     
-    integer :: i_prev, i_next
+    integer :: i_prev, i_next, i
     
     trim_string = trim(string)
     
     i_prev = 1
+    i = 0
     do
+        i = i + 1
         i_next = index(trim_string(i_prev:len(trim_string)), "_")
+        !print *, trim_string(i_prev:len(trim_string)), i_prev, i_next
         
         if (i_next == 0) then
             texttt_escape = texttt_escape // trim_string(i_prev:len(trim_string))
             exit
         else
-            texttt_escape = texttt_escape // trim_string(i_prev:i_next-1) // "\_"
+            texttt_escape = texttt_escape // trim_string(i_prev:i_prev+i_next-2) // "\_"
         end if
         
-        i_prev = i_next + 1
+        i_prev = i_next + i_prev
+        
+        call assert(i < 100, "geninput (texttt_escape): doesn't seem to want to finish")
     end do
 end function texttt_escape
 
