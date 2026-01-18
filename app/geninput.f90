@@ -753,8 +753,25 @@ function escape_parameter_name(parameter_name)
     
     character(len=:), allocatable :: escape_parameter_name
     
-    ! TODO: Make this actually escape the underscores.
-    escape_parameter_name = trim(parameter_name)
+    character(len=:), allocatable :: trim_parameter_name
+    
+    integer :: i_prev, i_next
+    
+    trim_parameter_name = trim(parameter_name)
+    
+    i_prev = 1
+    do
+        i_next = index(trim_parameter_name(i_prev:len(trim_parameter_name)), "_")
+        
+        if (i_next == 0) then
+            escape_parameter_name = escape_parameter_name // trim_parameter_name(i_prev:len(trim_parameter_name))
+            exit
+        else
+            escape_parameter_name = escape_parameter_name // trim_parameter_name(i_prev:i_next-1) // "\_"
+        end if
+        
+        i_prev = i_next + 1
+    end do
 end function escape_parameter_name
 
 subroutine write_tex(config, input_parameters)
@@ -788,10 +805,12 @@ subroutine write_tex(config, input_parameters)
         
         if (len(trim(input_parameters(i)%tex_unit)) > 0) then
             if (trim(input_parameters(i)%tex_unit) == "1") then
-                write(unit=out_unit, fmt="(3a)", advance="no") " Unitless."
+                write(unit=out_unit, fmt="(3a)", advance="no") " Unitless. "
             else
-                write(unit=out_unit, fmt="(3a)", advance="no") " Units of ", trim(input_parameters(i)%tex_unit), "."
+                write(unit=out_unit, fmt="(3a)", advance="no") " Units of ", trim(input_parameters(i)%tex_unit), ". "
             end if
+        else
+            write(unit=out_unit, fmt="(3a)", advance="no") " "
         end if
         
         write(unit=out_unit, fmt="(a)") trim(input_parameters(i)%tex_description_2)
