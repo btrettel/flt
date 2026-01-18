@@ -645,7 +645,8 @@ subroutine write_subroutine(config, input_variables)
                                 input_variables(i)%lower_bound, "_", trim(config%kind_parameter)
                     end if
                     write(unit=out_unit, fmt="(a)") 'write(unit=value_string, fmt="(' &
-                            // trim(input_variables(i)%bound_fmt) // ')") ' &
+                            ! old: // trim(input_variables(i)%bound_fmt) // ')") ' &
+                            // "g0" // ')") ' &
                             // trim(input_variables(i)%variable_name)
                 case ("inte")
                     write(unit=bound_value_string_1, fmt="(" // trim(input_variables(i)%bound_fmt) // ")") &
@@ -758,7 +759,7 @@ subroutine write_subroutine(config, input_variables)
     
     write(unit=OUTPUT_UNIT, fmt="(a)") "Wrote " // trim(config%output_file_prefix) // "_subroutine.f90."
     
-    ! TODO: Put variable names in genunits types.
+    ! TODO: Copy variable values to genunits types.
 end subroutine write_subroutine
 
 function texttt_escape(string)
