@@ -636,7 +636,7 @@ subroutine write_subroutine(config, input_variables)
                 underscore_kind_parameter = "_" // trim(config%kind_parameter)
             end if
             
-            write(unit=out_unit, fmt="(a)") "call check(is_close(" // trim(input_variables(i)%variable_name) &
+            write(unit=out_unit, fmt="(a)") "call check(.not. is_close(" // trim(input_variables(i)%variable_name) &
                     // ", " // trim(input_variables(i)%default_value) // trim(underscore_kind_parameter) // "), " // '"' &
                     // trim(input_variables(i)%variable_name) // " in the " // trim(config%namelist_group) &
                     // ' namelist group is required.", rc)'
