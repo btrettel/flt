@@ -913,7 +913,7 @@ subroutine write_tex(config, input_variables)
         if ((.not. input_variables(i)%required) .and. (.not. input_variables(i)%no_kind_default_value)) then
             type4 = input_variables(i)%type_definition(1:4)
             if ((type4 == "real") .or. (type4 == "type")) then
-                default_value = trim(input_variables(i)%default_value)
+                default_value = "$" // trim(input_variables(i)%default_value) // "$"
             elseif (type4 == "char") then
                 default_value = "\texttt{" // trim(input_variables(i)%default_value) // "}"
             else
@@ -923,7 +923,7 @@ subroutine write_tex(config, input_variables)
             if ((len(trim(input_variables(i)%tex_unit)) > 0) &
                     .and. (trim(input_variables(i)%tex_unit) /= "1")) then
                 write(unit=out_unit, fmt="(5a)", advance="no") " Default value is ", trim(default_value), &
-                                                                    " ", trim(input_variables(i)%tex_unit), "."
+                                                                    "~", trim(input_variables(i)%tex_unit), "."
             else
                 write(unit=out_unit, fmt="(3a)", advance="no") " Default value is ", trim(default_value), "."
             end if
