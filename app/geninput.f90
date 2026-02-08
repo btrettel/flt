@@ -899,6 +899,19 @@ subroutine write_tex(config, input_variables)
         
         write(unit=out_unit, fmt="(a)", advance="no") trim(input_variables(i)%tex_description)
         
+        select case (input_variables(i)%type_definition(1:4))
+            case ("real", "type")
+                write(unit=out_unit, fmt="(3a)", advance="no") " Floating-point number."
+            case ("inte")
+                write(unit=out_unit, fmt="(3a)", advance="no") " Integer."
+            case ("char")
+                write(unit=out_unit, fmt="(3a)", advance="no") " String."
+            case default
+                write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%variable_name) &
+                        // ": Invalid type_definition."
+                error stop
+        end select
+        
         if (len(trim(input_variables(i)%tex_unit)) > 0) then
             if (trim(input_variables(i)%tex_unit) == "1") then
                 write(unit=out_unit, fmt="(3a)", advance="no") " Unitless."
