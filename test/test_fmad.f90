@@ -41,6 +41,9 @@ contains
 subroutine test_num_deriv(fun, prefactor, x, message, tests, abs_tol)
     ! Using an optimal 3 point stencil from ash_optimal_1981 eq. 2 to minimize the error.
     
+    ! Some other thoughts on finite differences to test AD:
+    ! <https://timvieira.github.io/blog/post/2017/04/21/how-to-test-gradient-implementations/>
+    
     ! function to be evaluated: `fun(prefactor * x)`
     real(WP), intent(in)                    :: prefactor, x
     character(len=*), intent(in)            :: message

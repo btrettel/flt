@@ -14,3 +14,6 @@
 - Add description array for each differentiable variable?
 - Make sure that all operations are branchless.
 - Test fmad against numerical differentiation. I'm afraid that my tests might be looking too closely at the implementation, so something independent could be useful.
+- Look into `associate` blocks or pointers or something so that you can refer to members of the AD derivative vector by more comprehensible names than simply a number
+    - <https://www.physicsforums.com/threads/how-do-i-create-a-pointer-to-an-element-of-an-array-with-a-variable-index.1016073/>
+    - `associated` or pointer to an array element?
