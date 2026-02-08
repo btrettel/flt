@@ -242,11 +242,12 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
     character(len=CL) :: tex_description
     character(len=CL) :: tex_description_2
     character(len=CL) :: tex_variable_name
+    character(len=CL) :: txt_unit
     
     namelist /input_variable/ variable_name, type_definition, default_value, no_kind_default_value, required, add_to_type, &
                                 lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
-                                bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name
+                                bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name, txt_unit
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
     
@@ -295,6 +296,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         tex_description           = ""
         tex_description_2         = ""
         tex_variable_name         = ""
+        txt_unit                  = ""
         
         read(unit=nml_unit, nml=input_variable, iostat=rc_nml, iomsg=nml_error_message)
         
@@ -328,6 +330,13 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         input_variables(i)%tex_description           = trim(tex_description)
         input_variables(i)%tex_description_2         = trim(tex_description_2)
         input_variables(i)%tex_variable_name         = trim(tex_variable_name)
+        
+        ! By default, make `txt_unit` copy `tex_unit`, unless `txt_unit` is defined separately.
+        if ((trim(txt_unit) == "") .and. (trim(tex_unit) /= "")) then
+            input_variables(i)%txt_unit = trim(tex_unit)
+        else
+            input_variables(i)%txt_unit = trim(txt_unit)
+        end if
         
         ! Conditional defaults.
         if ((len(trim(input_variables(i)%bound_fmt)) == 0) .and. (input_variables(i)%type_definition(1:4) == "inte")) then
@@ -371,9 +380,16 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
                 .or. (input_variables(i)%type_definition(1:4) == "type") &
                 .or. (input_variables(i)%type_definition(1:4) == "inte")) &
                     .and. input_variables(i)%required) then
-            call check(len(trim(tex_unit)) > 0, "input_variable #" // trim(i_string) &
+            call check(len(trim(input_variables(i)%tex_unit)) > 0, "input_variable #" // trim(i_string) &
                                                     // " with variable_name '" // trim(variable_name) &
                                                     // "' is numeric and has an empty tex_unit.", n_failures)
+            call check(len(trim(input_variables(i)%txt_unit)) > 0, "input_variable #" // trim(i_string) &
+                                                    // " with variable_name '" // trim(variable_name) &
+                                                    // "' is numeric and has an empty txt_unit.", n_failures)
+            call check((index(input_variables(i)%txt_unit, "$") == 0) &
+                            .and. (index(input_variables(i)%txt_unit, "^") == 0), "input_variable #" // trim(i_string) &
+                                                    // " with variable_name '" // trim(variable_name) &
+                                                    // "' has a txt_unit value which seems to include LaTeX code.", n_failures)
             call check(input_variables(i)%lower_bound_active .or. input_variables(i)%upper_bound_active, &
                         "input_variable #" // trim(i_string) &
                         // " with variable_name '" // trim(variable_name) &
@@ -697,8 +713,8 @@ subroutine write_subroutine(config, input_variables)
             write(unit=out_unit, fmt="(a)", advance="no") '            // " but must be ' // trim(op) // " " &
                     // trim(bound_value_string_2)
             
-            if (trim(input_variables(i)%tex_unit) /= "1") then
-                write(unit=out_unit, fmt="(a)", advance="no") " " // trim(input_variables(i)%tex_unit)
+            if (trim(input_variables(i)%txt_unit) /= "1") then
+                write(unit=out_unit, fmt="(a)", advance="no") " " // trim(input_variables(i)%txt_unit)
             end if
             
             write(unit=out_unit, fmt="(a)") ". " // trim(input_variables(i)%lower_bound_error_message) // '", rc)'
