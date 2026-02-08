@@ -464,6 +464,12 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
                         // "' has the same tex_variable_name as " &
                         // "input_variable #" // trim(j_string) // ".", &
                         n_failures)
+            
+            ! I've had issues before with the `tex_unit` being wrong.
+            ! genunits types (`type_definition`) are checked by the compiler, so I can assume those are correct.
+            ! This checks that only one `tex_unit` and `txt_unit` are used for each genunits `type_definition`.
+            ! The units could still be wrong, but at least they are consistent.
+            ! It's unlikely they'll be wrong if there are multiple that are consistent.
             if ((input_variables(i)%type_definition(1:4) == "type") &
                     .and. (trim(input_variables(i)%type_definition) == trim(input_variables(j)%type_definition))) then
                 call check(trim(input_variables(i)%tex_unit) == trim(input_variables(j)%tex_unit), &
