@@ -464,6 +464,21 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
                         // "' has the same tex_variable_name as " &
                         // "input_variable #" // trim(j_string) // ".", &
                         n_failures)
+            if ((input_variables(i)%type_definition(1:4) == "type") &
+                    .and. (trim(input_variables(i)%type_definition) == trim(input_variables(j)%type_definition))) then
+                call check(trim(input_variables(i)%tex_unit) == trim(input_variables(j)%tex_unit), &
+                         "input_variable #" // trim(i_string) &
+                        // " with variable_name '" // trim(variable_name) &
+                        // "' has the same type_definition as " &
+                        // "input_variable #" // trim(j_string) // " but a different tex_unit.", &
+                        n_failures)
+                call check(trim(input_variables(i)%txt_unit) == trim(input_variables(j)%txt_unit), &
+                         "input_variable #" // trim(i_string) &
+                        // " with variable_name '" // trim(variable_name) &
+                        // "' has the same type_definition as " &
+                        // "input_variable #" // trim(j_string) // " but a different txt_unit.", &
+                        n_failures)
+            end if
         end do
     end do
     close(unit=nml_unit)
