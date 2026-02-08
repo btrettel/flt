@@ -47,6 +47,7 @@ type :: input_parameter_type
     character(len=CL) :: tex_description
     character(len=CL) :: tex_description_2
     character(len=CL) :: tex_variable_name
+    character(len=CL) :: txt_unit
 end type input_parameter_type
 
 integer, parameter :: MAX_LINE_LENGTH = 132
@@ -693,9 +694,14 @@ subroutine write_subroutine(config, input_variables)
                     // trim(input_variables(i)%variable_name) // " in the " &
                     // trim(config%namelist_group) &
                     // ' namelist group equals " // trim(value_string) &'
-            write(unit=out_unit, fmt="(a)") '            // " but must be ' // trim(op) // " " &
-                    // trim(bound_value_string_2) // ". " // trim(input_variables(i)%lower_bound_error_message) &
-                    // '", rc)'
+            write(unit=out_unit, fmt="(a)", advance="no") '            // " but must be ' // trim(op) // " " &
+                    // trim(bound_value_string_2)
+            
+            if (trim(input_variables(i)%tex_unit) /= "1") then
+                write(unit=out_unit, fmt="(a)", advance="no") " " // trim(input_variables(i)%tex_unit)
+            end if
+            
+            write(unit=out_unit, fmt="(a)") ". " // trim(input_variables(i)%lower_bound_error_message) // '", rc)'
         end if
         
         if (input_variables(i)%upper_bound_active) then
