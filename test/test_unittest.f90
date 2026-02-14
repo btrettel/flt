@@ -376,16 +376,16 @@ subroutine test_read_unittest_nml(tests)
     character(len=TIMESTAMP_LEN) :: timestamp
     character(len=9)             :: variable_type
     character(len=2)             :: test_operator
-    logical                      :: test_passes, returned_logical, compared_logical
-    character(len=CL)            :: message, returned_character, compared_character
-    real(WP)                     :: returned_real, compared_real, tolerance, difference
-    integer                      :: returned_integer, compared_integer
+    logical                      :: test_passes, returned_logical, expected_logical
+    character(len=CL)            :: message, returned_character, expected_character
+    real(WP)                     :: returned_real, expected_real, tolerance, difference
+    integer                      :: returned_integer, expected_integer
     
     namelist /test_result/ timestamp, variable_type, test_operator, test_passes, message, &
-                            returned_logical, compared_logical, &
-                            returned_real, compared_real, tolerance, difference, &
-                            returned_integer, compared_integer, &
-                            returned_character, compared_character
+                            returned_logical, expected_logical, &
+                            returned_real, expected_real, tolerance, difference, &
+                            returned_integer, expected_integer, &
+                            returned_character, expected_character
     
     integer  :: n_tests, n_failures
     real(WP) :: duration ! in seconds
@@ -398,15 +398,15 @@ subroutine test_read_unittest_nml(tests)
     test_passes        = .false.
     message            = ""
     returned_logical   = .false.
-    compared_logical   = .false.
+    expected_logical   = .false.
     returned_real      = 0.0_WP
-    compared_real      = 0.0_WP
+    expected_real      = 0.0_WP
     tolerance          = 0.0_WP
     difference         = 0.0_WP
     returned_integer   = 0
-    compared_integer   = 0
+    expected_integer   = 0
     returned_character = ""
-    compared_character = ""
+    expected_character = ""
     
     ! logical_true (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -420,7 +420,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, logical_true (pass), test_passes")
     call tests%character_eq(trim(message), "logical_true (pass)", "test_read_unittest_nml, logical_true (pass), message")
     call tests%logical_true(returned_logical, "test_read_unittest_nml, logical_true (pass), returned_logical")
-    call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_true (pass), compared_logical")
+    call tests%logical_true(expected_logical, "test_read_unittest_nml, logical_true (pass), expected_logical")
     
     ! logical_true (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -435,7 +435,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, logical_true (fail), test_passes")
     call tests%character_eq(trim(message), "logical_true (fail)", "test_read_unittest_nml, logical_true (fail), message")
     call tests%logical_false(returned_logical, "test_read_unittest_nml, logical_true (fail), returned_logical")
-    call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_true (fail), compared_logical")
+    call tests%logical_true(expected_logical, "test_read_unittest_nml, logical_true (fail), expected_logical")
     
     ! logical_false (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -449,7 +449,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, logical_false (pass), test_passes")
     call tests%character_eq(trim(message), "logical_false (pass)", "test_read_unittest_nml, logical_false (pass), message")
     call tests%logical_true(returned_logical, "test_read_unittest_nml, logical_false (pass), returned_logical")
-    call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_false (pass), compared_logical")
+    call tests%logical_true(expected_logical, "test_read_unittest_nml, logical_false (pass), expected_logical")
     
     ! logical_false (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -464,7 +464,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, logical_false (fail), test_passes")
     call tests%character_eq(trim(message), "logical_false (fail)", "test_read_unittest_nml, logical_false (fail), message")
     call tests%logical_false(returned_logical, "test_read_unittest_nml, logical_false (fail), returned_logical")
-    call tests%logical_true(compared_logical, "test_read_unittest_nml, logical_false (fail), compared_logical")
+    call tests%logical_true(expected_logical, "test_read_unittest_nml, logical_false (fail), expected_logical")
     
     ! real_eq (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -478,7 +478,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, real_eq (pass), test_passes")
     call tests%character_eq(trim(message), "real_eq (pass)", "test_read_unittest_nml, real_eq (pass), message")
     call tests%real_eq(returned_real, 1.0_WP, "test_read_unittest_nml, real_eq (pass), returned_real")
-    call tests%real_eq(compared_real, 1.0_WP, "test_read_unittest_nml, real_eq (pass), compared_real")
+    call tests%real_eq(expected_real, 1.0_WP, "test_read_unittest_nml, real_eq (pass), expected_real")
     
     ! real_eq (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -493,7 +493,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, real_eq (fail), test_passes")
     call tests%character_eq(trim(message), "real_eq (fail)", "test_read_unittest_nml, real_eq (fail), message")
     call tests%real_eq(returned_real, 3.0_WP, "test_read_unittest_nml, real_eq (fail), returned_real")
-    call tests%real_eq(compared_real, 2.0_WP, "test_read_unittest_nml, real_eq (fail), compared_real")
+    call tests%real_eq(expected_real, 2.0_WP, "test_read_unittest_nml, real_eq (fail), expected_real")
     
     ! real_ne (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -507,7 +507,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, real_ne (pass), test_passes")
     call tests%character_eq(trim(message), "real_ne (pass)", "test_read_unittest_nml, real_ne (pass), message")
     call tests%real_eq(returned_real, 0.0_WP, "test_read_unittest_nml, real_ne (pass), returned_real")
-    call tests%real_eq(compared_real, 1.0_WP, "test_read_unittest_nml, real_ne (pass), compared_real")
+    call tests%real_eq(expected_real, 1.0_WP, "test_read_unittest_nml, real_ne (pass), expected_real")
     
     ! real_ne (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -522,7 +522,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, real_ne (fail), test_passes")
     call tests%character_eq(trim(message), "real_ne (fail)", "test_read_unittest_nml, real_ne (fail), message")
     call tests%real_eq(returned_real, 3.0_WP, "test_read_unittest_nml, real_ne (fail), returned_real")
-    call tests%real_eq(compared_real, 3.0_WP, "test_read_unittest_nml, real_ne (fail), compared_real")
+    call tests%real_eq(expected_real, 3.0_WP, "test_read_unittest_nml, real_ne (fail), expected_real")
     
     ! integer_eq (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -536,7 +536,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, integer_eq (pass), test_passes")
     call tests%character_eq(trim(message), "integer_eq (pass)", "test_read_unittest_nml, integer_eq (pass), message")
     call tests%integer_eq(returned_integer, 2, "test_read_unittest_nml, integer_eq (pass), returned_integer")
-    call tests%integer_eq(compared_integer, 2, "test_read_unittest_nml, integer_eq (pass), compared_integer")
+    call tests%integer_eq(expected_integer, 2, "test_read_unittest_nml, integer_eq (pass), expected_integer")
     
     ! integer_eq (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -551,7 +551,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, integer_eq (fail), test_passes")
     call tests%character_eq(trim(message), "integer_eq (fail)", "test_read_unittest_nml, integer_eq (fail), message")
     call tests%integer_eq(returned_integer, -1, "test_read_unittest_nml, integer_eq (fail), returned_integer")
-    call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_eq (fail), compared_integer")
+    call tests%integer_eq(expected_integer, 4, "test_read_unittest_nml, integer_eq (fail), expected_integer")
     
     ! integer_ne (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -565,7 +565,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, integer_ne (pass), test_passes")
     call tests%character_eq(trim(message), "integer_ne (pass)", "test_read_unittest_nml, integer_ne (pass), message")
     call tests%integer_eq(returned_integer, 2, "test_read_unittest_nml, integer_ne (pass), returned_integer")
-    call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_ne (pass), compared_integer")
+    call tests%integer_eq(expected_integer, 1, "test_read_unittest_nml, integer_ne (pass), expected_integer")
     
     ! integer_ne (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -580,7 +580,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, integer_ne (fail), test_passes")
     call tests%character_eq(trim(message), "integer_ne (fail)", "test_read_unittest_nml, integer_ne (fail), message")
     call tests%integer_eq(returned_integer, 4, "test_read_unittest_nml, integer_ne (fail), returned_integer")
-    call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_ne (fail), compared_integer")
+    call tests%integer_eq(expected_integer, 4, "test_read_unittest_nml, integer_ne (fail), expected_integer")
     
     ! integer_ge (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -594,7 +594,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, integer_ge (pass), test_passes")
     call tests%character_eq(trim(message), "integer_ge (pass)", "test_read_unittest_nml, integer_ge (pass), message")
     call tests%integer_eq(returned_integer, 2, "test_read_unittest_nml, integer_ge (pass), returned_integer")
-    call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_ge (pass), compared_integer")
+    call tests%integer_eq(expected_integer, 1, "test_read_unittest_nml, integer_ge (pass), expected_integer")
     
     ! integer_ge (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -609,7 +609,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, integer_ge (fail), test_passes")
     call tests%character_eq(trim(message), "integer_ge (fail)", "test_read_unittest_nml, integer_ge (fail), message")
     call tests%integer_eq(returned_integer, 3, "test_read_unittest_nml, integer_ge (fail), returned_integer")
-    call tests%integer_eq(compared_integer, 4, "test_read_unittest_nml, integer_ge (fail), compared_integer")
+    call tests%integer_eq(expected_integer, 4, "test_read_unittest_nml, integer_ge (fail), expected_integer")
     
     ! integer_le (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -623,7 +623,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, integer_le (pass), test_passes")
     call tests%character_eq(trim(message), "integer_le (pass)", "test_read_unittest_nml, integer_le (pass), message")
     call tests%integer_eq(returned_integer, 0, "test_read_unittest_nml, integer_le (pass), returned_integer")
-    call tests%integer_eq(compared_integer, 1, "test_read_unittest_nml, integer_le (pass), compared_integer")
+    call tests%integer_eq(expected_integer, 1, "test_read_unittest_nml, integer_le (pass), expected_integer")
     
     ! integer_le (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -638,7 +638,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, integer_le (fail), test_passes")
     call tests%character_eq(trim(message), "integer_le (fail)", "test_read_unittest_nml, integer_le (fail), message")
     call tests%integer_eq(returned_integer, 5, "test_read_unittest_nml, integer_le (fail), returned_integer")
-    call tests%integer_eq(compared_integer, 2, "test_read_unittest_nml, integer_le (fail), compared_integer")
+    call tests%integer_eq(expected_integer, 2, "test_read_unittest_nml, integer_le (fail), expected_integer")
     
     ! character_eq (pass)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -652,7 +652,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_true(test_passes, "test_read_unittest_nml, character_eq (pass), test_passes")
     call tests%character_eq(trim(message), "character_eq (pass)", "test_read_unittest_nml, character_eq (pass), message")
     call tests%character_eq(returned_character, "a", "test_read_unittest_nml, character_eq (pass), returned_character")
-    call tests%character_eq(compared_character, "a", "test_read_unittest_nml, character_eq (pass), compared_character")
+    call tests%character_eq(expected_character, "a", "test_read_unittest_nml, character_eq (pass), expected_character")
     
     ! character_eq (fail)
     call nml_tests%start_tests(TEST_FILENAME)
@@ -667,7 +667,7 @@ subroutine test_read_unittest_nml(tests)
     call tests%logical_false(test_passes, "test_read_unittest_nml, character_eq (fail), test_passes")
     call tests%character_eq(trim(message), "character_eq (fail)", "test_read_unittest_nml, character_eq (fail), message")
     call tests%character_eq(returned_character, "a", "test_read_unittest_nml, character_eq (fail), returned_character")
-    call tests%character_eq(compared_character, "b", "test_read_unittest_nml, character_eq (fail), compared_character")
+    call tests%character_eq(expected_character, "b", "test_read_unittest_nml, character_eq (fail), expected_character")
     
     ! tests summary
     open(newunit=nml_unit, file="prec.nml", status="old", action="read", delim="quote", recl=NML_RECL)
