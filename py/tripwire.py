@@ -66,7 +66,7 @@ def parse_begin_directive(directive):
     assert directive_split[1] == "begin"
     
     checksum = directive_split[2]
-    message  = directive_split[3]
+    message  = " ".join(directive_split[3:]).strip()
     
     return checksum, message
 
@@ -105,11 +105,11 @@ class Tests(unittest.TestCase):
         self.assertEqual(crc32("123456789"), "CBF43926")
     
     def test_get_tripwrite_directive(self):
-        self.assertEqual(get_tripwrite_directive("don't include this tripwire$ begin CHECKSUM message"), "tripwire$ begin CHECKSUM message")
+        self.assertEqual(get_tripwrite_directive("don't include this tripwire$ begin CHECKSUM Multi-word message"), "tripwire$ begin CHECKSUM Multi-word message")
         self.assertEqual(get_tripwrite_directive("don't include this tripwire$ end"), "tripwire$ end")
     
     def test_parse_begin_directive(self):
-        checksum, message = parse_begin_directive("tripwire$ begin CHECKSUM message")
+        checksum, message = parse_begin_directive("tripwire$ begin CHECKSUM Multi-word message")
         
         self.assertEqual(checksum, "CHECKSUM")
-        self.assertEqual(message, "message")
+        self.assertEqual(message, "Multi-word message")
