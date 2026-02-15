@@ -90,6 +90,8 @@ if __name__ == "__main__":
                 print("{}:{} (reported {}, actual {}): {}".format(file, line_no, reported_checksum, actual_checksum, message))
                 exit_code = 1
     
+    if (exit_code > 0):
+        print("ONE OR MORE TRIPWIRE(S) TRIPPED.")
     sys.exit(exit_code)
 
 class Tests(unittest.TestCase):
