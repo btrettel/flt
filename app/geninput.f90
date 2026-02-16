@@ -118,7 +118,7 @@ subroutine read_config_namelist(input_file, config, rc)
     read(unit=nml_unit, nml=geninput_config, iostat=rc_nml, iomsg=nml_error_message)
     close(unit=nml_unit)
     
-    if ((rc_nml /= 0) .and. (rc_nml /= IOSTAT_END)) then
+    if (rc_nml /= 0) then
         write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)
         rc = rc_nml
         return
@@ -638,8 +638,10 @@ subroutine write_subroutine(config, input_variables)
                                         // ", iostat=rc_nml, iomsg=nml_error_message)"
     write(unit=out_unit, fmt="(a)") "close(unit=nml_unit)"
     write(unit=out_unit, fmt="(a)") ""
-    write(unit=out_unit, fmt="(a)") "if ((rc_nml /= 0) .and. (rc_nml /= IOSTAT_END)) then"
-    write(unit=out_unit, fmt="(a)") '    write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)'
+    write(unit=out_unit, fmt="(a)") "if (rc_nml /= 0) then"
+    ! For BlasterSim, I detect the mode by seeing which namelist is present.
+    ! So if a particular namelist isn't present (`rc_nml == IOSTAT_END`) then I don't necessarily want to print an error.
+    write(unit=out_unit, fmt="(a)") '    if (rc_nml /= IOSTAT_END) write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)'
     write(unit=out_unit, fmt="(a)") "    rc = rc_nml"
     write(unit=out_unit, fmt="(a)") "    return"
     write(unit=out_unit, fmt="(a)") "end if"
