@@ -722,6 +722,30 @@ subroutine write_subroutine(config, input_variables)
                     error stop
             end select
             
+            ! The bounds check should not be done if the variable equals its default value.
+            ! Non-required variables should have an okay default value.
+            ! Plus, I often make required variables use constants as their default value, which doesn't work with the logic below.
+            if (input_variables(i)%required) then
+                select case (input_variables(i)%type_definition(1:4))
+                    case ("real", "type")
+                        if (trim(input_variables(i)%type_definition) == "real") then
+                            underscore_kind_parameter = ""
+                        else
+                            underscore_kind_parameter = "_" // trim(config%kind_parameter)
+                        end if
+                        
+                        write(unit=out_unit, fmt="(a)") "if (.not. is_close(" // trim(input_variables(i)%variable_name) &
+                                // ", " // trim(input_variables(i)%default_value) // trim(underscore_kind_parameter) // ")) then"
+                    case ("inte")
+                        write(unit=out_unit, fmt="(a)") "if (" // trim(input_variables(i)%variable_name) &
+                            // " /= " // trim(input_variables(i)%default_value) // ") then"
+                    case default
+                        write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%variable_name) &
+                                // ": This type of input parameter can't have a bound."
+                        error stop
+                end select
+            end if
+            
             if (input_variables(i)%lower_bound_not_equal) then
                 op = ">"
             else
@@ -741,6 +765,8 @@ subroutine write_subroutine(config, input_variables)
             end if
             
             write(unit=out_unit, fmt="(a)") ". " // trim(input_variables(i)%lower_bound_error_message) // '", rc)'
+            
+            if (input_variables(i)%required) write(unit=out_unit, fmt="(a)") "end if"
         end if
         
         if (input_variables(i)%upper_bound_active) then
@@ -775,6 +801,30 @@ subroutine write_subroutine(config, input_variables)
                     error stop
             end select
             
+            ! The bounds check should not be done if the variable equals its default value.
+            ! Non-required variables should have an okay default value.
+            ! Plus, I often make required variables use constants as their default value, which doesn't work with the logic below.
+            if (input_variables(i)%required) then
+                select case (input_variables(i)%type_definition(1:4))
+                    case ("real", "type")
+                        if (trim(input_variables(i)%type_definition) == "real") then
+                            underscore_kind_parameter = ""
+                        else
+                            underscore_kind_parameter = "_" // trim(config%kind_parameter)
+                        end if
+                        
+                        write(unit=out_unit, fmt="(a)") "if (.not. is_close(" // trim(input_variables(i)%variable_name) &
+                                // ", " // trim(input_variables(i)%default_value) // trim(underscore_kind_parameter) // ")) then"
+                    case ("inte")
+                        write(unit=out_unit, fmt="(a)") "if (" // trim(input_variables(i)%variable_name) &
+                            // " /= " // trim(input_variables(i)%default_value) // ") then"
+                    case default
+                        write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%variable_name) &
+                                // ": This type of input parameter can't have a bound."
+                        error stop
+                end select
+            end if
+            
             if (input_variables(i)%upper_bound_not_equal) then
                 op = "<"
             else
@@ -787,8 +837,10 @@ subroutine write_subroutine(config, input_variables)
                     // trim(config%namelist_group) &
                     // ' namelist group equals " // trim(value_string) &'
             write(unit=out_unit, fmt="(a)") '            // " but must be ' // trim(op) // " " &
-                    // trim(bound_value_string_2) // ". " // trim(input_variables(i)%lower_bound_error_message) &
+                    // trim(bound_value_string_2) // ". " // trim(input_variables(i)%upper_bound_error_message) &
                     // '", rc)'
+            
+            if (input_variables(i)%required) write(unit=out_unit, fmt="(a)") "end if"
         end if
     end do
     
