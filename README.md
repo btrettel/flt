@@ -8,6 +8,7 @@ Misc. Fortran libraries and tools (all at various stages of development), intend
 - fmad.f90: Module for forward-mode automatic differentiation.
 - genunits.f90: Program to generate a module `units` which allows for compile-time physical dimension consistency checking. (Experimental.)
 - geninput.f90: Program to generate consistent Fortran namelist group input code including input validation and documentation for each namelist group. (Experimental.)
+- gentesthtml.f90: Program to generate a HTML page listing test results.
 - prec.f90: Module to set precisions, lengths, and mathematical constants. Uses common convention of `WP` for real precision.
 - purerng.f90: Module for pure random number generators. Interface similar to intrinsic `random_number` and `random_seed` (but not identical to avoid conflict with `size` intrinsic). Includes a deterministic "random" number generator to mock actual random number generators for testing.
 - timer.f90: Module for wall-clock timers. Interface is similar to [StopWatch](https://math.nist.gov/StopWatch/).

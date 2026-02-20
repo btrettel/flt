@@ -215,6 +215,7 @@ test_*
 !test_*.f90
 genunits
 geninput
+gentesthtml
 src/rev.f90
 rev.tex
 src/units.f90
