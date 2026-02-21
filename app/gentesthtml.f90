@@ -13,18 +13,24 @@ use stopcodes, only: EX_OK
 implicit none
 
 integer           :: i, total_tests, total_failures, out_unit, rc
-character(len=CL) :: output_filename, input_filename, error_message
+character(len=CL) :: html_output_filename, tex_output_filename, input_filename, error_message
 
-call get_command_argument(1, value=output_filename)
-if ((len(trim(output_filename)) == 0) .or. &
-        (trim(output_filename) == "--help") .or. &
-        (trim(output_filename) == "-help") .or. &
-        (trim(output_filename) == "-h")) then
-    write(unit=*, fmt="(a)") "Usage: gentesthtml OUTPUT_FILENAME INPUT_FILENAME(S)"
+call get_command_argument(1, value=html_output_filename)
+if ((len(trim(html_output_filename)) == 0) .or. &
+        (trim(html_output_filename) == "--help") .or. &
+        (trim(html_output_filename) == "-help") .or. &
+        (trim(html_output_filename) == "-h")) then
+    write(unit=*, fmt="(a)") "Usage: gentesthtml HTML_OUTPUT_FILENAME TEX_OUTPUT_FILENAME INPUT_FILENAME(S)"
     stop EX_OK, quiet=.true.
 end if
 
-open(newunit=out_unit, action="write", status="replace", position="rewind", file=trim(output_filename), &
+call get_command_argument(2, value=tex_output_filename)
+if (len(trim(tex_output_filename)) == 0) then
+    write(unit=ERROR_UNIT, fmt="(a)") "TEX_OUTPUT_FILENAME is required. Check --help for usage."
+    stop 1
+end if
+
+open(newunit=out_unit, action="write", status="replace", position="rewind", file=trim(html_output_filename), &
         iostat=rc, iomsg=error_message)
 if (rc /= 0) then
     write(unit=ERROR_UNIT, fmt="(a)") trim(error_message)
@@ -45,14 +51,13 @@ total_tests    = 0
 total_failures = 0
 do ! SERIAL
     i = i + 1
-    call get_command_argument(i + 1, value=input_filename)
+    call get_command_argument(i + 2, value=input_filename)
     if (len(trim(input_filename)) == 0) then
         exit
     end if
     write(unit=*, fmt="(3a)") "Reading ", trim(input_filename), " (first pass)..."
     
     call get_totals(trim(input_filename), total_tests, total_failures)
-    if (rc /= 0) stop 1
 end do
 print "(a, i0)", "Total tests: ", total_tests
 print "(a, i0)", "Total failures: ", total_failures
@@ -60,10 +65,12 @@ print "(a, i0)", "Total failures: ", total_failures
 write(unit=out_unit, fmt="(a, i0, a, i0, a, i0, a)") "<p>Totals: ", total_tests, " tests run, ", total_tests - total_failures, &
                                                         " tests passing, ", total_failures, " tests failing.</p>"
 
+call write_tex(trim(tex_output_filename), total_tests, total_failures)
+
 i = 0
 do ! SERIAL
     i = i + 1
-    call get_command_argument(i + 1, value=input_filename)
+    call get_command_argument(i + 2, value=input_filename)
     if (len(trim(input_filename)) == 0) then
         exit
     end if
@@ -99,6 +106,28 @@ subroutine get_totals(filename, total_tests, total_failures)
     
     close(unit=nml_unit)
 end subroutine get_totals
+
+subroutine write_tex(tex_output_filename, total_tests, total_failures)
+    character(len=*), intent(in) :: tex_output_filename
+    integer, intent(in)          :: total_tests, total_failures
+    
+    integer           :: tex_unit, rc
+    character(len=CL) :: error_message
+    
+    open(newunit=tex_unit, action="write", status="replace", position="rewind", file=trim(tex_output_filename), &
+            iostat=rc, iomsg=error_message)
+    if (rc /= 0) then
+        write(unit=ERROR_UNIT, fmt="(a)") trim(error_message)
+        stop 1
+    end if
+    
+    write(unit=tex_unit, fmt="(a)") "% auto-generated"
+    write(unit=tex_unit, fmt="(a, i0, a)") "\newcommand*{\totaltests}{", total_tests, "}"
+    write(unit=tex_unit, fmt="(a, i0, a)") "\newcommand*{\totalsuccesses}{", total_tests - total_failures, "}"
+    write(unit=tex_unit, fmt="(a, i0, a)") "\newcommand*{\totalfailures}{", total_failures, "}"
+    
+    close(tex_unit)
+end subroutine write_tex
 
 subroutine write_test_html(filename, out_unit, rc)
     use timer, only: TIMESTAMP_LEN
