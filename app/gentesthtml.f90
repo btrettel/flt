@@ -147,7 +147,8 @@ subroutine write_test_html(filename, out_unit, rc)
     end if
     
     write(unit=out_unit, fmt="(a)") "<hr/>"
-    write(unit=out_unit, fmt="(3a)") "<p>Test set: ", basename, "</p>"
+    write(unit=out_unit, fmt="(7a)") '<p id="', trim(basename), '">Test set: ', trim(basename), ' <a href="#', &
+                                        trim(basename), '">#</a></p>'
     write(unit=out_unit, fmt="(a)") "<table border=1>"
     write(unit=out_unit, fmt="(a)") "<tr>"
     write(unit=out_unit, fmt="(a)") "<td>status</td>"
