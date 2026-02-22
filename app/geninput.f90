@@ -458,12 +458,14 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
                         // "' has the same variable_name as " &
                         // "input_variable #" // trim(j_string) // ".", &
                         n_failures)
-            call check(trim(input_variables(j)%tex_variable_name) /= trim(input_variables(i)%tex_variable_name), &
-                        "input_variable #" // trim(i_string) &
-                        // " with variable_name '" // trim(variable_name) &
-                        // "' has the same tex_variable_name as " &
-                        // "input_variable #" // trim(j_string) // ".", &
-                        n_failures)
+            if (len(trim(input_variables(j)%tex_variable_name)) > 0) then
+                call check(trim(input_variables(j)%tex_variable_name) /= trim(input_variables(i)%tex_variable_name), &
+                            "input_variable #" // trim(i_string) &
+                            // " with variable_name '" // trim(variable_name) &
+                            // "' has the same tex_variable_name as " &
+                            // "input_variable #" // trim(j_string) // ".", &
+                            n_failures)
+            end if
             
             ! I've had issues before with the `tex_unit` being wrong.
             ! genunits types (`type_definition`) are checked by the compiler, so I can assume those are correct.
@@ -642,12 +644,12 @@ subroutine write_subroutine(config, input_variables)
     ! For BlasterSim, I detect the mode by seeing which namelist is present.
     ! So if a particular namelist isn't present (`rc_nml == IOSTAT_END`) then I don't necessarily want to print an error.
     write(unit=out_unit, fmt="(a)") '    if (rc_nml /= IOSTAT_END) write(unit=ERROR_UNIT, fmt="(a)") trim(nml_error_message)'
-    write(unit=out_unit, fmt="(a)") "    rc = rc_nml"
+    write(unit=out_unit, fmt="(a)") "    rc_read = rc_nml"
     write(unit=out_unit, fmt="(a)") "    return"
     write(unit=out_unit, fmt="(a)") "end if"
     write(unit=out_unit, fmt="(a)") ""
     
-    write(unit=out_unit, fmt="(a)") "rc = 0"
+    write(unit=out_unit, fmt="(a)") "rc_read = 0"
     write(unit=out_unit, fmt="(a)") ""
     
     ! Check if required input parameters are defined.
@@ -656,7 +658,7 @@ subroutine write_subroutine(config, input_variables)
         if ((input_variables(i)%type_definition(1:4) == "char") .and. input_variables(i)%required) then
             write(unit=out_unit, fmt="(a)") "call check(len(trim(" // trim(input_variables(i)%variable_name) &
                     // ")) > 0, " // '"' // trim(input_variables(i)%variable_name) // " in the " // trim(config%namelist_group) &
-                    // ' namelist group is required.", rc)'
+                    // ' namelist group is required.", rc_read)'
         end if
         
         ! How can I make numeric variables required?
@@ -665,7 +667,7 @@ subroutine write_subroutine(config, input_variables)
             write(unit=out_unit, fmt="(a)") "call check(" // trim(input_variables(i)%variable_name) &
                     // " /= " // trim(input_variables(i)%default_value) // ", " // '"' &
                     // trim(input_variables(i)%variable_name) // " in the " // trim(config%namelist_group) &
-                    // ' namelist group is required.", rc)'
+                    // ' namelist group is required.", rc_read)'
         end if
         
         if (((input_variables(i)%type_definition(1:4) == "real") .or. (input_variables(i)%type_definition(1:4) == "type")) &
@@ -679,7 +681,7 @@ subroutine write_subroutine(config, input_variables)
             write(unit=out_unit, fmt="(a)") "call check(.not. is_close(" // trim(input_variables(i)%variable_name) &
                     // ", " // trim(input_variables(i)%default_value) // trim(underscore_kind_parameter) // "), " // '"' &
                     // trim(input_variables(i)%variable_name) // " in the " // trim(config%namelist_group) &
-                    // ' namelist group is required.", rc)'
+                    // ' namelist group is required.", rc_read)'
         end if
     end do
     
@@ -764,7 +766,7 @@ subroutine write_subroutine(config, input_variables)
                 write(unit=out_unit, fmt="(a)", advance="no") " " // trim(input_variables(i)%txt_unit)
             end if
             
-            write(unit=out_unit, fmt="(a)") ". " // trim(input_variables(i)%lower_bound_error_message) // '", rc)'
+            write(unit=out_unit, fmt="(a)") ". " // trim(input_variables(i)%lower_bound_error_message) // '", rc_read)'
             
             if (input_variables(i)%required) write(unit=out_unit, fmt="(a)") "end if"
         end if
@@ -838,7 +840,7 @@ subroutine write_subroutine(config, input_variables)
                     // ' namelist group equals " // trim(value_string) &'
             write(unit=out_unit, fmt="(a)") '            // " but must be ' // trim(op) // " " &
                     // trim(bound_value_string_2) // ". " // trim(input_variables(i)%upper_bound_error_message) &
-                    // '", rc)'
+                    // '", rc_read)'
             
             if (input_variables(i)%required) write(unit=out_unit, fmt="(a)") "end if"
         end if
@@ -860,7 +862,7 @@ subroutine write_subroutine(config, input_variables)
     end if
     
     write(unit=out_unit, fmt="(a)") ""
-    write(unit=out_unit, fmt="(a)") "if (rc /= 0) then"
+    write(unit=out_unit, fmt="(a)") "if (rc_read /= 0) then"
     write(unit=out_unit, fmt="(a)") "    return"
     write(unit=out_unit, fmt="(a)") "end if"
     
