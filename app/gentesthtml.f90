@@ -132,14 +132,14 @@ end subroutine write_tex
 subroutine write_test_html(filename, out_unit, rc)
     use timer, only: TIMESTAMP_LEN
     use checks, only: assert
+    use port, only: path_basename
     
     character(len=*), intent(in) :: filename
     integer, intent(in)          :: out_unit
     integer, intent(out)         :: rc
     
-    integer           :: nml_unit, rc_nml, dot_index
+    integer           :: nml_unit, rc_nml
     character(len=CL) :: basename, nml_error_message
-    character(len=5)  :: file_ext
     logical           :: out_unit_open
     
     character(len=TIMESTAMP_LEN) :: timestamp
@@ -166,14 +166,7 @@ subroutine write_test_html(filename, out_unit, rc)
     
     rc = 0
     
-    dot_index = index(filename, ".")
-    file_ext  = filename(dot_index:)
-    basename  = filename(1:dot_index-1)
-    
-    if (file_ext /= ".nml") then
-        rc = 1
-        return 
-    end if
+    basename = path_basename(filename)
     
     write(unit=out_unit, fmt="(a)") "<hr/>"
     write(unit=out_unit, fmt="(7a)") '<p id="', trim(basename), '">Test set: ', trim(basename), ' <a href="#', &
