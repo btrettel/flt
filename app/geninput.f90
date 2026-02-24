@@ -48,6 +48,7 @@ type :: input_parameter_type
     character(len=CL) :: tex_description_2
     character(len=CL) :: tex_variable_name
     character(len=CL) :: txt_unit
+    real(WP)          :: scaling_factor
 end type input_parameter_type
 
 integer, parameter :: MAX_LINE_LENGTH = 132
@@ -243,11 +244,13 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
     character(len=CL) :: tex_description_2
     character(len=CL) :: tex_variable_name
     character(len=CL) :: txt_unit
+    real(WP)          :: scaling_factor
     
     namelist /input_variable/ variable_name, type_definition, default_value, no_kind_default_value, required, add_to_type, &
                                 lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
-                                bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name, txt_unit
+                                bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name, txt_unit, &
+                                scaling_factor
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
     
@@ -297,6 +300,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         tex_description_2         = ""
         tex_variable_name         = ""
         txt_unit                  = ""
+        scaling_factor            = 1.0_WP
         
         read(unit=nml_unit, nml=input_variable, iostat=rc_nml, iomsg=nml_error_message)
         
@@ -330,6 +334,7 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
         input_variables(i)%tex_description           = trim(tex_description)
         input_variables(i)%tex_description_2         = trim(tex_description_2)
         input_variables(i)%tex_variable_name         = trim(tex_variable_name)
+        input_variables(i)%scaling_factor            = scaling_factor
         
         ! By default, make `txt_unit` copy `tex_unit`, unless `txt_unit` is defined separately.
         if ((trim(txt_unit) == "") .and. (trim(tex_unit) /= "")) then
@@ -473,7 +478,8 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
             ! The units could still be wrong, but at least they are consistent.
             ! It's unlikely they'll be wrong if there are multiple that are consistent.
             if ((input_variables(i)%type_definition(1:4) == "type") &
-                    .and. (trim(input_variables(i)%type_definition) == trim(input_variables(j)%type_definition))) then
+                    .and. (trim(input_variables(i)%type_definition) == trim(input_variables(j)%type_definition)) &
+                    .and. (is_close(input_variables(i)%scaling_factor, input_variables(j)%scaling_factor))) then
                 call check(trim(input_variables(i)%tex_unit) == trim(input_variables(j)%tex_unit), &
                          "input_variable #" // trim(i_string) &
                         // " with variable_name '" // trim(variable_name) &
@@ -874,8 +880,16 @@ subroutine write_subroutine(config, input_variables)
                 write(unit=out_unit, fmt="(a)") ""
                 write_new_line = .false.
             end if
-            write(unit=out_unit, fmt="(a)") "call " // trim(input_variables(i)%variable_name) &
-                                                // "_u%v%init_const(" // trim(input_variables(i)%variable_name) // ", 0)"
+            
+            if (is_close(input_variables(i)%scaling_factor, 1.0_WP)) then
+                write(unit=out_unit, fmt="(a)") "call " // trim(input_variables(i)%variable_name) &
+                                                    // "_u%v%init_const(" // trim(input_variables(i)%variable_name) // ", 0)"
+            else
+                write(unit=out_unit, fmt="(a, g0, a)") "call " // trim(input_variables(i)%variable_name) &
+                                                        // "_u%v%init_const(", input_variables(i)%scaling_factor, &
+                                                        "_" // trim(config%kind_parameter) // "*" &
+                                                        // trim(input_variables(i)%variable_name) // ", 0)"
+            end if
         end if
     end do
     
