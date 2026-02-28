@@ -15,6 +15,7 @@ Priorities:
         - enable/disable AD (AD `d` indices)
         - enable/disable GA optimization
         - In the current setup, the operator for the bounds is unclear, whether `>`/`<` or `>=`/`<=`.
+        - generate variable declarations and namelist statement only for namelist output
     - input file
         - `x_stdev` variable (replace `x` with variable name)
             - Use <https://en.wikipedia.org/wiki/Bhatia%E2%80%93Davis_inequality> to check if you have both upper and lower bounds.
