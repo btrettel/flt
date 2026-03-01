@@ -992,7 +992,7 @@ subroutine write_tex(config, input_variables)
         
         ! Why `.not. input_variables(i)%no_kind_default_value`?
         ! Then parameters like `P_ATM` which are pulled from somewhere else won't print simply `P_ATM`, which is not helpful.
-        ! TODO: Figure out a way to print the actual parameter value.
+        ! The actual parameter value can be printed manually by adding the right TeX code to `tex_description_2`.
         if ((.not. input_variables(i)%required) .and. (.not. input_variables(i)%no_kind_default_value)) then
             type4 = input_variables(i)%type_definition(1:4)
             if ((type4 == "real") .or. (type4 == "type")) then

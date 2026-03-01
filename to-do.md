@@ -2,7 +2,22 @@
 
 Priorities:
 
-- Make Fortran Wiki page on unit checking.
+- nmlfuzz.f90: namelist fuzz tester
+    - Move `read_input_parameter_namelists` and associated `type` to a module to use in `geninput` and `nmlfuzz`
+    - Test new module
+    - Make `nmlfuzz` have its own namelist file writer so that you don't need to recompile every time.
+    - `nmlfuzz_config` namelist in the same input file as geninput.
+    - Intentionally pick inputs which pass input validation but cause the program to fail.
+    - Make depend on ga.f90
+        - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
+    - Use fuzzing primarily to find assertion violations with system tests.
+    - Objective function
+        - Non-zero exit code
+        - For speed, incentivize causing assertion failures as quickly as possible. The objective function is a function of both whether the code ran successfully or not and how quickly it failed if it did fail.
+        - Code coverage is commonly used. Maybe I misunderstand this, but I don't see why a single case should have as high code coverage as possible. The collection should have high code coverage. This might require some of that diversity enforcement stuff I read about for genetic algorithms. Also, maximizing code coverage would produce overly complex inputs, when simpler inputs are usually desired to help isolate what's wrong.
+            - <https://vector.dev/blog/how-we-test-vector/#fuzz-testing>
+            - <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>
+    - Keep track of error messages to know which are triggered and which are not. The ones which are not triggered are potentially buggy.
 - geninput
     - inputs
         - Check that every member of the derived type is used.
@@ -23,6 +38,11 @@ Priorities:
     - Make Markdown and TeX output optional and specified in the `geninput_config` namelist
     - Markdown output
     - How can conditional defaults be made? Break the subroutine into parts and manually insert code between the parts?
+- Sensitivity analysis for model parameters.
+    - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
+    - Use AD for sensitivity analysis for important inputs? Make it possible to turn off AD for these inputs during "production" runs for speed.
+    - Use geninput input file?
+- Make Fortran Wiki page on unit checking.
 - <https://en.wikipedia.org/wiki/Sterbenz_lemma>: Make `assert_sterbenz` to assert that the conditions of the Sterbenz lemma are satisfied.
     - In `fmad` and `genunits`, create an operator that automatically enforces this? `.minus.`?
     - Other operators in `fmad` could benefit from this too. Anywhere a subtraction occurs (like the derivatives for division) could have a Sterbenz assertions version.

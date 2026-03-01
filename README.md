@@ -18,6 +18,7 @@ Other files:
 
 - f90.yaml: Modified rules file for the Fortran linter [flinter](https://pypi.org/project/flinter/).
 - lint-wrapper.py: Runs the linters [flinter](https://pypi.org/project/flinter/) and [i-Code CNES](https://github.com/cnescatlab/i-CodeCNES/), reads their output, and has a useful exit code for Makefiles to detect linter suggestions.
+- tripwire.py: Python script which helps keep docs in sync with code by returning a message if certain lines of code change. [See this Hacker News comment where I have an example](https://news.ycombinator.com/item?id=47188513).
 
 ## Goals
 
