@@ -1,0 +1,6 @@
+- geninput/nmlfuzz talk
+    - geninput
+        - Limitations due to use of namelists:
+            - Required variables must have a bound
+                - This is because there is no way to know if a variable is defined or not in standard Fortran
+                - TODO: `isnan` as a possibility for `real`s? It didn't seem reliable with optimizations as I recall.

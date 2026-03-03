@@ -23,11 +23,11 @@ type :: config_type
     logical           :: write_tex, write_md ! whether to enable writing TeX or Markdown documentation
     logical           :: uq, ga ! whether to enable uncertainty quantification or the genetic algorithm respectively
     
-    ! Write code for multiple namelist groups of the same name, like in `read_input_parameter_namelists` here
+    ! Write code for multiple namelist groups of the same name, like in `read_input_variable_namelists` here
     ! TODO: `logical :: multiple_namelist_groups`
 end type config_type
 
-type :: input_parameter_type
+type :: input_variable_type
     character(len=CL) :: variable_name
     character(len=CL) :: type_definition
     character(len=CL) :: default_value ! do not include the kind parameter as this will be added automatically
@@ -49,14 +49,14 @@ type :: input_parameter_type
     character(len=CL) :: tex_variable_name
     character(len=CL) :: txt_unit
     real(WP)          :: scaling_factor
-end type input_parameter_type
+end type input_variable_type
 
 integer, parameter :: MAX_LINE_LENGTH = 132
 
-character(len=CL)                       :: input_file
-integer                                 :: rc_config, rc_input_parameters
-type(config_type)                       :: config
-type(input_parameter_type), allocatable :: input_variables(:)
+character(len=CL)                      :: input_file
+integer                                :: rc_config, rc_input_variables
+type(config_type)                      :: config
+type(input_variable_type), allocatable :: input_variables(:)
 
 call get_input_file_name_from_cli("geninput", input_file)
 
@@ -66,12 +66,12 @@ if (rc_config /= 0) then
     error stop
 end if
 
-call read_input_parameter_namelists(input_file, input_variables, rc_input_parameters)
-if (rc_input_parameters /= 0) then
+call read_input_variable_namelists(input_file, input_variables, rc_input_variables)
+if (rc_input_variables /= 0) then
     error stop
 end if
 
-call sort_input_parameters(input_variables)
+call sort_input_variables(input_variables)
 
 if (config%use_type) call write_type(config, input_variables)
 call write_subroutine(config, input_variables)
@@ -147,13 +147,13 @@ subroutine read_config_namelist(input_file, config, rc)
     end if
 end subroutine read_config_namelist
 
-subroutine sort_input_parameters(input_variables)
+subroutine sort_input_variables(input_variables)
     ! <https://en.wikipedia.org/wiki/Selection_sort>
     
-    type(input_parameter_type), intent(in out) :: input_variables(:)
+    type(input_variable_type), intent(in out) :: input_variables(:)
     
     integer :: i, n, j, i_switch, j_min
-    type(input_parameter_type) :: temp_input_parameter
+    type(input_variable_type) :: temp_input_variables
     
     n = size(input_variables)
     
@@ -163,9 +163,9 @@ subroutine sort_input_parameters(input_variables)
         
         do j = i + 1, n
             if (input_variables(j)%required) then
-                temp_input_parameter = input_variables(i)
+                temp_input_variables = input_variables(i)
                 input_variables(i)   = input_variables(j)
-                input_variables(j)   = temp_input_parameter
+                input_variables(j)   = temp_input_variables
                 cycle outer_separate
             end if
         end do
@@ -190,9 +190,9 @@ subroutine sort_input_parameters(input_variables)
         end do
         
         if (j_min /= i) then
-            temp_input_parameter   = input_variables(i)
+            temp_input_variables   = input_variables(i)
             input_variables(i)     = input_variables(j_min)
-            input_variables(j_min) = temp_input_parameter
+            input_variables(j_min) = temp_input_variables
         end if
     end do
     
@@ -205,19 +205,19 @@ subroutine sort_input_parameters(input_variables)
         end do
         
         if (j_min /= i) then
-            temp_input_parameter   = input_variables(i)
+            temp_input_variables   = input_variables(i)
             input_variables(i)     = input_variables(j_min)
-            input_variables(j_min) = temp_input_parameter
+            input_variables(j_min) = temp_input_variables
         end if
     end do
-end subroutine sort_input_parameters
+end subroutine sort_input_variables
 
-subroutine read_input_parameter_namelists(input_file, input_variables, rc)
-    character(len=*), intent(in)                         :: input_file
-    type(input_parameter_type), allocatable, intent(out) :: input_variables(:)
-    integer, intent(out)                                 :: rc
+subroutine read_input_variable_namelists(input_file, input_variables, rc)
+    character(len=*), intent(in)                        :: input_file
+    type(input_variable_type), allocatable, intent(out) :: input_variables(:)
+    integer, intent(out)                                :: rc
     
-    integer           :: nml_unit, rc_nml, n_input_parameters, i, j, n_failures, default_value_integer
+    integer           :: nml_unit, rc_nml, n_input_variables, i, j, n_failures, default_value_integer
     character(len=CL) :: nml_error_message
     character(len=3)  :: i_string, j_string
     logical           :: outside_of_lower_bound, outside_of_upper_bound
@@ -254,8 +254,8 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
     
-    ! First get `n_input_parameters`, allocate `input_variables`, and read everything in.
-    n_input_parameters = 0
+    ! First get `n_input_variables`, allocate `input_variables`, and read everything in.
+    n_input_variables = 0
     n_failures         = 0
     do ! SERIAL
         read(unit=nml_unit, nml=input_variable, iostat=rc_nml, iomsg=nml_error_message)
@@ -269,15 +269,15 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
             return
         end if
         
-        n_input_parameters = n_input_parameters + 1
+        n_input_variables = n_input_variables + 1
     end do
     
-    call assert(n_input_parameters >= 0, "geninput (read_input_parameter_namelists): n_input_parameters >= 0 violated")
-    call check(n_input_parameters > 0, "At least one seed unit is required.", n_failures)
+    call assert(n_input_variables >= 0, "geninput (read_input_variable_namelists): n_input_variables >= 0 violated")
+    call check(n_input_variables > 0, "At least one seed unit is required.", n_failures)
     
     ! Once the arrays are sized properly, go back and read all of the seed units.
     rewind nml_unit
-    allocate(input_variables(n_input_parameters))
+    allocate(input_variables(n_input_variables))
     i = 0
     do ! SERIAL
         variable_name             = ""
@@ -497,18 +497,18 @@ subroutine read_input_parameter_namelists(input_file, input_variables, rc)
     end do
     close(unit=nml_unit)
     
-    call assert(n_failures >= 0, "geninput (read_input_parameter_namelists): n_failures is negative")
+    call assert(n_failures >= 0, "geninput (read_input_variable_namelists): n_failures is negative")
     if (n_failures > 0) then
         write(unit=ERROR_UNIT, fmt="(a)") "input_variable namelist input validation error(s)"
         rc = n_failures
     else
         rc = 0
     end if
-end subroutine read_input_parameter_namelists
+end subroutine read_input_variable_namelists
 
 subroutine write_type(config, input_variables)
-    type(config_type), intent(in)                       :: config
-    type(input_parameter_type), allocatable, intent(in) :: input_variables(:)
+    type(config_type), intent(in)                      :: config
+    type(input_variable_type), allocatable, intent(in) :: input_variables(:)
     
     integer :: out_unit, n, i
     
@@ -530,8 +530,8 @@ subroutine write_type(config, input_variables)
 end subroutine write_type
 
 subroutine write_subroutine(config, input_variables)
-    type(config_type), intent(in)                       :: config
-    type(input_parameter_type), allocatable, intent(in) :: input_variables(:)
+    type(config_type), intent(in)                      :: config
+    type(input_variable_type), allocatable, intent(in) :: input_variables(:)
     
     integer       :: out_unit, n, i, line_length
     character(CL) :: type_definition, line, default_value, underscore_kind_parameter, bound_value_string_1, bound_value_string_2
@@ -930,8 +930,8 @@ pure function texttt_escape(string)
 end function texttt_escape
 
 subroutine write_tex(config, input_variables)
-    type(config_type), intent(in)                       :: config
-    type(input_parameter_type), allocatable, intent(in) :: input_variables(:)
+    type(config_type), intent(in)                      :: config
+    type(input_variable_type), allocatable, intent(in) :: input_variables(:)
     
     integer :: out_unit, n, i
     logical :: optional_printed

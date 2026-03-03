@@ -2,15 +2,20 @@
 
 Priorities:
 
-- nmlfuzz.f90: namelist fuzz tester
+- geninput
     - Move `read_input_parameter_namelists` and associated `type` to a module to use in `geninput` and `nmlfuzz`
     - Test new module
+    - refactor and test more:
+        - split long subroutines into smaller subroutines
+        - test the new subroutines
+- nmlfuzz.f90: namelist fuzz tester
     - Make `nmlfuzz` have its own namelist file writer so that you don't need to recompile every time.
     - `nmlfuzz_config` namelist in the same input file as geninput.
     - Intentionally pick inputs which pass input validation but cause the program to fail.
     - Make depend on ga.f90
         - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
     - Use fuzzing primarily to find assertion violations with system tests.
+    - To avoid having to do input validation twice, make nmlfuzz recognize when input validation from geninput failed. Use a particular exit code for that?
     - Objective function
         - Non-zero exit code
         - For speed, incentivize causing assertion failures as quickly as possible. The objective function is a function of both whether the code ran successfully or not and how quickly it failed if it did fail.
@@ -18,6 +23,9 @@ Priorities:
             - <https://vector.dev/blog/how-we-test-vector/#fuzz-testing>
             - <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>
     - Keep track of error messages to know which are triggered and which are not. The ones which are not triggered are potentially buggy.
+- Property testing module
+    - `pure` subroutine takes RNG (or genes for GA?), returns amount property is violated or pass/fail (perhaps different for different properties), constraint violation (maybe make it the same interface as a GA objective function)
+    - Subroutine that takes test object, previous subroutine and runs it given bounds, etc., returns details of failures
 - geninput
     - inputs
         - Check that every member of the derived type is used.
@@ -31,6 +39,10 @@ Priorities:
         - enable/disable GA optimization
         - In the current setup, the operator for the bounds is unclear, whether `>`/`<` or `>=`/`<=`.
         - generate variable declarations and namelist statement only for namelist output
+        - conditionally required variables
+            - Can use a `select case` statement on an `integer` variable and list conditionally required variables in each `case`.
+            - Make any dependent variable return an error if assigned and the dependent variable is not correct.
+                - If unclear, for example: If `VAR = 1` but `x` can only be set for `VAR = 2`, return an error if `x` is not the default. This can be done for required and optional variables.
     - input file
         - `x_stdev` variable (replace `x` with variable name)
             - Use <https://en.wikipedia.org/wiki/Bhatia%E2%80%93Davis_inequality> to check if you have both upper and lower bounds.
