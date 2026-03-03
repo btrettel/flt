@@ -16,6 +16,8 @@ src$(DIR_SEP)fmad.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(O
 
 src$(DIR_SEP)ga.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)purerng.$(OBJEXT) src$(DIR_SEP)ga.f90
 
+src$(DIR_SEP)geninput_io.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)geninput_io.f90
+
 src$(DIR_SEP)genunits_data.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)genunits_data.f90
 
 src$(DIR_SEP)genunits_io.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)genunits_io.f90
@@ -42,8 +44,8 @@ src$(DIR_SEP)unittest.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec
 # Program dependencies #
 ########################
 
-geninput$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)geninput.f90
-	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)geninput.f90
+geninput$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)geninput_io.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)geninput.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)geninput_io.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)geninput.f90
 
 gentesthtml$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) app$(DIR_SEP)gentesthtml.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) app$(DIR_SEP)gentesthtml.f90

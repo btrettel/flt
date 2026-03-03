@@ -3,7 +3,6 @@
 Priorities:
 
 - geninput
-    - Move `read_input_parameter_namelists` and associated `type` to a module to use in `geninput` and `nmlfuzz`
     - Test new module
     - refactor and test more:
         - split long subroutines into smaller subroutines
