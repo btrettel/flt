@@ -9,19 +9,17 @@ Priorities:
         - test the new subroutines
 - nmlfuzz.f90: namelist fuzz tester
     - Make `nmlfuzz` have its own namelist file writer so that you don't need to recompile every time.
+        - Start by writing this namelist writer.
     - `nmlfuzz_config` namelist in the same input file as geninput.
-    - Intentionally pick inputs which pass input validation but cause the program to fail.
-    - Make depend on ga.f90
-        - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
-    - Use fuzzing primarily to find assertion violations with system tests.
-    - To avoid having to do input validation twice, make nmlfuzz recognize when input validation from geninput failed. Use a particular exit code for that?
-    - Objective function
-        - Non-zero exit code
-        - For speed, incentivize causing assertion failures as quickly as possible. The objective function is a function of both whether the code ran successfully or not and how quickly it failed if it did fail.
-        - Code coverage is commonly used. Maybe I misunderstand this, but I don't see why a single case should have as high code coverage as possible. The collection should have high code coverage. This might require some of that diversity enforcement stuff I read about for genetic algorithms. Also, maximizing code coverage would produce overly complex inputs, when simpler inputs are usually desired to help isolate what's wrong.
-            - <https://vector.dev/blog/how-we-test-vector/#fuzz-testing>
-            - <https://en.wikipedia.org/wiki/American_Fuzzy_Lop_(software)>
+        - random seed
+        - acceptable exit codes
+        - executable to run
+        - GA config
+    - Start out using fuzzing without an optimizer (just random search) and only looking for bad exit codes (like assertion failures). Additional complexities can be added later.
+    - To avoid having to give nmlfuzz all the input validation code from the program being tested, make nmlfuzz recognize when input validation from geninput failed. Use a particular exit code for that?
     - Keep track of error messages to know which are triggered and which are not. The ones which are not triggered are potentially buggy.
+    - Later: Make depend on ga.f90
+        - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
 - Property testing module
     - `pure` subroutine takes RNG (or genes for GA?), returns amount property is violated or pass/fail (perhaps different for different properties), constraint violation (maybe make it the same interface as a GA objective function)
     - Subroutine that takes test object, previous subroutine and runs it given bounds, etc., returns details of failures

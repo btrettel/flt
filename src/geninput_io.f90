@@ -49,7 +49,7 @@ type :: input_variable_type
     character(len=CL) :: tex_description_2
     character(len=CL) :: tex_variable_name
     character(len=CL) :: txt_unit
-    real(WP)          :: scaling_factor
+    real(WP)          :: scaling_factor ! convert from `tex_unit` to `type_definition`
 end type input_variable_type
 
 contains
@@ -467,6 +467,13 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
                         n_failures)
             end if
         end do
+        
+        if (input_variables(i)%type_definition(1:4) == "inte") then
+            call check(is_close(input_variables(i)%scaling_factor, 1.0_WP), &
+                        "input_variable #" // trim(i_string) &
+                        // " with variable_name '" // trim(variable_name) &
+                        // "': scaling_factor has not yet been implemented for integer input parameters.", n_failures)
+        end if
     end do
     close(unit=nml_unit)
     
@@ -672,10 +679,11 @@ subroutine write_subroutine(config, input_variables)
                 case ("real", "type")
                     if (trim(input_variables(i)%type_definition) == "real") then
                         write(unit=bound_value_string_1, fmt="(" // trim(input_variables(i)%bound_fmt) // ")") &
-                                input_variables(i)%lower_bound
+                                input_variables(i)%scaling_factor*input_variables(i)%lower_bound
                     else
                         write(unit=bound_value_string_1, fmt="(" // trim(input_variables(i)%bound_fmt) // ", a, a)") &
-                                input_variables(i)%lower_bound, "_", trim(config%kind_parameter)
+                                input_variables(i)%scaling_factor*input_variables(i)%lower_bound, &
+                                "_", trim(config%kind_parameter)
                     end if
                     write(unit=out_unit, fmt="(a)") 'write(unit=value_string, fmt="(' &
                             ! old: // trim(input_variables(i)%bound_fmt) // ')") ' &
@@ -755,10 +763,11 @@ subroutine write_subroutine(config, input_variables)
                 case ("real", "type")
                     if (trim(input_variables(i)%type_definition) == "real") then
                         write(unit=bound_value_string_1, fmt="(" // trim(input_variables(i)%bound_fmt) // ")") &
-                                input_variables(i)%upper_bound
+                                input_variables(i)%scaling_factor*input_variables(i)%upper_bound
                     else
                         write(unit=bound_value_string_1, fmt="(" // trim(input_variables(i)%bound_fmt) // ", a, a)") &
-                                input_variables(i)%upper_bound, "_", trim(config%kind_parameter)
+                                input_variables(i)%scaling_factor*input_variables(i)%upper_bound, &
+                                "_", trim(config%kind_parameter)
                     end if
                 case ("inte")
                     write(unit=bound_value_string_1, fmt="(" // trim(input_variables(i)%bound_fmt) // ")") &
