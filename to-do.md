@@ -18,13 +18,21 @@ Priorities:
     - Start out using fuzzing without an optimizer (just random search) and only looking for bad exit codes (like assertion failures). Additional complexities can be added later.
     - To avoid having to give nmlfuzz all the input validation code from the program being tested, make nmlfuzz recognize when input validation from geninput failed. Use a particular exit code for that?
     - Keep track of error messages to know which are triggered and which are not. The ones which are not triggered are potentially buggy.
-    - Later: Make depend on ga.f90
+    - Later: Use an optimizer and make depend on ga.f90
         - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
+        - Optional (in the program being tested) debug.nml output for nmlfuzz to parse? How else can nmlfuzz get internal data for an objective function?
+- Sensitivity analysis for model parameters.
+    - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
+    - Use AD for sensitivity analysis for important inputs? Make it possible to turn off AD for these inputs during "production" runs for speed.
+    - Use geninput input file?
 - Property testing module
     - `pure` subroutine takes RNG (or genes for GA?), returns amount property is violated or pass/fail (perhaps different for different properties), constraint violation (maybe make it the same interface as a GA objective function)
     - Subroutine that takes test object, previous subroutine and runs it given bounds, etc., returns details of failures
+    - Can I make nmlfuzz and proptest have the same core optimizer/randomizer?
+    - Make proptest have a gradient-based optimization option.
 - geninput
     - inputs
+        - `not_in_docs` logical for things you don't want people to use like debugging options.
         - Check that every member of the derived type is used.
         - fuzz testing lower bound
         - fuzz testing upper bound
@@ -47,16 +55,7 @@ Priorities:
     - Make Markdown and TeX output optional and specified in the `geninput_config` namelist
     - Markdown output
     - How can conditional defaults be made? Break the subroutine into parts and manually insert code between the parts?
-- Sensitivity analysis for model parameters.
-    - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
-    - Use AD for sensitivity analysis for important inputs? Make it possible to turn off AD for these inputs during "production" runs for speed.
-    - Use geninput input file?
 - Make Fortran Wiki page on unit checking.
-- <https://en.wikipedia.org/wiki/Sterbenz_lemma>: Make `assert_sterbenz` to assert that the conditions of the Sterbenz lemma are satisfied.
-    - In `fmad` and `genunits`, create an operator that automatically enforces this? `.minus.`?
-    - Other operators in `fmad` could benefit from this too. Anywhere a subtraction occurs (like the derivatives for division) could have a Sterbenz assertions version.
-    - Sterbenz assertions could also check that the magnitude is small, though practically speaking this is probably satisfied if the normal Sterbenz conditions are met.
-- Switch `make check` to `make test` for consistency with folder name?
 - convergence.f90:
     - <https://www.grc.nasa.gov/WWW/wind/valid/tutorial/verify.f90>
         - <https://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html>
@@ -103,23 +102,11 @@ Priorities:
         - Multi-start
         - luke_essentials_2013 p. 45: For `t < 2.0`, possibility of random selection.
 - returncodes.f90: A module containing `errno` codes, other internal return codes.
-- fmad.f90 and units.f90
-    - `is_close`
-- unittest.f90
-    - Instead of `integer_eq`, `real_eq`, use generic `eq`.
-    - Ensure that all test messages are unique.
-    - Keep track of test results so that you know whether a test has ever failed, and thus whether it is discriminating. (bowes_how_2017 p. 3L)
-        - Also track which assertions have never failed?
-    - Add optional argument `brittle` to tests that may be brittle, so that their failures can be ignored if desired.
-    - dataplot-like approach to ease adding tests (but use namelists instead of a single CSV file)
 - f90lint: Simple linter for Fortran to enforce anything that can't be enforced with a regex linter.
     - Check that assertions have unique messages. List relevant variable values in error message.
     - Check that assertion messages follow proper template.
     - Change `skip_indexing` to `dont_lint`, make other changes to make the input file clearer.
     - check for `implicit none`
-- `io.f90`
-    - read and save CSV files
-        - regex validation field for CSV
 - Add Valgrind back to check-fc. Suppress namelist derived-type input problem in Valgrind.
     - <https://valgrind.org/docs/manual/manual-core.html#manual-core.suppress>
     - <https://stackoverflow.com/a/23897854/1124489>
@@ -127,3 +114,25 @@ Priorities:
 Later:
 
 - When work has ifx 2024.2, change `assert` to eliminate `full_message` by putting the message directly on the `error stop` line. Also see [compiler-bugs report0002](https://github.com/btrettel/compiler-bugs/tree/main/report0002).
+- Poisson solvers, using same or similar interface as FISHPACK
+    - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>
+        - Old: <https://people.math.sc.edu/Burkardt/f77_src/fishpack/fishpack.html>
+    - <https://github.com/firemodels/fds/blob/master/Source/pois.f90>
+    - <https://github.com/jlokimlin/fishpack>
+    - <https://www.netlib.org/fishpack/>
+    - <https://ascl.net/1609.005>
+    - <https://arc.ucar.edu/knowledge_base/71991310>
+        - <https://github.com/NCAR/NCAR-Classic-Libraries-for-Geophysics>
+- Differentiable tridiagonal solver
+    - Example interfaces:
+        - Books: tannehill_computational_1997, schetz_boundary_1993, ellis_fortran_1994
+        - <https://www.ibm.com/docs/en/essl/6.2?topic=blaes-sgtsv-dgtsv-cgtsv-zgtsv-general-tridiagonal-matrix-factorization-multiple-right-hand-side-solve>
+        - <https://www.netlib.org/lapack/lapack-3.1.1/html/dgtsv.f.html>
+        - <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-fortran/2024-2/dttrsb.html>
+    - Parallel version
+- grad.f90: gradient descent
+    - Turn off derivative calculation in backtracking line search by making the `dv` member variables have zero length.
+    - <https://www.tensorflow.org/guide/core/optimizers_core>
+        - Help plan interface to gradient descent
+    - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only.
+    - Add procedures to make doing interior penalty methods easy?

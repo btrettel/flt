@@ -1,4 +1,5 @@
 - Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
+    - /home/ben/reference/Mathematics [51]/Numerical methods [519.6]/Finite difference methods/Stencil generators/
 - Bayesian inference Fortran module, to solve basic problems like the probability of actually having breast cancer in Yudkowsky's "intuitive explanation" or whodunits. Use log probability or whatever is appropriate internally.
 - Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `WP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
@@ -20,19 +21,6 @@
     - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
     - Use `pure` logging for this?
     - Upper and lower bounds for each variable, report violations.
-- Differentiable tridiagonal solver
-    - Example interfaces:
-        - Books: tannehill_computational_1997, schetz_boundary_1993, ellis_fortran_1994
-        - <https://www.ibm.com/docs/en/essl/6.2?topic=blaes-sgtsv-dgtsv-cgtsv-zgtsv-general-tridiagonal-matrix-factorization-multiple-right-hand-side-solve>
-        - <https://www.netlib.org/lapack/lapack-3.1.1/html/dgtsv.f.html>
-        - <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-fortran/2024-2/dttrsb.html>
-    - Parallel version
-- grad.f90: gradient descent
-    - Turn off derivative calculation in backtracking line search by making the `dv` member variables have zero length.
-    - <https://www.tensorflow.org/guide/core/optimizers_core>
-        - Help plan interface to gradient descent
-    - Make gradient descent able to select which variables to optimize, as I usually will not be interested in optimizing all variables. Some variables are for UQ only.
-    - Add procedures to make doing interior penalty methods easy?
 - interval arithmetic
     - Combination with automatic differentiation: <http://www.mscs.mu.edu/%7Egeorgec/IFAQ/rocco1.html>
 - `constrained` data type
@@ -40,6 +28,8 @@
         - > Constrained reals; for example, absolute mass, pressure, or temperature variables which throw an exception if they become negative. This is a first-class feature of types in Ada (constrained subtype)
     - Can be done with a derived type with custom operators.
 - `io.f90`
+    - read and save CSV files
+        - regex validation field for CSV
     - convenience subroutines
         - `print_box` (other similar things for the most important messages that I don't want to miss)
             - <https://fortran-lang.discourse.group/t/fortran-code-snippets/2150/24>
@@ -88,15 +78,6 @@
         - `run`: nothing vs. `./`
         - `cmp`: `fc` vs. `cmp`
     - Note: Would be faster to detect platform at compile-time, but more convoluted. Given that I probably won't be calling these commands in a way that will impact performance much, I'm not worried about it.
-- Poisson solvers, using same or similar interface as FISHPACK
-    - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>
-        - Old: <https://people.math.sc.edu/Burkardt/f77_src/fishpack/fishpack.html>
-    - <https://github.com/firemodels/fds/blob/master/Source/pois.f90>
-    - <https://github.com/jlokimlin/fishpack>
-    - <https://www.netlib.org/fishpack/>
-    - <https://ascl.net/1609.005>
-    - <https://arc.ucar.edu/knowledge_base/71991310>
-        - <https://github.com/NCAR/NCAR-Classic-Libraries-for-Geophysics>
 - probes.py: Python script to insert probes into (instrument) Fortran code, particularly for Monte Carlo arithmetic.
     - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
         - > SPAG is able to insert calls to probes at various points in your code (see below).
@@ -118,7 +99,7 @@
     - <https://github.com/perazz/fortran-regex>
     - Fork, add asserts and tests? Or just use as-is to get started faster?
 - Smart pointers
-    - Develop smart pointers before reverse mode AD.
+    - Develop smart pointers before reverse mode AD. Or just use `allocatable`s for reverse mode AD?
 - Test case reduction program for Fortran (freduce?). Just delete lines to reduce test cases.
     - <https://gcc.gnu.org/pipermail/fortran/2009-October/030302.html>
 - Use exiftool in combination with gnuplot to add metadata to plots to (for example) ease identification of which data was used to produce the plot. Add comments to DXF files to do the same.
@@ -131,3 +112,8 @@
     - Find the data that is most sensitive to perturbations? The sensitivity analysis should take into account the uncertainty. Try 95% uncertainty perturbations or something like that. Otherwise, there's no reasonable scale to pick for the perturbations.
     - Subroutines to help estimate uncertainty in a standardized way.
         - For example, if ambient temperature is unknown, have some constants and procedures to help estimate the effect of this on the uncertainty.
+- <https://en.wikipedia.org/wiki/Sterbenz_lemma>: Make `assert_sterbenz` to assert that the conditions of the Sterbenz lemma are satisfied.
+    - In `fmad` and `genunits`, create an operator that automatically enforces this? `.minus.`?
+    - Other operators in `fmad` could benefit from this too. Anywhere a subtraction occurs (like the derivatives for division) could have a Sterbenz assertions version.
+    - Sterbenz assertions could also check that the magnitude is small, though practically speaking this is probably satisfied if the normal Sterbenz conditions are met.
+- Switch `make check` to `make test` for consistency with folder name?

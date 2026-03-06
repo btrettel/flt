@@ -1,5 +1,7 @@
 # fmad.f90 to-do
 
+- fmad.f90 and units.f90
+    - `is_close`
 - Make `init` and `init_const` have optional argument to avoid allocation for `dv` and instead check size of `dv` and zero it.
 - Addition and subtraction for `real`s (with tests). (What did I mean by this? fmad.f90 already handles `real`s for addition and subtraction.)
 - Assert that `dv` of the output is allocated (via `assert`) and has correct size (via `assert_dimension`).
