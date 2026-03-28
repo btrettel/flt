@@ -1,0 +1,15 @@
+      SUBROUTINE ASSERT(CONDIT, MESSAG)
+      LOGICAL CONDIT
+      CHARACTER*(*) MESSAG
+      
+      IF (.NOT. CONDIT) THEN
+          WRITE(*, *) MESSAG
+          STOP 1
+      END IF
+      END
+      
+      PROGRAM TEST
+      EXTERNAL ASSERT
+      CALL ASSERT(.TRUE., 'PASSING')
+      CALL ASSERT(.FALSE., 'FAILING')
+      END
