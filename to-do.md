@@ -2,6 +2,8 @@
 
 Priorities:
 
+- Model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
+- Python: `eprint` function
 - geninput
     - Test new module
     - refactor and test more:
@@ -41,6 +43,7 @@ Priorities:
             - print type (integer, real, logical, character) in documentation string
         - string sets generate a `select case` to check if outside of set
         - enable/disable AD (AD `d` indices)
+            - Create `character` array for variable names corresponding to each index.
         - enable/disable GA optimization
         - In the current setup, the operator for the bounds is unclear, whether `>`/`<` or `>=`/`<=`.
         - generate variable declarations and namelist statement only for namelist output
@@ -48,6 +51,7 @@ Priorities:
             - Can use a `select case` statement on an `integer` variable and list conditionally required variables in each `case`.
             - Make any dependent variable return an error if assigned and the dependent variable is not correct.
                 - If unclear, for example: If `VAR = 1` but `x` can only be set for `VAR = 2`, return an error if `x` is not the default. This can be done for required and optional variables.
+        - Mutually exclusive input variables: Option to require one input to be undefined if another input is defined. Use this for mutually exclusive input variables, like two different ways to specify something where specifying both would be ambiguous.
     - input file
         - `x_stdev` variable (replace `x` with variable name)
             - Use <https://en.wikipedia.org/wiki/Bhatia%E2%80%93Davis_inequality> to check if you have both upper and lower bounds.

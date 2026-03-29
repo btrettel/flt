@@ -40,6 +40,8 @@ src$(DIR_SEP)units_ad.$(OBJEXT): src$(DIR_SEP)fmad.$(OBJEXT) src$(DIR_SEP)prec.$
 
 src$(DIR_SEP)unittest.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.f90
 
+src$(DIR_SEP)validation.$(OBJEXT): src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)validation.f90
+
 ########################
 # Program dependencies #
 ########################
@@ -160,4 +162,10 @@ test_unittest$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OB
 
 unittest.nml: test_unittest$(BINEXT)
 	$(RUN)test_unittest$(BINEXT)
+
+test_validation$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) src$(DIR_SEP)validation.$(OBJEXT) test$(DIR_SEP)test_validation.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)timer.$(OBJEXT) src$(DIR_SEP)unittest.$(OBJEXT) src$(DIR_SEP)validation.$(OBJEXT) test$(DIR_SEP)test_validation.f90
+
+validation.nml: test_validation$(BINEXT)
+	$(RUN)test_validation$(BINEXT)
 

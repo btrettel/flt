@@ -1,7 +1,35 @@
+- debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
+    - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
+        - parker_monte_1997-1
+        - CADNA
+    - FLOP counting.
+        - <https://nhigham.com/2023/09/05/what-is-a-flop/>
+        - <https://eleven7825.github.io/projects/pdfs/flop%20count%20tool%20with%20PLU%20example.pdf>
+        - <https://www.stat.uchicago.edu/~lekheng/courses/309f14/flops/>
+        - <https://github.com/tminka/lightspeed#flop-counting>
+    - Memory bandwidth information.
+    - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
+    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
+    - Use `pure` logging for this?
+    - Upper and lower bounds for each variable, report violations.
+        - <http://www.acorvid.com/2017/12/13/what-i-miss-when-writing-fortran/>
+            - > Constrained reals; for example, absolute mass, pressure, or temperature variables which throw an exception if they become negative. This is a first-class feature of types in Ada (constrained subtype)
+- probes.py: Python script to insert probes into (instrument) Fortran code, particularly for Monte Carlo arithmetic.
+    - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
+        - > SPAG is able to insert calls to probes at various points in your code (see below).
+    - <https://docs.cypress.io/guides/tooling/code-coverage>
+    - Don't insert probes into `pure` and `elemental` procedures?
+    - Use `pure` logging for this so that it'll work in `pure` procedures?
+    - <https://flibs.sourceforge.net/checking.html>
+        - <https://sourceforge.net/p/flibs/svncode/HEAD/tree/trunk/src/checking/>
+    - <https://github.com/SteveDoyle2/nasa-cosmic/blob/main/arc-11676/bugout.doc>
+        - > IV. TRACE Processing
+    - <https://simconglobal.com/fpt_ref_insert_run-time_trace.html>
+    - smith_evaluation_1980 mentions PET. The insertion of assertions to check every instance of a variable could be useful to help pinpoint problems.
 - Automatic stencil code generation. Less likely to have errors, can automatically optimize to satisfy certain constraints.
     - /home/ben/reference/Mathematics [51]/Numerical methods [519.6]/Finite difference methods/Stencil generators/
 - Bayesian inference Fortran module, to solve basic problems like the probability of actually having breast cancer in Yudkowsky's "intuitive explanation" or whodunits. Use log probability or whatever is appropriate internally.
-- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`. Both of these modules will be named `types` and are interchangeable. These modules only define `WP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
+- Break `prec.f90` into `types_dp.f90` and `types_sp.f90`? Both of these modules will be named `types` and are interchangeable. These modules only define `WP`. Constants like `PI` should then go in a separate `constants.f90` file which depends on the `types` module choice.
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/types.f90>
     - <https://github.com/certik/fortran-utils/blob/b43bd24cd421509a5bc6d3b9c3eeae8ce856ed88/src/constants.f90>
 - Common issue in my Fortran code: not using `lbound` and `ubound`
@@ -13,20 +41,8 @@
     - accuracy of important intrinsics
 - data validation
     - Base on <https://pandera.readthedocs.io/en/stable/index.html>?
-- debugtype.f90: Module which implements a derived type to replace `real` with the following debugging capabilities:
-    - Monte Carlo sensitivity analysis on floating point operations to help identify expressions contributing to floating point inaccuracy. This allows to find operations with inaccuracy worse than a threshold, rather than finding *all* inexact floating-point operations as tools like gfortran's `ffpe-trap=inexact` do. The latter approach leads to too many reported problems. Prioritizing floating-point errors by their magnitude makes sense.
-        - parker_monte_1997-1
-    - FLOP counting.
-    - Something like Monte Carlo arithmetic can be used to identify sections of code that contribute the most to uncertainty, like Monte Carlo arithmetic finds sections of code that are most sensitive to round-off error.
-    - metcalf_modern_2018 p. 309: type-bound operators so that you don't have to `use` the operators
-    - Use `pure` logging for this?
-    - Upper and lower bounds for each variable, report violations.
 - interval arithmetic
     - Combination with automatic differentiation: <http://www.mscs.mu.edu/%7Egeorgec/IFAQ/rocco1.html>
-- `constrained` data type
-    - <http://www.acorvid.com/2017/12/13/what-i-miss-when-writing-fortran/>
-        - > Constrained reals; for example, absolute mass, pressure, or temperature variables which throw an exception if they become negative. This is a first-class feature of types in Ada (constrained subtype)
-    - Can be done with a derived type with custom operators.
 - `io.f90`
     - read and save CSV files
         - regex validation field for CSV
@@ -44,7 +60,6 @@
             - This is good for long lists because the column header in the table can go off-screen.
         - Look into how other CFD softwares output iterative progress for ideas. Which metrics do they output?
             - <https://twitter.com/HiroNishikawa/status/1858803904164839621>
-- Model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
 - Multidimensional Newton solver
     - <https://web.mit.edu/18.06/www/Spring17/Multidimensional-Newton.pdf>
         - <https://gcc.gnu.org/onlinedocs/gfortran/NORM2.html>
@@ -78,14 +93,6 @@
         - `run`: nothing vs. `./`
         - `cmp`: `fc` vs. `cmp`
     - Note: Would be faster to detect platform at compile-time, but more convoluted. Given that I probably won't be calling these commands in a way that will impact performance much, I'm not worried about it.
-- probes.py: Python script to insert probes into (instrument) Fortran code, particularly for Monte Carlo arithmetic.
-    - <https://fortran-lang.discourse.group/t/free-plusfort-licence-for-fortran-discourse-users/2609/5?u=btrettel>
-        - > SPAG is able to insert calls to probes at various points in your code (see below).
-    - <https://docs.cypress.io/guides/tooling/code-coverage>
-    - Don't insert probes into `pure` and `elemental` procedures?
-    - Use `pure` logging for this so that it'll work in `pure` procedures?
-    - <https://flibs.sourceforge.net/checking.html>
-        - <https://sourceforge.net/p/flibs/svncode/HEAD/tree/trunk/src/checking/>
 - `pure` Monte Carlo uncertainty propagation
     - Setting the random number generator should help this be combined with automatic differentiation by making the results less noisy.
     - For uncertainty sources, I'll need to include the RNG type in the MC derived type? So I need a thread-safe seed generator for that. I'm not sure if I need the thread-safe seed generator for any other component.
@@ -117,3 +124,6 @@
     - Other operators in `fmad` could benefit from this too. Anywhere a subtraction occurs (like the derivatives for division) could have a Sterbenz assertions version.
     - Sterbenz assertions could also check that the magnitude is small, though practically speaking this is probably satisfied if the normal Sterbenz conditions are met.
 - Switch `make check` to `make test` for consistency with folder name?
+- Conventions
+    - To avoid not checking return codes: If a subroutine has a return code, if the return code is not provided, `stop` on error.
+        - Alternatively, could something like `PetscCall` be used to always check the return code?
