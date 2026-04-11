@@ -66,7 +66,8 @@ pure function t_tail_cdf(student_t, dof)
                                     I4 = -2.657697_WP, I5 = 5.127212_WP
     real(WP), parameter  :: J1 = 0.5657187_WP, J2 = 21.83269_WP
 
-    call assert(dof > 4, "validation (t_tail_cdf): dof > 4 violated")
+    ! The original version said `dof > 4`, but my own testing shows that below 10, this is often inaccurate.
+    call assert(dof >= 10, "validation (t_tail_cdf): dof >= 10 violated")
 
     v = 1.0_WP / real(dof, WP)
     tt = abs(student_t)

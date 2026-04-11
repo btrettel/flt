@@ -11,6 +11,7 @@ use prec, only: WP
 use unittest, only: test_results_type
 implicit none
 
+integer, parameter  :: DOF_MIN = 10
 real(WP), parameter :: HALF_ALPHA(6) = 1.0_WP - [0.90_WP, 0.95_WP, 0.975_WP, 0.99_WP, 0.995_WP, 0.999_WP]
 real(WP), parameter :: T0900(100) = [3.078_WP, 1.886_WP, 1.638_WP, 1.533_WP, 1.476_WP, 1.440_WP, 1.415_WP, 1.397_WP, &
                                      1.383_WP, 1.372_WP, 1.363_WP, 1.356_WP, 1.350_WP, 1.345_WP, 1.341_WP, 1.337_WP, &
@@ -141,7 +142,7 @@ subroutine test_t_tail_cdf(tests)
     real(WP) :: t
     
     do i_alpha = 1, size(HALF_ALPHA)
-        do dof = 5, 100
+        do dof = DOF_MIN, 100
             select case (i_alpha)
                 case (1)
                     t = T0900(dof)
@@ -171,7 +172,7 @@ subroutine test_t_tail_cdf(tests)
 end subroutine test_t_tail_cdf
 
 subroutine test_student_t(tests)
-    use validation, only: student_t
+    use validation, only: student_t, t_tail_cdf
     use prec, only: CL
     
     type(test_results_type), intent(in out) :: tests
@@ -181,7 +182,7 @@ subroutine test_student_t(tests)
     real(WP) :: t, abs_tol
     
     do i_alpha = 1, 6
-        do dof = 5, 100
+        do dof = DOF_MIN, 100
             select case (i_alpha)
                 case (1)
                     t = T0900(dof)
@@ -199,10 +200,8 @@ subroutine test_student_t(tests)
                     error stop
             end select
             
-            ! TODO: The secant method seems to be off for a low number of degrees of freedom.
-            ! It's unclear to me why that is. I should investigate this later.
             if (dof <= 10) then
-                abs_tol = 1.0_WP
+                abs_tol = 0.5e-2_WP
             else
                 abs_tol = 0.3e-2_WP
             end if
