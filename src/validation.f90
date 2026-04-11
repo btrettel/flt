@@ -100,18 +100,32 @@ pure function student_t(t_tail_cdf_, dof)
     integer  :: i
     
     ! `student_t_im2` is based on the upper bound from Chebyshev's inequality.
-    student_t_im2  = 1.0_WP/sqrt(2.0_WP*t_tail_cdf_)
+    !student_t_im2  = 1.0_WP/sqrt(2.0_WP*abs(t_tail_cdf_))
+    ! This one caused numerical problems.
+    
+    student_t_im2  = 3.0_WP
     t_tail_cdf_im2 = t_tail_cdf(student_t_im2, dof)
     
     student_t_im1  = 1.96_WP
     t_tail_cdf_im1 = t_tail_cdf(student_t_im1, dof)
     
+    if (t_tail_cdf_ > 0.5_WP) then
+        student_t_im2  = -student_t_im2
+        t_tail_cdf_im2 = 1.0_WP - t_tail_cdf_im2
+        
+        student_t_im1  = -student_t_im1
+        t_tail_cdf_im1 = 1.0_WP - t_tail_cdf_im1
+    end if
+    
     call assert(.not. is_close(student_t_im1, student_t_im2), &
                     "validation (student_t): student_t_im1 /= student_t_im2 violated")
     do i = 1, MAX_ITERS
+        !print *, i, student_t_im1, t_tail_cdf_im1, student_t_im2, t_tail_cdf_im2, t_tail_cdf_
+        if (abs(t_tail_cdf_im1 - t_tail_cdf_im2) < 100.0_WP*spacing(t_tail_cdf_)) exit
+        
         student_t_i  = student_t_im1 + (student_t_im1 - student_t_im2) * (t_tail_cdf_ - t_tail_cdf_im1) &
                                             / (t_tail_cdf_im1 - t_tail_cdf_im2)
-        t_tail_cdf_i = t_tail_cdf(student_t, dof)
+        t_tail_cdf_i = t_tail_cdf(student_t_i, dof)
         
         student_t_im2 = student_t_im1
         student_t_im1 = student_t_i
@@ -119,6 +133,8 @@ pure function student_t(t_tail_cdf_, dof)
         t_tail_cdf_im2 = t_tail_cdf_im1
         t_tail_cdf_im1 = t_tail_cdf_i
     end do
+    
+    student_t = student_t_i
 end function student_t
 
 end module validation
