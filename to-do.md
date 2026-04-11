@@ -126,7 +126,6 @@ Priorities:
 
 Later:
 
-- When work has ifx 2024.2, change `assert` to eliminate `full_message` by putting the message directly on the `error stop` line. Also see [compiler-bugs report0002](https://github.com/btrettel/compiler-bugs/tree/main/report0002).
 - Poisson solvers, using same or similar interface as FISHPACK
     - <https://people.sc.fsu.edu/~jburkardt/f77_src/fishpack/fishpack.html>
         - Old: <https://people.math.sc.edu/Burkardt/f77_src/fishpack/fishpack.html>

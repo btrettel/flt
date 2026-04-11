@@ -11,6 +11,7 @@ C     Message to output if CONDIT is .FALSE.
       CHARACTER*(*) MESSAG
       
       IF (.NOT. CONDIT) THEN
+          WRITE(*, *) 'ASSERTION FAILED.'
           WRITE(*, *) MESSAG
           STOP 1
       END IF
