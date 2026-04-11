@@ -15,17 +15,43 @@ type(test_results_type) :: tests
 
 call tests%start_tests("validation.nml")
 
-call test_t_tail(tests)
+call test_z_tail_cdf(tests)
+call test_t_tail_cdf(tests)
+!call test_student_t(tests)
 
 call tests%end_tests()
 
 contains
 
-subroutine test_t_tail(tests)
+subroutine test_z_tail_cdf(tests)
     ! Using the following table:
     ! <https://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm>
     
-    use validation, only: t_tail
+    use validation, only: z_tail_cdf
+    use prec, only: CL
+    
+    type(test_results_type), intent(in out) :: tests
+    
+    real(WP), parameter :: HALF_ALPHA(6) = 1.0_WP - [0.90_WP, 0.95_WP, 0.975_WP, 0.99_WP, 0.995_WP, 0.999_WP]
+    real(WP), parameter :: Z_TAIL_HALF_ALPHA(6) = [1.282_WP, 1.645_WP, 1.960_WP, 2.326_WP, 2.576_WP, 3.090_WP]
+    
+    integer :: i
+    character(len=CL) :: message
+    
+    do i = 1, size(HALF_ALPHA)
+        write(message, "(a, g0)") "z_tail_cdf, 0.5*alpha=", HALF_ALPHA(i)
+        call tests%real_eq(z_tail_cdf(Z_TAIL_HALF_ALPHA(i)), HALF_ALPHA(i), trim(message), abs_tol=1.0e-3_WP)
+        
+        write(message, "(a, g0)") "z_tail_cdf, 0.5*alpha=", 1.0_WP - HALF_ALPHA(i)
+        call tests%real_eq(z_tail_cdf(-Z_TAIL_HALF_ALPHA(i)), 1.0_WP - HALF_ALPHA(i), trim(message), abs_tol=1.0e-3_WP)
+    end do
+end subroutine test_z_tail_cdf
+
+subroutine test_t_tail_cdf(tests)
+    ! Using the following table:
+    ! <https://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm>
+    
+    use validation, only: t_tail_cdf
     use prec, only: CL
     
     type(test_results_type), intent(in out) :: tests
@@ -113,52 +139,60 @@ subroutine test_t_tail(tests)
     integer :: dof
     
     do dof = 5, 100
-        write(message, "(a, i0)") "t_tail, alpha=0.1, dof=", dof
-        call tests%real_eq(t_tail(T0900(dof), real(dof, WP)), 1.0_WP - 0.900_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.1, dof=", dof
+        call tests%real_eq(t_tail_cdf(T0900(dof), dof), 1.0_WP - 0.900_WP, trim(message), abs_tol=1.0e-3_WP)
         
-        write(message, "(a, i0)") "t_tail, alpha=0.9, dof=", dof
-        call tests%real_eq(t_tail(-T0900(dof), real(dof, WP)), 0.900_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.9, dof=", dof
+        call tests%real_eq(t_tail_cdf(-T0900(dof), dof), 0.900_WP, trim(message), abs_tol=1.0e-3_WP)
     end do
     
     do dof = 5, 100
-        write(message, "(a, i0)") "t_tail, alpha=0.05, dof=", dof
-        call tests%real_eq(t_tail(T0950(dof), real(dof, WP)), 1.0_WP - 0.950_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.05, dof=", dof
+        call tests%real_eq(t_tail_cdf(T0950(dof), dof), 1.0_WP - 0.950_WP, trim(message), abs_tol=1.0e-3_WP)
         
-        write(message, "(a, i0)") "t_tail, alpha=0.95, dof=", dof
-        call tests%real_eq(t_tail(-T0950(dof), real(dof, WP)), 0.950_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.95, dof=", dof
+        call tests%real_eq(t_tail_cdf(-T0950(dof), dof), 0.950_WP, trim(message), abs_tol=1.0e-3_WP)
     end do
     
     do dof = 5, 100
-        write(message, "(a, i0)") "t_tail, alpha=0.025, dof=", dof
-        call tests%real_eq(t_tail(T0975(dof), real(dof, WP)), 1.0_WP - 0.975_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.025, dof=", dof
+        call tests%real_eq(t_tail_cdf(T0975(dof), dof), 1.0_WP - 0.975_WP, trim(message), abs_tol=1.0e-3_WP)
         
-        write(message, "(a, i0)") "t_tail, alpha=0.975, dof=", dof
-        call tests%real_eq(t_tail(-T0975(dof), real(dof, WP)), 0.975_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.975, dof=", dof
+        call tests%real_eq(t_tail_cdf(-T0975(dof), dof), 0.975_WP, trim(message), abs_tol=1.0e-3_WP)
     end do
     
     do dof = 5, 100
-        write(message, "(a, i0)") "t_tail, alpha=0.01, dof=", dof
-        call tests%real_eq(t_tail(T0990(dof), real(dof, WP)), 1.0_WP - 0.99_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.01, dof=", dof
+        call tests%real_eq(t_tail_cdf(T0990(dof), dof), 1.0_WP - 0.99_WP, trim(message), abs_tol=1.0e-3_WP)
         
-        write(message, "(a, i0)") "t_tail, alpha=0.99, dof=", dof
-        call tests%real_eq(t_tail(-T0990(dof), real(dof, WP)), 0.99_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.99, dof=", dof
+        call tests%real_eq(t_tail_cdf(-T0990(dof), dof), 0.99_WP, trim(message), abs_tol=1.0e-3_WP)
     end do
     
     do dof = 5, 100
-        write(message, "(a, i0)") "t_tail, alpha=0.005, dof=", dof
-        call tests%real_eq(t_tail(T0995(dof), real(dof, WP)), 1.0_WP - 0.995_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.005, dof=", dof
+        call tests%real_eq(t_tail_cdf(T0995(dof), dof), 1.0_WP - 0.995_WP, trim(message), abs_tol=1.0e-3_WP)
         
-        write(message, "(a, i0)") "t_tail, alpha=0.995, dof=", dof
-        call tests%real_eq(t_tail(-T0995(dof), real(dof, WP)), 0.995_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.995, dof=", dof
+        call tests%real_eq(t_tail_cdf(-T0995(dof), dof), 0.995_WP, trim(message), abs_tol=1.0e-3_WP)
     end do
     
     do dof = 5, 100
-        write(message, "(a, i0)") "t_tail, alpha=0.001, dof=", dof
-        call tests%real_eq(t_tail(T0999(dof), real(dof, WP)), 1.0_WP - 0.999_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.001, dof=", dof
+        call tests%real_eq(t_tail_cdf(T0999(dof), dof), 1.0_WP - 0.999_WP, trim(message), abs_tol=1.0e-3_WP)
         
-        write(message, "(a, i0)") "t_tail, alpha=0.999, dof=", dof
-        call tests%real_eq(t_tail(-T0999(dof), real(dof, WP)), 0.999_WP, trim(message), abs_tol=1.0e-3_WP)
+        write(message, "(a, i0)") "t_tail_cdf, alpha=0.999, dof=", dof
+        call tests%real_eq(t_tail_cdf(-T0999(dof), dof), 0.999_WP, trim(message), abs_tol=1.0e-3_WP)
     end do
-end subroutine test_t_tail
+end subroutine test_t_tail_cdf
+
+!subroutine test_student_t(tests)
+!    use validation, only: student_t
+    
+!    type(test_results_type), intent(in out) :: tests
+    
+!    call tests%real_eq(student_t(0.01_WP, 12), 2.681_WP, "test")
+!end subroutine test_student_t
 
 end program test_validation

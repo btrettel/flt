@@ -10,11 +10,26 @@ module validation
 implicit none
 private
 
-public :: t_tail
+public :: z_tail_cdf
+public :: t_tail_cdf, student_t
 
 contains
 
-function t_tail(t, dof)
+pure function z_tail_cdf(z)
+    use prec, only: WP
+    use checks, only: assert
+    
+    real(WP), intent(in) :: z
+    
+    real(WP) :: z_tail_cdf
+    
+    z_tail_cdf = 0.5_WP*(1.0_WP - erf(z/sqrt(2.0_WP)))
+    
+    call assert(z_tail_cdf <= 1.0_WP, "validation (z_tail_cdf): z_tail_cdf <= 1 violated", &
+                    print_real=[z, z_tail_cdf])
+end function z_tail_cdf
+
+pure function t_tail_cdf(student_t, dof)
     use prec, only: WP
     use checks, only: assert
     
@@ -29,9 +44,10 @@ function t_tail(t, dof)
     ! Arguably ineligible as it doesn't contain any creative expression.
     ! This is fair use otherwise.
     
-    real(WP), intent(in) :: t, dof
+    real(WP), intent(in) :: student_t
+    integer, intent(in)  :: dof
     
-    real(WP) :: t_tail
+    real(WP) :: t_tail_cdf
 
     real(WP) :: v, tt
     real(WP), parameter  :: A1 = 0.09979441_WP, A2 = -0.581821_WP, A3 = 1.390993_WP, &
@@ -50,20 +66,59 @@ function t_tail(t, dof)
                                     I4 = -2.657697_WP, I5 = 5.127212_WP
     real(WP), parameter  :: J1 = 0.5657187_WP, J2 = 21.83269_WP
 
-    call assert(dof > 4.0_WP, "test_validation (t_tail): dof > 4 violated")
+    call assert(dof > 4, "validation (t_tail_cdf): dof > 4 violated")
 
-    v = 1.0_WP / dof
-    tt = abs(t)
-    t_tail = 0.5_WP*(1.0_WP + &
+    v = 1.0_WP / real(dof, WP)
+    tt = abs(student_t)
+    t_tail_cdf = 0.5_WP*(1.0_WP + &
                 tt*(((A1 + v*(A2 + v*(A3 + v*(A4 + v*A5)))) / (1.0_WP - v*(B1 - v*B2))) + &
                 tt*(((C1 + v*(C2 + v*(C3 + v*(C4 + v*C5)))) / (1.0_WP - v*(D1 - v*D2))) + &
                 tt*(((E1 + v*(E2 + v*(E3 + v*(E4 + v*E5)))) / (1.0_WP - v*(F1 - v*F2))) + &
                 tt*(((G1 + v*(G2 + v*(G3 + v*(G4 + v*G5)))) / (1.0_WP - v*(H1 - v*H2))) + &
                 tt*((I1 + v*(I2 + v*(I3 + v*(I4 + v*I5)))) / (1.0_WP - v*(J1 - v*J2))) )))))**(-8)
     
-    if (t < 0.0_WP) then
-        t_tail = 1.0_WP - t_tail
+    if (student_t < 0.0_WP) then
+        t_tail_cdf = 1.0_WP - t_tail_cdf
     end if
-end function t_tail
+    
+    call assert(t_tail_cdf <= 1.0_WP, "validation (t_tail_cdf): t_tail_cdf <= 1 violated", &
+                    print_real=[student_t, t_tail_cdf], print_integer=[dof])
+end function t_tail_cdf
+
+pure function student_t(t_tail_cdf_, dof)
+    use prec, only: WP
+    use checks, only: assert, is_close
+    
+    real(WP), intent(in) :: t_tail_cdf_
+    integer, intent(in)  :: dof
+    
+    real(WP) :: student_t
+    
+    integer, parameter :: MAX_ITERS = 100
+    real(WP) :: student_t_i, student_t_im1, student_t_im2, &
+                t_tail_cdf_i, t_tail_cdf_im1, t_tail_cdf_im2
+    integer  :: i
+    
+    ! `student_t_im2` is based on the upper bound from Chebyshev's inequality.
+    student_t_im2  = 1.0_WP/sqrt(2.0_WP*t_tail_cdf_)
+    t_tail_cdf_im2 = t_tail_cdf(student_t_im2, dof)
+    
+    student_t_im1  = 1.96_WP
+    t_tail_cdf_im1 = t_tail_cdf(student_t_im1, dof)
+    
+    call assert(.not. is_close(student_t_im1, student_t_im2), &
+                    "validation (student_t): student_t_im1 /= student_t_im2 violated")
+    do i = 1, MAX_ITERS
+        student_t_i  = student_t_im1 + (student_t_im1 - student_t_im2) * (t_tail_cdf_ - t_tail_cdf_im1) &
+                                            / (t_tail_cdf_im1 - t_tail_cdf_im2)
+        t_tail_cdf_i = t_tail_cdf(student_t, dof)
+        
+        student_t_im2 = student_t_im1
+        student_t_im1 = student_t_i
+        
+        t_tail_cdf_im2 = t_tail_cdf_im1
+        t_tail_cdf_im1 = t_tail_cdf_i
+    end do
+end function student_t
 
 end module validation
