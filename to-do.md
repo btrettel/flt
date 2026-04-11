@@ -2,13 +2,21 @@
 
 Priorities:
 
+- Make F77 equivalent of `is_close`: `ISCLS`
+- Make F77 unit test subroutines that can easily be converted to my new module.
+    - `LEQ`
+    - `DPEQ`
+    - `INTEQ`
+    - Make Python script to convert from F77 code to my F2018 code.
 - Model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
 - Python: `eprint` function
+- LaTeX documentation like BlasterSim has.
 - geninput
     - Test new module
     - refactor and test more:
         - split long subroutines into smaller subroutines
         - test the new subroutines
+        - make geninput use geninput generated namelist reading code
 - nmlfuzz.f90: namelist fuzz tester
     - Make `nmlfuzz` have its own namelist file writer so that you don't need to recompile every time.
         - Start by writing this namelist writer.
@@ -59,6 +67,7 @@ Priorities:
     - Make Markdown and TeX output optional and specified in the `geninput_config` namelist
     - Markdown output
     - How can conditional defaults be made? Break the subroutine into parts and manually insert code between the parts?
+- Make genunits use geninput generated namelist reading code
 - Make Fortran Wiki page on unit checking.
 - convergence.f90:
     - <https://www.grc.nasa.gov/WWW/wind/valid/tutorial/verify.f90>
@@ -134,6 +143,7 @@ Later:
         - <https://www.netlib.org/lapack/lapack-3.1.1/html/dgtsv.f.html>
         - <https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-fortran/2024-2/dttrsb.html>
     - Parallel version
+- splines
 - grad.f90: gradient descent
     - Turn off derivative calculation in backtracking line search by making the `dv` member variables have zero length.
     - <https://www.tensorflow.org/guide/core/optimizers_core>

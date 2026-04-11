@@ -227,3 +227,4 @@ missed.txt
 *.opt.yaml
 *.optrpt
 *.pdb
+*.flopold
