@@ -8,6 +8,7 @@ Priorities:
     - `DPEQ`
     - `INTEQ`
     - Make Python script to convert from F77 code to my F2018 code.
+    - Alternative: Use the modern Fortran test subroutines with `interface`s. I think this would end up being less work ultimately.
 - Model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
 - Python: `eprint` function
 - LaTeX documentation like BlasterSim has.

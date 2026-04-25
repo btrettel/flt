@@ -14,7 +14,7 @@ implicit none
 
 type(test_results_type) :: tests
 
-integer, parameter :: N_DV = 2
+integer, parameter :: N_D = 2
 
 call tests%start_tests("fmad.nml")
 
@@ -80,7 +80,7 @@ subroutine test_num_deriv(fun, prefactor, x, message, tests, abs_tol)
         abs_tol_ = 1.0e-4_WP
     end if
     
-    call x_ad%init(x, 1, N_DV)
+    call x_ad%init(x, 1, N_D)
     
     f         = fun(prefactor*x_ad)
     deriv_ad  = f%d(1)
@@ -110,9 +110,9 @@ subroutine test_scalars(tests)
     a = 7.0_WP
     b = 12.0_WP
 
-    call x%init(5.0_WP, 1, N_DV)
-    call y%init(1.5_WP, 2, N_DV)
-    call z%init_const(-3.3_WP, N_DV)
+    call x%init(5.0_WP, 1, N_D)
+    call y%init(1.5_WP, 2, N_D)
+    call z%init_const(-3.3_WP, N_D)
 
     call tests%real_eq(x%v, 5.0_WP, "ad, value")
     call tests%real_eq(x%d(1), 1.0_WP, "ad, derivative (dv 1)")
@@ -122,9 +122,9 @@ subroutine test_scalars(tests)
     call tests%real_eq(z%d(1), 0.0_WP, "init_const, derivative (dv 1)")
     call tests%real_eq(z%d(2), 0.0_WP, "init_const, derivative (dv 2)")
 
-    call tests%integer_eq(size(x%d), N_DV, "size(x%d) = N_DV")
-    call tests%integer_eq(size(y%d), N_DV, "size(y%d) = N_DV")
-    call tests%integer_eq(size(z%d), N_DV, "size(z%d) = N_DV")
+    call tests%integer_eq(size(x%d), N_D, "size(x%d) = N_D")
+    call tests%integer_eq(size(y%d), N_D, "size(y%d) = N_D")
+    call tests%integer_eq(size(z%d), N_D, "size(z%d) = N_D")
 
     z = x + y
     call tests%real_eq(z%v, 6.5_WP, "ad+ad, value")
@@ -230,7 +230,7 @@ pure function ad_pow_1(x)
     
     type(ad) :: y
     
-    call y%init(1.5_WP, 2, N_DV)
+    call y%init(1.5_WP, 2, N_D)
     
     ad_pow_1 = x**y
 end function ad_pow_1
@@ -244,7 +244,7 @@ pure function ad_pow_2(y)
     
     type(ad) :: x
     
-    call x%init(5.0_WP, 2, N_DV)
+    call x%init(5.0_WP, 2, N_D)
     
     ad_pow_2 = x**y
 end function ad_pow_2
@@ -261,8 +261,8 @@ subroutine test_arrays(tests)
     
     ! Test array operations
 
-    call u%init([5.0_WP, 7.0_WP], [1, 2], N_DV)
-    call v%init_const([-2.0_WP, 0.0_WP], N_DV)
+    call u%init([5.0_WP, 7.0_WP], [1, 2], N_D)
+    call v%init_const([-2.0_WP, 0.0_WP], N_D)
 
     w = u + 2.0_WP * v
 
@@ -287,7 +287,7 @@ subroutine test_sqrt(tests)
     
     type(ad) :: x, y
 
-    call x%init(2.0_WP, 1, N_DV)
+    call x%init(2.0_WP, 1, N_D)
     y = sqrt(4.0_WP * x)
 
     call tests%real_eq(y%v, sqrt(8.0_WP), "ad sqrt, value")
@@ -314,7 +314,7 @@ subroutine test_tanh(tests)
     
     type(ad) :: x, y
 
-    call x%init(1.0_WP, 1, N_DV)
+    call x%init(1.0_WP, 1, N_D)
     y = tanh(2.0_WP * x)
 
     call tests%real_eq(y%v, tanh(2.0_WP), "ad tanh, value")
@@ -341,7 +341,7 @@ subroutine test_atanh(tests)
     
     type(ad) :: x, y
 
-    call x%init(0.25_WP, 1, N_DV)
+    call x%init(0.25_WP, 1, N_D)
     y = atanh(2.0_WP * x)
 
     call tests%real_eq(y%v, atanh(0.5_WP), "ad atanh, value")
@@ -368,7 +368,7 @@ subroutine test_log(tests)
     
     type(ad) :: x, y
 
-    call x%init(1.0_WP, 1, N_DV)
+    call x%init(1.0_WP, 1, N_D)
     y = 4.0_WP * log(2.0_WP * x)
 
     call tests%real_eq(y%v, 4.0_WP * log(2.0_WP), "ad log, value")
@@ -395,7 +395,7 @@ subroutine test_exp(tests)
     
     type(ad) :: x, y
 
-    call x%init(1.0_WP, 1, N_DV)
+    call x%init(1.0_WP, 1, N_D)
     y = 7.0_WP * exp(0.5_WP * x)
 
     call tests%real_eq(y%v, 7.0_WP*exp(0.5_WP), "ad exp, value")
@@ -422,8 +422,8 @@ subroutine test_merge(tests)
     
     type(ad) :: x, y, z
 
-    call x%init(1.0_WP, 1, N_DV)
-    call y%init(-1.0_WP, 2, N_DV)
+    call x%init(1.0_WP, 1, N_D)
+    call y%init(-1.0_WP, 2, N_D)
     
     z = merge(x, y, .true.)
     call tests%real_eq(z%v, 1.0_WP, "ad merge, .true., value")
@@ -443,8 +443,8 @@ subroutine test_max(tests)
     
     type(ad) :: x, y, z
 
-    call x%init(1.0_WP, 1, N_DV)
-    call y%init(-1.0_WP, 2, N_DV)
+    call x%init(1.0_WP, 1, N_D)
+    call y%init(-1.0_WP, 2, N_D)
     
     z = max(x, y)
     call tests%real_eq(z%v, 1.0_WP, "ad max (1), value")
@@ -452,7 +452,7 @@ subroutine test_max(tests)
     call tests%real_eq(z%d(2), 0.0_WP, "ad max (1), derivative (dv 2)")
     
     deallocate(y%d)
-    call y%init(2.0_WP, 2, N_DV)
+    call y%init(2.0_WP, 2, N_D)
     z = max(x, y)
     call tests%real_eq(z%v, 2.0_WP, "ad max (2), value")
     call tests%real_eq(z%d(1), 0.0_WP, "ad max (2), derivative (dv 1)")
@@ -464,7 +464,7 @@ subroutine test_max(tests)
     call tests%real_eq(z%d(2), 0.0_WP, "ad max (3), derivative (dv 2)")
     
     deallocate(x%d)
-    call x%init(-1.0_WP, 2, N_DV)
+    call x%init(-1.0_WP, 2, N_D)
     z = max(0.0_WP, x)
     call tests%real_eq(z%v, 0.0_WP, "ad max (4), value")
     call tests%real_eq(z%d(1), 0.0_WP, "ad max (4), derivative (dv 1)")
@@ -473,8 +473,8 @@ subroutine test_max(tests)
     ! test at the switching point
     ! The first argument is used.
     deallocate(x%d, y%d)
-    call x%init(1.0_WP, 1, N_DV)
-    call y%init(1.0_WP, 2, N_DV)
+    call x%init(1.0_WP, 1, N_D)
+    call y%init(1.0_WP, 2, N_D)
     z = max(x, y)
     call tests%real_eq(z%v, 1.0_WP, "ad max (5), value")
     call tests%real_eq(z%d(1), 1.0_WP, "ad max (5), derivative (dv 1)")
@@ -488,8 +488,8 @@ subroutine test_min(tests)
     
     type(ad) :: x, y, z
 
-    call x%init(1.0_WP, 1, N_DV)
-    call y%init(-1.0_WP, 2, N_DV)
+    call x%init(1.0_WP, 1, N_D)
+    call y%init(-1.0_WP, 2, N_D)
     
     z = min(x, y)
     call tests%real_eq(z%v, -1.0_WP, "ad min (1), value")
@@ -497,7 +497,7 @@ subroutine test_min(tests)
     call tests%real_eq(z%d(2), 1.0_WP, "ad min (1), derivative (dv 2)")
     
     deallocate(x%d)
-    call x%init(-2.0_WP, 1, N_DV)
+    call x%init(-2.0_WP, 1, N_D)
     z = min(x, y)
     call tests%real_eq(z%v, -2.0_WP, "ad min (2), value")
     call tests%real_eq(z%d(1), 1.0_WP, "ad min (2), derivative (dv 1)")
@@ -509,7 +509,7 @@ subroutine test_min(tests)
     call tests%real_eq(z%d(2), 0.0_WP, "ad min (3), derivative (dv 2)")
     
     deallocate(x%d)
-    call x%init(1.0_WP, 2, N_DV)
+    call x%init(1.0_WP, 2, N_D)
     z = min(0.0_WP, x)
     call tests%real_eq(z%v, 0.0_WP, "ad min (4), value")
     call tests%real_eq(z%d(1), 0.0_WP, "ad min (4), derivative (dv 1)")
@@ -518,8 +518,8 @@ subroutine test_min(tests)
     ! test at the switching point
     ! The first argument is used.
     deallocate(x%d, y%d)
-    call x%init(1.0_WP, 1, N_DV)
-    call y%init(1.0_WP, 2, N_DV)
+    call x%init(1.0_WP, 1, N_D)
+    call y%init(1.0_WP, 2, N_D)
     z = min(x, y)
     call tests%real_eq(z%v, 1.0_WP, "ad min (5), value")
     call tests%real_eq(z%d(1), 1.0_WP, "ad min (5), derivative (dv 1)")
@@ -533,21 +533,21 @@ subroutine test_abs(tests)
     
     type(ad) :: x, y
 
-    call x%init(2.0_WP, 1, N_DV)
+    call x%init(2.0_WP, 1, N_D)
     y = abs(x)
     call tests%real_eq(y%v, 2.0_WP, "ad abs (positive), value")
     call tests%real_eq(y%d(1), 1.0_WP, "ad abs (positive), derivative (dv 1)")
     call tests%real_eq(y%d(2), 0.0_WP, "ad abs (positive), derivative (dv 2)")
 
     deallocate(x%d)
-    call x%init(-4.0_WP, 2, N_DV)
+    call x%init(-4.0_WP, 2, N_D)
     y = abs(x)
     call tests%real_eq(y%v, 4.0_WP, "ad abs (negative), value")
     call tests%real_eq(y%d(1), 0.0_WP, "ad abs (negative), derivative (dv 1)")
     call tests%real_eq(y%d(2), -1.0_WP, "ad abs (negative), derivative (dv 2)")
 
     deallocate(x%d)
-    call x%init(0.0_WP, 1, N_DV)
+    call x%init(0.0_WP, 1, N_D)
     y = abs(x)
     call tests%real_eq(y%v, 0.0_WP, "ad abs (zero), value")
     call tests%real_eq(y%d(1), 0.0_WP, "ad abs (zero), derivative (dv 1)")
@@ -559,24 +559,24 @@ subroutine test_comparison(tests)
     
     type(ad) :: x, y
 
-    call x%init(2.0_WP, 1, N_DV)
-    call y%init(1.0_WP, 2, N_DV)
+    call x%init(2.0_WP, 1, N_D)
+    call y%init(1.0_WP, 2, N_D)
     call tests%logical_true(x > y, "ad > (1)")
     call tests%logical_true(x >= y, "ad >= (1)")
     call tests%logical_false(x < y, "ad < (1)")
     call tests%logical_false(x <= y, "ad <= (1)")
     
     deallocate(x%d, y%d)
-    call x%init(2.0_WP, 1, N_DV)
-    call y%init(2.0_WP, 2, N_DV)
+    call x%init(2.0_WP, 1, N_D)
+    call y%init(2.0_WP, 2, N_D)
     call tests%logical_false(x > y, "ad > (2)")
     call tests%logical_true(x >= y, "ad >= (2)")
     call tests%logical_false(x < y, "ad < (2)")
     call tests%logical_true(x <= y, "ad <= (2)")
     
     deallocate(x%d, y%d)
-    call x%init(1.0_WP, 1, N_DV)
-    call y%init(2.0_WP, 2, N_DV)
+    call x%init(1.0_WP, 1, N_D)
+    call y%init(2.0_WP, 2, N_D)
     call tests%logical_false(x > y, "ad > (3)")
     call tests%logical_false(x >= y, "ad >= (3)")
     call tests%logical_true(x < y, "ad < (3)")
@@ -590,7 +590,7 @@ subroutine test_trig(tests)
     
     type(ad) :: x, y
 
-    call x%init(0.0_WP, 1, N_DV)
+    call x%init(0.0_WP, 1, N_D)
     y = 2.0_WP * sin(x)
     call tests%real_eq(y%v, 0.0_WP, "ad sin, value")
     call tests%real_eq(y%d(1), 2.0_WP, "ad sin, derivative (dv 1)")
@@ -599,7 +599,7 @@ subroutine test_trig(tests)
     call test_num_deriv(ad_sin, 2.0_WP, 1.0_WP, "ad sin, comparison with numerical derivative", tests)
     
     deallocate(x%d, y%d)
-    call x%init(0.0_WP, 1, N_DV)
+    call x%init(0.0_WP, 1, N_D)
     y = 3.0_WP*cos(x)
     call tests%real_eq(y%v, 3.0_WP, "ad cos, value")
     call tests%real_eq(y%d(1), 0.0_WP, "ad cos, derivative (dv 1)")
@@ -608,7 +608,7 @@ subroutine test_trig(tests)
     call test_num_deriv(ad_cos, 2.0_WP, 1.0_WP, "ad cos, comparison with numerical derivative", tests)
     
     deallocate(x%d, y%d)
-    call x%init(0.0_WP, 1, N_DV)
+    call x%init(0.0_WP, 1, N_D)
     y = -tan(x)
     call tests%real_eq(y%v, 0.0_WP, "ad tan, value")
     call tests%real_eq(y%d(1), -1.0_WP, "ad tan, derivative (dv 1)")
@@ -671,10 +671,10 @@ subroutine test_fosm(tests)
     integer, parameter :: N_X = 3
     
     type(ad) :: x(N_X)
-    real(WP) :: sigmas(N_DV), y(N_X), z(N_X), &
+    real(WP) :: sigmas(N_D), y(N_X), z(N_X), &
                     y_expected(N_X), z_expected(N_X)
 
-    call x%init_const(0.0_WP, N_DV)
+    call x%init_const(0.0_WP, N_D)
     x(1)%d(1) = -2.0_WP
     x(1)%d(1) = 3.0_WP
     x(2)%d(1) = 1.0_WP
