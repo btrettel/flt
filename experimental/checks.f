@@ -1,22 +1,22 @@
-      PROGRAM CHECKS
-      EXTERNAL ASSERT
-      CALL ASSERT(.TRUE., 'PASSING')
-      CALL ASSERT(.FALSE., 'FAILING')
-      END
+      program checks
+      external assert
+      call assert(.true., 'PASSING')
+      call assert(.false., 'FAILING')
+      end
 
-      SUBROUTINE ASSERT(CONDIT, MESSAG)
-C     Condition being asserted.
-      LOGICAL CONDIT
-C     Message to output if CONDIT is .FALSE.
-      CHARACTER*(*) MESSAG
-C     Change to .FALSE. to disable assertions.
-      LOGICAL DEBUG
-      PARAMETER (DEBUG = .TRUE.)
-      IF (DEBUG) THEN
-          IF (.NOT. CONDIT) THEN
-              WRITE(*, *) 'ASSERTION FAILED.'
-              WRITE(*, *) MESSAG
-              STOP 1
-          END IF
-      END IF
-      END
+      subroutine assert(condit, messag)
+c     Condition being asserted.
+      logical condit
+c     Message to output if `condit` is `.false.`
+      character*(*) messag
+c     Change to `.false.` to disable assertions.
+      logical debug
+      parameter (debug = .true.)
+      if (debug) then
+          if ( .not. condit) then
+              write (*, *) 'ASSERTION FAILED.'
+              write (*, *) messag
+              stop 1
+          endif
+      endif
+      end
