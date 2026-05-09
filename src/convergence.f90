@@ -21,6 +21,7 @@ interface dnorm
     
     ! <https://www.petercheng.me/blog/discrete-L2-norm>
     ! <https://scicomp.stackexchange.com/questions/5095/discrete-lp-norms-for-non-uniform-grid>
+    ! briggs_multigrid_2000 p. 55
     ! roy_review_2005 eq. 7: the discrete norm takes into account `n` so that it's comparable to a point-wise value.
     ! <https://youtu.be/v9OnNeYH4Ok?t=2216>
     
@@ -55,7 +56,7 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
             use prec, only: WP
             
             integer, intent(in)                :: n          ! number of grid cells, time steps, Monte Carlo samples, etc.
-            type(ad), intent(out), allocatable :: ne_v(:)      ! numerical error for value(s) (n_var)
+            type(ad), intent(out), allocatable :: ne_v(:)    ! numerical error for value(s) (n_var)
             real(WP), intent(out), allocatable :: ne_d(:, :) ! numerical error for derivatives (n_var, n_d)
             
             ! `n_var` is the number of variables to return numerical error for.
