@@ -2,6 +2,7 @@
 
 Priorities:
 
+- geninput: Use clearer namelist keyword for bounds, perhaps similar to nml-tools
 - Make F77 equivalent of `is_close`: `ISCLS`
 - Make F77 unit test subroutines that can easily be converted to my new module.
     - `LEQ`

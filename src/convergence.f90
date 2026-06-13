@@ -116,6 +116,10 @@ subroutine convergence_test(n_arr, solver_ne, p_expected, message, tests, p_tol,
     print "(3a6, 2a14)", "n", "var #", "v/d", "ne_v", "p"
     ! MAYBE: Run convergence tests in parallel later?
     do i_n = 1, n_n
+        if (i_n > 1) then
+            call assert(n_arr(i_n) > n_arr(i_n - 1), "convergence (convergence_test): n_arr is not in ascending order")
+        end if
+        
         call solver_ne(n_arr(i_n), ne_v_i_n, ne_d_i_n)
         
         if (i_n == 1) then

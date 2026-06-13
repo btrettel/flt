@@ -1,5 +1,6 @@
 # genunits to-do
 
+- Post on Intel Fortran forum thanking them for the genunits fix and add new test with AD.
 - Add `**` operator for `unitless` as that stays `unitless`.
 - Generic `linspace` and `linf_norm`
 - Add and test comparison operators for `real` for `unitless`.

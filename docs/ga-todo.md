@@ -1,5 +1,9 @@
 # ga.f90 to-do
 
+- Which constraints are violated are kept track of so that useful warning messages can be printed.
+    - How can I handle constraints that are limiting but not violated? The GA would tend to place them close to the limit but not actually at the limit, too.
+    - One simpler approach: Print values and constraint values to see which constraints are active. The decision about which constrains are limiting is then made by the user.
+- System to keep track of concordance of autodiff and genetic algorithm index values and variable names.
 - Subroutine to optimize genetic algorithm parameters with a genetic algorithm. Objective function is wall-clock time.
 - Won't initially for simplicity: `chromo%out(:)` (for non-objective function outputs that may be of interest). Make type a `class(*)` variable so that I can put any output I want in there.
 - Hybridize: Nelder-Mead method for local search when genetic algorithm has stalled.
