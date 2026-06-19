@@ -1,11 +1,11 @@
-! tests for the convergence module
+! tests for the ooa module
 ! Standard: Fortran 2018
 ! Preprocessor: none
 ! Author: Ben Trettel (<http://trettel.us/>)
 ! Project: [flt](https://github.com/btrettel/flt)
 ! License: [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-program test_convergence
+program test_ooa
 
 use prec, only: WP
 use unittest, only: test_results_type
@@ -16,7 +16,7 @@ type(test_results_type) :: tests
 
 call tests%start_tests("convergence.nml")
 
-call test_convergence_test(tests)
+call test_ooa_test(tests)
 call test_logspace(tests)
 call test_dnorm_1(tests)
 call test_dnorm_2(tests)
@@ -57,8 +57,8 @@ subroutine fake_ne2(n, ne, ne_d)
     end do
 end subroutine fake_ne2
 
-subroutine test_convergence_test(tests)
-    use convergence, only: convergence_test
+subroutine test_ooa_test(tests)
+    use ooa, only: ooa_test
     
     type(test_results_type), intent(in out) :: tests
     
@@ -67,13 +67,13 @@ subroutine test_convergence_test(tests)
     integer, parameter :: N_TESTS = 3, N_FAILING = 2
     logical            :: stdout
     
-    call convergence_test([1, 10, 100], fake_ne, [1.0_WP], "fake_ne, passing", tests)
+    call ooa_test([1, 10, 100], fake_ne, [1.0_WP], "fake_ne, passing", tests)
     
-    ! `convergence_test` that fails
+    ! `ooa_test` that fails
     call failing_tests%start_tests("convergence_failing.nml")
     stdout = failing_tests%stdout
     failing_tests%stdout = .false. ! Don't print these to stdout.
-    call convergence_test([1, 10, 100], fake_ne, [2.0_WP], "fake_ne, failing", failing_tests)
+    call ooa_test([1, 10, 100], fake_ne, [2.0_WP], "fake_ne, failing", failing_tests)
     failing_tests%stdout = stdout
     
     call tests%integer_eq(failing_tests%n_tests, N_TESTS, "correct number of tests expected to fail")
@@ -83,11 +83,11 @@ subroutine test_convergence_test(tests)
     
     ! To check that the output looks correct.
     ! I want `n` to be printed once per `solver_ne` subroutine call.
-    call convergence_test([1, 10, 100], fake_ne2, [1.0_WP, 1.0_WP], "fake_ne2, passing", tests)
-end subroutine test_convergence_test
+    call ooa_test([1, 10, 100], fake_ne2, [1.0_WP, 1.0_WP], "fake_ne2, passing", tests)
+end subroutine test_ooa_test
 
 subroutine test_logspace(tests)
-    use convergence, only: logspace
+    use ooa, only: logspace
     
     type(test_results_type), intent(in out) :: tests
     
@@ -103,7 +103,7 @@ subroutine test_logspace(tests)
 end subroutine test_logspace
 
 subroutine test_dnorm_1(tests)
-    use convergence, only: dnorm
+    use ooa, only: dnorm
     
     type(test_results_type), intent(in out) :: tests
     
@@ -175,7 +175,7 @@ subroutine test_dnorm_1(tests)
 end subroutine test_dnorm_1
 
 subroutine test_dnorm_2(tests)
-    use convergence, only: dnorm
+    use ooa, only: dnorm
     
     type(test_results_type), intent(in out) :: tests
     
@@ -238,4 +238,4 @@ subroutine test_dnorm_2(tests)
     deallocate(x, y)
 end subroutine test_dnorm_2
 
-end program test_convergence
+end program test_ooa
