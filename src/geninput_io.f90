@@ -23,6 +23,7 @@ type :: config_type
     logical           :: use_type
     logical           :: write_tex, write_md ! whether to enable writing TeX or Markdown documentation
     logical           :: uq, ga ! whether to enable uncertainty quantification or the genetic algorithm respectively
+    logical           :: write_return
     
     ! Write code for multiple namelist groups of the same name, like in `read_input_variable_namelists` here
     ! TODO: `logical :: multiple_namelist_groups`
@@ -34,6 +35,7 @@ type :: input_variable_type
     character(len=CL) :: default_value ! do not include the kind parameter as this will be added automatically, `tex_unit` units
     logical           :: no_kind_default_value
     logical           :: required
+    logical           :: print_default_value
     logical           :: add_to_type
     logical           :: lower_bound_active
     logical           :: lower_bound_not_equal
@@ -74,9 +76,10 @@ subroutine read_config_namelist(input_file, config, rc)
     character(len=CL) :: kind_parameter
     logical           :: write_tex, write_md
     logical           :: uq, ga
+    logical           :: write_return
     
     namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter, &
-                                write_tex, write_md, uq, ga
+                                write_tex, write_md, uq, ga, write_return
     
     output_file_prefix = ""
     namelist_group     = ""
@@ -87,6 +90,7 @@ subroutine read_config_namelist(input_file, config, rc)
     write_md           = .false.
     uq                 = .false.
     ga                 = .false.
+    write_return       = .true.
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=geninput_config, iostat=rc_nml, iomsg=nml_error_message)
@@ -114,6 +118,7 @@ subroutine read_config_namelist(input_file, config, rc)
     config%write_md           = write_md
     config%uq                 = uq
     config%ga                 = ga
+    config%write_return       = write_return
     
     if (platform() == PLATFORM_WINDOWS) then
         call convert_path_unix_to_win(config%output_file_prefix)
@@ -202,6 +207,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
     character(len=CL) :: default_value
     logical           :: no_kind_default_value
     logical           :: required
+    logical           :: print_default_value
     logical           :: add_to_type
     logical           :: lower_bound_active
     logical           :: lower_bound_not_equal
@@ -219,8 +225,8 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
     character(len=CL) :: txt_unit
     real(WP)          :: scaling_factor
     
-    namelist /input_variable/ variable_name, type_definition, default_value, no_kind_default_value, required, add_to_type, &
-                                lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
+    namelist /input_variable/ variable_name, type_definition, default_value, no_kind_default_value, required, print_default_value, &
+                                add_to_type, lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
                                 bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name, txt_unit, &
                                 scaling_factor
@@ -258,6 +264,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
         default_value             = ""
         no_kind_default_value     = .false.
         required                  = .false.
+        print_default_value       = .true.
         add_to_type               = .true.
         lower_bound_active        = .false.
         lower_bound_not_equal     = .false.
@@ -293,6 +300,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
         input_variables(i)%default_value             = trim(default_value)
         input_variables(i)%no_kind_default_value     = no_kind_default_value
         input_variables(i)%required                  = required
+        input_variables(i)%print_default_value       = print_default_value
         input_variables(i)%add_to_type               = add_to_type
         input_variables(i)%lower_bound_active        = lower_bound_active
         input_variables(i)%lower_bound_not_equal     = lower_bound_not_equal
@@ -847,10 +855,12 @@ subroutine write_subroutine(config, input_variables)
         end do
     end if
     
-    write(unit=out_unit, fmt="(a)") ""
-    write(unit=out_unit, fmt="(a)") "if (rc_read /= 0) then"
-    write(unit=out_unit, fmt="(a)") "    return"
-    write(unit=out_unit, fmt="(a)") "end if"
+    if (config%write_return) then
+        write(unit=out_unit, fmt="(a)") ""
+        write(unit=out_unit, fmt="(a)") "if (rc_read /= 0) then"
+        write(unit=out_unit, fmt="(a)") "    return"
+        write(unit=out_unit, fmt="(a)") "end if"
+    end if
     
     ! genunits types to auto-convert `real`s to genunits types
     write_new_line = .true.
@@ -973,7 +983,9 @@ subroutine write_tex(config, input_variables)
         ! Why `.not. input_variables(i)%no_kind_default_value`?
         ! Then parameters like `P_ATM` which are pulled from somewhere else won't print simply `P_ATM`, which is not helpful.
         ! The actual parameter value can be printed manually by adding the right TeX code to `tex_description_2`.
-        if ((.not. input_variables(i)%required) .and. (.not. input_variables(i)%no_kind_default_value)) then
+        if ((.not. input_variables(i)%required) &
+                .and. (.not. input_variables(i)%no_kind_default_value) &
+                .and. (input_variables(i)%print_default_value)) then
             type4 = input_variables(i)%type_definition(1:4)
             if ((type4 == "real") .or. (type4 == "type")) then
                 default_value = "$" // trim(input_variables(i)%default_value) // "$"
