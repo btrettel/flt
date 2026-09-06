@@ -56,6 +56,7 @@ type :: input_variable_type
     character(len=CL) :: txt_unit
     real(WP)          :: scaling_factor ! convert from `tex_unit` units to `type_definition` units
     real(WP)          :: fuzz_range(2)
+    logical           :: fuzz
 end type input_variable_type
 
 contains
@@ -248,12 +249,13 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
     character(len=CL) :: txt_unit
     real(WP)          :: scaling_factor
     real(WP)          :: fuzz_range(2)
+    logical           :: fuzz
     
     namelist /input_variable/ variable_name, type_definition, default_value, no_kind_default_value, required, print_default_value, &
                                 add_to_type, lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
                                 bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name, txt_unit, &
-                                scaling_factor, fuzz_range
+                                scaling_factor, fuzz_range, fuzz
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
     
@@ -306,6 +308,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
         txt_unit                  = ""
         scaling_factor            = 1.0_WP
         fuzz_range                = [0.0_WP, 0.0_WP]
+        fuzz                      = .false.
         
         read(unit=nml_unit, nml=input_variable, iostat=rc_nml, iomsg=nml_error_message)
         
@@ -342,6 +345,9 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
         input_variables(i)%tex_variable_name         = trim(tex_variable_name)
         input_variables(i)%scaling_factor            = scaling_factor
         input_variables(i)%fuzz_range                = fuzz_range
+        
+        if (.not. is_close(fuzz_range(1), fuzz_range(2))) fuzz = .true.
+        input_variables(i)%fuzz = fuzz
         
         ! By default, make `txt_unit` copy `tex_unit`, unless `txt_unit` is defined separately.
         if ((trim(txt_unit) == "") .and. (trim(tex_unit) /= "")) then
@@ -407,13 +413,13 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
                                                         // " with variable_name '" // trim(variable_name) &
                                                         // "': fuzz_range(1) <= fuzz_range(2) violated.", n_failures)
             
-            if (lower_bound_active .and. (.not. is_close(fuzz_range(1), fuzz_range(2)))) then
+            if (lower_bound_active .and. fuzz) then
                 call check(fuzz_range(1) >= lower_bound, "input_variable #" // trim(i_string) &
                                                         // " with variable_name '" // trim(variable_name) &
                                                         // "': fuzz_range(1) >= lower_bound violated.", n_failures)
             end if
             
-            if (upper_bound_active .and. (.not. is_close(fuzz_range(1), fuzz_range(2)))) then
+            if (upper_bound_active .and. fuzz) then
                 call check(fuzz_range(2) <= upper_bound, "input_variable #" // trim(i_string) &
                                                         // " with variable_name '" // trim(variable_name) &
                                                         // "': fuzz_range(2) <= upper_bound violated.", n_failures)
@@ -1019,14 +1025,16 @@ subroutine write_tex(config, input_variables)
         
         select case (input_variables(i)%type_definition(1:4))
             case ("real", "type")
-                write(unit=out_unit, fmt="(3a)", advance="no") " Floating-point number."
+                write(unit=out_unit, fmt="(a)", advance="no") " Floating-point number."
             case ("inte")
-                write(unit=out_unit, fmt="(3a)", advance="no") " Integer."
+                write(unit=out_unit, fmt="(a)", advance="no") " Integer."
             case ("char")
-                write(unit=out_unit, fmt="(3a)", advance="no") " String."
+                write(unit=out_unit, fmt="(a)", advance="no") " String."
+            case ("logi")
+                write(unit=out_unit, fmt="(a)", advance="no") " Boolean."
             case default
                 write(unit=ERROR_UNIT, fmt="(a)") trim(input_variables(i)%variable_name) &
-                        // ": Invalid type_definition."
+                        // ": Invalid type definition."
                 error stop
         end select
         
@@ -1047,7 +1055,7 @@ subroutine write_tex(config, input_variables)
             type4 = input_variables(i)%type_definition(1:4)
             if ((type4 == "real") .or. (type4 == "type")) then
                 default_value = "$" // trim(input_variables(i)%default_value) // "$"
-            elseif (type4 == "char") then
+            elseif ((type4 == "char") .or. (type4 == "logi")) then
                 default_value = "\texttt{" // trim(input_variables(i)%default_value) // "}"
             else
                 default_value = trim(input_variables(i)%default_value)
