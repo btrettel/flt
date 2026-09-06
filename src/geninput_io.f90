@@ -13,17 +13,20 @@ use checks, only: assert, check, is_close
 implicit none
 
 integer, parameter :: MAX_LINE_LENGTH = 132
+integer, parameter :: MAX_EXIT_CODE   = 255
 
 type :: config_type
-    character(len=CL) :: output_file_prefix
-    character(len=CL) :: namelist_group
-    character(len=CL) :: type_name
-    character(len=CL) :: config_variable
-    character(len=CL) :: kind_parameter
-    logical           :: use_type
-    logical           :: write_tex, write_md ! whether to enable writing TeX or Markdown documentation
-    logical           :: uq, ga ! whether to enable uncertainty quantification or the genetic algorithm respectively
-    logical           :: write_return
+    character(len=CL)    :: output_file_prefix
+    character(len=CL)    :: namelist_group
+    character(len=CL)    :: type_name
+    character(len=CL)    :: config_variable
+    character(len=CL)    :: kind_parameter
+    logical              :: use_type
+    logical              :: write_tex, write_md ! whether to enable writing TeX or Markdown documentation
+    logical              :: uq, ga ! whether to enable uncertainty quantification or the genetic algorithm respectively
+    logical              :: write_return
+    character(len=CL)    :: executable
+    integer, allocatable :: acceptable_exit_codes(:)
     
     ! Write code for multiple namelist groups of the same name, like in `read_input_variable_namelists` here
     ! TODO: `logical :: multiple_namelist_groups`
@@ -52,6 +55,7 @@ type :: input_variable_type
     character(len=CL) :: tex_variable_name
     character(len=CL) :: txt_unit
     real(WP)          :: scaling_factor ! convert from `tex_unit` units to `type_definition` units
+    real(WP)          :: fuzz_range(2)
 end type input_variable_type
 
 contains
@@ -63,11 +67,11 @@ subroutine read_config_namelist(input_file, config, rc)
     type(config_type), intent(out) :: config
     integer, intent(out)           :: rc
     
-    integer           :: nml_unit, rc_nml
+    integer           :: nml_unit, rc_nml, n_acceptable_exit_codes, i_exit_code
     character(len=CL) :: nml_error_message
     logical           :: use_type
     
-    ! `config` namelist group
+    ! `geninput_config` namelist group
     ! See type definition above for some comments on these.
     character(len=CL) :: output_file_prefix
     character(len=CL) :: namelist_group
@@ -77,20 +81,24 @@ subroutine read_config_namelist(input_file, config, rc)
     logical           :: write_tex, write_md
     logical           :: uq, ga
     logical           :: write_return
+    character(len=CL) :: executable ! for nmlfuzz
+    integer           :: acceptable_exit_codes(100) ! for nmlfuzz
     
     namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter, &
-                                write_tex, write_md, uq, ga, write_return
+                                write_tex, write_md, uq, ga, write_return, executable, acceptable_exit_codes
     
-    output_file_prefix = ""
-    namelist_group     = ""
-    type_name          = ""
-    config_variable    = "config"
-    kind_parameter     = ""
-    write_tex          = .false.
-    write_md           = .false.
-    uq                 = .false.
-    ga                 = .false.
-    write_return       = .true.
+    output_file_prefix    = ""
+    namelist_group        = ""
+    type_name             = ""
+    config_variable       = "config"
+    kind_parameter        = ""
+    write_tex             = .false.
+    write_md              = .false.
+    uq                    = .false.
+    ga                    = .false.
+    write_return          = .true.
+    executable            = ""
+    acceptable_exit_codes = MAX_EXIT_CODE + 1
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=geninput_config, iostat=rc_nml, iomsg=nml_error_message)
@@ -104,7 +112,9 @@ subroutine read_config_namelist(input_file, config, rc)
     
     rc = 0
     call check(len(trim(output_file_prefix)) > 0, "output_file_prefix must be defined", rc)
-    call check(len(trim(namelist_group)) > 0, "namelist_group must be defined", rc)
+    call check(len(trim(namelist_group))     > 0, "namelist_group must be defined", rc)
+    call check(len(trim(executable))         > 0, "executable must be defined", rc)
+    call check(n_acceptable_exit_codes       > 0, "acceptable_exit_codes must be defined", rc)
     
     use_type = len(trim(type_name)) > 0
     
@@ -119,10 +129,23 @@ subroutine read_config_namelist(input_file, config, rc)
     config%uq                 = uq
     config%ga                 = ga
     config%write_return       = write_return
+    config%executable         = executable
     
     if (platform() == PLATFORM_WINDOWS) then
         call convert_path_unix_to_win(config%output_file_prefix)
     end if
+    
+    n_acceptable_exit_codes = 0
+    do i_exit_code = 1, size(acceptable_exit_codes)
+        if (acceptable_exit_codes(i_exit_code) == (MAX_EXIT_CODE + 1)) then
+            n_acceptable_exit_codes = i_exit_code
+        end if
+    end do
+    
+    allocate(config%acceptable_exit_codes(n_acceptable_exit_codes))
+    do i_exit_code = 1, n_acceptable_exit_codes
+        config%acceptable_exit_codes(i_exit_code) = acceptable_exit_codes(i_exit_code)
+    end do
 end subroutine read_config_namelist
 
 subroutine sort_input_variables(input_variables)
@@ -224,12 +247,13 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
     character(len=CL) :: tex_variable_name
     character(len=CL) :: txt_unit
     real(WP)          :: scaling_factor
+    real(WP)          :: fuzz_range(2)
     
     namelist /input_variable/ variable_name, type_definition, default_value, no_kind_default_value, required, print_default_value, &
                                 add_to_type, lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
                                 bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name, txt_unit, &
-                                scaling_factor
+                                scaling_factor, fuzz_range
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
     
@@ -281,6 +305,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
         tex_variable_name         = ""
         txt_unit                  = ""
         scaling_factor            = 1.0_WP
+        fuzz_range                = [0.0_WP, 0.0_WP]
         
         read(unit=nml_unit, nml=input_variable, iostat=rc_nml, iomsg=nml_error_message)
         
@@ -316,6 +341,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
         input_variables(i)%tex_description_2         = trim(tex_description_2)
         input_variables(i)%tex_variable_name         = trim(tex_variable_name)
         input_variables(i)%scaling_factor            = scaling_factor
+        input_variables(i)%fuzz_range                = fuzz_range
         
         ! By default, make `txt_unit` copy `tex_unit`, unless `txt_unit` is defined separately.
         if ((trim(txt_unit) == "") .and. (trim(tex_unit) /= "")) then
@@ -360,6 +386,38 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
             call check(lower_bound < upper_bound, "input_variable #" // trim(i_string) &
                                                     // " with variable_name '" // trim(variable_name) &
                                                     // "': lower_bound < upper_bound violated.", n_failures)
+        end if
+        
+        if (input_variables(i)%type_definition(1:4) == "logi") then
+            call check((is_close(fuzz_range(1), 0.0_WP) .or. is_close(fuzz_range(1), 1.0_WP)), &
+                            "input_variable #" // trim(i_string) &
+                            // " with variable_name '" // trim(variable_name) &
+                            // "': fuzz_range(1) for logicals should be 0 or 1.", n_failures)
+            
+            call check((is_close(fuzz_range(2), 0.0_WP) .or. is_close(fuzz_range(2), 1.0_WP)), &
+                            "input_variable #" // trim(i_string) &
+                            // " with variable_name '" // trim(variable_name) &
+                            // "': fuzz_range(2) for logicals should be 0 or 1.", n_failures)
+        end if
+        
+        if (((input_variables(i)%type_definition(1:4) == "real") &
+                .or. (input_variables(i)%type_definition(1:4) == "type") &
+                .or. (input_variables(i)%type_definition(1:4) == "inte"))) then
+            call check(fuzz_range(1) <= fuzz_range(2), "input_variable #" // trim(i_string) &
+                                                        // " with variable_name '" // trim(variable_name) &
+                                                        // "': fuzz_range(1) <= fuzz_range(2) violated.", n_failures)
+            
+            if (lower_bound_active .and. (.not. is_close(fuzz_range(1), fuzz_range(2)))) then
+                call check(fuzz_range(1) >= lower_bound, "input_variable #" // trim(i_string) &
+                                                        // " with variable_name '" // trim(variable_name) &
+                                                        // "': fuzz_range(1) >= lower_bound violated.", n_failures)
+            end if
+            
+            if (upper_bound_active .and. (.not. is_close(fuzz_range(1), fuzz_range(2)))) then
+                call check(fuzz_range(2) <= upper_bound, "input_variable #" // trim(i_string) &
+                                                        // " with variable_name '" // trim(variable_name) &
+                                                        // "': fuzz_range(2) <= upper_bound violated.", n_failures)
+            end if
         end if
         
         if (((input_variables(i)%type_definition(1:4) == "real") &

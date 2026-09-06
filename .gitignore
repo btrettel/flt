@@ -216,6 +216,7 @@ test_*
 genunits
 geninput
 gentesthtml
+nmlfuzz
 src/rev.f90
 rev.tex
 src/units.f90

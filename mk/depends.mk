@@ -55,6 +55,9 @@ gentesthtml$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJE
 genunits$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)genunits.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)genunits_data.$(OBJEXT) src$(DIR_SEP)genunits_io.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)genunits.f90
 
+nmlfuzz$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)geninput_io.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)purerng.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)nmlfuzz.f90
+	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)cli.$(OBJEXT) src$(DIR_SEP)geninput_io.$(OBJEXT) src$(DIR_SEP)port.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) src$(DIR_SEP)purerng.$(OBJEXT) src$(DIR_SEP)rev.$(OBJEXT) src$(DIR_SEP)stopcodes.$(OBJEXT) app$(DIR_SEP)nmlfuzz.f90
+
 test_assert_dimension_false_1$(BINEXT): src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_1.f90
 	$(FC) $(OFLAG) $@ $(FFLAGS) src$(DIR_SEP)$(BUILD).$(OBJEXT) src$(DIR_SEP)checks.$(OBJEXT) src$(DIR_SEP)prec.$(OBJEXT) test$(DIR_SEP)test_assert_dimension_false_1.f90
 
