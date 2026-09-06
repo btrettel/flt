@@ -24,14 +24,14 @@ type, public :: test_results_type
     integer          :: unit
     type(timer_type) :: wtime
 contains
-    procedure :: logical_true => logical_true
-    procedure :: logical_false => logical_false
-    procedure :: real_eq => real_eq
-    procedure :: real_ne => real_ne
-    procedure :: real_gt => real_gt
-    procedure :: real_lt => real_lt
-    procedure :: real_ge => real_ge
-    procedure :: real_le => real_le
+    procedure :: logical_true
+    procedure :: logical_false
+    procedure :: real_eq
+    procedure :: real_ne
+    procedure :: real_gt
+    procedure :: real_lt
+    procedure :: real_ge
+    procedure :: real_le
     generic :: integer_eq => integer5_eq, integer10_eq
     procedure, private :: integer5_eq, integer10_eq
     procedure :: integer_ne => integer_ne
@@ -40,12 +40,12 @@ contains
     generic :: integer_le => integer5_le, integer10_le
     procedure, private :: integer5_le, integer10_le
     ! TODO: integer_gt, integer_lt
-    procedure :: character_eq => character_eq
+    procedure :: character_eq
     ! TODO: character_ne
-    procedure :: exit_code_eq => exit_code_eq
-    procedure :: exit_code_ne => exit_code_ne
-    procedure :: start_tests => start_tests
-    procedure :: end_tests => end_tests
+    procedure :: exit_code_eq
+    procedure :: exit_code_ne
+    procedure :: start_tests
+    procedure :: end_tests
 end type test_results_type
 
 contains

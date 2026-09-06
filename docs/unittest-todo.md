@@ -17,3 +17,4 @@
 - Make sure that debug builds enable assertions by looking at the test log output.
 - `CMP` and checksum based tests
 - Add tests to compare speed of parallel vs. serial
+- To unittest.f90, add member function to return whether the last test passed. Use this to print additional diagnostics if certain tests fail.
