@@ -8,7 +8,7 @@
 program nmlfuzz
 
 use, intrinsic :: iso_fortran_env, only: OUTPUT_UNIT
-use prec, only: CL, WP
+use prec, only: CL, WP, I10
 use cli, only: get_input_file_name_from_cli
 use geninput_io, only: config_type, input_variable_type, read_config_namelist, read_input_variable_namelists, &
                         sort_input_variables
@@ -17,15 +17,19 @@ use checks, only: is_close
 use stopcodes, only: EX_OK
 implicit none
 
-character(len=CL) :: input_file, nml_file
+character(len=*), parameter :: STOP_NOW_FILE = "stop_now"
+integer, parameter          :: MAX_N_FUZZ_EXPONENT = 9
+integer(I10), parameter     :: MAX_N_FUZZ = 10**(MAX_N_FUZZ_EXPONENT) - 1
+
+character(len=CL) :: input_file, nml_file, nml_file_fmt
 type(config_type) :: config
-integer           :: rc_config, rc_input_variables, i_fuzz, out_unit, i_var, x_integer, exit_code, i_exit_code
+integer           :: rc_config, rc_input_variables, out_unit, i_var, x_integer, exit_code, i_exit_code
+integer(I10)      :: n_fuzz, n_failure
 type(rng_type)    :: rng
 character(4)      :: type4
 real(WP)          :: x, x_real
 logical           :: exit_code_is_acceptable, stop_now_detected
-type(input_variable_type), allocatable :: input_variables(:)
-character(len=*), parameter            :: STOP_NOW_FILE = "stop_now"
+type(input_variable_type), allocatable          :: input_variables(:)
 
 ! Read all namelists and exit if any have issues.
 call get_input_file_name_from_cli("nmlfuzz", input_file)
@@ -45,11 +49,14 @@ call sort_input_variables(input_variables)
 
 call rng%random_seed()
 
-i_fuzz = 0
+write(unit=nml_file_fmt, fmt="(a, i0, a, i0, a)") "(2a, i", MAX_N_FUZZ_EXPONENT, ".", MAX_N_FUZZ_EXPONENT, ", a)"
+
+n_fuzz    = 0
+n_failure = 0
 fuzzer_loop: do
-    i_fuzz = i_fuzz + 1
+    n_fuzz = n_fuzz + 1
     
-    write(unit=nml_file, fmt="(i32.32, a)") i_fuzz, ".nml"
+    write(unit=nml_file, fmt=trim(nml_file_fmt)) trim(config%namelist_group), "_", n_fuzz, ".nml"
     
     open(newunit=out_unit, action="write", status="replace", position="rewind", &
             file=trim(nml_file))
@@ -113,16 +120,22 @@ fuzzer_loop: do
         close(unit=out_unit, status="delete")
     else
         print "(2a)", "Failure detected, file kept: ", trim(nml_file)
+        n_failure = n_failure + 1
     end if
+    
+    if (n_fuzz >= MAX_N_FUZZ) exit
     
     ! detect `stop_now` file and quit if found
     inquire(file=STOP_NOW_FILE, exist=stop_now_detected)
     if (stop_now_detected) then
         open(newunit=out_unit, status="old", file=STOP_NOW_FILE)
         close(unit=out_unit, status="delete")
-        write(unit=OUTPUT_UNIT, fmt="(a)") STOP_NOW_FILE // " detected, terminating."
-        stop EX_OK, quiet=.true.
+        write(unit=OUTPUT_UNIT, fmt="(2a)") STOP_NOW_FILE, " detected, terminating."
+        exit
     end if
 end do fuzzer_loop
+
+write(unit=OUTPUT_UNIT, fmt="(i0, a, i0, a)") n_failure, " failures out of ", n_fuzz, " tested."
+stop EX_OK, quiet=.true.
 
 end program nmlfuzz
