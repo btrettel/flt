@@ -3,13 +3,14 @@
 # `-Wdo-subscript` is misleadingly named and warns for things that are not problems. <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90237>
 # I think I had some false positives before that made me add `-Wno-maybe-uninitialized`, but it seems unnecessary now.
 
-FFLAGS   = -Wall -Wextra -Werror -pedantic-errors -Wno-do-subscript -std=f2018 -Wconversion -Wconversion-extra -fimplicit-none -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -Wcharacter-truncation -Winteger-division -ffree-line-length-132
-DFLAGS   = -Og -g -fbacktrace -fcheck=all -ffpe-trap=invalid,zero,overflow,underflow,denormal --coverage
-RFLAGS   = -O2 -Wno-uninitialized -fopt-info-missed=$(MISSED) -flto -ffpe-summary=none
-AFLAGS   = 
-NFLAGS   = -march=native
-SFLAGS   = -static
-OMPFLAGS = -fopenmp -Wdeprecated-openmp
+FFLAGS    = -Wall -Wextra -Werror -pedantic-errors -Wno-do-subscript -std=f2018 -Wconversion -Wconversion-extra -fimplicit-none -fno-unsafe-math-optimizations -finit-real=snan -finit-integer=2147483647 -finit-logical=true -finit-derived -Wimplicit-interface -Wunused -Wcharacter-truncation -Winteger-division -ffree-line-length-132
+DFLAGS    = -Og -g -fbacktrace -fcheck=all -ffpe-trap=invalid,zero,overflow,underflow,denormal --coverage
+RFLAGS    = -O2 -Wno-uninitialized -fopt-info-missed=$(MISSED) -flto -ffpe-summary=none
+FUZZFLAGS = -O2 -Wno-uninitialized -fopt-info-missed=$(MISSED) -flto -ffpe-summary=none -g -fbacktrace -fcheck=all -ffpe-trap=invalid,zero,overflow,underflow,denormal
+AFLAGS    = 
+NFLAGS    = -march=native
+SFLAGS    = -static
+OMPFLAGS  = -fopenmp -Wdeprecated-openmp
 
 # Making `-finit-integer=2147483647` is better than making it a large negative number.
 # Say you have a loop: `do i = 1, n` and you forget to initialize `n`.

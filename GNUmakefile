@@ -77,8 +77,10 @@ ifeq ($(BUILD),debug)
 FFLAGS += $(DFLAGS) $(AFLAGS)
 else ifeq ($(BUILD),release)
 FFLAGS += $(RFLAGS) $(AFLAGS)
+else ifeq ($(BUILD),fuzz)
+FFLAGS += $(RFLAGS) $(AFLAGS)
 else
-$(error Set BUILD to either debug or release. BUILD=$(BUILD))
+$(error Set BUILD to either debug, release, or fuzz. BUILD=$(BUILD))
 endif
 
 ifeq ($(OPENMP),yes)
