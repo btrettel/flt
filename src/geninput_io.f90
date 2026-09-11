@@ -27,6 +27,7 @@ type :: config_type
     logical              :: write_return
     character(len=CL)    :: executable
     integer, allocatable :: acceptable_exit_codes(:)
+    real(WP)             :: run_time_threshold ! nmlfuzz will keep inputs that take longer than this time to run in seconds
     
     ! Write code for multiple namelist groups of the same name, like in `read_input_variable_namelists` here
     ! TODO: `logical :: multiple_namelist_groups`
@@ -84,9 +85,11 @@ subroutine read_config_namelist(input_file, config, rc)
     logical           :: write_return
     character(len=CL) :: executable ! for nmlfuzz
     integer           :: acceptable_exit_codes(100) ! for nmlfuzz
+    real(WP)          :: run_time_threshold
     
     namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter, &
-                                write_tex, write_md, uq, ga, write_return, executable, acceptable_exit_codes
+                                write_tex, write_md, uq, ga, write_return, &
+                                executable, acceptable_exit_codes, run_time_threshold ! for nmlfuzz
     
     output_file_prefix    = ""
     namelist_group        = ""
@@ -100,6 +103,7 @@ subroutine read_config_namelist(input_file, config, rc)
     write_return          = .true.
     executable            = ""
     acceptable_exit_codes = MAX_EXIT_CODE + 1
+    run_time_threshold    = huge(1.0_WP)
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=geninput_config, iostat=rc_nml, iomsg=nml_error_message)
@@ -112,10 +116,11 @@ subroutine read_config_namelist(input_file, config, rc)
     end if
     
     rc = 0
-    call check(len(trim(output_file_prefix)) > 0, "output_file_prefix must be defined", rc)
-    call check(len(trim(namelist_group))     > 0, "namelist_group must be defined", rc)
-    call check(len(trim(executable))         > 0, "executable must be defined", rc)
-    call check(n_acceptable_exit_codes       > 0, "acceptable_exit_codes must be defined", rc)
+    call check(len(trim(output_file_prefix)) > 0,      "output_file_prefix must be defined", rc)
+    call check(len(trim(namelist_group))     > 0,      "namelist_group must be defined", rc)
+    call check(len(trim(executable))         > 0,      "executable must be defined", rc)
+    call check(n_acceptable_exit_codes       > 0,      "acceptable_exit_codes must be defined", rc)
+    call check(run_time_threshold            > 0.0_WP, "run_time_threshold can not be zero or negative", rc)
     
     use_type = len(trim(type_name)) > 0
     
@@ -131,6 +136,7 @@ subroutine read_config_namelist(input_file, config, rc)
     config%ga                 = ga
     config%write_return       = write_return
     config%executable         = executable
+    config%run_time_threshold = run_time_threshold
     
     if (platform() == PLATFORM_WINDOWS) then
         call convert_path_unix_to_win(config%output_file_prefix)

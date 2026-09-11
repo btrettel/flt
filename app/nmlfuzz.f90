@@ -15,6 +15,7 @@ use geninput_io, only: config_type, input_variable_type, read_config_namelist, r
 use purerng, only: rng_type
 use checks, only: is_close
 use stopcodes, only: EX_OK
+use timer, only: timer_type
 implicit none
 
 character(len=*), parameter :: STOP_NOW_FILE = "stop_now"
@@ -28,8 +29,9 @@ integer(I10)      :: n_fuzz, n_failure
 type(rng_type)    :: rng
 character(4)      :: type4
 real(WP)          :: x, x_real
-logical           :: exit_code_is_acceptable, stop_now_detected
-type(input_variable_type), allocatable          :: input_variables(:)
+logical           :: result_is_acceptable, stop_now_detected
+type(timer_type)  :: wtime
+type(input_variable_type), allocatable :: input_variables(:)
 
 ! Read all namelists and exit if any have issues.
 call get_input_file_name_from_cli("nmlfuzz", input_file)
@@ -104,18 +106,23 @@ fuzzer_loop: do
     write(unit=out_unit, fmt="(a)") "/"
     close(unit=out_unit)
     
+    call wtime%start()
     call execute_command_line(config%executable // " " // nml_file, exitstat=exit_code)
+    call wtime%stop()
     
-    ! Check exit code to see if it's acceptable.
-    exit_code_is_acceptable = .false.
-    exit_code_loop: do i_exit_code = 1, size(config%acceptable_exit_codes)
-        if (exit_code == config%acceptable_exit_codes(i_exit_code)) then
-            exit_code_is_acceptable = .true.
-            exit exit_code_loop
-        end if
-    end do exit_code_loop
+    result_is_acceptable = wtime%read() < config%run_time_threshold
     
-    if (exit_code_is_acceptable) then
+    if (result_is_acceptable) then
+        ! Check exit code to see if it's acceptable.
+        exit_code_loop: do i_exit_code = 1, size(config%acceptable_exit_codes)
+            if (exit_code == config%acceptable_exit_codes(i_exit_code)) then
+                result_is_acceptable = .true.
+                exit exit_code_loop
+            end if
+        end do exit_code_loop
+    end if
+    
+    if (result_is_acceptable) then
         open(newunit=out_unit, status="old", file=trim(nml_file))
         close(unit=out_unit, status="delete")
     else
