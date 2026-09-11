@@ -111,6 +111,7 @@ fuzzer_loop: do
     call wtime%stop()
     
     result_is_acceptable = wtime%read() < config%run_time_threshold
+    call wtime%reset()
     
     if (result_is_acceptable) then
         ! Check exit code to see if it's acceptable.
