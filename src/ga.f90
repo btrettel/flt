@@ -24,6 +24,7 @@ public :: standard_ga_config
 
 integer, parameter          :: MAX_SAMPLES = 10000
 character(len=*), parameter :: GENER_FMT = "(i8)"
+character(len=*), parameter :: STOP_NOW_FILE = "stop_now"
 
 type, public :: ga_config
     integer :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
@@ -336,7 +337,8 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
     type(pop_type), intent(in out) :: pop
     integer, intent(out)           :: rc ! TODO: return codes
     
-    integer :: i_gener, i_pop
+    integer :: i_gener, i_pop, out_unit
+    logical :: stop_now_detected
     
     type(pop_type) :: next_pop
     
@@ -393,6 +395,15 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
         call evaluate(config, objfun, pop)
         if (config%progress) then
             write(unit=*, fmt="(2" // trim(config%f_fmt) // ")") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+        end if
+        
+        ! detect `stop_now` file and quit if found
+        inquire(file=STOP_NOW_FILE, exist=stop_now_detected)
+        if (stop_now_detected) then
+            open(newunit=out_unit, status="old", file=STOP_NOW_FILE)
+            close(unit=out_unit, status="delete")
+            write(unit=*, fmt="(2a)") STOP_NOW_FILE, " detected, terminating."
+            exit
         end if
     end do
 end subroutine optimize_ga

@@ -28,6 +28,7 @@ type :: config_type
     character(len=CL)    :: executable
     integer, allocatable :: acceptable_exit_codes(:)
     real(WP)             :: run_time_threshold ! nmlfuzz will keep inputs that take longer than this time to run in seconds
+    integer              :: nmlfuzz_mode
     
     ! Write code for multiple namelist groups of the same name, like in `read_input_variable_namelists` here
     ! TODO: `logical :: multiple_namelist_groups`
@@ -86,10 +87,11 @@ subroutine read_config_namelist(input_file, config, rc)
     character(len=CL) :: executable ! for nmlfuzz
     integer           :: acceptable_exit_codes(100) ! for nmlfuzz
     real(WP)          :: run_time_threshold
+    integer           :: nmlfuzz_mode
     
     namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter, &
                                 write_tex, write_md, uq, ga, write_return, &
-                                executable, acceptable_exit_codes, run_time_threshold ! for nmlfuzz
+                                executable, acceptable_exit_codes, run_time_threshold, nmlfuzz_mode ! for nmlfuzz
     
     output_file_prefix    = ""
     namelist_group        = ""
@@ -104,6 +106,7 @@ subroutine read_config_namelist(input_file, config, rc)
     executable            = ""
     acceptable_exit_codes = MAX_EXIT_CODE + 1
     run_time_threshold    = huge(1.0_WP)
+    nmlfuzz_mode          = 1
     
     open(newunit=nml_unit, file=trim(input_file), status="old", action="read", delim="quote")
     read(unit=nml_unit, nml=geninput_config, iostat=rc_nml, iomsg=nml_error_message)
@@ -137,6 +140,7 @@ subroutine read_config_namelist(input_file, config, rc)
     config%write_return       = write_return
     config%executable         = executable
     config%run_time_threshold = run_time_threshold
+    config%nmlfuzz_mode       = nmlfuzz_mode
     
     if (platform() == PLATFORM_WINDOWS) then
         call convert_path_unix_to_win(config%output_file_prefix)
