@@ -22,9 +22,10 @@ public :: init_pop, mutate_indiv, cross_two_indivs, select_indiv, evaluate, opti
 public :: constraint_lt, constraint_gt
 public :: standard_ga_config
 
+character(len=*), public, parameter :: STOP_NOW_FILE = "stop_now"
+
 integer, parameter          :: MAX_SAMPLES = 10000
 character(len=*), parameter :: GENER_FMT = "(i8)"
-character(len=*), parameter :: STOP_NOW_FILE = "stop_now"
 
 type, public :: ga_config
     integer :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
@@ -239,6 +240,7 @@ pure subroutine select_indiv(config, rng, pop, indiv)
 end subroutine select_indiv
 
 subroutine evaluate(config, objfun, pop)
+    !$ use omp_lib
     use prec, only: WP
     use checks, only: assert, is_close
     
@@ -250,7 +252,7 @@ subroutine evaluate(config, objfun, pop)
     logical  :: best_pop_indiv_set
     
     interface
-        pure subroutine objfun(chromo, f, sum_g)
+        subroutine objfun(chromo, f, sum_g)
             use prec, only: WP
             
             ! Passing in all `real`s means that the objective function does not need any of this module's derived types.
@@ -263,7 +265,9 @@ subroutine evaluate(config, objfun, pop)
     call assert(config%n_pop == size(pop%indivs), "ga (evaluate): config%n_pop == size(pop%indivs) violated")
     call assert(pop%best_ever_indiv%set, "ga (evaluate): pop%best_ever_indiv%set violated")
     
-    do concurrent (i_pop = 1:config%n_pop)
+    !$omp parallel
+    !$omp do
+    do i_pop = 1, config%n_pop
         if (.not. pop%indivs(i_pop)%set) then
             call objfun(pop%indivs(i_pop)%chromo, pop%indivs(i_pop)%f, pop%indivs(i_pop)%sum_g)
         end if
@@ -280,6 +284,8 @@ subroutine evaluate(config, objfun, pop)
                                                                 " (disable check with config%check_sum_g=.false.)")
         end if
     end do
+    !$omp end do
+    !$omp end parallel
     
     f_max                = -huge(1.0_WP)
     pop%best_pop_indiv%f = huge(1.0_WP)
@@ -343,7 +349,7 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
     type(pop_type) :: next_pop
     
     interface
-        pure subroutine objfun(chromo, f, sum_g)
+        subroutine objfun(chromo, f, sum_g)
             use prec, only: WP
             
             ! Passing in all `real`s means that the objective function does not need any of this module's derived types.
@@ -375,7 +381,7 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
     end if
     
     rc = 0
-    do i_gener = 1, config%n_gener ! SERIAL
+    do i_gener = 1, config%n_gener
         do i_pop = 1, config%n_pop, 2 ! SERIAL
             ! I don't have a parallel RNG right now, so this can't be parallelized at the moment.
             ! Not that parallelizing this would matter much anyway as it's quick.

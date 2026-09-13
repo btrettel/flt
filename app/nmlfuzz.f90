@@ -7,20 +7,17 @@
 
 program nmlfuzz
 
-use prec, only: CL, I10
+use prec, only: CL
 use cli, only: get_input_file_name_from_cli
 use geninput_io, only: config_type, input_variable_type, read_config_namelist, read_input_variable_namelists, &
                         sort_input_variables
 use stopcodes, only: EX_OK
 implicit none
 
-character(len=*), parameter :: STOP_NOW_FILE = "stop_now"
-integer, parameter          :: MAX_N_FUZZ_EXPONENT = 9
-integer(I10), parameter     :: MAX_N_FUZZ = 10**(MAX_N_FUZZ_EXPONENT) - 1
-integer, parameter          :: NMLFUZZ_UNGUIDED_MODE = 1
-!integer, parameter          :: NMLFUZZ_GUIDED_MODE   = 2
+integer, parameter :: NMLFUZZ_UNGUIDED_MODE = 1
+!integer, parameter :: NMLFUZZ_GUIDED_MODE   = 2
 
-character(len=CL) :: input_file, nml_file
+character(len=CL) :: input_file
 type(config_type) :: config
 integer           :: rc_config, rc_input_variables
 type(input_variable_type), allocatable :: input_variables(:)
@@ -43,9 +40,9 @@ call sort_input_variables(input_variables)
 
 select case (config%nmlfuzz_mode)
     case (NMLFUZZ_UNGUIDED_MODE)
-        call unguided_fuzzer(config, input_variables)
+        call unguided_fuzzer()
 !    case (NMLFUZZ_GUIDED_MODE)
-!        call guided_fuzzer(config, input_variables)
+!        call guided_fuzzer()
     case default
         error stop "Invalid nmlfuzz_mode."
 end select
@@ -54,18 +51,32 @@ stop EX_OK, quiet=.true.
 
 contains
 
-subroutine unguided_fuzzer(config, input_variables)
-    use prec, only: CL, WP
+subroutine get_random_filename(nml_file)
+    use purerng, only: rng_type
+    
+    character(len=CL), intent(out) :: nml_file
+    
+    integer :: i
+    logical :: file_exists
+    
+    do i = 1, 999
+        write(unit=nml_file, fmt="(2a, i3.3, a)") trim(config%namelist_group), "_", i, ".nml"
+        inquire(file=nml_file, exist=file_exists)
+        if (.not. file_exists) exit
+    end do
+    
+    if (file_exists) error stop "nmlfuzz (get_nml_filename): could not create file"
+end subroutine get_random_filename
+
+subroutine unguided_fuzzer()
+    use prec, only: WP
     use purerng, only: rng_type
     use checks, only: is_close
     use timer, only: timer_type
-    
-    type(config_type), intent(in)         :: config
-    type(input_variable_type), intent(in) :: input_variables(:)
+    use ga, only: STOP_NOW_FILE
     
     type(rng_type)    :: rng
-    character(len=CL) :: nml_file_fmt
-    integer(I10)      :: n_fuzz, n_failure
+    character(len=CL) :: nml_file
     integer           :: out_unit, i_var, x_integer, exit_code, i_exit_code
     character(4)      :: type4
     real(WP)          :: x, x_real
@@ -73,15 +84,9 @@ subroutine unguided_fuzzer(config, input_variables)
     type(timer_type)  :: wtime
     
     call rng%random_seed()
-    
-    write(unit=nml_file_fmt, fmt="(a, i0, a, i0, a)") "(2a, i", MAX_N_FUZZ_EXPONENT, ".", MAX_N_FUZZ_EXPONENT, ", a)"
 
-    n_fuzz    = 0
-    n_failure = 0
     fuzzer_loop: do
-        n_fuzz = n_fuzz + 1
-        
-        write(unit=nml_file, fmt=trim(nml_file_fmt)) trim(config%namelist_group), "_", n_fuzz, ".nml"
+        call get_random_filename(nml_file)
         
         open(newunit=out_unit, action="write", status="replace", position="rewind", &
                 file=trim(nml_file))
@@ -151,10 +156,7 @@ subroutine unguided_fuzzer(config, input_variables)
             close(unit=out_unit, status="delete")
         else
             print "(2a)", "Failure detected, file kept: ", trim(nml_file)
-            n_failure = n_failure + 1
         end if
-        
-        if (n_fuzz >= MAX_N_FUZZ) exit
         
         ! detect `stop_now` file and quit if found
         inquire(file=STOP_NOW_FILE, exist=stop_now_detected)
@@ -167,28 +169,27 @@ subroutine unguided_fuzzer(config, input_variables)
     end do fuzzer_loop
 end subroutine unguided_fuzzer
 
-!subroutine unguided_fuzzer(config, input_variables)
+!subroutine unguided_fuzzer()
 !    use prec, only: CL
     
-!    type(config_type), intent(in)         :: config
-!    type(input_variable_type), intent(in) :: input_variables(:)
-    
-!    type(rng_type)    :: rng
-!    character(len=CL) :: nml_file_fmt
-!    integer           :: out_unit
-!    logical           :: result_is_acceptable, stop_now_detected
-    
-!    write(unit=nml_file_fmt, fmt="(a, i0, a, i0, a)") "(2a, i", MAX_N_FUZZ_EXPONENT, ".", MAX_N_FUZZ_EXPONENT, ", a)"
+!    type(rng_type) :: rng
 
     
 !end subroutine unguided_fuzzer
 
 !pure subroutine unguided_fuzzer_objfun(chromo, f, sum_g)
+!    use timer, only: timer_type
+    
 !    real(WP), intent(in)  :: chromo(:)
 !    real(WP), intent(out) :: f
 !    real(WP), intent(out) :: sum_g
     
+!    call wtime%start()
+!    call execute_command_line(config%executable // " " // nml_file, exitstat=exit_code)
+!    call wtime%stop()
     
-!end subroutine unguided_fuzzer_objfun(chromo, f, sum_g)
+!    result_is_acceptable = wtime%read() < config%run_time_threshold
+!    call wtime%reset()
+!end subroutine unguided_fuzzer_objfun
 
 end program nmlfuzz
