@@ -394,7 +394,7 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
     end if
     
     rc = 0
-    do i_gener = 1, config%n_gener
+    do i_gener = 1, config%n_gener ! SERIAL
         do i_pop = 1, config%n_pop, 2 ! SERIAL
             ! I don't have a parallel RNG right now, so this can't be parallelized at the moment.
             ! Not that parallelizing this would matter much anyway as it's quick.

@@ -209,7 +209,7 @@ subroutine guided_fuzzer()
     !ga_config%n_pop   = 2
     allocate(ga_config%lb(ga_config%n_genes))
     allocate(ga_config%ub(ga_config%n_genes))
-    !ga_config%n_gener  = 2
+    ga_config%n_gener  = 100000
     ga_config%progress = .true.
     ga_config%stop_if_all_unfeasible = .false.
     
@@ -320,7 +320,7 @@ subroutine guided_fuzzer_objfun(chromo, f, sum_g)
         ! TODO: For input validation errors, output a .out file listing the amount of the violation.
         
         f     = 0.0_WP
-        sum_g = 10.0_WP
+        sum_g = 1.5_WP
     end if
     
     ! One component of the objective function is run time. Longer run times are more likely bad.
