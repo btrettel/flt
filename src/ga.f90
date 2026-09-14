@@ -248,7 +248,7 @@ subroutine evaluate(config, objfun, pop)
     type(pop_type), intent(in out)   :: pop
     
     integer  :: i_pop
-    real(WP) :: f_max
+    real(WP) :: f_max, f_scale
     logical  :: best_pop_indiv_set
     
     interface
@@ -304,6 +304,7 @@ subroutine evaluate(config, objfun, pop)
     
     ! deb_efficient_2000 p. 317: > If no feasible solution exists in a population, $f_max$ is set to zero.
     ! I don't like this as `f` could normally be above 0.
+    ! Then the `best_ever_indiv` could be wrong.
     ! I decided to stop with an error by default in this situation.
     if (.not. best_pop_indiv_set) then
         if (config%stop_if_all_unfeasible) then
@@ -314,6 +315,12 @@ subroutine evaluate(config, objfun, pop)
         end if
     end if
     
+    if (is_close(f_max, 0.0_WP)) then
+        f_scale = 1.0_WP
+    else
+        f_scale = abs(f_max)
+    end if
+    
     ! set `f` for indivs that had constraint violations
     ! See deb_efficient_2000 eq. 4.
     do concurrent (i_pop = 1:config%n_pop)
@@ -321,12 +328,18 @@ subroutine evaluate(config, objfun, pop)
             ! Infeasible individuals have their fitness recalculated based on the current population.
             ! This is regardless of whether they were `set` before `evaluate` was called.
             ! This avoid issues from the fitness depending on the population.
-            pop%indivs(i_pop)%f   = f_max + pop%indivs(i_pop)%sum_g*abs(f_max)
+            pop%indivs(i_pop)%f   = f_max + pop%indivs(i_pop)%sum_g*f_scale
             pop%indivs(i_pop)%set = .true.
+            
+            if (pop%best_pop_indiv%f > pop%indivs(i_pop)%f) then
+                pop%best_pop_indiv = pop%indivs(i_pop)
+                best_pop_indiv_set = .true.
+            end if
         end if
     end do
     
     ! set best ever individual
+    call assert(best_pop_indiv_set, "ga (evaluate): best individual not set")
     if (pop%best_ever_indiv%f > pop%best_pop_indiv%f) then
         pop%best_ever_indiv = pop%best_pop_indiv
     end if

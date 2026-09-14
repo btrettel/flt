@@ -72,13 +72,12 @@ subroutine get_nml_filename(nml_file)
 end subroutine get_nml_filename
 
 subroutine unguided_fuzzer()
+    !$ use omp_lib
     use prec, only: WP
-    use purerng, only: rng_type
     use checks, only: is_close
     use timer, only: timer_type
     use ga, only: STOP_NOW_FILE
     
-    type(rng_type)    :: rng
     character(len=CL) :: nml_file
     integer           :: out_unit, i_var, x_integer, exit_code, i_exit_code
     character(4)      :: type4
@@ -86,8 +85,8 @@ subroutine unguided_fuzzer()
     logical           :: run_time_exceeded, bad_exit_code, stop_now_detected, out_file_exists
     type(timer_type)  :: wtime
     
-    call rng%random_seed()
-
+    !$omp parallel
+    !$omp do
     fuzzer_loop: do
         call get_nml_filename(nml_file)
         
@@ -96,7 +95,7 @@ subroutine unguided_fuzzer()
         write(unit=out_unit, fmt="(2a)") "&", trim(config%namelist_group)
         var_loop: do i_var = 1, size(input_variables)
             if (input_variables(i_var)%fuzz) then
-                call rng%random_number(x)
+                call random_number(x)
                 
                 type4 = input_variables(i_var)%type_definition(1:4)
                 select case (type4)
@@ -138,7 +137,7 @@ subroutine unguided_fuzzer()
         close(unit=out_unit)
         
         call wtime%start()
-        call execute_command_line(config%executable // " " // nml_file, exitstat=exit_code)
+        call execute_command_line(config%executable // " " // nml_file // " > /dev/null 2>&1", exitstat=exit_code)
         call wtime%stop()
         
         inquire(file=trim(nml_file)//".out", exist=out_file_exists)
@@ -175,6 +174,8 @@ subroutine unguided_fuzzer()
             exit
         end if
     end do fuzzer_loop
+    !$omp end do
+    !$omp end parallel
 end subroutine unguided_fuzzer
 
 subroutine guided_fuzzer()
@@ -205,10 +206,13 @@ subroutine guided_fuzzer()
     end do
     
     call standard_ga_config(n_genes, ga_config)
+    !ga_config%n_genes = n_genes
+    !ga_config%n_pop   = 2
     allocate(ga_config%lb(ga_config%n_genes))
     allocate(ga_config%ub(ga_config%n_genes))
-    ga_config%n_gener  = 100000
-    ga_config%progress = .false.
+    !ga_config%n_gener  = 2
+    ga_config%progress = .true.
+    ga_config%log_all  = .true.
     ga_config%stop_if_all_unfeasible = .false.
     
     var_loop: do i_gene = 1, n_genes
@@ -288,7 +292,7 @@ subroutine guided_fuzzer_objfun(chromo, f, sum_g)
     ! Run the program.
     
     call wtime%start()
-    call execute_command_line(config%executable // " " // nml_file, exitstat=exit_code)
+    call execute_command_line(config%executable // " " // nml_file // " > /dev/null 2>&1", exitstat=exit_code)
     call wtime%stop()
     
     ! Evaluate the output.

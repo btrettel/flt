@@ -373,6 +373,7 @@ subroutine test_optimize_ga(tests)
     integer :: rc
     
     config%n_genes = 2
+    config%n_gener = 1000
     allocate(config%lb(config%n_genes))
     allocate(config%ub(config%n_genes))
     config%lb(1) = -20.0_WP
@@ -386,8 +387,7 @@ subroutine test_optimize_ga(tests)
     
     call tests%integer_eq(rc, 0, "optimize, rc")
     
-    ! characterization test
-    call tests%real_eq(pop%best_ever_indiv%f, 9.858531831321804_WP, "optimize, pop%best_ever_indiv%f", abs_tol=1.0e-12_WP)
+    call tests%real_lt(pop%best_ever_indiv%f, 1.0_WP, "optimize, pop%best_ever_indiv%f")
 end subroutine test_optimize_ga
 
 subroutine test_comparison_constraints(tests)
