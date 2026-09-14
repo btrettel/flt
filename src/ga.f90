@@ -27,7 +27,7 @@ character(len=*), public, parameter :: STOP_NOW_FILE = "stop_now"
 integer, parameter          :: MAX_SAMPLES = 10000
 character(len=*), parameter :: GENER_FMT = "(i8)"
 
-type, public :: ga_config
+type, public :: ga_config_type
     integer :: n_genes = 0 ! number of genes (default set to zero to catch when not set)
     
     ! martins_engineering_2021 p. 309:
@@ -61,7 +61,7 @@ type, public :: ga_config
     
     logical          :: progress = .true., check_sum_g = .true.
     character(len=8) :: f_fmt = "f12.2"
-end type ga_config
+end type ga_config_type
 
 type, public :: indiv_type
     real(WP), allocatable :: chromo(:)
@@ -88,9 +88,9 @@ subroutine init_pop(config, rng, pop)
     use purerng, only: rng_type
     use checks, only: assert
     
-    type(ga_config), intent(in)    :: config
-    type(rng_type), intent(in out) :: rng
-    type(pop_type), intent(out)    :: pop
+    type(ga_config_type), intent(in) :: config
+    type(rng_type), intent(in out)   :: rng
+    type(pop_type), intent(out)      :: pop
     
     integer :: i_pop, i_gene
     
@@ -130,7 +130,7 @@ pure subroutine mutate_indiv(config, rng, indiv)
     use purerng, only: rng_type
     use checks, only: assert
     
-    type(ga_config), intent(in)      :: config
+    type(ga_config_type), intent(in) :: config
     type(rng_type), intent(in out)   :: rng
     type(indiv_type), intent(in out) :: indiv
     
@@ -179,7 +179,7 @@ pure subroutine cross_two_indivs(config, rng, indiv_1, indiv_2)
     use purerng, only: rng_type
     use checks, only: assert, assert_dimension
     
-    type(ga_config), intent(in)      :: config
+    type(ga_config_type), intent(in) :: config
     type(rng_type), intent(in out)   :: rng
     type(indiv_type), intent(in out) :: indiv_1, indiv_2
     
@@ -216,10 +216,10 @@ pure subroutine select_indiv(config, rng, pop, indiv)
     use purerng, only: rng_type
     use checks, only: assert, assert_dimension
     
-    type(ga_config), intent(in)    :: config
-    type(rng_type), intent(in out) :: rng
-    type(pop_type), intent(in out) :: pop
-    type(indiv_type), intent(out)  :: indiv
+    type(ga_config_type), intent(in) :: config
+    type(rng_type), intent(in out)   :: rng
+    type(pop_type), intent(in out)   :: pop
+    type(indiv_type), intent(out)    :: indiv
     
     integer :: nu, i_pop
     
@@ -244,8 +244,8 @@ subroutine evaluate(config, objfun, pop)
     use prec, only: WP
     use checks, only: assert, is_close
     
-    type(ga_config), intent(in)    :: config
-    type(pop_type), intent(in out) :: pop
+    type(ga_config_type), intent(in) :: config
+    type(pop_type), intent(in out)   :: pop
     
     integer  :: i_pop
     real(WP) :: f_max
@@ -338,10 +338,10 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
     use purerng, only: rng_type
     use checks, only: assert
     
-    type(ga_config), intent(in)    :: config
-    type(rng_type), intent(in out) :: rng
-    type(pop_type), intent(in out) :: pop
-    integer, intent(out)           :: rc ! TODO: return codes
+    type(ga_config_type), intent(in) :: config
+    type(rng_type), intent(in out)   :: rng
+    type(pop_type), intent(in out)   :: pop
+    integer, intent(out)             :: rc ! TODO: return codes
     
     integer :: i_gener, i_pop, out_unit
     logical :: stop_now_detected
@@ -447,8 +447,8 @@ pure subroutine constraint_gt(x, y, delta_scale, sum_g)
 end subroutine constraint_gt
 
 pure subroutine standard_ga_config(n_genes, config)
-    integer, intent(in)          :: n_genes
-    type(ga_config), intent(out) :: config
+    integer, intent(in)               :: n_genes
+    type(ga_config_type), intent(out) :: config
     
     config%n_genes = n_genes
     

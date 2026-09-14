@@ -29,14 +29,14 @@ contains
 
 subroutine test_init_pop(tests)
     use prec, only: WP
-    use ga, only: ga_config, pop_type, init_pop
+    use ga, only: ga_config_type, pop_type, init_pop
     use purerng, only: rng_type
     
     type(test_results_type), intent(in out) :: tests
     
-    type(ga_config) :: config
-    type(rng_type)  :: rng
-    type(pop_type)  :: pop
+    type(ga_config_type) :: config
+    type(rng_type)       :: rng
+    type(pop_type)       :: pop
     
     config%n_pop   = 2
     config%n_genes = 3
@@ -70,14 +70,14 @@ end subroutine test_init_pop
 
 subroutine test_mutate_indiv(tests)
     use prec, only: WP
-    use ga, only: ga_config, indiv_type, mutate_indiv
+    use ga, only: ga_config_type, indiv_type, mutate_indiv
     use purerng, only: rng_type
     
     type(test_results_type), intent(in out) :: tests
     
-    type(ga_config)  :: config
-    type(rng_type)   :: rng
-    type(indiv_type) :: indiv
+    type(ga_config_type) :: config
+    type(rng_type)       :: rng
+    type(indiv_type)     :: indiv
     
     real(WP) :: b, nu
     
@@ -123,14 +123,14 @@ end subroutine test_mutate_indiv
 
 subroutine test_cross_two_indivs(tests)
     use prec, only: WP
-    use ga, only: ga_config, indiv_type, cross_two_indivs
+    use ga, only: ga_config_type, indiv_type, cross_two_indivs
     use purerng, only: rng_type
     
     type(test_results_type), intent(in out) :: tests
     
-    type(ga_config)  :: config
-    type(rng_type)   :: rng
-    type(indiv_type) :: indiv_1, indiv_2
+    type(ga_config_type) :: config
+    type(rng_type)       :: rng
+    type(indiv_type)     :: indiv_1, indiv_2
     
     config%n_pop   = 1
     config%n_genes = 2
@@ -179,15 +179,15 @@ end subroutine test_cross_two_indivs
 
 subroutine test_select_indiv(tests)
     use prec, only: WP
-    use ga, only: ga_config, pop_type, indiv_type, select_indiv
+    use ga, only: ga_config_type, pop_type, indiv_type, select_indiv
     use purerng, only: rng_type
     
     type(test_results_type), intent(in out) :: tests
     
-    type(ga_config)  :: config
-    type(rng_type)   :: rng
-    type(pop_type)   :: pop
-    type(indiv_type) :: indiv
+    type(ga_config_type) :: config
+    type(rng_type)       :: rng
+    type(pop_type)       :: pop
+    type(indiv_type)     :: indiv
     
     config%n_pop = 2
     allocate(pop%indivs(config%n_pop))
@@ -242,12 +242,12 @@ end subroutine rosenbrock
 
 subroutine test_evaluate_1(tests)
     use prec, only: WP
-    use ga, only: ga_config, pop_type, evaluate
+    use ga, only: ga_config_type, pop_type, evaluate
     
     type(test_results_type), intent(in out) :: tests
     
-    type(ga_config) :: config
-    type(pop_type)  :: pop
+    type(ga_config_type) :: config
+    type(pop_type)       :: pop
     
     config%n_pop   = 2
     config%n_genes = 2
@@ -278,12 +278,12 @@ subroutine test_evaluate_2(tests)
     ! Check that `f` and `g_sum` are only set if `set = .false.`.
     
     use prec, only: WP
-    use ga, only: ga_config, pop_type, evaluate
+    use ga, only: ga_config_type, pop_type, evaluate
     
     type(test_results_type), intent(in out) :: tests
     
-    type(ga_config) :: config
-    type(pop_type)  :: pop
+    type(ga_config_type) :: config
+    type(pop_type)       :: pop
     
     config%n_pop   = 4
     config%n_genes = 2
@@ -361,14 +361,14 @@ end subroutine evaluate_2
 
 subroutine test_optimize_ga(tests)
     use prec, only: WP, I10
-    use ga, only: ga_config, pop_type, init_pop, optimize_ga
+    use ga, only: ga_config_type, pop_type, init_pop, optimize_ga
     use purerng, only: rng_type
     
     type(test_results_type), intent(in out) :: tests
     
-    type(ga_config) :: config
-    type(rng_type)  :: rng
-    type(pop_type)  :: pop
+    type(ga_config_type) :: config
+    type(rng_type)       :: rng
+    type(pop_type)       :: pop
     
     integer :: rc
     
