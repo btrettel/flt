@@ -54,15 +54,16 @@ stop EX_OK, quiet=.true.
 contains
 
 subroutine get_nml_filename(nml_file)
-    use purerng, only: rng_type
-    
+    use prec, only: WP
     character(len=CL), intent(out) :: nml_file
     
-    integer :: i
-    logical :: file_exists
+    integer  :: i
+    real(WP) :: x
+    logical  :: file_exists
     
     do i = 1, 999
-        write(unit=nml_file, fmt="(2a, i3.3, a)") trim(config%namelist_group), "_", i, ".nml"
+        call random_number(x)
+        write(unit=nml_file, fmt="(2a, z0, a)") trim(config%namelist_group), "_", x, ".nml"
         inquire(file=trim(nml_file), exist=file_exists)
         if (.not. file_exists) exit
     end do
@@ -82,7 +83,7 @@ subroutine unguided_fuzzer()
     integer           :: out_unit, i_var, x_integer, exit_code, i_exit_code
     character(4)      :: type4
     real(WP)          :: x, x_real
-    logical           :: run_time_exceeded, bad_exit_code, stop_now_detected
+    logical           :: run_time_exceeded, bad_exit_code, stop_now_detected, out_file_exists
     type(timer_type)  :: wtime
     
     call rng%random_seed()
@@ -139,6 +140,12 @@ subroutine unguided_fuzzer()
         call wtime%start()
         call execute_command_line(config%executable // " " // nml_file, exitstat=exit_code)
         call wtime%stop()
+        
+        inquire(file=trim(nml_file)//".out", exist=out_file_exists)
+        if (out_file_exists) then
+            open(newunit=out_unit, status="old", file=trim(nml_file)//".out")
+            close(unit=out_unit, status="delete")
+        end if
         
         run_time_exceeded = wtime%read() > config%run_time_threshold
         call wtime%reset()
