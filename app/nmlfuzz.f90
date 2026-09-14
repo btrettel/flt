@@ -72,12 +72,13 @@ subroutine get_nml_filename(nml_file)
 end subroutine get_nml_filename
 
 subroutine unguided_fuzzer()
-    !$ use omp_lib
     use prec, only: WP
+    use purerng, only: rng_type
     use checks, only: is_close
     use timer, only: timer_type
     use ga, only: STOP_NOW_FILE
     
+    type(rng_type)    :: rng
     character(len=CL) :: nml_file
     integer           :: out_unit, i_var, x_integer, exit_code, i_exit_code
     character(4)      :: type4
@@ -85,8 +86,8 @@ subroutine unguided_fuzzer()
     logical           :: run_time_exceeded, bad_exit_code, stop_now_detected, out_file_exists
     type(timer_type)  :: wtime
     
-    !$omp parallel
-    !$omp do
+    call rng%random_seed()
+    
     fuzzer_loop: do
         call get_nml_filename(nml_file)
         
@@ -95,7 +96,7 @@ subroutine unguided_fuzzer()
         write(unit=out_unit, fmt="(2a)") "&", trim(config%namelist_group)
         var_loop: do i_var = 1, size(input_variables)
             if (input_variables(i_var)%fuzz) then
-                call random_number(x)
+                call rng%random_number(x)
                 
                 type4 = input_variables(i_var)%type_definition(1:4)
                 select case (type4)
@@ -174,8 +175,6 @@ subroutine unguided_fuzzer()
             exit
         end if
     end do fuzzer_loop
-    !$omp end do
-    !$omp end parallel
 end subroutine unguided_fuzzer
 
 subroutine guided_fuzzer()
@@ -212,7 +211,6 @@ subroutine guided_fuzzer()
     allocate(ga_config%ub(ga_config%n_genes))
     !ga_config%n_gener  = 2
     ga_config%progress = .true.
-    ga_config%log_all  = .true.
     ga_config%stop_if_all_unfeasible = .false.
     
     var_loop: do i_gene = 1, n_genes
