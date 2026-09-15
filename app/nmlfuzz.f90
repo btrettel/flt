@@ -182,7 +182,8 @@ subroutine unguided_fuzzer()
 end subroutine unguided_fuzzer
 
 subroutine guided_fuzzer()
-    use ga, only: ga_config_type, pop_type, standard_ga_config, init_pop, optimize_ga
+    use ga, only: ga_config_type, pop_type, init_pop, optimize_ga
+    use prec, only: WP
     use purerng, only: rng_type
     
     type(ga_config_type) :: ga_config
@@ -208,14 +209,14 @@ subroutine guided_fuzzer()
         end if
     end do
     
-    call standard_ga_config(n_genes, ga_config)
-    !ga_config%n_genes = n_genes
-    !ga_config%n_pop   = 2
-    allocate(ga_config%lb(ga_config%n_genes))
-    allocate(ga_config%ub(ga_config%n_genes))
+    ga_config%n_genes  = n_genes
+    ga_config%n_pop    = 20*ga_config%n_genes
+    ga_config%p_mutate = 2.0_WP/real(ga_config%n_pop, WP)
     ga_config%n_gener  = 100000
     ga_config%progress = .true.
     ga_config%stop_if_all_unfeasible = .false.
+    allocate(ga_config%lb(ga_config%n_genes))
+    allocate(ga_config%ub(ga_config%n_genes))
     
     var_loop: do i_gene = 1, n_genes
         i_var = input_variable_indexes(i_gene)
