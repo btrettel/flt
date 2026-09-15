@@ -161,6 +161,10 @@ subroutine unguided_fuzzer()
         
         if (run_time_exceeded .or. bad_exit_code) then
             print "(2a)", "Failure detected, file kept: ", trim(nml_file)
+            open(newunit=out_unit, action="write", status="unknown", position="append", &
+                file="nmlfuzz.out")
+            write(unit=out_unit, fmt="(2a)") "Failure detected, file kept: ", trim(nml_file)
+            close(unit=out_unit)
         else
             open(newunit=out_unit, status="old", file=trim(nml_file))
             close(unit=out_unit, status="delete")
@@ -332,7 +336,10 @@ subroutine guided_fuzzer_objfun(chromo, f, sum_g)
     f = f - wtime%read()
     
     if (run_time_exceeded .or. bad_exit_code) then
-        print "(2a)", "Failure detected, file kept: ", trim(nml_file)
+        open(newunit=out_unit, action="write", status="unknown", position="append", &
+            file="nmlfuzz.out")
+        write(unit=out_unit, fmt="(2a)") "Failure detected, file kept: ", trim(nml_file)
+        close(unit=out_unit)
     else
         open(newunit=out_unit, status="old", file=trim(nml_file))
         close(unit=out_unit, status="delete")
