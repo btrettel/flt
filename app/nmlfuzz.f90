@@ -319,8 +319,13 @@ subroutine guided_fuzzer_objfun(chromo, f, sum_g)
     else
         ! TODO: For input validation errors, output a .out file listing the amount of the violation.
         
-        f     = 0.0_WP
-        sum_g = 1.5_WP
+        if (bad_exit_code) then
+            f     = -1.0_WP
+            sum_g = 0.0_WP
+        else
+            f     = 0.0_WP
+            sum_g = 1.5_WP
+        end if
     end if
     
     ! One component of the objective function is run time. Longer run times are more likely bad.
