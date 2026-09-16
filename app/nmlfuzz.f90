@@ -210,8 +210,9 @@ subroutine guided_fuzzer()
     end do
     
     ga_config%n_genes  = n_genes
-    ga_config%n_pop    = 20*ga_config%n_genes
-    ga_config%p_mutate = 2.0_WP/real(ga_config%n_pop, WP)
+    ga_config%n_pop    = 10*ga_config%n_genes
+    ga_config%p_mutate = 1.0_WP/real(ga_config%n_pop, WP)
+    ga_config%rel_b    = 0.01_WP
     ga_config%n_gener  = 100000
     ga_config%progress = .true.
     ga_config%stop_if_all_unfeasible = .false.
