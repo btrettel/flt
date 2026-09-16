@@ -80,6 +80,10 @@ type, public :: pop_type
     type(indiv_type), allocatable :: indivs(:)
     
     type(indiv_type) :: best_pop_indiv, best_ever_indiv
+contains
+    procedure :: percent_feasible
+    procedure :: range => f_range
+    procedure :: mean
 end type pop_type
 
 contains
@@ -356,8 +360,8 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
     type(pop_type), intent(in out)   :: pop
     integer, intent(out)             :: rc ! TODO: return codes
     
-    integer :: i_gener, i_pop, out_unit
-    logical :: stop_now_detected
+    integer  :: i_gener, i_pop, out_unit
+    logical  :: stop_now_detected
     
     type(pop_type) :: next_pop
     
@@ -385,12 +389,16 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
     next_pop%best_pop_indiv%set = .false.
     
     if (config%progress) then
-        write(unit=*, fmt="(a)") "   gener    pop best   best ever"
+        write(unit=*, fmt="(a)") "   gener    pop best   best ever  % feasible        mean       range"
         write(unit=*, fmt=GENER_FMT, advance="no") 0
     end if
     call evaluate(config, objfun, pop)
     if (config%progress) then
-        write(unit=*, fmt="(2" // trim(config%f_fmt) // ")") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+        write(unit=*, fmt="(5" // trim(config%f_fmt) // ")") pop%best_pop_indiv%f, &
+                                                                pop%best_ever_indiv%f, &
+                                                                pop%percent_feasible(), &
+                                                                pop%mean(), &
+                                                                pop%range()
     end if
     
     rc = 0
@@ -413,7 +421,11 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
         end if
         call evaluate(config, objfun, pop)
         if (config%progress) then
-            write(unit=*, fmt="(2" // trim(config%f_fmt) // ")") pop%best_pop_indiv%f, pop%best_ever_indiv%f
+            write(unit=*, fmt="(5" // trim(config%f_fmt) // ")") pop%best_pop_indiv%f, &
+                                                                    pop%best_ever_indiv%f, &
+                                                                    pop%percent_feasible(), &
+                                                                    pop%mean(), &
+                                                                    pop%range()
         end if
         
         ! detect `stop_now` file and quit if found
@@ -426,6 +438,64 @@ subroutine optimize_ga(config, rng, objfun, pop, rc)
         end if
     end do
 end subroutine optimize_ga
+
+pure function percent_feasible(pop)
+    use checks, only: is_close, assert
+    
+    class(pop_type), intent(in) :: pop
+    
+    real(WP) :: percent_feasible
+    
+    integer :: i_pop, n_feasible
+    
+    n_feasible = 0
+    do i_pop = 1, size(pop%indivs)
+        call assert(pop%indivs(i_pop)%set, "ga (percent_feasible): not set?")
+        if (is_close(pop%indivs(i_pop)%sum_g, 0.0_WP)) n_feasible = n_feasible + 1
+    end do
+    percent_feasible = 100.0_WP*real(n_feasible, WP)/real(size(pop%indivs), WP)
+    
+    call assert(percent_feasible >= 0.0_WP, "ga (percent_feasible): percent_feasible >= 0 violated")
+end function percent_feasible
+
+pure function f_range(pop)
+    use checks, only: assert
+    
+    class(pop_type), intent(in) :: pop
+    
+    real(WP) :: f_range
+    
+    integer  :: i_pop
+    real(WP) :: f_lower, f_upper
+    
+    f_lower = huge(1.0_WP)
+    f_upper = -huge(1.0_WP)
+    do i_pop = 1, size(pop%indivs)
+        call assert(pop%indivs(i_pop)%set, "ga (f_range): not set?")
+        f_lower = min(f_lower, pop%indivs(i_pop)%f)
+        f_upper = max(f_upper, pop%indivs(i_pop)%f)
+    end do
+    f_range = f_upper - f_lower
+    
+    call assert(f_range >= 0.0_WP, "ga (f_range): f_range >= 0 violated")
+end function f_range
+
+pure function mean(pop)
+    use checks, only: assert
+    
+    class(pop_type), intent(in) :: pop
+    
+    real(WP) :: mean
+    
+    integer :: i_pop
+    
+    mean = 0.0_WP
+    do i_pop = 1, size(pop%indivs)
+        call assert(pop%indivs(i_pop)%set, "ga (mean): not set?")
+        mean = mean + pop%indivs(i_pop)%f
+    end do
+    mean = mean/real(size(pop%indivs), WP)
+end function mean
 
 pure subroutine constraint_lt(x, y, delta_scale, sum_g)
     use checks, only: assert
