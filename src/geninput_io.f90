@@ -57,6 +57,7 @@ type :: input_variable_type
     character(len=CL) :: tex_description_2
     character(len=CL) :: tex_variable_name
     character(len=CL) :: txt_unit
+    logical           :: uq
     real(WP)          :: scaling_factor ! convert from `tex_unit` units to `type_definition` units
     real(WP)          :: fuzz_range(2)
     logical           :: fuzz
@@ -85,14 +86,13 @@ subroutine read_config_namelist(input_file, config, rc)
     logical           :: write_tex, write_md
     logical           :: uq, ga
     logical           :: write_return
-    logical           :: sensitivity
     character(len=CL) :: executable ! for nmlfuzz
     integer           :: acceptable_exit_codes(100) ! for nmlfuzz
     real(WP)          :: run_time_threshold
     integer           :: nmlfuzz_mode
     
     namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter, &
-                                write_tex, write_md, uq, ga, write_return, sensitivity, &
+                                write_tex, write_md, uq, ga, write_return, &
                                 executable, acceptable_exit_codes, run_time_threshold, nmlfuzz_mode ! for nmlfuzz
     
     output_file_prefix    = ""
@@ -105,7 +105,6 @@ subroutine read_config_namelist(input_file, config, rc)
     uq                    = .false.
     ga                    = .false.
     write_return          = .true.
-    sensitivity           = .false.
     executable            = ""
     acceptable_exit_codes = MAX_EXIT_CODE + 1
     run_time_threshold    = huge(1.0_WP)
@@ -141,7 +140,6 @@ subroutine read_config_namelist(input_file, config, rc)
     config%uq                 = uq
     config%ga                 = ga
     config%write_return       = write_return
-    config%sensitivity        = sensitivity
     config%executable         = executable
     config%run_time_threshold = run_time_threshold
     config%nmlfuzz_mode       = nmlfuzz_mode
@@ -261,6 +259,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
     character(len=CL) :: tex_description_2
     character(len=CL) :: tex_variable_name
     character(len=CL) :: txt_unit
+    logical           :: uq
     real(WP)          :: scaling_factor
     real(WP)          :: fuzz_range(2)
     logical           :: fuzz
@@ -268,7 +267,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
     namelist /input_variable/ variable_name, type_definition, default_value, no_kind_default_value, required, print_default_value, &
                                 add_to_type, lower_bound_active, lower_bound_not_equal, lower_bound, lower_bound_error_message, &
                                 upper_bound_active, upper_bound_not_equal, upper_bound, upper_bound_error_message, &
-                                bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name, txt_unit, &
+                                bound_fmt, tex_unit, tex_description, tex_description_2, tex_variable_name, txt_unit, uq, &
                                 scaling_factor, fuzz_range, fuzz
     
     open(newunit=nml_unit, file=input_file, status="old", action="read", delim="quote")
@@ -320,6 +319,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
         tex_description_2         = ""
         tex_variable_name         = ""
         txt_unit                  = ""
+        uq                        = .false.
         scaling_factor            = 1.0_WP
         fuzz_range                = [0.0_WP, 0.0_WP]
         fuzz                      = .false.
@@ -357,6 +357,7 @@ subroutine read_input_variable_namelists(input_file, input_variables, rc)
         input_variables(i)%tex_description           = trim(tex_description)
         input_variables(i)%tex_description_2         = trim(tex_description_2)
         input_variables(i)%tex_variable_name         = trim(tex_variable_name)
+        input_variables(i)%uq                        = uq
         input_variables(i)%scaling_factor            = scaling_factor
         input_variables(i)%fuzz_range                = fuzz_range
         
@@ -615,8 +616,8 @@ subroutine write_subroutine(config, input_variables)
     write(unit=out_unit, fmt="(a)") "integer :: nml_unit, rc_nml"
     write(unit=out_unit, fmt="(a)") "character(len=CL) :: nml_error_message, value_string"
     
-    if (config%sensitivity) then
-        write(unit=out_unit, fmt="(a)") "character(len=63), allocatable :: d_labels(:)"
+    if (config%uq) then
+        write(unit=out_unit, fmt="(a)") "character(len=63), allocatable :: d_labels(:), d_units(:)"
         write(unit=out_unit, fmt="(a)") "integer :: n_d"
     end if
     
@@ -947,17 +948,22 @@ subroutine write_subroutine(config, input_variables)
     end if
     
     ! genunits types to auto-convert `real`s to genunits types
-    if (config%sensitivity) then
+    n_d = 0
+    if (config%uq) then
         ! TODO: For the moment this assumes that `real` variables won't have derivatives.
         ! That restriction should be removed later.
-        n_d = 0
         do i = 1, n
-            if (input_variables(i)%type_definition(1:4) == "type") n_d = n_d + 1
+            if ((input_variables(i)%type_definition(1:4) == "type") &
+                    .and. input_variables(i)%uq) n_d = n_d + 1
         end do
         write(unit=out_unit, fmt="(a)") ""
         write(unit=out_unit, fmt="(a, i0)") "n_d = ", n_d
         write(unit=out_unit, fmt="(a)") "allocate(d_labels(n_d))"
+        write(unit=out_unit, fmt="(a)") "allocate(d_units(n_d))"
         i_d = 0
+    else
+        write(unit=out_unit, fmt="(a)") ""
+        write(unit=out_unit, fmt="(a, i0)") "n_d = ", n_d
     end if
     write_new_line = .true.
     do i = 1, n
@@ -967,7 +973,7 @@ subroutine write_subroutine(config, input_variables)
                 write_new_line = .false.
             end if
             
-            if (config%sensitivity) then
+            if ((config%uq) .and. input_variables(i)%uq) then
                 ! TODO: For the moment this assumes that `real` variables won't have derivatives.
                 ! That restriction should be removed later.
                 
@@ -986,15 +992,16 @@ subroutine write_subroutine(config, input_variables)
                 end if
                 
                 write(unit=out_unit, fmt="(a, i0, 3a)") "d_labels(", i_d, ') = "', trim(input_variables(i)%variable_name), '"'
+                write(unit=out_unit, fmt="(a, i0, 3a)") "d_units(", i_d, ') = "', trim(input_variables(i)%txt_unit), '"'
             else
                 if (is_close(input_variables(i)%scaling_factor, 1.0_WP)) then
                     write(unit=out_unit, fmt="(a)") "call " // trim(input_variables(i)%variable_name) &
-                                                        // "_u%v%init_const(" // trim(input_variables(i)%variable_name) // ", 0)"
+                                                        // "_u%v%init_const(" // trim(input_variables(i)%variable_name) // ", n_d)"
                 else
                     write(unit=out_unit, fmt="(a, g0, a)") "call " // trim(input_variables(i)%variable_name) &
                                                             // "_u%v%init_const(", input_variables(i)%scaling_factor, &
                                                             "_" // trim(config%kind_parameter) // "*" &
-                                                            // trim(input_variables(i)%variable_name) // ", 0)"
+                                                            // trim(input_variables(i)%variable_name) // ", n_d)"
                 end if
             end if
         end if
