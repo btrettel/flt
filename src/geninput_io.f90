@@ -25,6 +25,7 @@ type :: config_type
     logical              :: write_tex, write_md ! whether to enable writing TeX or Markdown documentation
     logical              :: uq, ga ! whether to enable uncertainty quantification or the genetic algorithm respectively
     logical              :: write_return
+    logical              :: sensitivity
     character(len=CL)    :: executable
     integer, allocatable :: acceptable_exit_codes(:)
     real(WP)             :: run_time_threshold ! nmlfuzz will keep inputs that take longer than this time to run in seconds
@@ -84,13 +85,14 @@ subroutine read_config_namelist(input_file, config, rc)
     logical           :: write_tex, write_md
     logical           :: uq, ga
     logical           :: write_return
+    logical           :: sensitivity
     character(len=CL) :: executable ! for nmlfuzz
     integer           :: acceptable_exit_codes(100) ! for nmlfuzz
     real(WP)          :: run_time_threshold
     integer           :: nmlfuzz_mode
     
     namelist /geninput_config/ output_file_prefix, namelist_group, type_name, config_variable, kind_parameter, &
-                                write_tex, write_md, uq, ga, write_return, &
+                                write_tex, write_md, uq, ga, write_return, sensitivity, &
                                 executable, acceptable_exit_codes, run_time_threshold, nmlfuzz_mode ! for nmlfuzz
     
     output_file_prefix    = ""
@@ -103,6 +105,7 @@ subroutine read_config_namelist(input_file, config, rc)
     uq                    = .false.
     ga                    = .false.
     write_return          = .true.
+    sensitivity           = .false.
     executable            = ""
     acceptable_exit_codes = MAX_EXIT_CODE + 1
     run_time_threshold    = huge(1.0_WP)
@@ -138,6 +141,7 @@ subroutine read_config_namelist(input_file, config, rc)
     config%uq                 = uq
     config%ga                 = ga
     config%write_return       = write_return
+    config%sensitivity        = sensitivity
     config%executable         = executable
     config%run_time_threshold = run_time_threshold
     config%nmlfuzz_mode       = nmlfuzz_mode
@@ -595,7 +599,7 @@ subroutine write_subroutine(config, input_variables)
     type(config_type), intent(in)                      :: config
     type(input_variable_type), allocatable, intent(in) :: input_variables(:)
     
-    integer       :: out_unit, n, i, line_length
+    integer       :: out_unit, n, i, line_length, n_d, i_d
     character(CL) :: type_definition, line, default_value, underscore_kind_parameter, bound_value_string_1, bound_value_string_2
     character(4)  :: type4
     character(2)  :: op
@@ -610,6 +614,12 @@ subroutine write_subroutine(config, input_variables)
     write(unit=out_unit, fmt="(a)") ""
     write(unit=out_unit, fmt="(a)") "integer :: nml_unit, rc_nml"
     write(unit=out_unit, fmt="(a)") "character(len=CL) :: nml_error_message, value_string"
+    
+    if (config%sensitivity) then
+        write(unit=out_unit, fmt="(a)") "character(len=63), allocatable :: d_labels(:)"
+        write(unit=out_unit, fmt="(a)") "integer :: n_d"
+    end if
+    
     write(unit=out_unit, fmt="(a)") ""
     
     ! genunits types to auto-convert `real`s to genunits types
@@ -937,6 +947,18 @@ subroutine write_subroutine(config, input_variables)
     end if
     
     ! genunits types to auto-convert `real`s to genunits types
+    if (config%sensitivity) then
+        ! TODO: For the moment this assumes that `real` variables won't have derivatives.
+        ! That restriction should be removed later.
+        n_d = 0
+        do i = 1, n
+            if (input_variables(i)%type_definition(1:4) == "type") n_d = n_d + 1
+        end do
+        write(unit=out_unit, fmt="(a)") ""
+        write(unit=out_unit, fmt="(a, i0)") "n_d = ", n_d
+        write(unit=out_unit, fmt="(a)") "allocate(d_labels(n_d))"
+        i_d = 0
+    end if
     write_new_line = .true.
     do i = 1, n
         if (input_variables(i)%type_definition(1:4) == "type") then
@@ -945,14 +967,35 @@ subroutine write_subroutine(config, input_variables)
                 write_new_line = .false.
             end if
             
-            if (is_close(input_variables(i)%scaling_factor, 1.0_WP)) then
-                write(unit=out_unit, fmt="(a)") "call " // trim(input_variables(i)%variable_name) &
-                                                    // "_u%v%init_const(" // trim(input_variables(i)%variable_name) // ", 0)"
+            if (config%sensitivity) then
+                ! TODO: For the moment this assumes that `real` variables won't have derivatives.
+                ! That restriction should be removed later.
+                
+                i_d = i_d + 1
+                
+                if (is_close(input_variables(i)%scaling_factor, 1.0_WP)) then
+                    write(unit=out_unit, fmt="(a, i0, a)") "call " // trim(input_variables(i)%variable_name) &
+                                                        // "_u%v%init(" // trim(input_variables(i)%variable_name) &
+                                                        // ", ", i_d, ", n_d)"
+                else
+                    write(unit=out_unit, fmt="(a, g0, a, i0, a, i0, a)") "call " // trim(input_variables(i)%variable_name) &
+                                                            // "_u%v%init(", input_variables(i)%scaling_factor, &
+                                                            "_" // trim(config%kind_parameter) // "*" &
+                                                            // trim(input_variables(i)%variable_name) &
+                                                            // ", ", i_d, ", n_d)"
+                end if
+                
+                write(unit=out_unit, fmt="(a, i0, 3a)") "d_labels(", i_d, ') = "', trim(input_variables(i)%variable_name), '"'
             else
-                write(unit=out_unit, fmt="(a, g0, a)") "call " // trim(input_variables(i)%variable_name) &
-                                                        // "_u%v%init_const(", input_variables(i)%scaling_factor, &
-                                                        "_" // trim(config%kind_parameter) // "*" &
-                                                        // trim(input_variables(i)%variable_name) // ", 0)"
+                if (is_close(input_variables(i)%scaling_factor, 1.0_WP)) then
+                    write(unit=out_unit, fmt="(a)") "call " // trim(input_variables(i)%variable_name) &
+                                                        // "_u%v%init_const(" // trim(input_variables(i)%variable_name) // ", 0)"
+                else
+                    write(unit=out_unit, fmt="(a, g0, a)") "call " // trim(input_variables(i)%variable_name) &
+                                                            // "_u%v%init_const(", input_variables(i)%scaling_factor, &
+                                                            "_" // trim(config%kind_parameter) // "*" &
+                                                            // trim(input_variables(i)%variable_name) // ", 0)"
+                end if
             end if
         end if
     end do

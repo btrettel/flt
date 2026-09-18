@@ -281,7 +281,7 @@ subroutine evaluate(config, objfun, pop)
         ! If `sum_g` is much less than `f_max`, then underflow could occur.
         ! This prevents the constraint violation from providing a gradient to guide the population to a feasible area.
         ! Consequently, `sum_g` should be scaled to be order 1.
-        ! Later when calculating `f`, `sum_g` will be multiplied by `abs(f_max)` to avoid underflow.
+        ! Later when calculating `f`, `sum_g` will be multiplied by `abs(f_max)` to avoid underflow (unless `f_max` is zero).
         ! `constraint_lt` and `constraint_gt` are set up to encourage this scaling.
         if (config%check_sum_g) then
             call assert(pop%indivs(i_pop)%sum_g <= 10.0_WP, "ga (evaluate): sum_g must be order 1" // &
