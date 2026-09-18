@@ -979,16 +979,14 @@ subroutine write_subroutine(config, input_variables)
                 
                 i_d = i_d + 1
                 
-                if (is_close(input_variables(i)%scaling_factor, 1.0_WP)) then
-                    write(unit=out_unit, fmt="(a, i0, a)") "call " // trim(input_variables(i)%variable_name) &
-                                                        // "_u%v%init(" // trim(input_variables(i)%variable_name) &
-                                                        // ", ", i_d, ", n_d)"
-                else
-                    write(unit=out_unit, fmt="(a, g0, a, i0, a, i0, a)") "call " // trim(input_variables(i)%variable_name) &
-                                                            // "_u%v%init(", input_variables(i)%scaling_factor, &
-                                                            "_" // trim(config%kind_parameter) // "*" &
-                                                            // trim(input_variables(i)%variable_name) &
-                                                            // ", ", i_d, ", n_d)"
+                write(unit=out_unit, fmt="(a, i0, a)") "call " // trim(input_variables(i)%variable_name) &
+                                                    // "_u%v%init(" // trim(input_variables(i)%variable_name) &
+                                                    // ", ", i_d, ", n_d)"
+                if (.not. is_close(input_variables(i)%scaling_factor, 1.0_WP)) then
+                    ! I do it this way so that the sensitivity is to the units of the input variable, not SI units.
+                    write(unit=out_unit, fmt="(a, g0, a)") trim(input_variables(i)%variable_name) // "_u = ", &
+                                            input_variables(i)%scaling_factor, "_" // trim(config%kind_parameter) // &
+                                            "*" // trim(input_variables(i)%variable_name) // "_u"
                 end if
                 
                 write(unit=out_unit, fmt="(a, i0, 3a)") "d_labels(", i_d, ') = "', trim(input_variables(i)%variable_name), '"'
