@@ -330,7 +330,7 @@ subroutine guided_fuzzer_objfun(chromo, f, sum_g)
             sum_g = 0.0_WP
         else
             f     = 0.0_WP
-            sum_g = 2.5_WP
+            sum_g = 9.0_WP
         end if
     end if
     
