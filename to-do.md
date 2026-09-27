@@ -2,7 +2,31 @@
 
 Priorities:
 
-- geninput: Use clearer namelist keyword for bounds, perhaps similar to nml-tools
+- ga.f90
+    - Make ga.f90 print time to run generation.
+    - Make test for ga.f90 showing that if all of the initial population are infeasible, ga.f90 navigates the population towards a feasible area.
+- nmlfuzz.f90: namelist fuzz tester
+    - Detect if required variables have a range of zero but do not have `fuzz = .true.` set.
+    - Make .nml file written by a separate subroutine in nmlfuzz
+    - Add `dt` adjustment to nmlfuzz in response to `EX_ACCSTAB`. It won't adjust `dt` specifically, rather, multiply anything with with `accstab_factor` or something similar other than 1.
+    - `geninput_config` namelist in the same input file as geninput.
+        - random seed
+        - GA config
+    - Maybe
+        - Keep track of error messages to know which are triggered and which are not. The ones which are not triggered are potentially buggy.
+- geninput
+    - Use clearer namelist keyword for bounds, perhaps similar to nml-tools?
+    - Required variables can't have a default value.
+    - Implement UQ in geninput
+    - Test new module
+    - refactor and test more:
+        - split long subroutines into smaller subroutines
+        - test the new subroutines
+        - make geninput use geninput generated namelist reading code
+    - later:
+        - Optimizer namelist code and TeX can optionally be written if `optimization_file_prefix` is defined in the `geninput_config` namelist. The `real`s and `type`s will expect ranges here. The normal inputs will not be repeated in TeX, but an extra optimizer namelist in the geninput input file can define constraints and hyperparameters that will be printed in TeX.
+            - UQ+optimization: need to have estimate of input uncertainties. `stdev = stdev0 + rel_stdev*value`
+        - Output namelist code can be written if output_code_file is defined. Then namelists as defined in the geninput input file can be written out in code.
 - Make F77 equivalent of `is_close`: `ISCLS`
 - Make F77 unit test subroutines that can easily be converted to my new module.
     - `LEQ`
@@ -12,27 +36,7 @@ Priorities:
     - Alternative: Use the modern Fortran test subroutines with `interface`s. I think this would end up being less work ultimately.
 - Model validation subroutines (AIC, cross-validation, basic idea of checking whether model is within experimental uncertainty as often as it should be, etc.), calibration subroutines (genetic algorithm for modeling fitting, MCMC to handle uncertainties, etc.)
 - Python: `eprint` function
-- LaTeX documentation like BlasterSim has.
-- geninput
-    - Test new module
-    - refactor and test more:
-        - split long subroutines into smaller subroutines
-        - test the new subroutines
-        - make geninput use geninput generated namelist reading code
-- nmlfuzz.f90: namelist fuzz tester
-    - Make `nmlfuzz` have its own namelist file writer so that you don't need to recompile every time.
-        - Start by writing this namelist writer.
-    - `nmlfuzz_config` namelist in the same input file as geninput.
-        - random seed
-        - acceptable exit codes
-        - executable to run
-        - GA config
-    - Start out using fuzzing without an optimizer (just random search) and only looking for bad exit codes (like assertion failures). Additional complexities can be added later.
-    - To avoid having to give nmlfuzz all the input validation code from the program being tested, make nmlfuzz recognize when input validation from geninput failed. Use a particular exit code for that?
-    - Keep track of error messages to know which are triggered and which are not. The ones which are not triggered are potentially buggy.
-    - Later: Use an optimizer and make depend on ga.f90
-        - Alternatively: Combine fuzzing and automatic differentiation when possible to find bad program states.
-        - Optional (in the program being tested) debug.nml output for nmlfuzz to parse? How else can nmlfuzz get internal data for an objective function?
+- LaTeX documentation like BlasterSim has?
 - Sensitivity analysis for model parameters.
     - <https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis>
     - Use AD for sensitivity analysis for important inputs? Make it possible to turn off AD for these inputs during "production" runs for speed.
