@@ -2,13 +2,18 @@
 
 Priorities:
 
+- Simple mutation tester.
+    - Comment out lines.
+    - Modifies assertions in some way to test them.
+    - Adds `.not.` to conditional statements.
+- Make property tester that uses an optimizer.
 - ga.f90
     - Make ga.f90 print time to run generation.
     - Make test for ga.f90 showing that if all of the initial population are infeasible, ga.f90 navigates the population towards a feasible area.
 - nmlfuzz.f90: namelist fuzz tester
+    - Add `dt` adjustment to nmlfuzz in response to `EX_ACCSTAB`. It won't adjust `dt` specifically, rather, multiply anything with with `accstab_factor` or something similar other than 1.
     - Detect if required variables have a range of zero but do not have `fuzz = .true.` set.
     - Make .nml file written by a separate subroutine in nmlfuzz
-    - Add `dt` adjustment to nmlfuzz in response to `EX_ACCSTAB`. It won't adjust `dt` specifically, rather, multiply anything with with `accstab_factor` or something similar other than 1.
     - `geninput_config` namelist in the same input file as geninput.
         - random seed
         - GA config
@@ -18,6 +23,7 @@ Priorities:
     - Use clearer namelist keyword for bounds, perhaps similar to nml-tools?
     - Required variables can't have a default value.
     - Implement UQ in geninput
+    - Make geninput have optional bounds checks for reasonable bounds that are stricter. These can catch entering the wrong unit, for example. Might be best to have multiple ranges per input variable. 0 might be acceptable and the lower bound, but someone entering 1.0e-3 because they think it is mm would be wrong and unreasonable when it's mm.
     - Test new module
     - refactor and test more:
         - split long subroutines into smaller subroutines
